@@ -53,18 +53,17 @@ class Arsa:
         self.risk_puani = self._hesapla_risk_puani()
         self.risk_aciklamasi = self._risk_aciklamasi()
         
-        # Gelişim bilgileri
-        etki_yuzdesi = float(form_data.get('etki_yuzdesi', 0))
-        proje_etki_yuzdesi = float(form_data.get('proje_etki_yuzdesi', 0))
-        
-        self.gelisim = {
-            'bolge_durumu': form_data.get('bolge_durumu', 'Değerlendirilmedi'),
-            'etki_yuzdesi': etki_yuzdesi,
-            'etki_renk': 'success' if etki_yuzdesi > 10 else 'warning' if etki_yuzdesi > 5 else 'danger',
-            'yeni_projeler': form_data.get('yeni_projeler', 'Bilgi yok'),
-            'proje_etki_yuzdesi': proje_etki_yuzdesi,
-            'proje_etki_renk': 'success' if proje_etki_yuzdesi > 15 else 'warning' if proje_etki_yuzdesi > 7 else 'danger'
-        }
+        # Bölge artı/eksi bilgileri
+        try:
+            self.gelisim = {
+                'artilar': json.loads(form_data.get('artilar', '[]')),
+                'eksiler': json.loads(form_data.get('eksiler', '[]'))
+            }
+        except json.JSONDecodeError:
+            self.gelisim = {
+                'artilar': [],
+                'eksiler': []
+            }
         
         # Projeksiyon hesaplamaları
         self.projeksiyon = self._hesapla_projeksiyon()
