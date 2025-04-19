@@ -86,13 +86,13 @@
                                                 {% endif %}
                                             </p>
                                         </div>
-                                        
+
                                         <div class="alert alert-info mt-3">
                                             <h5>Potansiyel Getiri</h5>
                                             <p>Tahmini yıllık getiri oranı: <strong>%{{ arsa.potansiyel_getiri }}</strong></p>
                                             <p>Tavsiye edilen minimum yatırım süresi: <strong>{{ arsa.yatirim_suresi }} yıl</strong></p>
                                         </div>
-                                        
+
                                         <div class="alert alert-primary mt-3">
                                             <h5>Yatırım Değerlendirmesi</h5>
                                             <p>
@@ -109,7 +109,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Detaylı Analiz Bölümü -->
                         <div class="row mb-4">
                             <div class="col-12">
@@ -162,7 +162,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Değer Artış Potansiyeli -->
                                         <div class="row mt-4">
                                             <div class="col-12">
@@ -175,8 +175,8 @@
                                                             </div>
                                                             <div class="card-body">
                                                                 <ul class="list-group list-group-flush">
-                                                                    {% for arti in arsa.gelisim.artilar %}
-                                                                    <li class="list-group-item">{{ arti }}</li>
+                                                                    {% for strength in arsa.swot.strengths %}
+                                                                    <li class="list-group-item">{{ strength }}</li>
                                                                     {% endfor %}
                                                                 </ul>
                                                             </div>
@@ -189,8 +189,8 @@
                                                             </div>
                                                             <div class="card-body">
                                                                 <ul class="list-group list-group-flush">
-                                                                    {% for eksi in arsa.gelisim.eksiler %}
-                                                                    <li class="list-group-item">{{ eksi }}</li>
+                                                                    {% for weakness in arsa.swot.weaknesses %}
+                                                                    <li class="list-group-item">{{ weakness }}</li>
                                                                     {% endfor %}
                                                                 </ul>
                                                             </div>
@@ -205,8 +205,9 @@
                                                             </div>
                                                             <div class="card-body">
                                                                 <ul class="list-group list-group-flush">
-                                                                    <li class="list-group-item">Bölgede gelişim potansiyeli</li>
-                                                                    <li class="list-group-item">Yeni altyapı projeleri</li>
+                                                                    {% for opportunity in arsa.swot.opportunities %}
+                                                                    <li class="list-group-item">{{ opportunity }}</li>
+                                                                    {% endfor %}
                                                                 </ul>
                                                             </div>
                                                         </div>
@@ -218,8 +219,9 @@
                                                             </div>
                                                             <div class="card-body">
                                                                 <ul class="list-group list-group-flush">
-                                                                    <li class="list-group-item">Piyasa dalgalanmaları</li>
-                                                                    <li class="list-group-item">İmar değişikliği riskleri</li>
+                                                                    {% for threat in arsa.swot.threats %}
+                                                                    <li class="list-group-item">{{ threat }}</li>
+                                                                    {% endfor %}
                                                                 </ul>
                                                             </div>
                                                         </div>
@@ -322,7 +324,7 @@
                             </div>
                         </div>
                         {% endif %}
-                        
+
                         <div class="row mb-4">
                             <div class="col-12">
                                 <div class="card">
@@ -346,7 +348,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="d-grid gap-2">
                             <a href="{{ url_for('index') }}" class="btn btn-secondary">Yeni Arsa Analizi Yap</a>
                         </div>

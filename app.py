@@ -54,16 +54,28 @@ class Arsa:
         self.risk_puani = self._hesapla_risk_puani()
         self.risk_aciklamasi = self._risk_aciklamasi()
         
-        # Bölge artı/eksi bilgileri
+        # SWOT Analizi
         try:
-            self.gelisim = {
-                'artilar': json.loads(form_data.get('artilar', '[]')),
-                'eksiler': json.loads(form_data.get('eksiler', '[]'))
+            self.swot = {
+                'strengths': json.loads(form_data.get('artilar', '[]')),
+                'weaknesses': json.loads(form_data.get('eksiler', '[]')),
+                'opportunities': [
+                    "Bölgede gelişim potansiyeli",
+                    "Yeni altyapı projeleri",
+                    "Artan yatırım talebi"
+                ],
+                'threats': [
+                    "Piyasa dalgalanmaları",
+                    "İmar değişikliği riskleri",
+                    "Ekonomik belirsizlikler"
+                ]
             }
         except json.JSONDecodeError:
-            self.gelisim = {
-                'artilar': [],
-                'eksiler': []
+            self.swot = {
+                'strengths': [],
+                'weaknesses': [],
+                'opportunities': [],
+                'threats': []
             }
         
         # Projeksiyon hesaplamaları
