@@ -65,71 +65,80 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Artı/Eksi yönetimi için global diziler
-    let artilar = [];
-    let eksiler = [];
+    // SWOT yönetimi için fonksiyonlar
 
-    // Artı ekleme fonksiyonu
-    window.ekleArti = function() {
-        const input = document.getElementById('yeniArti');
-        const arti = input.value.trim();
-        if (arti) {
-            artilar.push(arti);
-            guncelleArtilarListesi();
-            input.value = '';
-            document.getElementById('artilarInput').value = JSON.stringify(artilar);
-        }
-    };
+    function ekleSwot(type) {
+        const elements = {
+            'strength': {
+                inputId: 'yeniStrength',
+                listId: 'strengthList',
+                hiddenId: 'strengthsInput',
+                btnClass: 'btn-success'
+            },
+            'weakness': {
+                inputId: 'yeniWeakness',
+                listId: 'weaknessList',
+                hiddenId: 'weaknessesInput',
+                btnClass: 'btn-danger'
+            },
+            'opportunity': {
+                inputId: 'yeniOpportunity',
+                listId: 'opportunityList',
+                hiddenId: 'opportunitiesInput',
+                btnClass: 'btn-info'
+            },
+            'threat': {
+                inputId: 'yeniThreat',
+                listId: 'threatList',
+                hiddenId: 'threatsInput',
+                btnClass: 'btn-warning'
+            }
+        };
 
-    // Eksi ekleme fonksiyonu
-    window.ekleEksi = function() {
-        const input = document.getElementById('yeniEksi');
-        const eksi = input.value.trim();
-        if (eksi) {
-            eksiler.push(eksi);
-            guncelleEksilerListesi();
-            input.value = '';
-            document.getElementById('eksilerInput').value = JSON.stringify(eksiler);
-        }
-    };
+        const element = elements[type];
+        const yeniItem = document.getElementById(element.inputId).value.trim();
 
-    // Artı silme fonksiyonu
-    window.silArti = function(index) {
-        artilar.splice(index, 1);
-        guncelleArtilarListesi();
-        document.getElementById('artilarInput').value = JSON.stringify(artilar);
-    };
-
-    // Eksi silme fonksiyonu
-    window.silEksi = function(index) {
-        eksiler.splice(index, 1);
-        guncelleEksilerListesi();
-        document.getElementById('eksilerInput').value = JSON.stringify(eksiler);
-    };
-
-    // Artılar listesini güncelleme
-    function guncelleArtilarListesi() {
-        const liste = document.getElementById('artilarListesi');
-        liste.innerHTML = artilar.map((arti, index) => `
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <span>${arti}</span>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="silArti(${index})">
+        if (yeniItem) {
+            const liste = document.getElementById(element.listId);
+            const listItem = document.createElement('div');
+            listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+            listItem.innerHTML = `
+                ${yeniItem}
+                <button class="btn btn-sm ${element.btnClass}" onclick="this.parentElement.remove(); updateSwotList('${type}');">
                     <i class="bi bi-trash"></i>
                 </button>
-            </div>
-        `).join('');
+            `;
+            liste.appendChild(listItem);
+            document.getElementById(element.inputId).value = '';
+            updateSwotList(type);
+        }
     }
 
-    // Eksiler listesini güncelleme
-    function guncelleEksilerListesi() {
-        const liste = document.getElementById('eksilerListesi');
-        liste.innerHTML = eksiler.map((eksi, index) => `
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <span>${eksi}</span>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="silEksi(${index})">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </div>
-        `).join('');
+    function updateSwotList(type) {
+        const elements = {
+            'strength': {
+                listId: 'strengthList',
+                hiddenId: 'strengthsInput'
+            },
+            'weakness': {
+                listId: 'weaknessList',
+                hiddenId: 'weaknessesInput'
+            },
+            'opportunity': {
+                listId: 'opportunityList',
+                hiddenId: 'opportunitiesInput'
+            },
+            'threat': {
+                listId: 'threatList',
+                hiddenId: 'threatsInput'
+            }
+        };
+
+        const element = elements[type];
+        const items = [];
+        document.querySelectorAll(`#${element.listId} .list-group-item`).forEach(item => {
+            items.push(item.textContent.trim());
+        });
+        document.getElementById(element.hiddenId).value = JSON.stringify(items);
     }
 });

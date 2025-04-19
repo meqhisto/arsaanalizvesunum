@@ -148,42 +148,72 @@
                                     
                                     <!-- TAKS/KAKS Bilgileri -->
 
-                            <!-- Bölge Artı/Eksi Analizi -->
+                            <!-- SWOT Analizi -->
                             <div class="card mb-4">
                                 <div class="card-header bg-light">
                                     <h5 class="mb-0">
-                                        <i class="bi bi-list-check"></i> Bölge Artı/Eksi Analizi
+                                        <i class="bi bi-list-check"></i> SWOT Analizi
                                     </h5>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Artılar -->
+                                    <!-- Güçlü Yönler -->
                                     <div class="mb-4">
-                                        <h6>Bölgenin Artıları</h6>
+                                        <h6>Güçlü Yönler (Strengths)</h6>
                                         <div class="input-group mb-2">
-                                            <input type="text" class="form-control" id="yeniArti" placeholder="Yeni artı ekleyin...">
-                                            <button class="btn btn-success" type="button" onclick="ekleArti()">
+                                            <input type="text" class="form-control" id="yeniStrength" placeholder="Yeni güçlü yön ekleyin...">
+                                            <button class="btn btn-success" type="button" onclick="ekleSwot('strength')">
                                                 <i class="bi bi-plus-lg"></i> Ekle
                                             </button>
                                         </div>
-                                        <div id="artilarListesi" class="list-group">
-                                            <!-- Artılar buraya eklenecek -->
+                                        <div id="strengthList" class="list-group">
+                                            <!-- Güçlü yönler buraya eklenecek -->
                                         </div>
-                                        <input type="hidden" name="artilar" id="artilarInput">
+                                        <input type="hidden" name="strengths" id="strengthsInput">
                                     </div>
                                     
-                                    <!-- Eksiler -->
-                                    <div>
-                                        <h6>Bölgenin Eksileri</h6>
+                                    <!-- Zayıf Yönler -->
+                                    <div class="mb-4">
+                                        <h6>Zayıf Yönler (Weaknesses)</h6>
                                         <div class="input-group mb-2">
-                                            <input type="text" class="form-control" id="yeniEksi" placeholder="Yeni eksi ekleyin...">
-                                            <button class="btn btn-danger" type="button" onclick="ekleEksi()">
+                                            <input type="text" class="form-control" id="yeniWeakness" placeholder="Yeni zayıf yön ekleyin...">
+                                            <button class="btn btn-danger" type="button" onclick="ekleSwot('weakness')">
                                                 <i class="bi bi-plus-lg"></i> Ekle
                                             </button>
                                         </div>
-                                        <div id="eksilerListesi" class="list-group">
-                                            <!-- Eksiler buraya eklenecek -->
+                                        <div id="weaknessList" class="list-group">
+                                            <!-- Zayıf yönler buraya eklenecek -->
                                         </div>
-                                        <input type="hidden" name="eksiler" id="eksilerInput">
+                                        <input type="hidden" name="weaknesses" id="weaknessesInput">
+                                    </div>
+
+                                    <!-- Fırsatlar -->
+                                    <div class="mb-4">
+                                        <h6>Fırsatlar (Opportunities)</h6>
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" id="yeniOpportunity" placeholder="Yeni fırsat ekleyin...">
+                                            <button class="btn btn-info" type="button" onclick="ekleSwot('opportunity')">
+                                                <i class="bi bi-plus-lg"></i> Ekle
+                                            </button>
+                                        </div>
+                                        <div id="opportunityList" class="list-group">
+                                            <!-- Fırsatlar buraya eklenecek -->
+                                        </div>
+                                        <input type="hidden" name="opportunities" id="opportunitiesInput">
+                                    </div>
+
+                                    <!-- Tehditler -->
+                                    <div>
+                                        <h6>Tehditler (Threats)</h6>
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control" id="yeniThreat" placeholder="Yeni tehdit ekleyin...">
+                                            <button class="btn btn-warning" type="button" onclick="ekleSwot('threat')">
+                                                <i class="bi bi-plus-lg"></i> Ekle
+                                            </button>
+                                        </div>
+                                        <div id="threatList" class="list-group">
+                                            <!-- Tehditler buraya eklenecek -->
+                                        </div>
+                                        <input type="hidden" name="threats" id="threatsInput">
                                     </div>
                                 </div>
                             </div>
