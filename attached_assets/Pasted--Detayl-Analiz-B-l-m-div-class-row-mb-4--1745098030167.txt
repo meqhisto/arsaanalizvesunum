@@ -1,0 +1,37 @@
+  <!-- Detaylı Analiz Bölümü -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h5>Detaylı Analiz</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6 class="mb-3">Altyapı ve Ulaşım</h6>
+                                                <ul class="list-group mb-4">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Elektrik Altyapısı
+                                                        <span class="badge bg-{{ 'success' if arsa.altyapi.elektrik else 'danger' }} rounded-pill">
+                                                            {{ 'Mevcut' if arsa.altyapi.elektrik else 'Mevcut Değil' }}
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Su Altyapısı
+                                                        <span class="badge bg-{{ 'success' if arsa.altyapi.su else 'danger' }} rounded-pill">
+                                                            {{ 'Mevcut' if arsa.altyapi.su else 'Mevcut Değil' }}
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        En Yakın Toplu Taşıma: {{ arsa.ulasim.toplu_tasima_mesafe|default('Belirtilmemiş') }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="mb-3">Risk Analizi</h6>
+                                                <div class="alert alert-{{ 'success' if arsa.risk_puani < 3 else ('warning' if arsa.risk_puani < 7 else 'danger') }}">
+                                                    <h6>Risk Puanı: {{ arsa.risk_puani|default('0') }}/10</h6>
+                                                    <p>{{ arsa.risk_aciklamasi|default('Risk değerlendirmesi yapılmamış') }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
