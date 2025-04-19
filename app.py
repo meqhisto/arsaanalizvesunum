@@ -55,20 +55,21 @@ class Arsa:
         self.risk_aciklamasi = self._risk_aciklamasi()
         
         # SWOT Analizi
-        try:
-            self.swot = {
-                'strengths': json.loads(form_data.get('strengths', '[]')),
-                'weaknesses': json.loads(form_data.get('weaknesses', '[]')),
-                'opportunities': json.loads(form_data.get('opportunities', '[]')),
-                'threats': json.loads(form_data.get('threats', '[]'))
-            }
-        except json.JSONDecodeError:
-            self.swot = {
-                'strengths': [],
-                'weaknesses': [],
-                'opportunities': [],
-                'threats': []
-            }
+        def parse_swot_data(data):
+            try:
+                return json.loads(data) if data else []
+            except json.JSONDecodeError:
+                return []
+
+        self.swot = {
+            'strengths': parse_swot_data(form_data.get('strengths')),
+            'weaknesses': parse_swot_data(form_data.get('weaknesses')),
+            'opportunities': parse_swot_data(form_data.get('opportunities')),
+            'threats': parse_swot_data(form_data.get('threats'))
+        }
+
+        # Debug için SWOT verilerini yazdır
+        print("SWOT Verileri:", self.swot)
         
         # Projeksiyon hesaplamaları
         self.projeksiyon = self._hesapla_projeksiyon()
