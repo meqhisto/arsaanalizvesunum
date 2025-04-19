@@ -57,18 +57,10 @@ class Arsa:
         # SWOT Analizi
         try:
             self.swot = {
-                'strengths': json.loads(form_data.get('artilar', '[]')),
-                'weaknesses': json.loads(form_data.get('eksiler', '[]')),
-                'opportunities': [
-                    "Bölgede gelişim potansiyeli",
-                    "Yeni altyapı projeleri",
-                    "Artan yatırım talebi"
-                ],
-                'threats': [
-                    "Piyasa dalgalanmaları",
-                    "İmar değişikliği riskleri",
-                    "Ekonomik belirsizlikler"
-                ]
+                'strengths': json.loads(form_data.get('strengths', '[]')),
+                'weaknesses': json.loads(form_data.get('weaknesses', '[]')),
+                'opportunities': json.loads(form_data.get('opportunities', '[]')),
+                'threats': json.loads(form_data.get('threats', '[]'))
             }
         except json.JSONDecodeError:
             self.swot = {

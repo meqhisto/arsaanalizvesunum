@@ -65,9 +65,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // SWOT yönetimi için fonksiyonlar
+    });
 
-    function ekleSwot(type) {
+// SWOT yönetimi için fonksiyonlar
+window.ekleSwot = function(type) {
         const elements = {
             'strength': {
                 inputId: 'yeniStrength',
