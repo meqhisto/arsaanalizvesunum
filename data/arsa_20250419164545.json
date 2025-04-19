@@ -1,0 +1,43 @@
+{
+    "konum": {
+        "il": "Çanakkale",
+        "ilce": "Lapseki",
+        "mahalle": "Gazisüleymanpaşa"
+    },
+    "parsel": {
+        "ada": "126",
+        "parsel": "3"
+    },
+    "metrekare": 24131.0,
+    "imar_durumu": "konut",
+    "fiyat": 3000.0,
+    "bolge_fiyat": 10000.0,
+    "timestamp": "2025-04-19 16:45:45",
+    "taks": 0.3,
+    "kaks": 0.6,
+    "insaat_hesaplama": {
+        "arsa_alani": 24131.0,
+        "taks": 0.3,
+        "kaks": 0.6,
+        "taban_alani": 7239.3,
+        "toplam_insaat_alani": 14478.6,
+        "teorik_kat_sayisi": 2.0,
+        "tam_kat_sayisi": 2,
+        "kalan_alan": 0.0
+    },
+    "metrekare_fiyat": 0.12432141229124363,
+    "bolge_karsilastirma": -100.0,
+    "potansiyel_getiri": 7.15,
+    "yatirim_suresi": 4,
+    "yatirim_degerlendirmesi": {
+        "derece": "orta",
+        "oneri": "Bu arsa orta seviyede getiri potansiyeli sunmaktadır.",
+        "fiyat_degerlendirme": "Arsa fiyatı bölge ortalamasının oldukça altındadır, bu bir fırsat olabilir.",
+        "yatirim_suresi_aciklama": "Bu arsa için tavsiye edilen minimum yatırım süresi 4 yıldır."
+    },
+    "ozet": {
+        "temel_ozet": "Gazisüleymanpaşa, Lapseki, Çanakkale konumunda bulunan 24131.0 m² büyüklüğündeki konut imarlı arsa, 3,000.00 TL fiyatla satılmaktadır. Metrekare fiyatı 0.12 TL/m² olup, bölge ortalaması olan 10,000.00 TL/m² ile karşılaştırıldığında bölge ortalamasından %100.0 daha ucuzdur.",
+        "yatirim_ozet": "Yapılan analizlere göre, bu arsanın yıllık %7.15 potansiyel getiri sunması beklenmektedir. Bu arsa orta seviyede getiri potansiyeli sunmaktadır. Arsa fiyatı bölge ortalamasının oldukça altındadır, bu bir fırsat olabilir. Bu arsa için tavsiye edilen minimum yatırım süresi 4 yıldır.",
+        "tavsiyeler": "Bu arsa yüksek getiri potansiyeli sunmaktadır ve yatırım için öncelikli olarak değerlendirilebilir. Bölgedeki gelişim planları ve altyapı çalışmaları takip edilmelidir. Kısa-orta vadede değer artışı beklenmektedir."
+    }
+}

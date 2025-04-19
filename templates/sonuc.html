@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arsa Yatırım Danışmanlığı - Analiz Sonuçları</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="text-center">Arsa Yatırım Analizi</h2>
+                        <h4 class="text-center">Sonuç Raporu</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5>Arsa Bilgileri</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-striped">
+                                            <tr>
+                                                <th>Konum:</th>
+                                                <td>{{ arsa.konum.mahalle }}, {{ arsa.konum.ilce }}, {{ arsa.konum.il }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Parsel:</th>
+                                                <td>Ada: {{ arsa.parsel.ada }}, Parsel: {{ arsa.parsel.parsel }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Metrekare:</th>
+                                                <td>{{ arsa.metrekare|round(2) }} m²</td>
+                                            </tr>
+                                            <tr>
+                                                <th>İmar Durumu:</th>
+                                                <td>{{ arsa.imar_durumu|capitalize }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Fiyat:</th>
+                                                <td>{{ "{:,.2f}".format(arsa.fiyat) }} TL</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Metrekare Fiyatı:</th>
+                                                <td>{{ "{:,.2f}".format(arsa.metrekare_fiyat) }} TL/m²</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Bölge Ortalama Fiyatı:</th>
+                                                <td>{{ "{:,.2f}".format(arsa.bolge_fiyat) }} TL/m²</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Koordinatlar:</th>
+                                                <td>{{ arsa.koordinatlar if arsa.koordinatlar else 'Belirtilmemiş' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Pafta No:</th>
+                                                <td>{{ arsa.pafta if arsa.pafta else 'Belirtilmemiş' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>İmar Tipi:</th>
+                                                <td>{{ arsa.imar_tipi if arsa.imar_tipi else 'Belirtilmemiş' }}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-info text-white">
+                                        <h5>Analiz Sonuçları</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="alert {{ 'alert-success' if arsa.bolge_karsilastirma < 0 else 'alert-warning' }}">
+                                            <h5>Bölge Karşılaştırması</h5>
+                                            <p>
+                                                Bu arsa, bölge ortalamasına göre 
+                                                {% if arsa.bolge_karsilastirma < 0 %}
+                                                    <strong class="text-success">%{{ "{:.1f}".format(arsa.bolge_karsilastirma|abs) }} daha ucuz</strong>
+                                                {% else %}
+                                                    <strong class="text-danger">%{{ "{:.1f}".format(arsa.bolge_karsilastirma) }} daha pahalı</strong>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        
+                                        <div class="alert alert-info mt-3">
+                                            <h5>Potansiyel Getiri</h5>
+                                            <p>Tahmini yıllık getiri oranı: <strong>%{{ arsa.potansiyel_getiri }}</strong></p>
+                                            <p>Tavsiye edilen minimum yatırım süresi: <strong>{{ arsa.yatirim_suresi }} yıl</strong></p>
+                                        </div>
+                                        
+                                        <div class="alert alert-primary mt-3">
+                                            <h5>Yatırım Değerlendirmesi</h5>
+                                            <p>
+                                                {% if arsa.potansiyel_getiri > 7 %}
+                                                    <strong class="text-success">Yüksek potansiyelli yatırım</strong>
+                                                {% elif arsa.potansiyel_getiri > 5 %}
+                                                    <strong class="text-primary">Orta potansiyelli yatırım</strong>
+                                                {% else %}
+                                                    <strong class="text-warning">Düşük potansiyelli yatırım</strong>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Detaylı Analiz Bölümü -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h5>Detaylı Analiz</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6 class="mb-3">Altyapı ve Ulaşım</h6>
+                                                <ul class="list-group mb-4">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Elektrik Altyapısı
+                                                        <span class="badge bg-{{ 'success' if arsa.altyapi.elektrik else 'danger' }} rounded-pill">
+                                                            {{ 'Mevcut' if arsa.altyapi.elektrik else 'Mevcut Değil' }}
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Su Altyapısı
+                                                        <span class="badge bg-{{ 'success' if arsa.altyapi.su else 'danger' }} rounded-pill">
+                                                            {{ 'Mevcut' if arsa.altyapi.su else 'Mevcut Değil' }}
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        En Yakın Toplu Taşıma: {{ arsa.ulasim.toplu_tasima_mesafe|default('Belirtilmemiş') }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="mb-3">Risk Analizi</h6>
+                                                <div class="alert alert-{{ 'success' if arsa.risk_puani < 3 else ('warning' if arsa.risk_puani < 7 else 'danger') }}">
+                                                    <h6>Risk Puanı: {{ arsa.risk_puani|default('0') }}/10</h6>
+                                                    <p>{{ arsa.risk_aciklamasi|default('Risk değerlendirmesi yapılmamış') }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Değer Artış Potansiyeli -->
+                                        <div class="row mt-4">
+                                            <div class="col-12">
+                                                <h6 class="mb-3">Değer Artış Potansiyeli Faktörleri</h6>
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Faktör</th>
+                                                                <th>Durum</th>
+                                                                <th>Etki</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>Gelişmekte Olan Bölge</td>
+                                                                <td>{{ arsa.gelisim.bolge_durumu|default('Değerlendirilmedi') }}</td>
+                                                                <td class="text-{{ arsa.gelisim.etki_renk|default('secondary') }}">
+                                                                    {{ arsa.gelisim.etki_yuzdesi|default('0') }}%
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Yeni Projeler</td>
+                                                                <td>{{ arsa.gelisim.yeni_projeler|default('Bilgi yok') }}</td>
+                                                                <td class="text-{{ arsa.gelisim.proje_etki_renk|default('secondary') }}">
+                                                                    {{ arsa.gelisim.proje_etki_yuzdesi|default('0') }}%
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Finansal Projeksiyon -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h5>Finansal Projeksiyon</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Tahmini Değer Artışı</h6>
+                                                <table class="table table-sm">
+                                                    <tr>
+                                                        <th>1. Yıl</th>
+                                                        <td>{{ "{:,.2f}".format(arsa.projeksiyon.yil_1) }} TL</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>3. Yıl</th>
+                                                        <td>{{ "{:,.2f}".format(arsa.projeksiyon.yil_3) }} TL</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>5. Yıl</th>
+                                                        <td>{{ "{:,.2f}".format(arsa.projeksiyon.yil_5) }} TL</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Yatırım Önerileri</h6>
+                                                <div class="alert alert-info">
+                                                    <ul class="mb-0">
+                                                        {% for oneri in arsa.yatirim_onerileri %}
+                                                        <li>{{ oneri }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- İnşaat Alanı Hesaplama Sonuçları -->
+                        {% if arsa.insaat_hesaplama is defined %}
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h5>İnşaat Alanı Hesaplaması</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <table class="table table-striped">
+                                                    <tr>
+                                                        <th>TAKS (Taban Alanı Katsayısı):</th>
+                                                        <td>{{ arsa.taks }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>KAKS (Kat Alanı Katsayısı):</th>
+                                                        <td>{{ arsa.kaks }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Taban Alanı:</th>
+                                                        <td>{{ "{:,.2f}".format(arsa.insaat_hesaplama.taban_alani) }} m²</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <table class="table table-striped">
+                                                    <tr>
+                                                        <th>Toplam İnşaat Alanı:</th>
+                                                        <td>{{ "{:,.2f}".format(arsa.insaat_hesaplama.toplam_insaat_alani) }} m²</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Teorik Kat Sayısı:</th>
+                                                        <td>{{ "{:.2f}".format(arsa.insaat_hesaplama.teorik_kat_sayisi) }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Tam Kat Sayısı:</th>
+                                                        <td>{{ arsa.insaat_hesaplama.tam_kat_sayisi }}</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-dark text-white">
+                                        <h5>Sunum Oluştur</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <a href="{{ url_for('generate', format='word', file_id=file_id) }}" class="btn btn-primary d-block">
+                                                    <i class="bi bi-file-earmark-word"></i> Word Belgesi Oluştur
+                                                </a>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <a href="{{ url_for('generate', format='ppt', file_id=file_id) }}" class="btn btn-danger d-block">
+                                                    <i class="bi bi-file-earmark-slides"></i> PowerPoint Sunumu Oluştur
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Yeni Arsa Analizi Yap</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
