@@ -1,0 +1,43 @@
+{
+    "konum": {
+        "il": "Çanakkale",
+        "ilce": "Lapseki",
+        "mahalle": "Gazisüleymanpaşa"
+    },
+    "parsel": {
+        "ada": "126",
+        "parsel": "3"
+    },
+    "metrekare": 28154.0,
+    "imar_durumu": "konut",
+    "fiyat": 250000000.0,
+    "bolge_fiyat": 14882.0,
+    "timestamp": "2025-04-19 21:58:51",
+    "taks": 0.3,
+    "kaks": 0.6,
+    "insaat_hesaplama": {
+        "arsa_alani": 28154.0,
+        "taks": 0.3,
+        "kaks": 0.6,
+        "taban_alani": 8446.199999999999,
+        "toplam_insaat_alani": 16892.399999999998,
+        "teorik_kat_sayisi": 2.0,
+        "tam_kat_sayisi": 2,
+        "kalan_alan": 0.0
+    },
+    "metrekare_fiyat": 8879.73289763444,
+    "bolge_karsilastirma": -40.33,
+    "potansiyel_getiri": 7.15,
+    "yatirim_suresi": 4,
+    "yatirim_degerlendirmesi": {
+        "derece": "orta",
+        "oneri": "Bu arsa orta seviyede getiri potansiyeli sunmaktadır.",
+        "fiyat_degerlendirme": "Arsa fiyatı bölge ortalamasının oldukça altındadır, bu bir fırsat olabilir.",
+        "yatirim_suresi_aciklama": "Bu arsa için tavsiye edilen minimum yatırım süresi 4 yıldır."
+    },
+    "ozet": {
+        "temel_ozet": "Gazisüleymanpaşa, Lapseki, Çanakkale konumunda bulunan 28154.0 m² büyüklüğündeki konut imarlı arsa, 250,000,000.00 TL fiyatla satılmaktadır. Metrekare fiyatı 8,879.73 TL/m² olup, bölge ortalaması olan 14,882.00 TL/m² ile karşılaştırıldığında bölge ortalamasından %40.3 daha ucuzdur.",
+        "yatirim_ozet": "Yapılan analizlere göre, bu arsanın yıllık %7.15 potansiyel getiri sunması beklenmektedir. Bu arsa orta seviyede getiri potansiyeli sunmaktadır. Arsa fiyatı bölge ortalamasının oldukça altındadır, bu bir fırsat olabilir. Bu arsa için tavsiye edilen minimum yatırım süresi 4 yıldır.",
+        "tavsiyeler": "Bu arsa yüksek getiri potansiyeli sunmaktadır ve yatırım için öncelikli olarak değerlendirilebilir. Bölgedeki gelişim planları ve altyapı çalışmaları takip edilmelidir. Kısa-orta vadede değer artışı beklenmektedir."
+    }
+}
