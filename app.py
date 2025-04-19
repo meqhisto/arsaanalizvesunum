@@ -26,7 +26,7 @@ class Arsa:
         # Yeni eklenen alanlar
         self.koordinatlar = form_data.get('koordinatlar')
         self.pafta = form_data.get('pafta')
-        self.imar_tipi = form_data.get('imar_tipi')
+        self.imar_tipi = self.imar_durumu  # İmar tipini imar durumundan al
         
         # Hesaplamalar
         self.metrekare_fiyat = self.fiyat / self.metrekare if self.metrekare else 0
