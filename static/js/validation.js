@@ -74,25 +74,29 @@ window.ekleSwot = function(type) {
                 inputId: 'yeniStrength',
                 listId: 'strengthList',
                 hiddenId: 'strengthsInput',
-                btnClass: 'btn-success'
+                btnClass: 'btn-success',
+                textClass: 'text-success'
             },
             'weakness': {
                 inputId: 'yeniWeakness',
                 listId: 'weaknessList',
                 hiddenId: 'weaknessesInput',
-                btnClass: 'btn-danger'
+                btnClass: 'btn-danger',
+                textClass: 'text-danger'
             },
             'opportunity': {
                 inputId: 'yeniOpportunity',
                 listId: 'opportunityList',
                 hiddenId: 'opportunitiesInput',
-                btnClass: 'btn-info'
+                btnClass: 'btn-info',
+                textClass: 'text-info'
             },
             'threat': {
                 inputId: 'yeniThreat',
                 listId: 'threatList',
                 hiddenId: 'threatsInput',
-                btnClass: 'btn-warning'
+                btnClass: 'btn-warning',
+                textClass: 'text-warning'
             }
         };
 
@@ -104,7 +108,7 @@ window.ekleSwot = function(type) {
             const listItem = document.createElement('div');
             listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
             listItem.innerHTML = `
-                ${yeniItem}
+                <span class="${element.textClass}">${yeniItem}</span>
                 <button class="btn btn-sm ${element.btnClass}" onclick="this.parentElement.remove(); updateSwotList('${type}');">
                     <i class="bi bi-trash"></i>
                 </button>
@@ -137,7 +141,7 @@ window.ekleSwot = function(type) {
 
         const element = elements[type];
         const items = [];
-        document.querySelectorAll(`#${element.listId} .list-group-item`).forEach(item => {
+        document.querySelectorAll(`#${element.listId} .list-group-item span`).forEach(item => {
             items.push(item.textContent.trim());
         });
         document.getElementById(element.hiddenId).value = JSON.stringify(items);
