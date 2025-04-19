@@ -37,6 +37,25 @@ document.addEventListener('DOMContentLoaded', function() {
     var numberInputs = document.querySelectorAll('input[type="number"]');
     
     numberInputs.forEach(function(input) {
+        input.addEventListener('input', function() {
+            if (this.value < 0) this.value = 0;
+        });
+    });
+
+    // Form temizleme işlevi
+    const clearFormBtn = document.getElementById('clearForm');
+    if (clearFormBtn) {
+        clearFormBtn.addEventListener('click', function() {
+            const form = document.getElementById('arsaForm');
+            form.reset();
+            form.classList.remove('was-validated');
+            // Checkbox'ları temizle
+            form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            alert('Form temizlendi!');
+        });
+    }nput) {
         input.addEventListener('blur', function() {
             if (this.value !== '') {
                 var value = parseFloat(this.value);
