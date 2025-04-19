@@ -54,13 +54,16 @@ class Arsa:
         self.risk_aciklamasi = self._risk_aciklamasi()
         
         # Gelişim bilgileri
+        etki_yuzdesi = float(form_data.get('etki_yuzdesi', 0))
+        proje_etki_yuzdesi = float(form_data.get('proje_etki_yuzdesi', 0))
+        
         self.gelisim = {
-            'bolge_durumu': 'Gelişmekte',
-            'etki_yuzdesi': 15,
-            'etki_renk': 'success',
-            'yeni_projeler': 'Metro hattı yapım aşamasında',
-            'proje_etki_yuzdesi': 20,
-            'proje_etki_renk': 'success'
+            'bolge_durumu': form_data.get('bolge_durumu', 'Değerlendirilmedi'),
+            'etki_yuzdesi': etki_yuzdesi,
+            'etki_renk': 'success' if etki_yuzdesi > 10 else 'warning' if etki_yuzdesi > 5 else 'danger',
+            'yeni_projeler': form_data.get('yeni_projeler', 'Bilgi yok'),
+            'proje_etki_yuzdesi': proje_etki_yuzdesi,
+            'proje_etki_renk': 'success' if proje_etki_yuzdesi > 15 else 'warning' if proje_etki_yuzdesi > 7 else 'danger'
         }
         
         # Projeksiyon hesaplamaları
