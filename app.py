@@ -17,7 +17,8 @@ class Arsa:
             'parsel': form_data.get('parsel')
         }
         self.metrekare = float(form_data.get('metrekare', 0))
-        self.imar_durumu = form_data.get('imar_durumu')
+        imar_durumu = form_data.get('imar_durumu', '')
+        self.imar_durumu = imar_durumu.capitalize() if imar_durumu else ''
         self.fiyat = float(form_data.get('fiyat', 0))
         self.taks = float(form_data.get('taks', 0.3))
         self.kaks = float(form_data.get('kaks', 1.5))
