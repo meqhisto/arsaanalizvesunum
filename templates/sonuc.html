@@ -166,33 +166,64 @@
                                         <!-- Değer Artış Potansiyeli -->
                                         <div class="row mt-4">
                                             <div class="col-12">
-                                                <h6 class="mb-3">Değer Artış Potansiyeli Faktörleri</h6>
-                                                <div class="table-responsive">
-                                                    <table class="table table-bordered">
-                                                        <thead class="table-light">
-                                                            <tr>
-                                                                <th>Faktör</th>
-                                                                <th>Durum</th>
-                                                                <th>Etki</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>Gelişmekte Olan Bölge</td>
-                                                                <td>{{ arsa.gelisim.bolge_durumu|default('Değerlendirilmedi') }}</td>
-                                                                <td class="text-{{ arsa.gelisim.etki_renk|default('secondary') }}">
-                                                                    {{ arsa.gelisim.etki_yuzdesi|default('0') }}%
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Yeni Projeler</td>
-                                                                <td>{{ arsa.gelisim.yeni_projeler|default('Bilgi yok') }}</td>
-                                                                <td class="text-{{ arsa.gelisim.proje_etki_renk|default('secondary') }}">
-                                                                    {{ arsa.gelisim.proje_etki_yuzdesi|default('0') }}%
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
+                                                <h6 class="mb-3">SWOT Analizi</h6>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <div class="card border-success">
+                                                            <div class="card-header bg-success text-white">
+                                                                <h6 class="mb-0">Güçlü Yönler (Strengths)</h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <ul class="list-group list-group-flush">
+                                                                    {% for arti in arsa.gelisim.artilar %}
+                                                                    <li class="list-group-item">{{ arti }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <div class="card border-danger">
+                                                            <div class="card-header bg-danger text-white">
+                                                                <h6 class="mb-0">Zayıf Yönler (Weaknesses)</h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <ul class="list-group list-group-flush">
+                                                                    {% for eksi in arsa.gelisim.eksiler %}
+                                                                    <li class="list-group-item">{{ eksi }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <div class="card border-info">
+                                                            <div class="card-header bg-info text-white">
+                                                                <h6 class="mb-0">Fırsatlar (Opportunities)</h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <ul class="list-group list-group-flush">
+                                                                    <li class="list-group-item">Bölgede gelişim potansiyeli</li>
+                                                                    <li class="list-group-item">Yeni altyapı projeleri</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <div class="card border-warning">
+                                                            <div class="card-header bg-warning text-dark">
+                                                                <h6 class="mb-0">Tehditler (Threats)</h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <ul class="list-group list-group-flush">
+                                                                    <li class="list-group-item">Piyasa dalgalanmaları</li>
+                                                                    <li class="list-group-item">İmar değişikliği riskleri</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
