@@ -64,4 +64,72 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Form temizlendi!');
         });
     }
+
+    // Artı/Eksi yönetimi için global diziler
+    let artilar = [];
+    let eksiler = [];
+
+    // Artı ekleme fonksiyonu
+    window.ekleArti = function() {
+        const input = document.getElementById('yeniArti');
+        const arti = input.value.trim();
+        if (arti) {
+            artilar.push(arti);
+            guncelleArtilarListesi();
+            input.value = '';
+            document.getElementById('artilarInput').value = JSON.stringify(artilar);
+        }
+    };
+
+    // Eksi ekleme fonksiyonu
+    window.ekleEksi = function() {
+        const input = document.getElementById('yeniEksi');
+        const eksi = input.value.trim();
+        if (eksi) {
+            eksiler.push(eksi);
+            guncelleEksilerListesi();
+            input.value = '';
+            document.getElementById('eksilerInput').value = JSON.stringify(eksiler);
+        }
+    };
+
+    // Artı silme fonksiyonu
+    window.silArti = function(index) {
+        artilar.splice(index, 1);
+        guncelleArtilarListesi();
+        document.getElementById('artilarInput').value = JSON.stringify(artilar);
+    };
+
+    // Eksi silme fonksiyonu
+    window.silEksi = function(index) {
+        eksiler.splice(index, 1);
+        guncelleEksilerListesi();
+        document.getElementById('eksilerInput').value = JSON.stringify(eksiler);
+    };
+
+    // Artılar listesini güncelleme
+    function guncelleArtilarListesi() {
+        const liste = document.getElementById('artilarListesi');
+        liste.innerHTML = artilar.map((arti, index) => `
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <span>${arti}</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="silArti(${index})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    // Eksiler listesini güncelleme
+    function guncelleEksilerListesi() {
+        const liste = document.getElementById('eksilerListesi');
+        liste.innerHTML = eksiler.map((eksi, index) => `
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <span>${eksi}</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="silEksi(${index})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    }
 });
