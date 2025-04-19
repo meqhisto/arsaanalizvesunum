@@ -1,178 +1,123 @@
-// Form validasyon script'i
-document.addEventListener('DOMContentLoaded', function() {
-    // Bootstrap form validasyonunu etkinleştir
-    var forms = document.querySelectorAll('.needs-validation');
-
-    Array.prototype.slice.call(forms).forEach(function(form) {
-        form.addEventListener('submit', function(event) {
+document.addEventListener("DOMContentLoaded", function () {
+    const forms = document.querySelectorAll(".needs-validation");
+    forms.forEach((form) => {
+        form.addEventListener("submit", (event) => {
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
             }
-            
-            // SWOT verilerini form gönderilmeden önce güncelle
-            ['strength', 'weakness', 'opportunity', 'threat'].forEach(type => {
-                updateSwotList(type);
-            });
-
-            form.classList.add('was-validated');
-        }, false);
+            // Tüm SWOT listelerini güncelle
+            ["strength", "weakness", "opportunity", "threat"].forEach(
+                updateSwotList,
+            );
+            form.classList.add("was-validated");
+        });
     });
 
+    // SWOT ekleme fonksiyonu
+    window.ekleSwot = function (type) {
+        const input = document.getElementById(
+            `yeni${type.charAt(0).toUpperCase() + type.slice(1)}`,
+        );
+        const list = document.getElementById(`${type}List`);
+        const hiddenInput = document.getElementById(`${type}sInput`);
+
+        if (input.value.trim()) {
+            const newItem = document.createElement("div");
+            newItem.className =
+                "list-group-item d-flex justify-content-between";
+            newItem.innerHTML = `
+                ${input.value}
+                <button class="btn btn-sm btn-danger" onclick="removeSwotItem(this, '${type}')">×</button>
+            `;
+            list.appendChild(newItem);
+            input.value = "";
+            updateSwotList(type); // Listenin güncellenmesini tetikle
+        }
+    };
+
+    // SWOT öğesi silme
+    window.removeSwotItem = function (button, type) {
+        button.closest(".list-group-item").remove();
+        updateSwotList(type);
+    };
+    // SWOT listesini JSON'a dönüştür
+    function updateSwotList(type) {
+        const list = document.getElementById(`${type}List`);
+        const items = Array.from(list.children).map((item) =>
+            item.textContent.replace("×", "").trim(),
+        );
+        document.getElementById(`${type}sInput`).value = JSON.stringify(items);
+    }
+
     // Metrekare fiyatı otomatik hesaplama
-    var fiyatInput = document.getElementById('fiyat');
-    var metrekareInput = document.getElementById('metrekare');
+    const fiyatInput = document.getElementById("fiyat");
+    const metrekareInput = document.getElementById("metrekare");
 
     if (fiyatInput && metrekareInput) {
         function hesaplaMetrekareFiyat() {
-            var fiyat = parseFloat(fiyatInput.value);
-            var metrekare = parseFloat(metrekareInput.value);
+            const fiyat = parseFloat(fiyatInput.value);
+            const metrekare = parseFloat(metrekareInput.value);
 
             if (!isNaN(fiyat) && !isNaN(metrekare) && metrekare > 0) {
-                var metrekareFiyat = fiyat / metrekare;
-                console.log("Metrekare fiyatı: " + metrekareFiyat.toFixed(2) + " TL/m²");
+                const metrekareFiyat = fiyat / metrekare;
+                console.log(
+                    `Metrekare Fiyatı: ${metrekareFiyat.toFixed(2)} TL/m²`,
+                );
             }
         }
 
-        fiyatInput.addEventListener('input', hesaplaMetrekareFiyat);
-        metrekareInput.addEventListener('input', hesaplaMetrekareFiyat);
+        fiyatInput.addEventListener("input", hesaplaMetrekareFiyat);
+        metrekareInput.addEventListener("input", hesaplaMetrekareFiyat);
     }
 
     // Sayısal girişler için doğrulama
-    var numberInputs = document.querySelectorAll('input[type="number"]');
-
-    numberInputs.forEach(function(input) {
-        input.addEventListener('blur', function() {
-            if (this.value !== '') {
-                var value = parseFloat(this.value);
+    const numberInputs = document.querySelectorAll('input[type="number"]');
+    numberInputs.forEach((input) => {
+        input.addEventListener("blur", () => {
+            if (input.value !== "") {
+                let value = parseFloat(input.value);
                 if (!isNaN(value)) {
-                    // Minimum değer kontrolü
-                    if (value < parseFloat(this.min)) {
-                        this.value = this.min;
+                    if (value < parseFloat(input.min)) {
+                        input.value = input.min;
+                    }
+                    if (input.max && value > parseFloat(input.max)) {
+                        input.value = input.max;
                     }
                 }
             }
         });
     });
 
-    // Form temizleme işlevi
-    const clearFormBtn = document.getElementById('clearForm');
-    if (clearFormBtn) {
-        clearFormBtn.addEventListener('click', function() {
-            const form = document.getElementById('arsaForm');
-            form.reset();
-            form.classList.remove('was-validated');
-            // Checkbox'ları temizle
-            form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            alert('Form temizlendi!');
-        });
-    }
+    // Form temizleme
+    document.getElementById("clearForm").addEventListener("click", () => {
+        const form = document.getElementById("arsaForm");
+        form.reset();
+        form.classList.remove("was-validated");
 
+        // SWOT listelerini temizle
+        ["strength", "weakness", "opportunity", "threat"].forEach((type) => {
+            document.getElementById(`${type}List`).innerHTML = "";
+            document.getElementById(`${type}sInput`).value = "[]";
+        });
+
+        // Checkbox'ları temizle
+        form.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+            checkbox.checked = false;
+        });
+
+        alert("Form başarıyla temizlendi!");
     });
 
-// SWOT yönetimi için fonksiyonlar
-document.addEventListener('DOMContentLoaded', function() {
-    initializeSwotInputs();
-});
-
-function initializeSwotInputs() {
-    // Enter tuşu ile ekleme yapılabilmesi için event listener ekle
-    ['strength', 'weakness', 'opportunity', 'threat'].forEach(type => {
-        const input = document.getElementById(`yeni${type.charAt(0).toUpperCase() + type.slice(1)}`);
-        if (input) {
-            input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    ekleSwot(type);
-                }
-            });
-        }
+    // Parsel bilgisi getirme işlemi (örnek)
+    document.getElementById("parselsorgu").addEventListener("click", () => {
+        // Buraya API entegrasyonu veya mock veri çekme işlemi eklenebilir
+        alert("Parsel sorgulama özelliği henüz aktif değil!");
     });
-}
 
-window.ekleSwot = function(type) {
-    const elements = {
-            'strength': {
-                inputId: 'yeniStrength',
-                listId: 'strengthList',
-                hiddenId: 'strengthsInput',
-                btnClass: 'btn-success',
-                textClass: 'text-success'
-            },
-            'weakness': {
-                inputId: 'yeniWeakness',
-                listId: 'weaknessList',
-                hiddenId: 'weaknessesInput',
-                btnClass: 'btn-danger',
-                textClass: 'text-danger'
-            },
-            'opportunity': {
-                inputId: 'yeniOpportunity',
-                listId: 'opportunityList',
-                hiddenId: 'opportunitiesInput',
-                btnClass: 'btn-info',
-                textClass: 'text-info'
-            },
-            'threat': {
-                inputId: 'yeniThreat',
-                listId: 'threatList',
-                hiddenId: 'threatsInput',
-                btnClass: 'btn-warning',
-                textClass: 'text-warning'
-            }
-        };
-
-        const element = elements[type];
-        const yeniItem = document.getElementById(element.inputId).value.trim();
-
-        if (yeniItem) {
-            const liste = document.getElementById(element.listId);
-            const listItem = document.createElement('div');
-            listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-            listItem.innerHTML = `
-                <span class="${element.textClass}">${yeniItem}</span>
-                <button class="btn btn-sm ${element.btnClass}" onclick="removeSwotItem(this, '${type}')">
-                    <i class="bi bi-trash"></i>
-                </button>
-            `;
-            liste.appendChild(listItem);
-            document.getElementById(element.inputId).value = '';
-            updateSwotList(type);
-        }
-    }
-
-    function removeSwotItem(button, type) {
-        button.parentElement.remove();
-        updateSwotList(type);
-    }
-
-    function updateSwotList(type) {
-        const elements = {
-            'strength': {
-                listId: 'strengthList',
-                hiddenId: 'strengthsInput'
-            },
-            'weakness': {
-                listId: 'weaknessList',
-                hiddenId: 'weaknessesInput'
-            },
-            'opportunity': {
-                listId: 'opportunityList',
-                hiddenId: 'opportunitiesInput'
-            },
-            'threat': {
-                listId: 'threatList',
-                hiddenId: 'threatsInput'
-            }
-        };
-
-        const element = elements[type];
-        const items = [];
-        document.querySelectorAll(`#${element.listId} .list-group-item span`).forEach(item => {
-            items.push(item.textContent.trim());
-        });
-        document.getElementById(element.hiddenId).value = JSON.stringify(items);
-    }
+    // Bölge fiyatı getirme işlemi (örnek)
+    document.getElementById("bolgeFiyatGetir").addEventListener("click", () => {
+        // Buraya API entegrasyonu veya mock veri çekme işlemi eklenebilir
+        alert("Bölge fiyatı getirme özelliği henüz aktif değil!");
+    });
 });
