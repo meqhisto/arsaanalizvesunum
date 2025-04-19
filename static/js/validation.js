@@ -32,7 +32,12 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
             list.appendChild(newItem);
             input.value = "";
-            updateSwotList(type); // Listenin güncellenmesini tetikle
+            updateSwotList(type);
+
+            // Başlangıçta boş liste oluştur
+            if (!hiddenInput.value) {
+                hiddenInput.value = '[]';
+            }
         }
     };
 
@@ -44,10 +49,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // SWOT listesini JSON'a dönüştür
     function updateSwotList(type) {
         const list = document.getElementById(`${type}List`);
+        const hiddenInput = document.getElementById(`${type}sInput`);
         const items = Array.from(list.children).map((item) =>
             item.textContent.replace("×", "").trim(),
         );
-        document.getElementById(`${type}sInput`).value = JSON.stringify(items);
+        hiddenInput.value = JSON.stringify(items);
+        console.log(`${type} updated:`, hiddenInput.value); // Debug için log
     }
 
     // Metrekare fiyatı otomatik hesaplama
