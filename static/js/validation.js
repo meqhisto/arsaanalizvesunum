@@ -34,8 +34,8 @@ document.addEventListener("DOMContentLoaded", function () {
             input.value = "";
 
             // Liste güncellemesini yap
-            const items = Array.from(list.children).map(item =>
-                item.textContent.replace("×", "").trim()
+            const items = Array.from(list.children).map((item) =>
+                item.textContent.replace("×", "").trim(),
             );
             hiddenInput.value = JSON.stringify(items);
             console.log(`${type} updated:`, hiddenInput.value);
@@ -50,12 +50,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // SWOT listesini JSON'a dönüştür
     function updateSwotList(type) {
         const list = document.getElementById(`${type}List`);
-        const hiddenInput = document.getElementById(`${type}sInput`);
         const items = Array.from(list.children).map((item) =>
             item.textContent.replace("×", "").trim(),
         );
-        hiddenInput.value = JSON.stringify(items);
-        console.log(`${type} updated:`, hiddenInput.value); // Debug için log
+
+        // Doğru çoğul ID'leri için mapping
+        const typeMapping = {
+            strength: "strengths",
+            weakness: "weaknesses",
+            opportunity: "opportunities",
+            threat: "threats",
+        };
+
+        const hiddenId = typeMapping[type] + "Input"; // Örn: weaknessesInput
+        document.getElementById(hiddenId).value = JSON.stringify(items);
     }
 
     // Metrekare fiyatı otomatik hesaplama
