@@ -5,8 +5,10 @@ import uuid
 
 app = Flask(__name__)
 
+
 # Arsa sınıfı
 class Arsa:
+
     def __init__(self, form_data):
         self.konum = {
             'il': form_data.get('il'),
@@ -23,19 +25,20 @@ class Arsa:
         self.fiyat = float(form_data.get('fiyat', 0))
         self.taks = float(form_data.get('taks', 0.3))
         self.kaks = float(form_data.get('kaks', 1.5))
-        
+
         # Yeni eklenen alanlar
         self.koordinatlar = form_data.get('koordinatlar')
         self.pafta = form_data.get('pafta')
         self.imar_tipi = self.imar_durumu  # İmar tipini imar durumundan al
-        
+
         # Hesaplamalar
         self.metrekare_fiyat = self.fiyat / self.metrekare if self.metrekare else 0
         self.bolge_fiyat = float(form_data.get('bolge_fiyat', 0))
-        self.bolge_karsilastirma = ((self.metrekare_fiyat - self.bolge_fiyat) / self.bolge_fiyat) * 100
+        self.bolge_karsilastirma = (
+            (self.metrekare_fiyat - self.bolge_fiyat) / self.bolge_fiyat) * 100
         self.potansiyel_getiri = self._hesapla_potansiyel_getiri()
         self.yatirim_suresi = self._hesapla_yatirim_suresi()
-        
+
         # Altyapı bilgileri
         self.altyapi = {
             'yol': 'yol' in form_data.getlist('altyapi[]'),
@@ -44,16 +47,14 @@ class Arsa:
             'dogalgaz': 'dogalgaz' in form_data.getlist('altyapi[]'),
             'kanalizasyon': 'kanalizasyon' in form_data.getlist('altyapi[]')
         }
-        
+
         # Ulaşım bilgileri
-        self.ulasim = {
-            'toplu_tasima_mesafe': '500m'
-        }
-        
+        self.ulasim = {'toplu_tasima_mesafe': '500m'}
+
         # Risk analizi
         self.risk_puani = self._hesapla_risk_puani()
         self.risk_aciklamasi = self._risk_aciklamasi()
-        
+
         # SWOT Analizi
         def parse_swot_data(data):
             try:
@@ -70,13 +71,13 @@ class Arsa:
 
         # Debug için SWOT verilerini yazdır
         print("SWOT Verileri:", self.swot)
-        
+
         # Projeksiyon hesaplamaları
         self.projeksiyon = self._hesapla_projeksiyon()
-        
+
         # Yatırım önerileri
         self.yatirim_onerileri = self._yatirim_onerileri()
-        
+
         # İnşaat hesaplamaları
         self.insaat_hesaplama = self._insaat_hesapla()
 
@@ -113,7 +114,7 @@ class Arsa:
         taban_alani = self.metrekare * self.taks
         toplam_insaat_alani = self.metrekare * self.kaks
         teorik_kat_sayisi = self.kaks / self.taks if self.taks else 0
-        
+
         return {
             'taban_alani': taban_alani,
             'toplam_insaat_alani': toplam_insaat_alani,
@@ -121,9 +122,11 @@ class Arsa:
             'tam_kat_sayisi': int(teorik_kat_sayisi)
         }
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -135,10 +138,12 @@ def submit():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 @app.route('/generate/<format>/<file_id>')
 def generate(format, file_id):
     # Sunum oluşturma fonksiyonları buraya gelecek
     return jsonify({'status': 'not implemented yet'})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
