@@ -32,12 +32,13 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
             list.appendChild(newItem);
             input.value = "";
-            updateSwotList(type);
 
-            // Başlangıçta boş liste oluştur
-            if (!hiddenInput.value) {
-                hiddenInput.value = '[]';
-            }
+            // Liste güncellemesini yap
+            const items = Array.from(list.children).map(item =>
+                item.textContent.replace("×", "").trim()
+            );
+            hiddenInput.value = JSON.stringify(items);
+            console.log(`${type} updated:`, hiddenInput.value);
         }
     };
 
