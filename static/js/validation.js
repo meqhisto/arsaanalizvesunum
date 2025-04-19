@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 event.preventDefault();
                 event.stopPropagation();
             }
+            
+            // SWOT verilerini form gönderilmeden önce güncelle
+            ['strength', 'weakness', 'opportunity', 'threat'].forEach(type => {
+                updateSwotList(type);
+            });
 
             form.classList.add('was-validated');
         }, false);
@@ -68,8 +73,27 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 // SWOT yönetimi için fonksiyonlar
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSwotInputs();
+});
+
+function initializeSwotInputs() {
+    // Enter tuşu ile ekleme yapılabilmesi için event listener ekle
+    ['strength', 'weakness', 'opportunity', 'threat'].forEach(type => {
+        const input = document.getElementById(`yeni${type.charAt(0).toUpperCase() + type.slice(1)}`);
+        if (input) {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    ekleSwot(type);
+                }
+            });
+        }
+    });
+}
+
 window.ekleSwot = function(type) {
-        const elements = {
+    const elements = {
             'strength': {
                 inputId: 'yeniStrength',
                 listId: 'strengthList',
@@ -109,7 +133,7 @@ window.ekleSwot = function(type) {
             listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
             listItem.innerHTML = `
                 <span class="${element.textClass}">${yeniItem}</span>
-                <button class="btn btn-sm ${element.btnClass}" onclick="this.parentElement.remove(); updateSwotList('${type}');">
+                <button class="btn btn-sm ${element.btnClass}" onclick="removeSwotItem(this, '${type}')">
                     <i class="bi bi-trash"></i>
                 </button>
             `;
@@ -117,6 +141,11 @@ window.ekleSwot = function(type) {
             document.getElementById(element.inputId).value = '';
             updateSwotList(type);
         }
+    }
+
+    function removeSwotItem(button, type) {
+        button.parentElement.remove();
+        updateSwotList(type);
     }
 
     function updateSwotList(type) {
