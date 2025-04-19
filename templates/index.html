@@ -144,100 +144,88 @@
                                                 Lütfen imar durumunu seçiniz.
                                             </div>
                                         </div>
+
+                                        <div class="row mt-3" id="taksKaksRow">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="taks" class="form-label">TAKS (Taban Alanı Katsayısı)</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="taks" name="taks" min="0" max="1" step="0.01" value="0.3">
+                                                    <div class="invalid-feedback">
+                                                        TAKS değeri 0-1 arasında olmalıdır.
+                                                    </div>
+                                                </div>
+                                                <small class="form-text text-muted">Örnek: 0.3 (Arsa alanının %30'u kadar taban alanı)</small>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="kaks" class="form-label">KAKS (Kat Alanı Katsayısı)</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="kaks" name="kaks" min="0" step="0.01" value="1.5">
+                                                    <div class="invalid-feedback">
+                                                        Lütfen geçerli bir KAKS değeri giriniz.
+                                                    </div>
+                                                </div>
+                                                <small class="form-text text-muted">Örnek: 1.5 (Arsa alanının 1.5 katı kadar inşaat alanı)</small>
+                                            </div>
                                     </div>
                                     
                                     <!-- TAKS/KAKS Bilgileri -->
 
-                            <!-- SWOT Analizi -->
-                            <div class="card mb-4">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">
-                                        <i class="bi bi-list-check"></i> SWOT Analizi
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <!-- Güçlü Yönler -->
-                                    <div class="mb-4">
-                                        <h6>Güçlü Yönler (Strengths)</h6>
-                                        <div class="input-group mb-2">
-                                            <input type="text" class="form-control" id="yeniStrength" placeholder="Yeni güçlü yön ekleyin...">
-                                            <button class="btn btn-success" type="button" onclick="ekleSwot('strength')">
-                                                <i class="bi bi-plus-lg"></i> Ekle
-                                            </button>
-                                        </div>
-                                        <div id="strengthList" class="list-group">
-                                            <!-- Güçlü yönler buraya eklenecek -->
-                                        </div>
-                                        <input type="hidden" name="strengths" id="strengthsInput">
-                                    </div>
-                                    
-                                    <!-- Zayıf Yönler -->
-                                    <div class="mb-4">
-                                        <h6>Zayıf Yönler (Weaknesses)</h6>
-                                        <div class="input-group mb-2">
-                                            <input type="text" class="form-control" id="yeniWeakness" placeholder="Yeni zayıf yön ekleyin...">
-                                            <button class="btn btn-danger" type="button" onclick="ekleSwot('weakness')">
-                                                <i class="bi bi-plus-lg"></i> Ekle
-                                            </button>
-                                        </div>
-                                        <div id="weaknessList" class="list-group">
-                                            <!-- Zayıf yönler buraya eklenecek -->
-                                        </div>
-                                        <input type="hidden" name="weaknesses" id="weaknessesInput">
-                                    </div>
-
-                                    <!-- Fırsatlar -->
-                                    <div class="mb-4">
-                                        <h6>Fırsatlar (Opportunities)</h6>
-                                        <div class="input-group mb-2">
-                                            <input type="text" class="form-control" id="yeniOpportunity" placeholder="Yeni fırsat ekleyin...">
-                                            <button class="btn btn-info" type="button" onclick="ekleSwot('opportunity')">
-                                                <i class="bi bi-plus-lg"></i> Ekle
-                                            </button>
-                                        </div>
-                                        <div id="opportunityList" class="list-group">
-                                            <!-- Fırsatlar buraya eklenecek -->
-                                        </div>
-                                        <input type="hidden" name="opportunities" id="opportunitiesInput">
-                                    </div>
-
-                                    <!-- Tehditler -->
-                                    <div>
-                                        <h6>Tehditler (Threats)</h6>
-                                        <div class="input-group mb-2">
-                                            <input type="text" class="form-control" id="yeniThreat" placeholder="Yeni tehdit ekleyin...">
-                                            <button class="btn btn-warning" type="button" onclick="ekleSwot('threat')">
-                                                <i class="bi bi-plus-lg"></i> Ekle
-                                            </button>
-                                        </div>
-                                        <div id="threatList" class="list-group">
-                                            <!-- Tehditler buraya eklenecek -->
-                                        </div>
-                                        <input type="hidden" name="threats" id="threatsInput">
-                                    </div>
-                                </div>
-                            </div>
-
-                                    <div class="row mt-3" id="taksKaksRow">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="taks" class="form-label">TAKS (Taban Alanı Katsayısı)</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" id="taks" name="taks" min="0" max="1" step="0.01" value="0.3">
-                                                <div class="invalid-feedback">
-                                                    TAKS değeri 0-1 arasında olmalıdır.
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">
+                                                    <i class="bi bi-list-check"></i> SWOT Analizi
+                                                </h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <!-- Güçlü Yönler -->
+                                                <div class="mb-4">
+                                                    <h6>Güçlü Yönler (Strengths)</h6>
+                                                    <div class="input-group mb-2">
+                                                        <input type="text" class="form-control" id="yeniStrength" placeholder="Yeni güçlü yön ekleyin...">
+                                                        <button class="btn btn-success" type="button" onclick="ekleSwot('strength')">
+                                                            <i class="bi bi-plus-lg"></i> Ekle
+                                                        </button>
+                                                    </div>
+                                                    <div id="strengthList" class="list-group"></div>
+                                                    <input type="hidden" name="strengths" id="strengthsInput">
+                                                </div>
+                                                <!-- Zayıf Yönler -->
+                                                <div class="mb-4">
+                                                    <h6>Zayıf Yönler (Weaknesses)</h6>
+                                                    <div class="input-group mb-2">
+                                                        <input type="text" class="form-control" id="yeniWeakness" placeholder="Yeni zayıf yön ekleyin...">
+                                                        <button class="btn btn-danger" type="button" onclick="ekleSwot('weakness')">
+                                                            <i class="bi bi-plus-lg"></i> Ekle
+                                                        </button>
+                                                    </div>
+                                                    <div id="weaknessList" class="list-group"></div>
+                                                    <input type="hidden" name="weaknesses" id="weaknessesInput">
+                                                </div>
+                                                <!-- Fırsatlar -->
+                                                <div class="mb-4">
+                                                    <h6>Fırsatlar (Opportunities)</h6>
+                                                    <div class="input-group mb-2">
+                                                        <input type="text" class="form-control" id="yeniOpportunity" placeholder="Yeni fırsat ekleyin...">
+                                                        <button class="btn btn-info" type="button" onclick="ekleSwot('opportunity')">
+                                                            <i class="bi bi-plus-lg"></i> Ekle
+                                                        </button>
+                                                    </div>
+                                                    <div id="opportunityList" class="list-group"></div>
+                                                    <input type="hidden" name="opportunities" id="opportunitiesInput">
+                                                </div>
+                                                <!-- Tehditler -->
+                                                <div>
+                                                    <h6>Tehditler (Threats)</h6>
+                                                    <div class="input-group mb-2">
+                                                        <input type="text" class="form-control" id="yeniThreat" placeholder="Yeni tehdit ekleyin...">
+                                                        <button class="btn btn-warning" type="button" onclick="ekleSwot('threat')">
+                                                            <i class="bi bi-plus-lg"></i> Ekle
+                                                        </button>
+                                                    </div>
+                                                    <div id="threatList" class="list-group"></div>
+                                                    <input type="hidden" name="threats" id="threatsInput">
                                                 </div>
                                             </div>
-                                            <small class="form-text text-muted">Örnek: 0.3 (Arsa alanının %30'u kadar taban alanı)</small>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="kaks" class="form-label">KAKS (Kat Alanı Katsayısı)</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" id="kaks" name="kaks" min="0" step="0.01" value="1.5">
-                                                <div class="invalid-feedback">
-                                                    Lütfen geçerli bir KAKS değeri giriniz.
-                                                </div>
-                                            </div>
-                                            <small class="form-text text-muted">Örnek: 1.5 (Arsa alanının 1.5 katı kadar inşaat alanı)</small>
                                         </div>
                                     </div>
 

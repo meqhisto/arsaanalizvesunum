@@ -163,77 +163,73 @@
                                             </div>
                                         </div>
 
-                                        <!-- Değer Artış Potansiyeli -->
-                                        <div class="row mt-4">
-                                            <div class="col-12">
-                                                <h6 class="mb-3">SWOT Analizi</h6>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <div class="card border-success">
-                                                            <div class="card-header bg-success text-white">
-                                                                <h6 class="mb-0">Güçlü Yönler (Strengths)</h6>
-                                                            </div>
-                                                            <div class="card-body">
-                                                                <ul class="list-group list-group-flush">
-                                                                    {% for strength in arsa.swot.strengths %}
-                                                                    <li class="list-group-item">{{ strength }}</li>
-                                                                    {% endfor %}
-                                                                </ul>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <div class="card border-danger">
-                                                            <div class="card-header bg-danger text-white">
-                                                                <h6 class="mb-0">Zayıf Yönler (Weaknesses)</h6>
-                                                            </div>
-                                                            <div class="card-body">
-                                                                <ul class="list-group list-group-flush">
-                                                                    {% for weakness in arsa.swot.weaknesses %}
-                                                                    <li class="list-group-item">{{ weakness }}</li>
-                                                                    {% endfor %}
-                                                                </ul>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <div class="card border-info">
-                                                            <div class="card-header bg-info text-white">
-                                                                <h6 class="mb-0">Fırsatlar (Opportunities)</h6>
-                                                            </div>
-                                                            <div class="card-body">
-                                                                <ul class="list-group list-group-flush">
-                                                                    {% for opportunity in arsa.swot.opportunities %}
-                                                                    <li class="list-group-item">{{ opportunity }}</li>
-                                                                    {% endfor %}
-                                                                </ul>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <div class="card border-warning">
-                                                            <div class="card-header bg-warning text-dark">
-                                                                <h6 class="mb-0">Tehditler (Threats)</h6>
-                                                            </div>
-                                                            <div class="card-body">
-                                                                <ul class="list-group list-group-flush">
-                                                                    {% for threat in arsa.swot.threats %}
-                                                                    <li class="list-group-item">{{ threat }}</li>
-                                                                    {% endfor %}
-                                                                </ul>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6 class="mb-3">SWOT Analizi</h6>
+                            <div class="row">
+                                <!-- Güçlü Yönler -->
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-success">
+                                        <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0">Güçlü Yönler</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                {% for strength in arsa.swot.strengths %}
+                                                <li class="list-group-item">{{ strength }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Zayıf Yönler -->
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-danger">
+                                        <div class="card-header bg-danger text-white">
+                                            <h6 class="mb-0">Zayıf Yönler</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                {% for weakness in arsa.swot.weaknesses %}
+                                                <li class="list-group-item">{{ weakness }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Fırsatlar -->
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-info">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0">Fırsatlar</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                {% for opportunity in arsa.swot.opportunities %}
+                                                <li class="list-group-item">{{ opportunity }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Tehditler -->
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-warning">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h6 class="mb-0">Tehditler</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                {% for threat in arsa.swot.threats %}
+                                                <li class="list-group-item">{{ threat }}</li>
+                                                {% endfor %}
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
+                    </div>
                         <!-- Finansal Projeksiyon -->
                         <div class="row mb-4">
                             <div class="col-12">
