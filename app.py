@@ -37,8 +37,11 @@ class Arsa:
         
         # Altyapı bilgileri
         self.altyapi = {
-            'elektrik': True,  # Örnek değerler
-            'su': True
+            'yol': 'yol' in form_data.getlist('altyapi[]'),
+            'elektrik': 'elektrik' in form_data.getlist('altyapi[]'),
+            'su': 'su' in form_data.getlist('altyapi[]'),
+            'dogalgaz': 'dogalgaz' in form_data.getlist('altyapi[]'),
+            'kanalizasyon': 'kanalizasyon' in form_data.getlist('altyapi[]')
         }
         
         # Ulaşım bilgileri
