@@ -75,28 +75,40 @@ class ArsaAnaliz(db.Model):
 class BolgeDagilimi(db.Model):
     __tablename__ = 'bolge_dagilimi'
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Kullanıcı ID'si eklendi
     il = db.Column(db.String(50), nullable=False)
     analiz_sayisi = db.Column(db.Integer, default=0)
     toplam_deger = db.Column(db.Numeric(15,2), default=0)
     son_guncelleme = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # İlişki tanımlama
+    user = db.relationship('User', backref=db.backref('bolge_dagilimlari', lazy=True))
+
 class YatirimPerformansi(db.Model):
     __tablename__ = 'yatirim_performansi'
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Kullanıcı ID'si eklendi
     ay = db.Column(db.String(20), nullable=False)
     yil = db.Column(db.Integer, nullable=False)
     toplam_deger = db.Column(db.Numeric(15,2), default=0)
     analiz_sayisi = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # İlişki tanımlama
+    user = db.relationship('User', backref=db.backref('yatirim_performanslari', lazy=True))
+
 class DashboardStats(db.Model):
     __tablename__ = 'dashboard_stats'
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Kullanıcı ID'si eklendi
     toplam_analiz = db.Column(db.Integer, default=0)
     aktif_projeler = db.Column(db.Integer, default=0)
     toplam_deger = db.Column(db.Numeric(15, 2), default=0.00)
     ortalama_roi = db.Column(db.Numeric(5, 2), default=0.00)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # İlişki tanımlama
+    user = db.relationship('User', backref=db.backref('dashboard_stats', lazy=True))
 
     def __repr__(self):
         return f"<DashboardStats(toplam_analiz={self.toplam_analiz}, aktif_projeler={self.aktif_projeler}, toplam_deger={self.toplam_deger}, ortalama_roi={self.ortalama_roi})>"
@@ -104,30 +116,47 @@ class DashboardStats(db.Model):
 # Arsa sınıfı
 class Arsa:
     def __init__(self, form_data):
-        # Convert form_data to dict if it's not already
-        self.form_data = form_data if isinstance(form_data, dict) else form_data.to_dict(flat=True)
-        
-        # Sayısal değerleri güvenli bir şekilde dönüştür
+        self.form_data = form_data
+
+        # Convert numeric values with safety checks
         try:
-            self.metrekare = float(self.form_data.get('metrekare', 0))
-            self.fiyat = float(self.form_data.get('fiyat', 0))
-            self.bolge_fiyat = float(self.form_data.get('bolge_fiyat', 0))
-            self.taks = float(self.form_data.get('taks', 0.3))
-            self.kaks = float(self.form_data.get('kaks', 1.5))
-        except (ValueError, TypeError):
+            # Get raw values
+            raw_metrekare = form_data.get('metrekare', '0')
+            raw_fiyat = form_data.get('fiyat', '0')
+            raw_bolge_fiyat = form_data.get('bolge_fiyat', '0')
+            raw_taks = form_data.get('taks', '0.3')
+            raw_kaks = form_data.get('kaks', '1.5')
+
+            # Clean and convert
+            self.metrekare = float(str(raw_metrekare).replace(',', '').strip())
+            self.fiyat = float(str(raw_fiyat).replace(',', '').strip())
+            self.bolge_fiyat = float(str(raw_bolge_fiyat).replace(',', '').strip())
+            self.taks = float(str(raw_taks).replace(',', '').strip())
+            self.kaks = float(str(raw_kaks).replace(',', '').strip())
+
+        except (ValueError, TypeError) as e:
+            print(f"Numeric conversion error: {e}")
+            # Set default values
             self.metrekare = 0.0
             self.fiyat = 0.0
             self.bolge_fiyat = 0.0
             self.taks = 0.3
             self.kaks = 1.5
 
-        # Metrekare fiyatı hesapla
-        self.metrekare_fiyat = self.fiyat / self.metrekare if self.metrekare > 0 else 0
-        
-        # Bölge karşılaştırması hesapla
-        if self.bolge_fiyat > 0:
-            self.bolge_karsilastirma = ((self.metrekare_fiyat - self.bolge_fiyat) / self.bolge_fiyat) * 100
-        else:
+        # Calculate derived values with safety checks
+        try:
+            self.metrekare_fiyat = self.fiyat / self.metrekare if self.metrekare > 0 else 0
+        except ZeroDivisionError:
+            print("Zero division error in metrekare_fiyat calculation")
+            self.metrekare_fiyat = 0
+
+        try:
+            if self.bolge_fiyat > 0:
+                self.bolge_karsilastirma = ((self.metrekare_fiyat - self.bolge_fiyat) / self.bolge_fiyat) * 100
+            else:
+                self.bolge_karsilastirma = 0
+        except ZeroDivisionError:
+            print("Zero division error in bolge_karsilastirma calculation")
             self.bolge_karsilastirma = 0
 
         self.konum = {
@@ -143,8 +172,6 @@ class Arsa:
         
         imar_durumu = self.form_data.get('imar_durumu', [''])[0] if isinstance(self.form_data.get('imar_durumu'), list) else self.form_data.get('imar_durumu', '')
         self.imar_durumu = imar_durumu.capitalize() if imar_durumu else ''
-        self.taks = float(self.form_data.get('taks', [0.3])[0] if isinstance(self.form_data.get('taks'), list) else self.form_data.get('taks', 0.3))
-        self.kaks = float(self.form_data.get('kaks', [1.5])[0] if isinstance(self.form_data.get('kaks'), list) else self.form_data.get('kaks', 1.5))
 
         # Yeni eklenen alanlar
         self.koordinatlar = self.form_data.get('koordinatlar')
@@ -152,14 +179,6 @@ class Arsa:
         self.imar_tipi = self.imar_durumu  # İmar tipini imar durumundan al
 
         # Hesaplamalar
-        self.metrekare_fiyat = self.fiyat / self.metrekare if self.metrekare else 0
-        self.bolge_fiyat = float(self.form_data.get('bolge_fiyat', 0))
-        if self.bolge_fiyat != 0:
-            self.bolge_karsilastirma = (
-                (self.metrekare_fiyat - self.bolge_fiyat) / self.bolge_fiyat) * 100
-        else:
-            self.bolge_karsilastirma = 0
-
         self.potansiyel_getiri = self._hesapla_potansiyel_getiri()
         self.yatirim_suresi = self._hesapla_yatirim_suresi()
 
@@ -314,9 +333,21 @@ def home():
 @app.route('/index')
 @login_required
 def index():
-    stats = DashboardStats.query.first()
-    bolge_dagilimlari = BolgeDagilimi.query.all()
-    yatirim_performanslari = YatirimPerformansi.query.order_by(YatirimPerformansi.yil, YatirimPerformansi.ay).all()
+    user_id = session['user_id']
+    
+    # Kullanıcının kendi istatistiklerini getir
+    stats = DashboardStats.query.filter_by(user_id=user_id).first()
+    if not stats:
+        stats = DashboardStats(user_id=user_id)
+        db.session.add(stats)
+        db.session.commit()
+
+    # Kullanıcının kendi bölge dağılımlarını getir
+    bolge_dagilimlari = BolgeDagilimi.query.filter_by(user_id=user_id).all()
+    
+    # Kullanıcının kendi yatırım performansını getir
+    yatirim_performanslari = YatirimPerformansi.query.filter_by(user_id=user_id)\
+        .order_by(YatirimPerformansi.yil, YatirimPerformansi.ay).all()
 
     # Bölge dağılımı için labels ve data
     bolge_labels = [b.il for b in bolge_dagilimlari]
@@ -365,59 +396,51 @@ def register():
     return render_template('register.html')
 
 @app.route('/submit', methods=['POST'])
+@login_required
 def submit():
     try:
-        # Form verilerini düzenle
+        user_id = session['user_id']
         form_data = request.form.to_dict(flat=True)
-        print("Raw form data:", form_data)  # Debug için
+        print("Raw form data:", form_data)
 
-        # Sayısal değerleri dönüştür
+        # Convert numeric values before object creation
         try:
-            form_data['metrekare'] = float(form_data.get('metrekare', 0))
-            form_data['fiyat'] = float(form_data.get('fiyat', 0))
-            form_data['bolge_fiyat'] = float(form_data.get('bolge_fiyat', 0))
-            form_data['taks'] = float(form_data.get('taks', 0.3))
-            form_data['kaks'] = float(form_data.get('kaks', 1.5))
-        except (ValueError, TypeError) as e:
-            print(f"Sayısal dönüşüm hatası: {str(e)}")
+            # Clean and convert numeric values
+            metrekare = float(str(form_data.get('metrekare', '0')).replace(',', '').strip())
+            fiyat = float(str(form_data.get('fiyat', '0')).replace(',', '').strip())
+            bolge_fiyat = float(str(form_data.get('bolge_fiyat', '0')).replace(',', '').strip())
+            taks = float(str(form_data.get('taks', '0.3')).replace(',', '').strip())
+            kaks = float(str(form_data.get('kaks', '1.5')).replace(',', '').strip())
+
+            # Update form data with converted values
             form_data.update({
-                'metrekare': 0.0,
-                'fiyat': 0.0,
-                'bolge_fiyat': 0.0,
-                'taks': 0.3,
-                'kaks': 1.5
+                'metrekare': metrekare,
+                'fiyat': fiyat,
+                'bolge_fiyat': bolge_fiyat,
+                'taks': taks,
+                'kaks': kaks
             })
 
-        # SWOT verilerini güvenli bir şekilde ayrıştır
+        except (ValueError, TypeError) as e:
+            print(f"Numeric conversion error: {e}")
+            return jsonify({'error': 'Lütfen sayısal değerleri doğru formatta giriniz.'}), 400
+
+        # Create Arsa object with converted values
+        arsa = Arsa(form_data)
+
+        # Process SWOT data
         swot_data = {}
         for key in ['strengths', 'weaknesses', 'opportunities', 'threats']:
             try:
                 value = form_data.get(key, '[]')
-                if value:
-                    swot_data[key] = json.loads(value)
-                else:
-                    swot_data[key] = []
+                swot_data[key] = json.loads(value) if value else []
             except json.JSONDecodeError:
                 print(f"JSON decode error for {key}: {value}")
                 swot_data[key] = []
 
-        # Altyapı verilerini düzenle
-        altyapi_list = request.form.getlist('altyapi[]')
-        altyapi_data = {
-            'yol': 'yol' in altyapi_list,
-            'elektrik': 'elektrik' in altyapi_list,
-            'su': 'su' in altyapi_list,
-            'dogalgaz': 'dogalgaz' in altyapi_list,
-            'kanalizasyon': 'kanalizasyon' in altyapi_list
-        }
-
-        print("Processed form data:", form_data)  # Debug için
-        print("SWOT data:", swot_data)  # Debug için
-        print("Altyapi data:", altyapi_data)  # Debug için
-
-        # Veritabanına kaydetmek için yeni ArsaAnaliz nesnesi oluştur
+        # Create new ArsaAnaliz object
         yeni_analiz = ArsaAnaliz(
-            user_id=session['user_id'],
+            user_id=user_id,
             il=form_data.get('il', ''),
             ilce=form_data.get('ilce', ''),
             mahalle=form_data.get('mahalle', ''),
@@ -425,13 +448,13 @@ def submit():
             parsel=form_data.get('parsel', ''),
             koordinatlar=form_data.get('koordinatlar', ''),
             pafta=form_data.get('pafta', ''),
-            metrekare=Decimal(str(form_data.get('metrekare', 0))),
+            metrekare=Decimal(str(metrekare)),
             imar_durumu=form_data.get('imar_durumu', ''),
-            taks=Decimal(str(form_data.get('taks', 0))),
-            kaks=Decimal(str(form_data.get('kaks', 0))),
-            fiyat=Decimal(str(form_data.get('fiyat', 0))),
-            bolge_fiyat=Decimal(str(form_data.get('bolge_fiyat', 0))),
-            altyapi=json.dumps(altyapi_data),
+            taks=Decimal(str(taks)),
+            kaks=Decimal(str(kaks)),
+            fiyat=Decimal(str(fiyat)),
+            bolge_fiyat=Decimal(str(bolge_fiyat)),
+            altyapi=json.dumps(request.form.getlist('altyapi[]')),
             swot_analizi=json.dumps(swot_data)
         )
 
@@ -439,13 +462,19 @@ def submit():
         db.session.add(yeni_analiz)
         
         # Bölge istatistiklerini güncelle
-        bolge = BolgeDagilimi.query.filter_by(il=form_data.get('il')).first()
+        bolge = BolgeDagilimi.query.filter_by(
+            user_id=user_id,
+            il=form_data.get('il')
+        ).first()
+        
         fiyat_decimal = Decimal(str(form_data.get('fiyat', 0)))
+        
         if bolge:
             bolge.analiz_sayisi += 1
             bolge.toplam_deger += fiyat_decimal
         else:
             yeni_bolge = BolgeDagilimi(
+                user_id=user_id,
                 il=form_data.get('il'),
                 analiz_sayisi=1,
                 toplam_deger=fiyat_decimal
@@ -453,9 +482,9 @@ def submit():
             db.session.add(yeni_bolge)
 
         # Dashboard istatistiklerini güncelle
-        stats = DashboardStats.query.first()
+        stats = DashboardStats.query.filter_by(user_id=user_id).first()
         if not stats:
-            stats = DashboardStats()
+            stats = DashboardStats(user_id=user_id)
             db.session.add(stats)
         
         stats.toplam_analiz += 1
@@ -547,5 +576,3 @@ def generate(format, file_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
-
