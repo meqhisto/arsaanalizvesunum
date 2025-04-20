@@ -8,7 +8,6 @@ app = Flask(__name__)
 
 # Arsa sınıfı
 class Arsa:
-
     def __init__(self, form_data):
         self.konum = {
             'il': form_data.get('il'),
