@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         .navbar {
             padding: 1rem;
@@ -506,6 +507,135 @@
                 }
             }
         );
+
+        // SWOT listelerini ve input'ları saklayacak objeler
+        const swotLists = {
+            strength: [],
+            weakness: [],
+            opportunity: [],
+            threat: []
+        };
+
+        // SWOT öğesi ekleme fonksiyonu
+        function ekleSwot(tip) {
+            const input = document.getElementById(`yeni${tip.charAt(0).toUpperCase() + tip.slice(1)}`);
+            const list = document.getElementById(`${tip}List`);
+            
+            if (input.value.trim() === '') return;
+
+            // Listeye öğe ekle
+            if (!swotLists[tip]) {
+                swotLists[tip] = [];
+            }
+            swotLists[tip].push(input.value.trim());
+            
+            // Liste öğesini oluştur
+            const listItem = document.createElement('div');
+            listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+            listItem.innerHTML = `
+                ${input.value}
+                <button type="button" class="btn btn-sm btn-danger" onclick="silSwot('${tip}', ${swotLists[tip].length - 1})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+            
+            // Listeye ekle
+            list.appendChild(listItem);
+            
+            // Hidden input'ları güncelle
+            updateHiddenInputs();
+            
+            // Input'u temizle
+            input.value = '';
+        }
+
+        // SWOT öğesi silme fonksiyonu
+        function silSwot(tip, index) {
+            const list = document.getElementById(`${tip}List`);
+            
+            // Listeden öğeyi kaldır
+            swotLists[tip].splice(index, 1);
+            
+            // Liste öğelerini yeniden oluştur
+            list.innerHTML = '';
+            swotLists[tip].forEach((item, i) => {
+                const listItem = document.createElement('div');
+                listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                listItem.innerHTML = `
+                    ${item}
+                    <button type="button" class="btn btn-sm btn-danger" onclick="silSwot('${tip}', ${i})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                `;
+                list.appendChild(listItem);
+            });
+            
+            // Hidden input'ları güncelle
+            updateHiddenInputs();
+        }
+
+        // Hidden input'ları güncelle
+        function updateHiddenInputs() {
+            try {
+                // Boş array'leri kontrol et ve oluştur
+                if (!Array.isArray(swotLists.strength)) swotLists.strength = [];
+                if (!Array.isArray(swotLists.weakness)) swotLists.weakness = [];
+                if (!Array.isArray(swotLists.opportunity)) swotLists.opportunity = [];
+                if (!Array.isArray(swotLists.threat)) swotLists.threat = [];
+
+                // Hidden input'ları güncelle
+                document.getElementById('strengthsInput').value = JSON.stringify(swotLists.strength);
+                document.getElementById('weaknessesInput').value = JSON.stringify(swotLists.weakness);
+                document.getElementById('opportunitiesInput').value = JSON.stringify(swotLists.opportunity);
+                document.getElementById('threatsInput').value = JSON.stringify(swotLists.threat);
+                
+                console.log('Updated SWOT Values:', {
+                    strengths: document.getElementById('strengthsInput').value,
+                    weaknesses: document.getElementById('weaknessesInput').value,
+                    opportunities: document.getElementById('opportunitiesInput').value,
+                    threats: document.getElementById('threatsInput').value
+                });
+            } catch (error) {
+                console.error('SWOT Update Error:', error);
+            }
+        }
+
+        // Enter tuşu ile ekleme yapabilmek için
+        document.querySelectorAll('#yeniStrength, #yeniWeakness, #yeniOpportunity, #yeniThreat').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const tip = this.id.replace('yeni', '').toLowerCase();
+                    ekleSwot(tip);
+                }
+            });
+        });
+
+        // Form gönderilmeden önce SWOT verilerini kontrol et
+        document.getElementById('arsaForm').addEventListener('submit', function(e) {
+            try {
+                // Form gönderilmeden önce tüm SWOT verilerini güncelle
+                updateHiddenInputs();
+
+                // Formdaki SWOT değerlerini kontrol et
+                const swotValues = {
+                    strengths: document.getElementById('strengthsInput').value,
+                    weaknesses: document.getElementById('weaknessesInput').value,
+                    opportunities: document.getElementById('opportunitiesInput').value,
+                    threats: document.getElementById('threatsInput').value
+                };
+                console.log('Form Submit SWOT Values:', swotValues);
+            } catch (error) {
+                console.error('Form Submit Error:', error);
+                e.preventDefault();
+            }
+        });
+
+        // Form submit event listener
+        document.getElementById('arsaForm').addEventListener('submit', function(e) {
+            // Form gönderilmeden önce tüm SWOT verilerini güncelle
+            updateHiddenInputs();
+        });
     </script>
 </body>
 </html>
