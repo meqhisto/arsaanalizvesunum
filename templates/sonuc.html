@@ -6,9 +6,109 @@
     <title>Arsa Yatırım Danışmanlığı - Analiz Sonuçları</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Mobil uyumluluk için ek stiller */
+        @media (max-width: 768px) {
+            .card {
+                margin-bottom: 1rem;
+            }
+            .container {
+                padding: 0.5rem;
+            }
+        }
+        
+        /* Yeni stil tanımlamaları */
+        .summary-box {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 2rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-4">
+        <!-- Özet Metrik Kartları -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="metric-card bg-primary text-white">
+                    <h4>Metrekare Fiyatı</h4>
+                    <h2>{{ "{:,.2f}".format(arsa.metrekare_fiyat) }} TL/m²</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card bg-success text-white">
+                    <h4>Potansiyel Getiri</h4>
+                    <h2>%{{ arsa.potansiyel_getiri }}</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card bg-info text-white">
+                    <h4>Risk Puanı</h4>
+                    <h2>{{ arsa.risk_puani }}/10</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card bg-warning text-dark">
+                    <h4>Yatırım Süresi</h4>
+                    <h2>{{ arsa.yatirim_suresi }} Yıl</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Özet Bilgi Kutusu -->
+        <div class="summary-box">
+            <h4>Hızlı Özet</h4>
+            <p>{{ ozet.temel_ozet }}</p>
+        </div>
+
+        <!-- Grafikler -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Değer Artış Projeksiyonu</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="projeksiyonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Bölge Karşılaştırması</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="karsilastirmaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-10 offset-md-1">
                 <div class="card">
@@ -35,7 +135,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Metrekare:</th>
-                                                <td>{{ arsa.metrekare|round(2) }} m²</td>
+                                                <td>{{ "{:,.2f}".format(arsa.metrekare) }} m²</td>
                                             </tr>
                                             <tr>
                                                 <th>İmar Durumu:</th>
@@ -321,26 +421,46 @@
                         </div>
                         {% endif %}
 
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-header bg-dark text-white">
-                                        <h5>Sunum Oluştur</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <a href="{{ url_for('generate', format='word', file_id=file_id) }}" class="btn btn-primary d-block">
-                                                    <i class="bi bi-file-earmark-word"></i> Word Belgesi Oluştur
-                                                </a>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <a href="{{ url_for('generate', format='ppt', file_id=file_id) }}" class="btn btn-danger d-block">
-                                                    <i class="bi bi-file-earmark-slides"></i> PowerPoint Sunumu Oluştur
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <!-- Analiz sonuçları bölümü -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h3>Analiz Sonuçları</h3>
+                            </div>
+                            <div class="card-body">
+                                <h4>Temel Özet</h4>
+                                <p>{{ ozet.temel_ozet }}</p>
+
+                                <h4>Yatırım Özeti</h4>
+                                <p>{{ ozet.yatirim_ozet }}</p>
+
+                                <h4>Tavsiyeler</h4>
+                                <p>{{ ozet.tavsiyeler }}</p>
+
+                                <h4>Detaylı Analiz</h4>
+                                <ul>
+                                    <li>Potansiyel Getiri: %{{ analiz.potansiyel_getiri }}</li>
+                                    <li>Risk Puanı: {{ analiz.risk_puani }}/5</li>
+                                    <li>Tahmini Yatırım Süresi: {{ analiz.yatirim_suresi }} yıl</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Sunum dosyaları bölümü -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Sunum Dosyası İndir</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('generate', format='word', file_id=file_id) }}" class="btn btn-primary">
+                                        <i class="fas fa-file-word"></i> Word
+                                    </a>
+                                    <a href="{{ url_for('generate', format='pdf', file_id=file_id) }}" class="btn btn-danger">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </a>
+                                    <a href="{{ url_for('generate', format='pptx', file_id=file_id) }}" class="btn btn-success">
+                                        <i class="fas fa-file-powerpoint"></i> PowerPoint
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -355,5 +475,51 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Projeksiyon Grafiği
+        const projeksiyonCtx = document.getElementById('projeksiyonChart').getContext('2d');
+        new Chart(projeksiyonCtx, {
+            type: 'line',
+            data: {
+                labels: ['Bugün', '1. Yıl', '3. Yıl', '5. Yıl'],
+                datasets: [{
+                    label: 'Tahmini Değer (TL)',
+                    data: [
+                        {{ arsa.fiyat }},
+                        {{ arsa.projeksiyon.yil_1 }},
+                        {{ arsa.projeksiyon.yil_3 }},
+                        {{ arsa.projeksiyon.yil_5 }}
+                    ],
+                    borderColor: '#28a745',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Karşılaştırma Grafiği
+        const karsilastirmaCtx = document.getElementById('karsilastirmaChart').getContext('2d');
+        new Chart(karsilastirmaCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Arsa Fiyatı', 'Bölge Ortalaması'],
+                datasets: [{
+                    label: 'Metrekare Fiyatı (TL/m²)',
+                    data: [
+                        {{ arsa.metrekare_fiyat }},
+                        {{ arsa.bolge_fiyat }}
+                    ],
+                    backgroundColor: ['#007bff', '#6c757d']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    </script>
 </body>
 </html>
