@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizlerim - Arsa Yatırım</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        .analysis-card {
+            transition: transform 0.2s;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+        }
+        .analysis-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .month-header {
+            font-size: 1.5rem;
+            color: #666;
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eee;
+        }
+        .price-badge {
+            font-size: 0.9rem;
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="bi bi-file-earmark-text"></i> 
+                Analizlerim
+                <span class="badge bg-primary ms-2">{{ total_count }}</span>
+            </h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#analysisModal">
+                <i class="bi bi-plus-circle"></i> Yeni Analiz
+            </button>
+        </div>
+
+        {% for month, month_analizler in grouped_analizler.items() %}
+        <h3 class="month-header">{{ month }}</h3>
+        <div class="row">
+            {% for analiz in month_analizler %}
+            <div class="col-md-6 mb-4">
+                <div class="card analysis-card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            {{ analiz.il }}, {{ analiz.ilce }}
+                            <small class="text-muted">{{ analiz.mahalle }}</small>
+                        </h5>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-rulers me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Alan</small>
+                                        <strong>{{ "{:,.0f}".format(analiz.metrekare) }} m²</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-cash me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">m² Fiyatı</small>
+                                        <strong>{{ "{:,.0f}".format(analiz.fiyat / analiz.metrekare) }} ₺</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-building me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">İmar</small>
+                                        <strong>{{ analiz.imar_durumu|title }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-tag me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Toplam Fiyat</small>
+                                        <strong>{{ "{:,.0f}".format(analiz.fiyat) }} ₺</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar3"></i>
+                                {{ analiz.created_at.strftime('%d.%m.%Y') }}
+                            </small>
+                            <div class="btn-group">
+                                <a href="{{ url_for('analiz_detay', analiz_id=analiz.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Görüntüle
+                                </a>
+                                <button onclick="confirmDelete('{{ analiz.id }}')" 
+                                        class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Silme Onay Modalı -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Analizi Sil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Bu analizi silmek istediğinizden emin misiniz?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <form id="deleteForm" method="POST">
+                        <button type="submit" class="btn btn-danger">Sil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function confirmDelete(analizId) {
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `/analiz/sil/${analizId}`;
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+</body>
+</html>

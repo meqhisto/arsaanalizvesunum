@@ -44,6 +44,17 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.Text, nullable=False)
     registered_on = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # New profile fields
+    ad = db.Column(db.String(50))
+    soyad = db.Column(db.String(50))
+    telefon = db.Column(db.String(20))
+    firma = db.Column(db.String(100))
+    unvan = db.Column(db.String(100))
+    adres = db.Column(db.Text)
+    profil_foto = db.Column(db.String(200))  # Path to profile photo
+    is_active = db.Column(db.Boolean, default=True)
+    son_giris = db.Column(db.DateTime)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password, method='scrypt')
@@ -371,16 +382,24 @@ def index():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
         try:
-            if User.query.filter_by(email=email).first():
+            # Check if user already exists
+            if User.query.filter_by(email=request.form.get('email')).first():
                 flash('Bu e-posta zaten kayıtlı.', 'danger')
                 return redirect(url_for('register'))
             
-            user = User(email=email)
-            user.set_password(password)
+            # Create new user with profile info
+            user = User(
+                email=request.form.get('email'),
+                ad=request.form.get('ad'),
+                soyad=request.form.get('soyad'),
+                telefon=request.form.get('telefon'),
+                firma=request.form.get('firma'),
+                unvan=request.form.get('unvan'),
+                adres=request.form.get('adres')
+            )
+            user.set_password(request.form.get('password'))
+            
             db.session.add(user)
             db.session.commit()
             
@@ -388,10 +407,9 @@ def register():
             return redirect(url_for('login'))
             
         except Exception as e:
-            print(f"Registration error: {str(e)}")
             db.session.rollback()
             flash('Kayıt sırasında bir hata oluştu!', 'danger')
-            return redirect(url_for('register'))
+            print(f"Registration error: {str(e)}")
             
     return render_template('register.html')
 
@@ -560,19 +578,141 @@ def generate(format, file_id):
 
         if format == 'word':
             filename = doc_generator.create_word()
+            # Word dosyası için doğru uzantıyı ayarla
+            download_name = f'arsa_analiz_{file_id}.docx'
         elif format == 'pdf':
             filename = doc_generator.create_pdf()
+            download_name = f'arsa_analiz_{file_id}.pdf'
         else:
             return jsonify({'error': 'Geçersiz format'}), 400
 
         return send_file(
             filename,
             as_attachment=True,
-            download_name=f'arsa_analiz_{file_id}.{format}'
+            download_name=download_name
         )
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    user = User.query.get(session['user_id'])
+    
+    if request.method == 'POST':
+        try:
+            user.ad = request.form.get('ad')
+            user.soyad = request.form.get('soyad')
+            user.telefon = request.form.get('telefon')
+            user.firma = request.form.get('firma')
+            user.unvan = request.form.get('unvan')
+            user.adres = request.form.get('adres')
+            
+            # Handle profile photo upload
+            if 'profil_foto' in request.files:
+                file = request.files['profil_foto']
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(filepath)
+                    user.profil_foto = filename
+            
+            db.session.commit()
+            flash('Profil başarıyla güncellendi!', 'success')
+            return redirect(url_for('profile'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('Profil güncellenirken bir hata oluştu!', 'danger')
+            print(f"Profile update error: {str(e)}")
+    
+    return render_template('profile.html', user=user)
+
+@app.route('/analiz/<int:analiz_id>')
+@login_required
+def analiz_detay(analiz_id):
+    try:
+        # Get the analysis from database
+        analiz = ArsaAnaliz.query.get_or_404(analiz_id)
+        
+        # Check if the user owns this analysis
+        if analiz.user_id != session['user_id']:
+            flash('Bu analizi görüntüleme yetkiniz yok.', 'danger')
+            return redirect(url_for('analizler'))
+
+        # Convert JSON strings to Python objects
+        if isinstance(analiz.altyapi, str):
+            altyapi = json.loads(analiz.altyapi)
+        else:
+            altyapi = analiz.altyapi
+
+        if isinstance(analiz.swot_analizi, str):
+            swot_analizi = json.loads(analiz.swot_analizi)
+        else:
+            swot_analizi = analiz.swot_analizi
+
+        # Create an ArsaAnalizci instance for calculations
+        analizci = ArsaAnalizci()
+        
+        # Calculate analysis results
+        analiz_sonuclari = analizci.analiz_et({
+            'metrekare': float(analiz.metrekare),
+            'fiyat': float(analiz.fiyat),
+            'bolge_fiyat': float(analiz.bolge_fiyat),
+            'imar_durumu': analiz.imar_durumu,
+            'altyapi': altyapi,
+            'konum': {
+                'il': analiz.il,
+                'ilce': analiz.ilce,
+                'mahalle': analiz.mahalle
+            }
+        })
+        
+        # Get analysis summary
+        ozet = analizci.ozetle(analiz_sonuclari)
+
+        # Pass all data to template
+        return render_template(
+            'analiz_detay.html',
+            analiz=analiz,
+            altyapi=altyapi,
+            swot=swot_analizi,
+            sonuc=analiz_sonuclari,
+            ozet=ozet
+        )
+
+    except Exception as e:
+        print(f"Error displaying analysis: {str(e)}")
+        flash('Analiz görüntülenirken bir hata oluştu.', 'danger')
+        return redirect(url_for('analizler'))
+
+@app.route('/analizler')
+@login_required
+def analizler():
+    user_id = session['user_id']
+    
+    # Analiz kayıtlarını tarihe göre sırala
+    analizler = ArsaAnaliz.query.filter_by(user_id=user_id)\
+        .order_by(ArsaAnaliz.created_at.desc()).all()
+    
+    # Analizleri ay/yıl bazında grupla
+    grouped_analizler = {}
+    for analiz in analizler:
+        # Türkçe ay isimleri için
+        ay_isimleri = {
+            1: 'Ocak', 2: 'Şubat', 3: 'Mart', 4: 'Nisan',
+            5: 'Mayıs', 6: 'Haziran', 7: 'Temmuz', 8: 'Ağustos',
+            9: 'Eylül', 10: 'Ekim', 11: 'Kasım', 12: 'Aralık'
+        }
+        key = f"{ay_isimleri[analiz.created_at.month]} {analiz.created_at.year}"
+        if key not in grouped_analizler:
+            grouped_analizler[key] = []
+        grouped_analizler[key].append(analiz)
+    
+    return render_template('analizler.html', 
+                         grouped_analizler=grouped_analizler, 
+                         total_count=len(analizler))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
