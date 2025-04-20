@@ -105,8 +105,31 @@ class DashboardStats(db.Model):
 class Arsa:
     def __init__(self, form_data):
         # Convert form_data to dict if it's not already
-        self.form_data = form_data if isinstance(form_data, dict) else form_data.to_dict(flat=False)
+        self.form_data = form_data if isinstance(form_data, dict) else form_data.to_dict(flat=True)
         
+        # Sayısal değerleri güvenli bir şekilde dönüştür
+        try:
+            self.metrekare = float(self.form_data.get('metrekare', 0))
+            self.fiyat = float(self.form_data.get('fiyat', 0))
+            self.bolge_fiyat = float(self.form_data.get('bolge_fiyat', 0))
+            self.taks = float(self.form_data.get('taks', 0.3))
+            self.kaks = float(self.form_data.get('kaks', 1.5))
+        except (ValueError, TypeError):
+            self.metrekare = 0.0
+            self.fiyat = 0.0
+            self.bolge_fiyat = 0.0
+            self.taks = 0.3
+            self.kaks = 1.5
+
+        # Metrekare fiyatı hesapla
+        self.metrekare_fiyat = self.fiyat / self.metrekare if self.metrekare > 0 else 0
+        
+        # Bölge karşılaştırması hesapla
+        if self.bolge_fiyat > 0:
+            self.bolge_karsilastirma = ((self.metrekare_fiyat - self.bolge_fiyat) / self.bolge_fiyat) * 100
+        else:
+            self.bolge_karsilastirma = 0
+
         self.konum = {
             'il': self.form_data.get('il', [''])[0] if isinstance(self.form_data.get('il'), list) else self.form_data.get('il', ''),
             'ilce': self.form_data.get('ilce', [''])[0] if isinstance(self.form_data.get('ilce'), list) else self.form_data.get('ilce', ''),
@@ -118,10 +141,8 @@ class Arsa:
             'parsel': self.form_data.get('parsel', [''])[0] if isinstance(self.form_data.get('parsel'), list) else self.form_data.get('parsel', '')
         }
         
-        self.metrekare = float(self.form_data.get('metrekare', [0])[0] if isinstance(self.form_data.get('metrekare'), list) else self.form_data.get('metrekare', 0))
         imar_durumu = self.form_data.get('imar_durumu', [''])[0] if isinstance(self.form_data.get('imar_durumu'), list) else self.form_data.get('imar_durumu', '')
         self.imar_durumu = imar_durumu.capitalize() if imar_durumu else ''
-        self.fiyat = float(self.form_data.get('fiyat', [0])[0] if isinstance(self.form_data.get('fiyat'), list) else self.form_data.get('fiyat', 0))
         self.taks = float(self.form_data.get('taks', [0.3])[0] if isinstance(self.form_data.get('taks'), list) else self.form_data.get('taks', 0.3))
         self.kaks = float(self.form_data.get('kaks', [1.5])[0] if isinstance(self.form_data.get('kaks'), list) else self.form_data.get('kaks', 1.5))
 
@@ -347,19 +368,52 @@ def register():
 def submit():
     try:
         # Form verilerini düzenle
-        form_data = {
-            key: value[0] if isinstance(value, list) and len(value) == 1 else value
-            for key, value in request.form.to_dict(flat=False).items()
+        form_data = request.form.to_dict(flat=True)
+        print("Raw form data:", form_data)  # Debug için
+
+        # Sayısal değerleri dönüştür
+        try:
+            form_data['metrekare'] = float(form_data.get('metrekare', 0))
+            form_data['fiyat'] = float(form_data.get('fiyat', 0))
+            form_data['bolge_fiyat'] = float(form_data.get('bolge_fiyat', 0))
+            form_data['taks'] = float(form_data.get('taks', 0.3))
+            form_data['kaks'] = float(form_data.get('kaks', 1.5))
+        except (ValueError, TypeError) as e:
+            print(f"Sayısal dönüşüm hatası: {str(e)}")
+            form_data.update({
+                'metrekare': 0.0,
+                'fiyat': 0.0,
+                'bolge_fiyat': 0.0,
+                'taks': 0.3,
+                'kaks': 1.5
+            })
+
+        # SWOT verilerini güvenli bir şekilde ayrıştır
+        swot_data = {}
+        for key in ['strengths', 'weaknesses', 'opportunities', 'threats']:
+            try:
+                value = form_data.get(key, '[]')
+                if value:
+                    swot_data[key] = json.loads(value)
+                else:
+                    swot_data[key] = []
+            except json.JSONDecodeError:
+                print(f"JSON decode error for {key}: {value}")
+                swot_data[key] = []
+
+        # Altyapı verilerini düzenle
+        altyapi_list = request.form.getlist('altyapi[]')
+        altyapi_data = {
+            'yol': 'yol' in altyapi_list,
+            'elektrik': 'elektrik' in altyapi_list,
+            'su': 'su' in altyapi_list,
+            'dogalgaz': 'dogalgaz' in altyapi_list,
+            'kanalizasyon': 'kanalizasyon' in altyapi_list
         }
-        
-        # Sayısal alanları dönüştür
-        numeric_fields = ['metrekare', 'fiyat', 'bolge_fiyat', 'taks', 'kaks']
-        for field in numeric_fields:
-            if field in form_data:
-                try:
-                    form_data[field] = float(form_data[field])
-                except (ValueError, TypeError):
-                    form_data[field] = 0.0
+
+        print("Processed form data:", form_data)  # Debug için
+        print("SWOT data:", swot_data)  # Debug için
+        print("Altyapi data:", altyapi_data)  # Debug için
 
         # Veritabanına kaydetmek için yeni ArsaAnaliz nesnesi oluştur
         yeni_analiz = ArsaAnaliz(
@@ -377,19 +431,8 @@ def submit():
             kaks=Decimal(str(form_data.get('kaks', 0))),
             fiyat=Decimal(str(form_data.get('fiyat', 0))),
             bolge_fiyat=Decimal(str(form_data.get('bolge_fiyat', 0))),
-            altyapi=json.dumps({
-                'yol': 'yol' in form_data.get('altyapi[]', []),
-                'elektrik': 'elektrik' in form_data.get('altyapi[]', []),
-                'su': 'su' in form_data.get('altyapi[]', []),
-                'dogalgaz': 'dogalgaz' in form_data.get('altyapi[]', []),
-                'kanalizasyon': 'kanalizasyon' in form_data.get('altyapi[]', [])
-            }),
-            swot_analizi=json.dumps({
-                'strengths': form_data.get('strengths', []),
-                'weaknesses': form_data.get('weaknesses', []),
-                'opportunities': form_data.get('opportunities', []),
-                'threats': form_data.get('threats', [])
-            })
+            altyapi=json.dumps(altyapi_data),
+            swot_analizi=json.dumps(swot_data)
         )
 
         # Veritabanına kaydet
@@ -504,4 +547,5 @@ def generate(format, file_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
 
