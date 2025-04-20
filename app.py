@@ -16,11 +16,15 @@ import os
 from pathlib import Path
 from modules.analiz import ArsaAnalizci  # Import ekleyelim
 from modules.document_generator import DocumentGenerator
+from decimal import Decimal
 
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'sizin_gizli_anahtariniz'
+
+# Jinja2 template engine'ine datetime modülünü ekle
+app.jinja_env.globals.update(datetime=datetime)
 
 # MySQL Veritabanı Ayarları (localhost:3306, kullanıcı=root, şifre boş)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3306/arsa_db'
@@ -289,14 +293,28 @@ def home():
 @app.route('/index')
 @login_required
 def index():
-    stats = DashboardStats.query.first()  # İlk istatistik verisini al
-    if stats:
-        bolge_dagilimlari = BolgeDagilimi.query.all()
-        yatirim_performanslari = YatirimPerformansi.query.all()
-    else:
-        bolge_dagilimlari = []
-        yatirim_performanslari = []
-    return render_template('index.html', stats=stats, bolge_dagilimlari=bolge_dagilimlari, yatirim_performanslari=yatirim_performanslari)
+    stats = DashboardStats.query.first()
+    bolge_dagilimlari = BolgeDagilimi.query.all()
+    yatirim_performanslari = YatirimPerformansi.query.order_by(YatirimPerformansi.yil, YatirimPerformansi.ay).all()
+
+    # Bölge dağılımı için labels ve data
+    bolge_labels = [b.il for b in bolge_dagilimlari]
+    bolge_data = [b.analiz_sayisi for b in bolge_dagilimlari]
+
+    # Yatırım performansı için labels ve data
+    perf_labels = [f"{yp.ay} {yp.yil}" for yp in yatirim_performanslari]
+    perf_data = [float(yp.toplam_deger) for yp in yatirim_performanslari]
+
+    return render_template(
+        'index.html',
+        stats=stats,
+        bolge_dagilimlari=bolge_dagilimlari,
+        yatirim_performanslari=yatirim_performanslari,
+        bolge_labels=bolge_labels,
+        bolge_data=bolge_data,
+        perf_labels=perf_labels,
+        perf_data=perf_data
+    )
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -343,10 +361,73 @@ def submit():
                 except (ValueError, TypeError):
                     form_data[field] = 0.0
 
+        # Veritabanına kaydetmek için yeni ArsaAnaliz nesnesi oluştur
+        yeni_analiz = ArsaAnaliz(
+            user_id=session['user_id'],
+            il=form_data.get('il', ''),
+            ilce=form_data.get('ilce', ''),
+            mahalle=form_data.get('mahalle', ''),
+            ada=form_data.get('ada', ''),
+            parsel=form_data.get('parsel', ''),
+            koordinatlar=form_data.get('koordinatlar', ''),
+            pafta=form_data.get('pafta', ''),
+            metrekare=Decimal(str(form_data.get('metrekare', 0))),
+            imar_durumu=form_data.get('imar_durumu', ''),
+            taks=Decimal(str(form_data.get('taks', 0))),
+            kaks=Decimal(str(form_data.get('kaks', 0))),
+            fiyat=Decimal(str(form_data.get('fiyat', 0))),
+            bolge_fiyat=Decimal(str(form_data.get('bolge_fiyat', 0))),
+            altyapi=json.dumps({
+                'yol': 'yol' in form_data.get('altyapi[]', []),
+                'elektrik': 'elektrik' in form_data.get('altyapi[]', []),
+                'su': 'su' in form_data.get('altyapi[]', []),
+                'dogalgaz': 'dogalgaz' in form_data.get('altyapi[]', []),
+                'kanalizasyon': 'kanalizasyon' in form_data.get('altyapi[]', [])
+            }),
+            swot_analizi=json.dumps({
+                'strengths': form_data.get('strengths', []),
+                'weaknesses': form_data.get('weaknesses', []),
+                'opportunities': form_data.get('opportunities', []),
+                'threats': form_data.get('threats', [])
+            })
+        )
+
+        # Veritabanına kaydet
+        db.session.add(yeni_analiz)
+        
+        # Bölge istatistiklerini güncelle
+        bolge = BolgeDagilimi.query.filter_by(il=form_data.get('il')).first()
+        fiyat_decimal = Decimal(str(form_data.get('fiyat', 0)))
+        if bolge:
+            bolge.analiz_sayisi += 1
+            bolge.toplam_deger += fiyat_decimal
+        else:
+            yeni_bolge = BolgeDagilimi(
+                il=form_data.get('il'),
+                analiz_sayisi=1,
+                toplam_deger=fiyat_decimal
+            )
+            db.session.add(yeni_bolge)
+
+        # Dashboard istatistiklerini güncelle
+        stats = DashboardStats.query.first()
+        if not stats:
+            stats = DashboardStats()
+            db.session.add(stats)
+        
+        stats.toplam_analiz += 1
+        stats.toplam_deger += fiyat_decimal
+        # Ortalama ROI float kalabilir, Numeric ise Decimal'e çevirin
+        try:
+            stats.ortalama_roi = Decimal(str(form_data.get('potansiyel_getiri', 0)))
+        except Exception:
+            stats.ortalama_roi = Decimal('0')
+
+        # Değişiklikleri kaydet
+        db.session.commit()
+
         # ArsaAnalizci ile analiz yap
         analizci = ArsaAnalizci()
-        
-        # Analiz sonuçlarını al
         analiz_sonuclari = analizci.analiz_et({
             'metrekare': form_data.get('metrekare', 0),
             'fiyat': form_data.get('fiyat', 0),
@@ -365,7 +446,7 @@ def submit():
         # Özet analizi al
         ozet = analizci.ozetle(analiz_sonuclari)
         
-        # Form verilerini ve analiz sonuçlarını session'a kaydet
+        # Session'a kaydet
         session['arsa_data'] = form_data
         session['analiz_sonuclari'] = analiz_sonuclari
         session['analiz_ozeti'] = ozet
@@ -384,6 +465,8 @@ def submit():
                             file_id=file_id)
 
     except Exception as e:
+        # Hata durumunda rollback yap
+        db.session.rollback()
         print(f"Submit error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
