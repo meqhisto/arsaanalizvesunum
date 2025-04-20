@@ -54,7 +54,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link active" href="{{ url_for('analizler') }}">
                             <i class="bi bi-graph-up"></i> Analizlerim
                         </a>
                     </li>
@@ -65,8 +65,12 @@
                     </li>
                 </ul>
                 <div class="user-info">
-                    <span class="navbar-text text-white">
+                    <span class="navbar-text text-white me-3"></span>
                         <i class="bi bi-person-circle"></i> {{ session['email'] }}
+                    </span>
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline-light">
+                        <i class="bi bi-person"></i> Profil
+                    </a>
                     </span>
                     <a href="{{ url_for('logout') }}" class="btn btn-light">
                         <i class="bi bi-box-arrow-right"></i> Çıkış Yap
