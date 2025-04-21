@@ -19,6 +19,7 @@ import sys
 sys.path.append('..')
 from modules.document_generator import DocumentGenerator
 from decimal import Decimal
+from werkzeug.utils import secure_filename
 
 
 
@@ -38,6 +39,16 @@ BASE_DIR = Path(__file__).resolve().parent
 PRESENTATIONS_DIR = BASE_DIR / 'static' / 'presentations'
 if not PRESENTATIONS_DIR.exists():
     PRESENTATIONS_DIR.mkdir(parents=True)
+
+# Medya yükleme ayarları
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4'}
+MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB
+app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --- Kullanıcı Modeli ---
 class User(db.Model):
@@ -125,6 +136,17 @@ class DashboardStats(db.Model):
 
     def __repr__(self):
         return f"<DashboardStats(toplam_analiz={self.toplam_analiz}, aktif_projeler={self.aktif_projeler}, toplam_deger={self.toplam_deger}, ortalama_roi={self.ortalama_roi})>"
+
+# Medya modeli
+class AnalizMedya(db.Model):
+    __tablename__ = 'analiz_medya'
+    id = db.Column(db.Integer, primary_key=True)
+    analiz_id = db.Column(db.Integer, db.ForeignKey('arsa_analizleri.id'), nullable=False)
+    filename = db.Column(db.String(200), nullable=False)
+    type = db.Column(db.String(10), nullable=False)  # 'image' veya 'video'
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    analiz = db.relationship('ArsaAnaliz', backref=db.backref('medyalar', lazy=True))
 
 # Arsa sınıfı
 class Arsa:
@@ -577,6 +599,7 @@ def generate(format, file_id):
     try:
         arsa_data = session.get('arsa_data')
         analiz_ozeti = session.get('analiz_ozeti')
+      
         
         if not arsa_data or not analiz_ozeti:
             return jsonify({'error': 'Analiz verisi bulunamadı'}), 400
@@ -585,12 +608,12 @@ def generate(format, file_id):
             arsa_data,
             analiz_ozeti,
             file_id,
-            PRESENTATIONS_DIR
+            PRESENTATIONS_DIR,
+           
         )
 
         if format == 'word':
             filename = doc_generator.create_word()
-            # Word dosyası için doğru uzantıyı ayarla
             download_name = f'arsa_analiz_{file_id}.docx'
         elif format == 'pdf':
             filename = doc_generator.create_pdf()
@@ -689,6 +712,34 @@ def analiz_detay(analiz_id):
         })
         ozet = analizci.ozetle(analiz_sonuclari)
 
+        # --- EKLENECEK: PDF/Word için session'a analiz verisi yükle ---
+        session['arsa_data'] = {
+            'il': analiz.il,
+            'ilce': analiz.ilce,
+            'mahalle': analiz.mahalle,
+            'ada': analiz.ada,
+            'parsel': analiz.parsel,
+            'koordinatlar': analiz.koordinatlar,
+            'pafta': analiz.pafta,
+            'metrekare': float(metrekare),
+            'imar_durumu': analiz.imar_durumu,
+            'taks': float(taks),
+            'kaks': float(kaks),
+            'fiyat': float(fiyat),
+            'bolge_fiyat': float(bolge_fiyat),
+            'altyapi[]': altyapi,
+            # SWOT alanları
+            'strengths': swot_analizi.get('strengths', []),
+            'weaknesses': swot_analizi.get('weaknesses', []),
+            'opportunities': swot_analizi.get('opportunities', []),
+            'threats': swot_analizi.get('threats', [])
+        }
+        session['analiz_ozeti'] = ozet
+
+     
+
+  
+
         return render_template(
             'analiz_detay.html',
             analiz=analiz,
@@ -696,7 +747,8 @@ def analiz_detay(analiz_id):
             swot=swot_analizi,
             sonuc=analiz_sonuclari,
             ozet=ozet,
-            user=user  # Kullanıcı bilgilerini template'e gönder
+            user=user,  # Kullanıcı bilgilerini template'e gönder
+         
         )
 
     except Exception as e:
@@ -803,6 +855,49 @@ def analiz_sil(analiz_id):
         print(f"Error deleting analysis: {str(e)}")
         flash('Analiz silinirken bir hata oluştu.', 'danger')
         return redirect(url_for('analizler'))
+
+@app.route('/analiz/<int:analiz_id>/medya_yukle', methods=['POST'])
+@login_required
+def medya_yukle(analiz_id):
+    if 'medya' not in request.files:
+        flash('Dosya seçilmedi.', 'warning')
+        return redirect(url_for('analiz_detay', analiz_id=analiz_id))
+    file = request.files['medya']
+    if file.filename == '':
+        flash('Dosya seçilmedi.', 'warning')
+        return redirect(url_for('analiz_detay', analiz_id=analiz_id))
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        ext = filename.rsplit('.', 1)[1].lower()
+        medya_type = 'image' if ext in {'jpg', 'jpeg', 'png', 'gif'} else 'video'
+        analiz_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(analiz_id))
+        os.makedirs(analiz_folder, exist_ok=True)
+        filepath = os.path.join(analiz_folder, filename)
+        file.save(filepath)
+        # Veritabanına kaydet
+        medya = AnalizMedya(analiz_id=analiz_id, filename=f"{analiz_id}/{filename}", type=medya_type)
+        db.session.add(medya)
+        db.session.commit()
+        flash('Medya başarıyla yüklendi.', 'success')
+    else:
+        flash('Geçersiz dosya türü.', 'danger')
+    return redirect(url_for('analiz_detay', analiz_id=analiz_id))
+
+@app.route('/analiz/<int:analiz_id>/medya_sil/<int:medya_id>', methods=['POST'])
+@login_required
+def medya_sil(analiz_id, medya_id):
+    medya = AnalizMedya.query.get_or_404(medya_id)
+    if medya.analiz_id != analiz_id:
+        flash('Yetkisiz işlem.', 'danger')
+        return redirect(url_for('analiz_detay', analiz_id=analiz_id))
+    # Dosyayı sil
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], medya.filename)
+    if os.path.exists(filepath):
+        os.remove(filepath)
+    db.session.delete(medya)
+    db.session.commit()
+    flash('Medya silindi.', 'success')
+    return redirect(url_for('analiz_detay', analiz_id=analiz_id))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
