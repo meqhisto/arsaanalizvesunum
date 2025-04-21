@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,10 +17,11 @@ import os
 from pathlib import Path
 from modules.analiz import ArsaAnalizci  # Import ekleyelim
 import sys
-sys.path.append('..')
 from modules.document_generator import DocumentGenerator
 from decimal import Decimal
 from werkzeug.utils import secure_filename
+
+import sys
 
 
 
@@ -57,7 +59,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.Text, nullable=False)
     registered_on = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # New profile fields
     ad = db.Column(db.String(50))
     soyad = db.Column(db.String(50))
@@ -199,12 +201,12 @@ class Arsa:
             'ilce': self.form_data.get('ilce', [''])[0] if isinstance(self.form_data.get('ilce'), list) else self.form_data.get('ilce', ''),
             'mahalle': self.form_data.get('mahalle', [''])[0] if isinstance(self.form_data.get('mahalle'), list) else self.form_data.get('mahalle', '')
         }
-        
+
         self.parsel = {
             'ada': self.form_data.get('ada', [''])[0] if isinstance(self.form_data.get('ada'), list) else self.form_data.get('ada', ''),
             'parsel': self.form_data.get('parsel', [''])[0] if isinstance(self.form_data.get('parsel'), list) else self.form_data.get('parsel', '')
         }
-        
+
         imar_durumu = self.form_data.get('imar_durumu', [''])[0] if isinstance(self.form_data.get('imar_durumu'), list) else self.form_data.get('imar_durumu', '')
         self.imar_durumu = imar_durumu.capitalize() if imar_durumu else ''
 
@@ -253,7 +255,7 @@ class Arsa:
         }
 
         # Debug için SWOT verilerini yazdır
-        print("SWOT Verileri:", self.swot)
+        # print("SWOT Verileri:", self.swot) # İsteğe bağlı olarak açılabilir
 
         # Projeksiyon hesaplamaları
         self.projeksiyon = self._hesapla_projeksiyon()
@@ -264,7 +266,7 @@ class Arsa:
         # İnşaat hesaplamaları
         self.insaat_hesaplama = self._insaat_hesapla()
 
-   
+
 
     def _hesapla_potansiyel_getiri(self):
         # Basit bir getiri hesaplama örneği
@@ -322,34 +324,34 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        
+
         try:
-            print("\n=== Login Debug Info ===")
-            print(f"Login attempt for email: {email}")
-            
+            # print("\n=== Login Debug Info ===") # İsteğe bağlı olarak açılabilir
+            # print(f"Login attempt for email: {email}") # İsteğe bağlı olarak açılabilir
+
             user = User.query.filter_by(email=email).first()
-            print(f"User found: {user is not None}")
-            
+            # print(f"User found: {user is not None}") # İsteğe bağlı olarak açılabilir
+
             if user:
-                print(f"User ID: {user.id}")
-                print(f"Stored hash: {user.password_hash}")
+                # print(f"User ID: {user.id}") # İsteğe bağlı olarak açılabilir
+                # print(f"Stored hash: {user.password_hash}") # İsteğe bağlı olarak açılabilir
                 is_valid = user.check_password(password)
-                print(f"Password verification result: {is_valid}")
-                
+                # print(f"Password verification result: {is_valid}") # İsteğe bağlı olarak açılabilir
+
                 if is_valid:
                     session['user_id'] = user.id
                     session['email'] = user.email
                     flash('Başarıyla giriş yaptınız!', 'success')
                     return redirect(url_for('index'))
-            
+
             flash('Geçersiz e-posta veya şifre!', 'danger')
             return redirect(url_for('login'))
-                
+
         except Exception as e:
             print(f"Login error: {str(e)}")
             flash('Giriş işlemi sırasında bir hata oluştu!', 'danger')
             return redirect(url_for('login'))
-            
+
     return render_template('login.html')
 
 # Çıkış yapma route'u
@@ -369,7 +371,7 @@ def home():
 @login_required
 def index():
     user_id = session['user_id']
-    
+
     # Kullanıcının kendi istatistiklerini getir
     stats = DashboardStats.query.filter_by(user_id=user_id).first()
     if not stats:
@@ -379,7 +381,7 @@ def index():
 
     # Kullanıcının kendi bölge dağılımlarını getir
     bolge_dagilimlari = BolgeDagilimi.query.filter_by(user_id=user_id).all()
-    
+
     # Kullanıcının kendi yatırım performansını getir
     yatirim_performanslari = YatirimPerformansi.query.filter_by(user_id=user_id)\
         .order_by(YatirimPerformansi.yil, YatirimPerformansi.ay).all()
@@ -411,7 +413,7 @@ def register():
             if User.query.filter_by(email=request.form.get('email')).first():
                 flash('Bu e-posta zaten kayıtlı.', 'danger')
                 return redirect(url_for('register'))
-            
+
             # Create new user with profile info
             user = User(
                 email=request.form.get('email'),
@@ -423,18 +425,18 @@ def register():
                 adres=request.form.get('adres')
             )
             user.set_password(request.form.get('password'))
-            
+
             db.session.add(user)
             db.session.commit()
-            
+
             flash('Kayıt başarılı. Lütfen giriş yapın.', 'success')
             return redirect(url_for('login'))
-            
+
         except Exception as e:
             db.session.rollback()
             flash('Kayıt sırasında bir hata oluştu!', 'danger')
             print(f"Registration error: {str(e)}")
-            
+
     return render_template('register.html')
 
 @app.route('/submit', methods=['POST'])
@@ -443,11 +445,11 @@ def submit():
     try:
         user_id = session['user_id']
         form_data = request.form.to_dict(flat=True)
-        
+
         # Altyapı verilerini özel olarak al
         altyapi_list = request.form.getlist('altyapi[]')
         form_data['altyapi[]'] = altyapi_list  # form_data'ya ekle
-        
+
         print("Raw form data:", form_data)
         print("Altyapı verileri:", altyapi_list)
 
@@ -474,7 +476,7 @@ def submit():
             return jsonify({'error': 'Lütfen sayısal değerleri doğru formatta giriniz.'}), 400
 
         # Create Arsa object with converted values
-        arsa = Arsa(form_data)
+        # arsa = Arsa(form_data) # Bu satır veritabanı kaydından sonra olmalı
 
         # Process SWOT data
         swot_data = {}
@@ -508,15 +510,15 @@ def submit():
 
         # Veritabanına kaydet
         db.session.add(yeni_analiz)
-        
+
         # Bölge istatistiklerini güncelle
         bolge = BolgeDagilimi.query.filter_by(
             user_id=user_id,
             il=form_data.get('il')
         ).first()
-        
+
         fiyat_decimal = Decimal(str(form_data.get('fiyat', 0)))
-        
+
         if bolge:
             bolge.analiz_sayisi += 1
             bolge.toplam_deger += fiyat_decimal
@@ -534,7 +536,7 @@ def submit():
         if not stats:
             stats = DashboardStats(user_id=user_id)
             db.session.add(stats)
-        
+
         stats.toplam_analiz += 1
         stats.toplam_deger += fiyat_decimal
         # Ortalama ROI float kalabilir, Numeric ise Decimal'e çevirin
@@ -545,6 +547,17 @@ def submit():
 
         # Değişiklikleri kaydet
         db.session.commit()
+
+        # --- DEĞİŞİKLİK BAŞLANGICI ---
+        # ID'nin atanmasını garantilemek için flush yap
+        db.session.flush()
+        # Yeni oluşturulan analizin ID'sini al
+        analiz_id_yeni = yeni_analiz.id
+        print(f"DEBUG: Yeni analiz ID'si: {analiz_id_yeni}") # Debug için
+
+        # Yeni ID'yi form_data'ya ekle (session'a kaydetmeden önce)
+        form_data['id'] = analiz_id_yeni
+        # --- DEĞİŞİKLİK SONU ---
 
         # ArsaAnalizci ile analiz yap
         analizci = ArsaAnalizci()
@@ -562,24 +575,25 @@ def submit():
                 'mahalle': form_data.get('mahalle', '')
             }
         })
-        
+
         # Özet analizi al
         ozet = analizci.ozetle(analiz_sonuclari)
-        
-        # Session'a kaydet
+
+        # Session'a kaydet (artık 'id' içeriyor)
         session['arsa_data'] = form_data
         session['analiz_sonuclari'] = analiz_sonuclari
         session['analiz_ozeti'] = ozet
-        
-        # Arsa nesnesini oluştur
+        print(f"DEBUG: Session'a kaydedilen arsa_data: {session['arsa_data']}") # Debug için
+
+        # Arsa nesnesini oluştur (artık ID'yi de içerebilir)
         arsa = Arsa(form_data)
-        
-        # UUID oluştur
+
+        # UUID oluştur (dosya adı için)
         file_id = str(uuid.uuid4())
-        
+
         # Kullanıcı bilgilerini al
         user = User.query.get(session['user_id'])
-        
+
         # Sonuç sayfasına yönlendir
         return render_template('sonuc.html',
                             arsa=arsa,
@@ -592,49 +606,92 @@ def submit():
         # Hata durumunda rollback yap
         db.session.rollback()
         print(f"Submit error: {str(e)}")
+        import traceback
+        traceback.print_exc() # Hatanın tam izini yazdır
         return jsonify({'error': str(e)}), 500
 
+# app.py içinde /generate fonksiyonu
+
 @app.route('/generate/<format>/<file_id>')
+@login_required
 def generate(format, file_id):
     try:
         arsa_data = session.get('arsa_data')
         analiz_ozeti = session.get('analiz_ozeti')
-      
-        
-        if not arsa_data or not analiz_ozeti:
-            return jsonify({'error': 'Analiz verisi bulunamadı'}), 400
 
+        if not arsa_data or not analiz_ozeti:
+            flash('Analiz verisi bulunamadı veya oturum süresi doldu.', 'warning')
+            return redirect(url_for('index'))
+
+        print(f"DEBUG [Generate]: Kullanılacak arsa_data: {arsa_data}", flush=True) # Flush eklendi
+        print(f"DEBUG [Generate]: Kullanılacak analiz_ozeti: {analiz_ozeti}", flush=True) # Flush eklendi
+
+        # --- YENİ LOG ---
+        print("DEBUG [Generate]: DocumentGenerator oluşturuluyor...", flush=True)
         doc_generator = DocumentGenerator(
             arsa_data,
             analiz_ozeti,
             file_id,
             PRESENTATIONS_DIR,
-           
         )
+        # --- YENİ LOG ---
+        print("DEBUG [Generate]: DocumentGenerator başarıyla oluşturuldu.", flush=True)
+
+        filename = None # Başlangıç değeri
+        download_name = None # Başlangıç değeri
 
         if format == 'word':
+            print("DEBUG [Generate]: doc_generator.create_word() çağrılacak...", flush=True)
             filename = doc_generator.create_word()
-            download_name = f'arsa_analiz_{file_id}.docx'
+            if filename and os.path.exists(filename):
+                print(f"DEBUG [Generate]: Word dosyası bulundu: {filename}", flush=True)
+                return send_file(
+                    filename,
+                    as_attachment=True,
+                    download_name=f'arsa_analiz_{file_id}.docx'
+                )
+            else:
+                print(f"HATA [Generate]: Word dosyası oluşturulamadı veya bulunamadı: {filename}", flush=True)
+                flash('Word dosyası oluşturulamadı.', 'danger')
+                return redirect(url_for('analiz_detay', analiz_id=file_id))
+
         elif format == 'pdf':
+             # --- YENİ LOG ---
+            print("DEBUG [Generate]: doc_generator.create_pdf() çağrılacak...", flush=True)
             filename = doc_generator.create_pdf()
             download_name = f'arsa_analiz_{file_id}.pdf'
+             # --- YENİ LOG ---
+            print(f"DEBUG [Generate]: create_pdf() tamamlandı. Dosya: {filename}", flush=True)
         else:
+            print(f"UYARI [Generate]: Geçersiz format istendi: {format}", flush=True)
             return jsonify({'error': 'Geçersiz format'}), 400
 
-        return send_file(
-            filename,
-            as_attachment=True,
-            download_name=download_name
-        )
+        # --- YENİ LOG ---
+        if filename and os.path.exists(filename):
+             print(f"DEBUG [Generate]: send_file çağrılacak. Dosya: {filename}", flush=True)
+             return send_file(
+                filename,
+                as_attachment=True,
+                download_name=download_name
+             )
+        else:
+             print(f"HATA [Generate]: Oluşturulan dosya bulunamadı veya geçersiz! Dosya: {filename}", flush=True)
+             flash('Rapor dosyası oluşturulamadı veya bulunamadı.', 'danger')
+             return redirect(request.referrer or url_for('index'))
+
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"HATA [Generate]: {str(e)}", flush=True)
+        import traceback
+        traceback.print_exc()
+        flash('Rapor oluşturulurken bir hata oluştu.', 'danger')
+        return redirect(url_for('analiz_detay', analiz_id=file_id))
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     user = User.query.get(session['user_id'])
-    
+
     if request.method == 'POST':
         try:
             user.ad = request.form.get('ad')
@@ -643,25 +700,29 @@ def profile():
             user.firma = request.form.get('firma')
             user.unvan = request.form.get('unvan')
             user.adres = request.form.get('adres')
-            
+
             # Handle profile photo upload
             if 'profil_foto' in request.files:
                 file = request.files['profil_foto']
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    # Kullanıcıya özel bir alt klasör oluştur (isteğe bağlı ama önerilir)
+                    user_upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'profiles', str(user.id))
+                    os.makedirs(user_upload_dir, exist_ok=True)
+                    filepath = os.path.join(user_upload_dir, filename)
                     file.save(filepath)
-                    user.profil_foto = filename
-            
+                    # Veritabanına göreceli yolu kaydet
+                    user.profil_foto = os.path.join('profiles', str(user.id), filename)
+
             db.session.commit()
             flash('Profil başarıyla güncellendi!', 'success')
             return redirect(url_for('profile'))
-            
+
         except Exception as e:
             db.session.rollback()
             flash('Profil güncellenirken bir hata oluştu!', 'danger')
             print(f"Profile update error: {str(e)}")
-    
+
     return render_template('profile.html', user=user)
 
 @app.route('/analiz/<int:analiz_id>')
@@ -671,10 +732,10 @@ def analiz_detay(analiz_id):
         analiz = ArsaAnaliz.query.get_or_404(analiz_id)
         # Kullanıcı bilgilerini getir
         user = User.query.get(analiz.user_id)
-        
-        print(f"DEBUG: Session user_id: {session.get('user_id')}, Analiz user_id: {analiz.user_id}")  # Debug log
+
+        # print(f"DEBUG: Session user_id: {session.get('user_id')}, Analiz user_id: {analiz.user_id}")  # Debug log
         if analiz.user_id != session['user_id']:
-            print("DEBUG: Permission denied for analiz_detay")  # Debug log
+            # print("DEBUG: Permission denied for analiz_detay")  # Debug log
             flash('Bu analizi görüntüleme yetkiniz yok.', 'danger')
             return redirect(url_for('analizler'))
 
@@ -712,8 +773,11 @@ def analiz_detay(analiz_id):
         })
         ozet = analizci.ozetle(analiz_sonuclari)
 
-        # --- EKLENECEK: PDF/Word için session'a analiz verisi yükle ---
+        # --- PDF/Word için session'a analiz verisi yükle ---
+        # Bu kısım önemli: Analiz detay sayfasından rapor oluşturulacaksa,
+        # session'daki verinin güncel analiz verisi olduğundan emin olmalıyız.
         session['arsa_data'] = {
+            'id': analiz.id, # <<< ÖNEMLİ: Analiz ID'sini ekle
             'il': analiz.il,
             'ilce': analiz.ilce,
             'mahalle': analiz.mahalle,
@@ -727,7 +791,7 @@ def analiz_detay(analiz_id):
             'kaks': float(kaks),
             'fiyat': float(fiyat),
             'bolge_fiyat': float(bolge_fiyat),
-            'altyapi[]': altyapi,
+            'altyapi[]': altyapi, # Anahtar adını DocumentGenerator'ın beklediği gibi yapalım
             # SWOT alanları
             'strengths': swot_analizi.get('strengths', []),
             'weaknesses': swot_analizi.get('weaknesses', []),
@@ -735,10 +799,13 @@ def analiz_detay(analiz_id):
             'threats': swot_analizi.get('threats', [])
         }
         session['analiz_ozeti'] = ozet
+        print(f"DEBUG [Analiz Detay]: Session'a kaydedilen arsa_data: {session['arsa_data']}") # Debug için
 
-     
+        # Medya dosyalarını getir
+        medyalar = AnalizMedya.query.filter_by(analiz_id=analiz_id).order_by(AnalizMedya.uploaded_at).all()
 
-  
+        # UUID oluştur (dosya adı için, detay sayfasında da gerekebilir)
+        file_id = str(uuid.uuid4())
 
         return render_template(
             'analiz_detay.html',
@@ -748,27 +815,23 @@ def analiz_detay(analiz_id):
             sonuc=analiz_sonuclari,
             ozet=ozet,
             user=user,  # Kullanıcı bilgilerini template'e gönder
-         
+            medyalar=medyalar, # Medya dosyalarını template'e gönder
+            file_id=file_id # Rapor oluşturma linkleri için file_id gönder
         )
 
     except Exception as e:
         import traceback
-        print("=== HATA DETAYLARI ===")
+        print("=== HATA DETAYLARI (analiz_detay) ===")
         print(f"Exception type: {type(e).__name__}")
         print(f"Exception message: {e}")
         print("Traceback:")
         traceback.print_exc()
         print("--- Analiz edilen veri ---")
         try:
-            print(f"analiz.id: {analiz.id}")
-            print(f"analiz.il: {getattr(analiz, 'il', None)}")
-            print(f"analiz.ilce: {getattr(analiz, 'ilce', None)}")
-            print(f"analiz.mahalle: {getattr(analiz, 'mahalle', None)}")
-            print(f"analiz.metrekare: {getattr(analiz, 'metrekare', None)}")
-            print(f"analiz.fiyat: {getattr(analiz, 'fiyat', None)}")
-            print(f"analiz.bolge_fiyat: {getattr(analiz, 'bolge_fiyat', None)}")
-            print(f"analiz.taks: {getattr(analiz, 'taks', None)}")
-            print(f"analiz.kaks: {getattr(analiz, 'kaks', None)}")
+            print(f"analiz.id: {analiz_id}") # analiz_id'yi yazdır
+            # Diğer analiz detaylarını yazdırmaya çalış (hata alabilir)
+            # print(f"analiz.il: {getattr(analiz, 'il', None)}")
+            # ...
         except Exception as inner_e:
             print(f"Ek veri yazılırken hata: {inner_e}")
         print("--- Çözüm Önerisi ---")
@@ -781,7 +844,7 @@ def analiz_detay(analiz_id):
 @login_required
 def analizler():
     user_id = session['user_id']
-    
+
     # Tüm illeri al (filtreleme için)
     iller = db.session.query(ArsaAnaliz.il)\
         .filter_by(user_id=user_id)\
@@ -789,11 +852,11 @@ def analizler():
         .order_by(ArsaAnaliz.il)\
         .all()
     iller = [il[0] for il in iller]
-    
+
     # Analizleri al
     analizler = ArsaAnaliz.query.filter_by(user_id=user_id)\
         .order_by(ArsaAnaliz.created_at.desc()).all()
-    
+
     # Ay/yıl gruplandırması
     grouped_analizler = {}
     for analiz in analizler:
@@ -806,7 +869,7 @@ def analizler():
         if key not in grouped_analizler:
             grouped_analizler[key] = []
         grouped_analizler[key].append(analiz)
-    
+
     return render_template('analizler.html',
                          grouped_analizler=grouped_analizler,
                          total_count=len(analizler),
@@ -818,38 +881,64 @@ def analiz_sil(analiz_id):
     try:
         # Analizi bul
         analiz = ArsaAnaliz.query.get_or_404(analiz_id)
-        
+
         # Kullanıcının yetkisi var mı kontrol et
         if analiz.user_id != session['user_id']:
             flash('Bu analizi silme yetkiniz yok.', 'danger')
             return redirect(url_for('analizler'))
-        
-        # İstatistikleri güncelle
+
+        # İstatistikleri güncelle (Decimal kullanarak)
         stats = DashboardStats.query.filter_by(user_id=session['user_id']).first()
         if stats:
-            stats.toplam_analiz -= 1
-            stats.toplam_deger -= analiz.fiyat
-        
-        # Bölge istatistiklerini güncelle
+            stats.toplam_analiz = max(0, stats.toplam_analiz - 1) # Negatife düşmesini engelle
+            stats.toplam_deger = max(Decimal('0.00'), stats.toplam_deger - (analiz.fiyat or Decimal('0.00')))
+
+        # Bölge istatistiklerini güncelle (Decimal kullanarak)
         bolge = BolgeDagilimi.query.filter_by(
             user_id=session['user_id'],
             il=analiz.il
         ).first()
         if bolge:
-            bolge.analiz_sayisi -= 1
-            bolge.toplam_deger -= analiz.fiyat
-            
+            bolge.analiz_sayisi = max(0, bolge.analiz_sayisi - 1)
+            bolge.toplam_deger = max(Decimal('0.00'), bolge.toplam_deger - (analiz.fiyat or Decimal('0.00')))
+
             # Eğer bölgede başka analiz kalmadıysa bölgeyi sil
             if bolge.analiz_sayisi <= 0:
                 db.session.delete(bolge)
-        
+
+        # İlişkili medya dosyalarını sil
+        medyalar = AnalizMedya.query.filter_by(analiz_id=analiz_id).all()
+        for medya in medyalar:
+            try:
+                # Dosya yolunu oluştur (medya.filename analiz_id/dosyaadi şeklinde olmalı)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], medya.filename)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                    print(f"DEBUG: Silinen medya dosyası: {filepath}")
+                else:
+                    print(f"DEBUG: Silinecek medya dosyası bulunamadı: {filepath}")
+                db.session.delete(medya)
+            except Exception as e:
+                print(f"Medya dosyası silinirken hata ({medya.filename}): {e}")
+                # Hata olsa bile devam et, veritabanı kaydını silmeye çalış
+
+        # Analizle ilişkili upload klasörünü sil (içi boşsa)
+        analiz_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(analiz_id))
+        try:
+            if os.path.exists(analiz_folder) and not os.listdir(analiz_folder):
+                os.rmdir(analiz_folder)
+                print(f"DEBUG: Boş analiz klasörü silindi: {analiz_folder}")
+        except Exception as e:
+            print(f"Analiz klasörü silinirken hata ({analiz_folder}): {e}")
+
+
         # Analizi sil
         db.session.delete(analiz)
         db.session.commit()
-        
-        flash('Analiz başarıyla silindi.', 'success')
+
+        flash('Analiz ve ilişkili medyalar başarıyla silindi.', 'success')
         return redirect(url_for('analizler'))
-        
+
     except Exception as e:
         db.session.rollback()
         print(f"Error deleting analysis: {str(e)}")
@@ -859,6 +948,12 @@ def analiz_sil(analiz_id):
 @app.route('/analiz/<int:analiz_id>/medya_yukle', methods=['POST'])
 @login_required
 def medya_yukle(analiz_id):
+    # Önce analizin kullanıcıya ait olup olmadığını kontrol et
+    analiz = ArsaAnaliz.query.get_or_404(analiz_id)
+    if analiz.user_id != session['user_id']:
+        flash('Bu analize medya yükleme yetkiniz yok.', 'danger')
+        return redirect(url_for('analizler'))
+
     if 'medya' not in request.files:
         flash('Dosya seçilmedi.', 'warning')
         return redirect(url_for('analiz_detay', analiz_id=analiz_id))
@@ -870,15 +965,33 @@ def medya_yukle(analiz_id):
         filename = secure_filename(file.filename)
         ext = filename.rsplit('.', 1)[1].lower()
         medya_type = 'image' if ext in {'jpg', 'jpeg', 'png', 'gif'} else 'video'
+
+        # Analize özel klasör oluştur
         analiz_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(analiz_id))
         os.makedirs(analiz_folder, exist_ok=True)
         filepath = os.path.join(analiz_folder, filename)
-        file.save(filepath)
-        # Veritabanına kaydet
-        medya = AnalizMedya(analiz_id=analiz_id, filename=f"{analiz_id}/{filename}", type=medya_type)
-        db.session.add(medya)
-        db.session.commit()
-        flash('Medya başarıyla yüklendi.', 'success')
+
+        # Dosya boyutunu kontrol et
+        # file.seek(0, os.SEEK_END)
+        # file_length = file.tell()
+        # file.seek(0) # Dosya işaretçisini başa al
+        # if file_length > app.config['MAX_CONTENT_LENGTH']:
+        #     flash(f'Dosya boyutu çok büyük (Maksimum {app.config["MAX_CONTENT_LENGTH"] / 1024 / 1024:.1f} MB).', 'danger')
+        #     return redirect(url_for('analiz_detay', analiz_id=analiz_id))
+
+        try:
+            file.save(filepath)
+            # Veritabanına kaydet (dosya adını analiz ID'si ile birlikte kaydet)
+            db_filename = f"{analiz_id}/{filename}"
+            medya = AnalizMedya(analiz_id=analiz_id, filename=db_filename, type=medya_type)
+            db.session.add(medya)
+            db.session.commit()
+            flash('Medya başarıyla yüklendi.', 'success')
+        except Exception as e:
+             db.session.rollback()
+             print(f"Medya kaydetme hatası: {e}")
+             flash('Medya yüklenirken bir hata oluştu.', 'danger')
+
     else:
         flash('Geçersiz dosya türü.', 'danger')
     return redirect(url_for('analiz_detay', analiz_id=analiz_id))
@@ -887,17 +1000,33 @@ def medya_yukle(analiz_id):
 @login_required
 def medya_sil(analiz_id, medya_id):
     medya = AnalizMedya.query.get_or_404(medya_id)
-    if medya.analiz_id != analiz_id:
+    # Analizin kullanıcıya ait olup olmadığını ve medyanın bu analize ait olup olmadığını kontrol et
+    analiz = ArsaAnaliz.query.get_or_404(analiz_id)
+    if analiz.user_id != session['user_id'] or medya.analiz_id != analiz_id:
         flash('Yetkisiz işlem.', 'danger')
         return redirect(url_for('analiz_detay', analiz_id=analiz_id))
-    # Dosyayı sil
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], medya.filename)
-    if os.path.exists(filepath):
-        os.remove(filepath)
-    db.session.delete(medya)
-    db.session.commit()
-    flash('Medya silindi.', 'success')
+
+    try:
+        # Dosyayı sil (medya.filename 'analiz_id/dosyaadi' formatında)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], medya.filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            print(f"DEBUG: Silinen medya: {filepath}")
+        else:
+             print(f"DEBUG: Silinecek medya bulunamadı: {filepath}")
+
+        db.session.delete(medya)
+        db.session.commit()
+        flash('Medya silindi.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        print(f"Medya silme hatası: {e}")
+        flash('Medya silinirken bir hata oluştu.', 'danger')
+
     return redirect(url_for('analiz_detay', analiz_id=analiz_id))
 
 if __name__ == '__main__':
+    # Veritabanı tablolarını oluştur (eğer yoksa)
+    with app.app_context():
+        db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
