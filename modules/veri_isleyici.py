@@ -6,21 +6,27 @@ Bu modül, arsa verilerini işlemek ve analiz etmek için kullanılır.
 import json
 import os
 from datetime import datetime
+from sqlalchemy.orm import Session
+import aiofiles
+import asyncio
+from functools import lru_cache
 
 class VeriIsleyici:
-    def __init__(self, data_dir):
+    def __init__(self, data_dir, db_session: Session = None):
         """
         Veri işleyici sınıfını başlatır.
         
         Args:
             data_dir (str): Veri dosyalarının saklanacağı dizin
+            db_session (Session, optional): SQLAlchemy oturumu
         """
         self.data_dir = data_dir
+        self.db_session = db_session
         os.makedirs(data_dir, exist_ok=True)
     
-    def kaydet(self, arsa_data):
+    async def async_kaydet(self, arsa_data):
         """
-        Arsa verilerini JSON formatında kaydeder.
+        Arsa verilerini JSON formatında asenkron olarak kaydeder.
         
         Args:
             arsa_data (dict): Kaydedilecek arsa verileri
@@ -28,17 +34,15 @@ class VeriIsleyici:
         Returns:
             str: Oluşturulan dosyanın benzersiz ID'si
         """
-        # Benzersiz bir dosya adı oluştur
         file_id = datetime.now().strftime('%Y%m%d%H%M%S')
-        filename = f"arsa_{file_id}.json"
-        filepath = os.path.join(self.data_dir, filename)
+        filepath = os.path.join(self.data_dir, f"arsa_{file_id}.json")
         
-        # Verileri JSON olarak kaydet
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(arsa_data, f, ensure_ascii=False, indent=4)
+        async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
+            await f.write(json.dumps(arsa_data, ensure_ascii=False, indent=4))
         
         return file_id
-    
+
+    @lru_cache(maxsize=100)
     def yukle(self, file_id):
         """
         Belirtilen ID'ye sahip arsa verilerini yükler.

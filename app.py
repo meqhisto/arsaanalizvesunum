@@ -15,6 +15,8 @@ from pptx.util import Inches, Pt
 import os
 from pathlib import Path
 from modules.analiz import ArsaAnalizci  # Import ekleyelim
+import sys
+sys.path.append('..')
 from modules.document_generator import DocumentGenerator
 from decimal import Decimal
 
@@ -419,7 +421,13 @@ def submit():
     try:
         user_id = session['user_id']
         form_data = request.form.to_dict(flat=True)
+        
+        # Altyapı verilerini özel olarak al
+        altyapi_list = request.form.getlist('altyapi[]')
+        form_data['altyapi[]'] = altyapi_list  # form_data'ya ekle
+        
         print("Raw form data:", form_data)
+        print("Altyapı verileri:", altyapi_list)
 
         # Convert numeric values before object creation
         try:
@@ -472,7 +480,7 @@ def submit():
             kaks=Decimal(str(kaks)),
             fiyat=Decimal(str(fiyat)),
             bolge_fiyat=Decimal(str(bolge_fiyat)),
-            altyapi=json.dumps(request.form.getlist('altyapi[]')),
+            altyapi=json.dumps(altyapi_list),  # altyapi_list'i direkt kullan
             swot_analizi=json.dumps(swot_data)
         )
 
@@ -547,12 +555,16 @@ def submit():
         # UUID oluştur
         file_id = str(uuid.uuid4())
         
+        # Kullanıcı bilgilerini al
+        user = User.query.get(session['user_id'])
+        
         # Sonuç sayfasına yönlendir
         return render_template('sonuc.html',
                             arsa=arsa,
                             analiz=analiz_sonuclari,
                             ozet=ozet,
-                            file_id=file_id)
+                            file_id=file_id,
+                            user=user)  # Kullanıcı bilgilerini ekle
 
     except Exception as e:
         # Hata durumunda rollback yap
@@ -633,33 +645,40 @@ def profile():
 @login_required
 def analiz_detay(analiz_id):
     try:
-        # Get the analysis from database
         analiz = ArsaAnaliz.query.get_or_404(analiz_id)
+        # Kullanıcı bilgilerini getir
+        user = User.query.get(analiz.user_id)
         
-        # Check if the user owns this analysis
+        print(f"DEBUG: Session user_id: {session.get('user_id')}, Analiz user_id: {analiz.user_id}")  # Debug log
         if analiz.user_id != session['user_id']:
+            print("DEBUG: Permission denied for analiz_detay")  # Debug log
             flash('Bu analizi görüntüleme yetkiniz yok.', 'danger')
             return redirect(url_for('analizler'))
 
-        # Convert JSON strings to Python objects
-        if isinstance(analiz.altyapi, str):
-            altyapi = json.loads(analiz.altyapi)
-        else:
-            altyapi = analiz.altyapi
+        # JSON verilerini dönüştür
+        altyapi = json.loads(analiz.altyapi) if isinstance(analiz.altyapi, str) else analiz.altyapi
+        swot_analizi = json.loads(analiz.swot_analizi) if isinstance(analiz.swot_analizi, str) else analiz.swot_analizi
 
-        if isinstance(analiz.swot_analizi, str):
-            swot_analizi = json.loads(analiz.swot_analizi)
-        else:
-            swot_analizi = analiz.swot_analizi
+        # Tüm sayısal değerleri güvenli şekilde float'a çevir
+        def safe_float(val):
+            try:
+                return float(val)
+            except (TypeError, ValueError):
+                return 0.0
 
-        # Create an ArsaAnalizci instance for calculations
+        metrekare = safe_float(analiz.metrekare)
+        fiyat = safe_float(analiz.fiyat)
+        bolge_fiyat = safe_float(analiz.bolge_fiyat)
+        taks = safe_float(analiz.taks)
+        kaks = safe_float(analiz.kaks)
+
         analizci = ArsaAnalizci()
-        
-        # Calculate analysis results
         analiz_sonuclari = analizci.analiz_et({
-            'metrekare': float(analiz.metrekare),
-            'fiyat': float(analiz.fiyat),
-            'bolge_fiyat': float(analiz.bolge_fiyat),
+            'metrekare': metrekare,
+            'fiyat': fiyat,
+            'bolge_fiyat': bolge_fiyat,
+            'taks': taks,
+            'kaks': kaks,
             'imar_durumu': analiz.imar_durumu,
             'altyapi': altyapi,
             'konum': {
@@ -668,23 +687,42 @@ def analiz_detay(analiz_id):
                 'mahalle': analiz.mahalle
             }
         })
-        
-        # Get analysis summary
         ozet = analizci.ozetle(analiz_sonuclari)
 
-        # Pass all data to template
         return render_template(
             'analiz_detay.html',
             analiz=analiz,
             altyapi=altyapi,
             swot=swot_analizi,
             sonuc=analiz_sonuclari,
-            ozet=ozet
+            ozet=ozet,
+            user=user  # Kullanıcı bilgilerini template'e gönder
         )
 
     except Exception as e:
-        print(f"Error displaying analysis: {str(e)}")
-        flash('Analiz görüntülenirken bir hata oluştu.', 'danger')
+        import traceback
+        print("=== HATA DETAYLARI ===")
+        print(f"Exception type: {type(e).__name__}")
+        print(f"Exception message: {e}")
+        print("Traceback:")
+        traceback.print_exc()
+        print("--- Analiz edilen veri ---")
+        try:
+            print(f"analiz.id: {analiz.id}")
+            print(f"analiz.il: {getattr(analiz, 'il', None)}")
+            print(f"analiz.ilce: {getattr(analiz, 'ilce', None)}")
+            print(f"analiz.mahalle: {getattr(analiz, 'mahalle', None)}")
+            print(f"analiz.metrekare: {getattr(analiz, 'metrekare', None)}")
+            print(f"analiz.fiyat: {getattr(analiz, 'fiyat', None)}")
+            print(f"analiz.bolge_fiyat: {getattr(analiz, 'bolge_fiyat', None)}")
+            print(f"analiz.taks: {getattr(analiz, 'taks', None)}")
+            print(f"analiz.kaks: {getattr(analiz, 'kaks', None)}")
+        except Exception as inner_e:
+            print(f"Ek veri yazılırken hata: {inner_e}")
+        print("--- Çözüm Önerisi ---")
+        print("Lütfen analiz kaydındaki tüm sayısal alanların (metrekare, fiyat, bolge_fiyat, taks, kaks) boş veya None olmadığından emin olun.")
+        print("Veritabanında eksik veya hatalı veri varsa düzeltin. Gerekirse analiz kaydını silip tekrar oluşturun.")
+        flash('Analiz görüntülenirken bir hata oluştu. Detaylar için sunucu loglarını kontrol edin.', 'danger')
         return redirect(url_for('analizler'))
 
 @app.route('/analizler')
@@ -692,14 +730,21 @@ def analiz_detay(analiz_id):
 def analizler():
     user_id = session['user_id']
     
-    # Analiz kayıtlarını tarihe göre sırala
+    # Tüm illeri al (filtreleme için)
+    iller = db.session.query(ArsaAnaliz.il)\
+        .filter_by(user_id=user_id)\
+        .distinct()\
+        .order_by(ArsaAnaliz.il)\
+        .all()
+    iller = [il[0] for il in iller]
+    
+    # Analizleri al
     analizler = ArsaAnaliz.query.filter_by(user_id=user_id)\
         .order_by(ArsaAnaliz.created_at.desc()).all()
     
-    # Analizleri ay/yıl bazında grupla
+    # Ay/yıl gruplandırması
     grouped_analizler = {}
     for analiz in analizler:
-        # Türkçe ay isimleri için
         ay_isimleri = {
             1: 'Ocak', 2: 'Şubat', 3: 'Mart', 4: 'Nisan',
             5: 'Mayıs', 6: 'Haziran', 7: 'Temmuz', 8: 'Ağustos',
@@ -710,9 +755,54 @@ def analizler():
             grouped_analizler[key] = []
         grouped_analizler[key].append(analiz)
     
-    return render_template('analizler.html', 
-                         grouped_analizler=grouped_analizler, 
-                         total_count=len(analizler))
+    return render_template('analizler.html',
+                         grouped_analizler=grouped_analizler,
+                         total_count=len(analizler),
+                         iller=iller)
+
+@app.route('/analiz/sil/<int:analiz_id>', methods=['POST'])
+@login_required
+def analiz_sil(analiz_id):
+    try:
+        # Analizi bul
+        analiz = ArsaAnaliz.query.get_or_404(analiz_id)
+        
+        # Kullanıcının yetkisi var mı kontrol et
+        if analiz.user_id != session['user_id']:
+            flash('Bu analizi silme yetkiniz yok.', 'danger')
+            return redirect(url_for('analizler'))
+        
+        # İstatistikleri güncelle
+        stats = DashboardStats.query.filter_by(user_id=session['user_id']).first()
+        if stats:
+            stats.toplam_analiz -= 1
+            stats.toplam_deger -= analiz.fiyat
+        
+        # Bölge istatistiklerini güncelle
+        bolge = BolgeDagilimi.query.filter_by(
+            user_id=session['user_id'],
+            il=analiz.il
+        ).first()
+        if bolge:
+            bolge.analiz_sayisi -= 1
+            bolge.toplam_deger -= analiz.fiyat
+            
+            # Eğer bölgede başka analiz kalmadıysa bölgeyi sil
+            if bolge.analiz_sayisi <= 0:
+                db.session.delete(bolge)
+        
+        # Analizi sil
+        db.session.delete(analiz)
+        db.session.commit()
+        
+        flash('Analiz başarıyla silindi.', 'success')
+        return redirect(url_for('analizler'))
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting analysis: {str(e)}")
+        flash('Analiz silinirken bir hata oluştu.', 'danger')
+        return redirect(url_for('analizler'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
