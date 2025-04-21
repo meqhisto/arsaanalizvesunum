@@ -36,6 +36,41 @@
     {% include 'navbar.html' %}
 
     <div class="container mt-4">
+        <!-- Arama ve Filtreleme Bölümü -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form id="filterForm" class="row g-3">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" id="searchText" placeholder="Ara...">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filterIl">
+                            <option value="">İl Seçin</option>
+                            {% for il in iller %}
+                                <option value="{{ il }}">{{ il }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filterImarDurumu">
+                            <option value="">İmar Durumu</option>
+                            <option value="konut">Konut</option>
+                            <option value="ticari">Ticari</option>
+                            <option value="karma">Karma</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="sortBy">
+                            <option value="date_desc">Tarihe Göre (Yeni-Eski)</option>
+                            <option value="date_asc">Tarihe Göre (Eski-Yeni)</option>
+                            <option value="price_desc">Fiyata Göre (Yüksek-Düşük)</option>
+                            <option value="price_asc">Fiyata Göre (Düşük-Yüksek)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>
                 <i class="bi bi-file-earmark-text"></i> 
@@ -83,7 +118,7 @@
                                     <i class="bi bi-building me-2"></i>
                                     <div>
                                         <small class="text-muted d-block">İmar</small>
-                                        <strong>{{ analiz.imar_durumu|title }}</strong>
+                                        <strong data-imar="{{ analiz.imar_durumu|title }}">{{ analiz.imar_durumu|title }}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -92,7 +127,7 @@
                                     <i class="bi bi-tag me-2"></i>
                                     <div>
                                         <small class="text-muted d-block">Toplam Fiyat</small>
-                                        <strong>{{ "{:,.0f}".format(analiz.fiyat) }} ₺</strong>
+                                        <strong data-price="{{ analiz.fiyat }}">{{ "{:,.0f}".format(analiz.fiyat) }} ₺</strong>
                                     </div>
                                 </div>
                             </div>
@@ -101,11 +136,10 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">
                                 <i class="bi bi-calendar3"></i>
-                                {{ analiz.created_at.strftime('%d.%m.%Y') }}
+                                <span data-date="{{ analiz.created_at }}">{{ analiz.created_at.strftime('%d.%m.%Y') }}</span>
                             </small>
                             <div class="btn-group">
-                                <a href="{{ url_for('analiz_detay', analiz_id=analiz.id) }}" 
-                                   class="btn btn-sm btn-outline-primary">
+                                <a href="{{ url_for('analiz_detay', analiz_id=analiz.id) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i> Görüntüle
                                 </a>
                                 <button onclick="confirmDelete('{{ analiz.id }}')" 
@@ -151,6 +185,69 @@
             const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
             deleteModal.show();
         }
+    </script>
+    <!-- Filtreleme ve Arama için JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchText = document.getElementById('searchText');
+        const filterIl = document.getElementById('filterIl');
+        const filterImarDurumu = document.getElementById('filterImarDurumu');
+        const sortBy = document.getElementById('sortBy');
+        
+        function filterCards() {
+            const cards = document.querySelectorAll('.analysis-card');
+            const search = searchText.value.toLowerCase();
+            const selectedIl = filterIl.value.toLowerCase();
+            const selectedImar = filterImarDurumu.value.toLowerCase();
+            
+            cards.forEach(card => {
+                const il = card.querySelector('.card-title').textContent.toLowerCase();
+                const imar = card.querySelector('[data-imar]').getAttribute('data-imar').toLowerCase();
+                const shouldShow = 
+                    (!search || il.includes(search)) &&
+                    (!selectedIl || il.includes(selectedIl)) &&
+                    (!selectedImar || imar === selectedImar);
+                    
+                card.closest('.col-md-6').style.display = shouldShow ? '' : 'none';
+            });
+        }
+        
+        function sortCards() {
+            const container = document.querySelector('.row');
+            const cards = Array.from(container.querySelectorAll('.col-md-6'));
+            
+            cards.sort((a, b) => {
+                const valueA = getSortValue(a);
+                const valueB = getSortValue(b);
+                
+                switch(sortBy.value) {
+                    case 'date_asc':
+                        return valueA.date - valueB.date;
+                    case 'date_desc':
+                        return valueB.date - valueA.date;
+                    case 'price_asc':
+                        return valueA.price - valueB.price;
+                    case 'price_desc':
+                        return valueB.price - valueA.price;
+                }
+            });
+            
+            cards.forEach(card => container.appendChild(card));
+        }
+        
+        function getSortValue(card) {
+            return {
+                date: new Date(card.querySelector('[data-date]').getAttribute('data-date')),
+                price: parseFloat(card.querySelector('[data-price]').getAttribute('data-price'))
+            };
+        }
+        
+        // Event listeners
+        searchText.addEventListener('input', filterCards);
+        filterIl.addEventListener('change', filterCards);
+        filterImarDurumu.addEventListener('change', filterCards);
+        sortBy.addEventListener('change', sortCards);
+    });
     </script>
 </body>
 </html>

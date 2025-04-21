@@ -6,11 +6,33 @@
     <title>Analiz Detayı - {{ analiz.il }}, {{ analiz.ilce }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    
 </head>
 <body>
     {% include 'navbar.html' %}
 
     <div class="container mt-4">
+        <!-- Analist Bilgileri Kartı - YENİ -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Analist Bilgileri</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Analist:</strong> {{ user.ad }} {{ user.soyad }}</p>
+                        <p><strong>Ünvan:</strong> {{ user.unvan }}</p>
+                        <p><strong>Firma:</strong> {{ user.firma }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>İletişim:</strong> {{ user.telefon }}</p>
+                        <p><strong>E-posta:</strong> {{ user.email }}</p>
+                        <p><strong>Analiz Tarihi:</strong> {{ analiz.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Breadcrumb Navigation -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -52,23 +74,33 @@
                         <table class="table">
                             <tr>
                                 <th>Toplam Fiyat</th>
-                                <td>{{ "{:,.2f}".format(analiz.fiyat) }} ₺</td>
+                                <td>{{ "{:,.2f}".format(analiz.fiyat or 0) }} ₺</td>
                             </tr>
                             <tr>
                                 <th>m² Fiyatı</th>
-                                <td>{{ "{:,.2f}".format(analiz.fiyat / analiz.metrekare) }} ₺/m²</td>
+                                <td>
+                                    {% if analiz.metrekare and analiz.fiyat %}
+                                        {{ "{:,.2f}".format((analiz.fiyat or 0) / (analiz.metrekare or 1)) }} ₺/m²
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
                             </tr>
                             <tr>
                                 <th>Bölge m² Fiyatı</th>
-                                <td>{{ "{:,.2f}".format(analiz.bolge_fiyat) }} ₺/m²</td>
+                                <td>{{ "{:,.2f}".format(analiz.bolge_fiyat or 0) }} ₺/m²</td>
                             </tr>
                             <tr>
                                 <th>Fiyat Farkı</th>
                                 <td>
-                                    {% set fark = (analiz.fiyat / analiz.metrekare - analiz.bolge_fiyat) / analiz.bolge_fiyat * 100 %}
-                                    <span class="badge {% if fark > 0 %}bg-danger{% else %}bg-success{% endif %}">
-                                        {{ "%+.1f"|format(fark) }}%
-                                    </span>
+                                    {% if analiz.bolge_fiyat and analiz.metrekare and analiz.fiyat and analiz.bolge_fiyat != 0 %}
+                                        {% set fark = ((analiz.fiyat / analiz.metrekare) - analiz.bolge_fiyat) / analiz.bolge_fiyat * 100 %}
+                                        <span class="badge {% if fark > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                                            {{ "%+.1f"|format(fark) }}%
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">-</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                         </table>
