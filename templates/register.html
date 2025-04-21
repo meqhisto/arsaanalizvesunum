@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol - Arsa Yatırım</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="text-center mb-0">Yeni Hesap Oluştur</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if get_flashed_messages %}
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                          {% if messages %}
+                            {% for category, msg in messages %}
+                              <div class="alert alert-{{ category }}" role="alert">{{ msg }}</div>
+                            {% endfor %}
+                          {% endif %}
+                        {% endwith %}
+                        {% endif %}
+                        <form action="{{ url_for('register') }}" method="post">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ad</label>
+                                    <input type="text" class="form-control" name="ad" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Soyad</label>
+                                    <input type="text" class="form-control" name="soyad" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">E-posta</label>
+                                    <input type="email" class="form-control" name="email" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Telefon</label>
+                                    <input type="tel" class="form-control" name="telefon">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Firma</label>
+                                <input type="text" class="form-control" name="firma">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Unvan</label>
+                                <input type="text" class="form-control" name="unvan">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Adres</label>
+                                <textarea class="form-control" name="adres" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Şifre</label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Şifre Tekrar</label>
+                                <input type="password" class="form-control" name="password_confirm" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+                            </div>
+                        </form>
+                        <div class="text-center mt-3">
+                            <p>Zaten hesabınız var mı? <a href="{{ url_for('login') }}">Giriş Yap</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

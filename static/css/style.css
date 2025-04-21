@@ -102,3 +102,157 @@ h5 {
         margin-bottom: 10px;
     }
 }
+
+/* Navbar stilleri */
+.navbar {
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Dashboard kartları */
+.dashboard-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #007bff, #6610f2);
+    color: white;
+}
+
+/* Grafik konteyneri */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Yazdırma stilleri */
+@media print {
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 12pt;
+        line-height: 1.5;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .no-print,
+    .btn,
+    .navbar,
+    .print-controls {
+        display: none !important;
+    }
+
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        margin-bottom: 20px;
+        page-break-inside: avoid;
+    }
+
+    .card-header {
+        background-color: #f8f9fa !important;
+        color: black !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 15px;
+        page-break-inside: avoid;
+    }
+
+    table, th, td {
+        border: 1px solid #ddd !important;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    .chart-container {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin: 15px 0;
+        height: auto !important;
+    }
+
+    .alert {
+        border: 1px solid #ddd !important;
+        background-color: #f8f9fa !important;
+        color: black !important;
+        margin-bottom: 15px;
+        padding: 10px;
+        break-inside: avoid;
+    }
+
+    .page-break {
+        page-break-before: always;
+    }
+
+    .print-header {
+        position: running(header);
+        text-align: center;
+    }
+
+    .print-footer {
+        position: running(footer);
+        text-align: center;
+    }
+
+    @page {
+        size: A4;
+        margin: 2cm;
+        @top-center { content: element(header) }
+        @bottom-center { content: element(footer) }
+    }
+
+    .bg-primary, .bg-success, .bg-info, .bg-warning, .bg-danger {
+        background-color: white !important;
+        color: black !important;
+    }
+
+    .text-white {
+        color: black !important;
+    }
+
+    .badge {
+        border: 1px solid #ddd !important;
+        background-color: #f8f9fa !important;
+        color: black !important;
+    }
+}

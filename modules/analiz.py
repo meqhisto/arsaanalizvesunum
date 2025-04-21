@@ -3,11 +3,41 @@ Arsa Yatırım Danışmanlığı - Analiz Modülü
 Bu modül, arsa verilerini analiz etmek ve potansiyel getiri hesaplamak için kullanılır.
 """
 
-class ArsaAnalizci:
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Dict, List
+
+@dataclass
+class AnalizMetrikleri:
+    potansiyel_getiri: float
+    risk_puani: int
+    yatirim_suresi: int
+
+class AnalizStratejisi(ABC):
+    @abstractmethod
+    def analiz_et(self, data: Dict) -> AnalizMetrikleri:
+        pass
+
+class SwotAnalizi(AnalizStratejisi):
+    def analiz_et(self, data: Dict) -> AnalizMetrikleri:
+        # SWOT analiz mantığı
+        pass
+
+class RaporBuilder:
     def __init__(self):
+        self.rapor = {}
+    
+    def add_metrics(self, metrics: AnalizMetrikleri):
+        self.rapor['metrikler'] = metrics
+        return self
+
+class ArsaAnalizci:
+    def __init__(self, strateji: AnalizStratejisi = None):
         """
         Arsa analizci sınıfını başlatır.
         """
+        self.strateji = strateji or SwotAnalizi()
+        self.rapor_builder = RaporBuilder()
         # İmar durumuna göre potansiyel getiri katsayıları
         self.imar_katsayilari = {
             'konut': 1.05,

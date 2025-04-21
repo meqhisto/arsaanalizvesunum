@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analiz Detayı - {{ analiz.il }}, {{ analiz.ilce }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container mt-4">
+        <!-- Analist Bilgileri Kartı - YENİ -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Analist Bilgileri</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Analist:</strong> {{ user.ad }} {{ user.soyad }}</p>
+                        <p><strong>Ünvan:</strong> {{ user.unvan }}</p>
+                        <p><strong>Firma:</strong> {{ user.firma }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>İletişim:</strong> {{ user.telefon }}</p>
+                        <p><strong>E-posta:</strong> {{ user.email }}</p>
+                        <p><strong>Analiz Tarihi:</strong> {{ analiz.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('analizler') }}">Analizlerim</a></li>
+                <li class="breadcrumb-item active">{{ analiz.il }}, {{ analiz.ilce }}</li>
+            </ol>
+        </nav>
+
+        <!-- Ana Bilgiler Kartı -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">{{ analiz.il }}, {{ analiz.ilce }} - {{ analiz.mahalle }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Arsa Bilgileri</h5>
+                        <table class="table">
+                            <tr>
+                                <th>Ada/Parsel</th>
+                                <td>{{ analiz.ada }}/{{ analiz.parsel }}</td>
+                            </tr>
+                            <tr>
+                                <th>Metrekare</th>
+                                <td>{{ "{:,.2f}".format(analiz.metrekare) }} m²</td>
+                            </tr>
+                            <tr>
+                                <th>İmar Durumu</th>
+                                <td>{{ analiz.imar_durumu }}</td>
+                            </tr>
+                            <tr>
+                                <th>TAKS/KAKS</th>
+                                <td>{{ analiz.taks }}/{{ analiz.kaks }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Finansal Bilgiler</h5>
+                        <table class="table">
+                            <tr>
+                                <th>Toplam Fiyat</th>
+                                <td>{{ "{:,.2f}".format(analiz.fiyat or 0) }} ₺</td>
+                            </tr>
+                            <tr>
+                                <th>m² Fiyatı</th>
+                                <td>
+                                    {% if analiz.metrekare and analiz.fiyat %}
+                                        {{ "{:,.2f}".format((analiz.fiyat or 0) / (analiz.metrekare or 1)) }} ₺/m²
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Bölge m² Fiyatı</th>
+                                <td>{{ "{:,.2f}".format(analiz.bolge_fiyat or 0) }} ₺/m²</td>
+                            </tr>
+                            <tr>
+                                <th>Fiyat Farkı</th>
+                                <td>
+                                    {% if analiz.bolge_fiyat and analiz.metrekare and analiz.fiyat and analiz.bolge_fiyat != 0 %}
+                                        {% set fark = ((analiz.fiyat / analiz.metrekare) - analiz.bolge_fiyat) / analiz.bolge_fiyat * 100 %}
+                                        <span class="badge {% if fark > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                                            {{ "%+.1f"|format(fark) }}%
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SWOT Analizi -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">SWOT Analizi</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Güçlü Yönler -->
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-success h-100">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">Güçlü Yönler</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    {% for item in swot.strengths %}
+                                        <li class="list-group-item">{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Zayıf Yönler -->
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-danger h-100">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="mb-0">Zayıf Yönler</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    {% for item in swot.weaknesses %}
+                                        <li class="list-group-item">{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Fırsatlar -->
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-info h-100">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">Fırsatlar</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    {% for item in swot.opportunities %}
+                                        <li class="list-group-item">{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tehditler -->
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-warning h-100">
+                            <div class="card-header bg-warning">
+                                <h6 class="mb-0">Tehditler</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    {% for item in swot.threats %}
+                                        <li class="list-group-item">{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medya Galerisi -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-images"></i> Medya Galerisi</h5>
+            </div>
+            <div class="card-body">
+                <!-- Medya Yükleme Formu -->
+                <form action="{{ url_for('medya_yukle', analiz_id=analiz.id) }}" method="post" enctype="multipart/form-data" class="mb-3">
+                    <input type="file" name="medya" accept="image/*,video/*" class="form-control" required>
+                    <button type="submit" class="btn btn-primary">Yükle</button>
+                </form>
+
+                <!-- Medya Galerisi -->
+                <div class="row" id="medyaGaleri">
+                    {% for medya in analiz.medyalar %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                {% if medya.type == 'image' %}
+                                    <img src="{{ url_for('static', filename='uploads/' + medya.filename) }}" 
+                                         class="card-img-top" alt="Arsa Görseli">
+                                {% else %}
+                                    <video class="card-img-top" controls>
+                                        <source src="{{ url_for('static', filename='uploads/' + medya.filename) }}" 
+                                                type="video/mp4">
+                                        Tarayıcınız video oynatmayı desteklemiyor.
+                                    </video>
+                                {% endif %}
+                                <div class="card-body">
+                                    <p class="card-text">{{ medya.filename }}</p>
+                                    <small class="text-muted">{{ medya.uploaded_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Analiz Özeti -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Analiz Özeti</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    {{ ozet.temel_ozet }}
+                </div>
+                <div class="alert alert-success">
+                    {{ ozet.yatirim_ozet }}
+                </div>
+                <div class="alert alert-warning">
+                    {{ ozet.tavsiyeler }}
+                </div>
+            </div>
+        </div>
+
+        <!-- İşlem Butonları -->
+        <div class="d-flex justify-content-between mb-4">
+            <a href="{{ url_for('analizler') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Analizlere Dön
+            </a>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Yazdır
+                </button>
+                <a href="{{ url_for('generate', format='pdf', file_id=analiz.id) }}" class="btn btn-primary">
+                    <i class="bi bi-file-pdf"></i> PDF İndir
+                </a>
+                <a href="{{ url_for('generate', format='word', file_id=analiz.id) }}" class="btn btn-info">
+                    <i class="bi bi-file-word"></i> Word İndir
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.getElementById('medyaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const fileInput = document.getElementById('medyaFile');
+        
+        if (!fileInput.files.length) {
+            alert('Lütfen bir dosya seçin');
+            return;
+        }
+        
+        fetch(`/analiz/${analiz_id}/medya/ekle`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();  // Sayfayı yenile
+            } else {
+                alert(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Yükleme sırasında bir hata oluştu');
+        });
+    });
+    </script>
+</body>
+</html>
