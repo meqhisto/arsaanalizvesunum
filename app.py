@@ -594,20 +594,6 @@ def submit():
         # Kullanıcı bilgilerini al
         user = User.query.get(session['user_id'])
 
-        # --- PROFİL BİLGİLERİNİ SESSION'A EKLE ---
-        session['profile_info'] = {
-            'ad': user.ad,
-            'soyad': user.soyad,
-            'email': user.email,
-            'telefon': user.telefon,
-            'firma': user.firma,
-            'unvan': user.unvan,
-            'adres': user.adres,
-            'profil_foto': user.profil_foto
-        }
-        # --- LOGO DOSYA YOLUNU SESSION'A EKLE ---
-        session['logo_path'] = str(BASE_DIR / 'static' / 'logo.png')
-
         # Sonuç sayfasına yönlendir
         return render_template('sonuc.html',
                             arsa=arsa,
@@ -632,14 +618,14 @@ def generate(format, file_id):
     try:
         arsa_data = session.get('arsa_data')
         analiz_ozeti = session.get('analiz_ozeti')
-        logo_path = session.get('logo_path')
-
+        
         if not arsa_data or not analiz_ozeti:
             flash('Analiz verisi bulunamadı veya oturum süresi doldu.', 'warning')
             return redirect(url_for('index'))
 
-        # --- PROFİLİ VERİTABANINDAN ÇEK ---
-        user = User.query.get(session['user_id'])
+        # Analize ait kullanıcı bilgilerini veritabanından al
+        analiz = ArsaAnaliz.query.get(arsa_data['id'])
+        user = User.query.get(analiz.user_id)
         profile_info = {
             'ad': user.ad,
             'soyad': user.soyad,
@@ -648,19 +634,21 @@ def generate(format, file_id):
             'firma': user.firma,
             'unvan': user.unvan,
             'adres': user.adres,
-            'profil_foto': user.profil_foto
+            'profil_foto': user.profil_foto,
+            'created_at': analiz.created_at
         }
 
-        print(f"DEBUG [Generate]: Kullanılacak arsa_data: {arsa_data}", flush=True)
-        print(f"DEBUG [Generate]: Kullanılacak analiz_ozeti: {analiz_ozeti}", flush=True)
+        print(f"DEBUG [Generate]: Kullanılacak arsa_data: {arsa_data}", flush=True) # Flush eklendi
+        print(f"DEBUG [Generate]: Kullanılacak analiz_ozeti: {analiz_ozeti}", flush=True) # Flush eklendi
 
+        # --- YENİ LOG ---
+        print("DEBUG [Generate]: DocumentGenerator oluşturuluyor...", flush=True)
         doc_generator = DocumentGenerator(
             arsa_data,
             analiz_ozeti,
             file_id,
             PRESENTATIONS_DIR,
-            profile_info=profile_info,
-            logo_path=logo_path
+            profile_info=profile_info
         )
         # --- YENİ LOG ---
         print("DEBUG [Generate]: DocumentGenerator başarıyla oluşturuldu.", flush=True)
@@ -1058,3 +1046,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
+
