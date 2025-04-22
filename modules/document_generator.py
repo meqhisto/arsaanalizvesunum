@@ -208,13 +208,17 @@ class DocumentGenerator:
     def _get_profile_table_data(self):
         """Profil bilgilerini tabloya hazırlar"""
         p = self.profile_info or {}
+        created_at = p.get('created_at')
+        date_str = created_at.strftime('%d.%m.%Y %H:%M') if created_at else '-'
+        
         return [
             ['Ad Soyad', f"{p.get('ad','') or ''} {p.get('soyad','') or ''}"],
-            ['E-posta', p.get('email','')],
-            ['Telefon', p.get('telefon','')],
-            ['Firma', p.get('firma','')],
-            ['Ünvan', p.get('unvan','')],
-            ['Adres', p.get('adres','')]
+            ['Ünvan', p.get('unvan', '-')],
+            ['Firma', p.get('firma', '-')],
+            ['E-posta', p.get('email', '-')],
+            ['Telefon', p.get('telefon', '-')],
+            ['Adres', p.get('adres', '-')],
+            ['Analiz Tarihi', date_str]
         ]
 
     def _get_profile_photo_path(self):
@@ -345,7 +349,7 @@ class DocumentGenerator:
             doc.add_page_break()
 
             # PROFİL SAYFASI (Kapaktan sonra)
-            heading = doc.add_heading('Portföy Sorumlusu', 1)
+            heading = doc.add_heading('Portföy Sorumlusu ve Analiz Detayları', 1)
             heading.runs[0].font.name = 'Arial'
             heading.runs[0].font.size = Pt(22)
             heading.runs[0].font.color.rgb = RGBColor(33, 150, 243)
@@ -918,7 +922,7 @@ class DocumentGenerator:
         elements.append(PageBreak())
 
         # PROFİL SAYFASI
-        elements.append(Paragraph('Portföy Sorumlusu', styles['CustomHeading1']))
+        elements.append(Paragraph('Portföy Sorumlusu ve Analiz Detayları', styles['CustomHeading1']))
         # Profil fotoğrafı (varsa)
         profile_photo_path = self._get_profile_photo_path()
         if profile_photo_path:
