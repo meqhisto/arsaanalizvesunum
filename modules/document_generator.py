@@ -25,9 +25,10 @@ import sys
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 import sqlalchemy
+import qrcode  # En üstte import ekleyin
 
 class DocumentGenerator:
-    def __init__(self, arsa_data, analiz_ozeti, file_id, output_dir, profile_info=None, logo_path="/static/logo.png"):  
+    def __init__(self, arsa_data, analiz_ozeti, file_id, output_dir, profile_info=None, settings=None):
         # --- YENİ LOG (EN BAŞA) ---
         print("DEBUG [DocGen Init]: __init__ metodu başladı.", flush=True)
         self.arsa_data = arsa_data
@@ -49,8 +50,41 @@ class DocumentGenerator:
         # --- YENİ LOG ---
         print("DEBUG [DocGen Init]: __init__ metodu tamamlandı.", flush=True)
         self.profile_info = profile_info or {}
-        self.logo_path = logo_path
+        self.settings = settings or {
+            'theme': 'classic',
+            'color_scheme': 'blue',
+            'sections': ['profile', 'property', 'infrastructure', 'swot', 'photos']
+        }
+        self.colors = self._get_color_scheme()
+        self.logo_path = "/static/logo.png"
 
+    def _get_color_scheme(self):
+        """Seçilen renk şemasına göre renkleri döndürür"""
+        schemes = {
+            'blue': {
+                'primary': RGBColor(26, 35, 126),  # Koyu Mavi
+                'secondary': RGBColor(63, 81, 181), # Orta Mavi
+                'accent': RGBColor(33, 150, 243),   # Açık Mavi
+                'background': 'E3F2FD'              # En Açık Mavi
+            },
+            'green': {
+                'primary': RGBColor(27, 94, 32),    # Koyu Yeşil
+                'secondary': RGBColor(56, 142, 60),  # Orta Yeşil
+                'accent': RGBColor(76, 175, 80),     # Açık Yeşil
+                'background': 'E8F5E9'               # En Açık Yeşil
+            },
+            'purple': {
+                'primary': RGBColor(74, 20, 140),    # Koyu Mor
+                'secondary': RGBColor(123, 31, 162), # Orta Mor
+                'accent': RGBColor(156, 39, 176),    # Açık Mor
+                'background': 'F3E5F5'               # En Açık Mor
+            }
+        }
+        return schemes.get(self.settings['color_scheme'], schemes['blue'])
+
+    def _should_include_section(self, section):
+        """Belirli bir bölümün rapora dahil edilip edilmeyeceğini kontrol eder"""
+        return section in self.settings['sections']
 
     def _format_currency(self, value):
         """Para birimini formatlayan yardımcı metod"""
@@ -295,6 +329,34 @@ class DocumentGenerator:
             ['Tam Kat Sayısı', f"{hesap['tam_kat_sayisi']}"]
         ]
 
+    def _create_qr_code(self):
+        """Analiz detayları için QR kod oluşturur"""
+        try:
+            # QR kodun içeriği - analiz detay sayfasının URL'i
+            qr_data = f"http://192.168.2.14:5000/analiz/{self.arsa_data.get('id')}"
+            
+            # QR kod ayarları
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(qr_data)
+            qr.make(fit=True)
+
+            # QR kod görüntüsü oluştur
+            qr_image = qr.make_image(fill_color="black", back_color="white")
+            
+            # QR kodu kaydet
+            qr_path = os.path.join(self.sunum_klasoru, 'qr_code.png')
+            qr_image.save(qr_path)
+            
+            return qr_path
+        except Exception as e:
+            print(f"QR kod oluşturma hatası: {e}")
+            return None
+
     def create_word(self):
         try:
             print("DEBUG [Create Word]: Word belgesi oluşturma başladı.")
@@ -324,7 +386,7 @@ class DocumentGenerator:
             title_run = title.add_run('ARSA ANALİZ RAPORU')
             title_run.font.name = 'Arial'
             title_run.font.size = Pt(40)
-            title_run.font.color.rgb = RGBColor(26, 35, 126) # Koyu Mavi
+            title_run.font.color.rgb = self.colors['primary']
             title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
             # Alt başlık
@@ -333,7 +395,7 @@ class DocumentGenerator:
             subtitle_run = subtitle.add_run(f"{self.arsa_data.get('il', '')}, {self.arsa_data.get('ilce', '')}")
             subtitle_run.font.name = 'Arial'
             subtitle_run.font.size = Pt(28)
-            subtitle_run.font.color.rgb = RGBColor(63, 81, 181) # Orta Mavi
+            subtitle_run.font.color.rgb = self.colors['secondary']
             subtitle.space_before = Pt(12)
             subtitle.space_after = Pt(30)
 
@@ -349,54 +411,14 @@ class DocumentGenerator:
             doc.add_page_break()
 
             # PROFİL SAYFASI (Kapaktan sonra)
-            heading = doc.add_heading('Portföy Sorumlusu ve Analiz Detayları', 1)
-            heading.runs[0].font.name = 'Arial'
-            heading.runs[0].font.size = Pt(22)
-            heading.runs[0].font.color.rgb = RGBColor(33, 150, 243)
-            heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-            # Profil fotoğrafı (varsa)
-            profile_photo_path = self._get_profile_photo_path()
-            if profile_photo_path:
-                p_photo = doc.add_paragraph()
-                p_photo.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                run_photo = p_photo.add_run()
-                run_photo.add_picture(profile_photo_path, width=Inches(1.5))
-                p_photo.space_after = Pt(8)
-
-            # Profil bilgileri tablosu
-            profile_data = self._get_profile_table_data()
-            table = doc.add_table(rows=len(profile_data), cols=2)
-            table.style = 'Table Grid'
-            table.autofit = False
-            table.allow_autofit = False
-            available_width = Cm(29.7) - Cm(1.27) - Cm(1.27)
-            col1_width = available_width * 0.35
-            col2_width = available_width * 0.65
-            for i, (label, value) in enumerate(profile_data):
-                cell1 = table.cell(i, 0)
-                cell2 = table.cell(i, 1)
-                p1 = cell1.paragraphs[0]
-                run1 = p1.add_run(label)
-                run1.font.bold = True
-                run1.font.name = 'Arial'
-                p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                self._set_cell_background(cell1, "E3F2FD") # Açık mavi
-                p2 = cell2.paragraphs[0]
-                run2 = p2.add_run(value)
-                run2.font.name = 'Arial'
-                p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                self._set_cell_background(cell2, "FFFFFF")
-                cell1.vertical_alignment = 1
-                cell2.vertical_alignment = 1
-            doc.add_paragraph()  # Biraz boşluk
-            doc.add_page_break()
+            if self._should_include_section('profile'):
+                self._add_profile_section(doc)
 
             # İçindekiler Sayfası
             toc_heading = doc.add_heading('İçindekiler', level=1)
             toc_heading.runs[0].font.name = 'Arial'
             toc_heading.runs[0].font.size = Pt(24)
-            toc_heading.runs[0].font.color.rgb = RGBColor(26, 35, 126)
+            toc_heading.runs[0].font.color.rgb = self.colors['primary']
             sections_list = [
                 'Arsa Bilgileri',
                 'Altyapı Durumu',
@@ -415,98 +437,18 @@ class DocumentGenerator:
             doc.add_page_break()
 
             # Arsa Bilgileri Sayfası
-            heading = doc.add_heading('Arsa Bilgileri', 1)
-            heading.runs[0].font.name = 'Arial'
-            heading.runs[0].font.size = Pt(24)
-            heading.runs[0].font.color.rgb = RGBColor(26, 35, 126)
-
-            # Ana bilgi tablosu - 2 sütunlu daha sade tasarım
-            data = self._get_arsa_bilgileri() # [['Özellik', 'Değer'], ...]
-
-            table = doc.add_table(rows=len(data), cols=2)
-            table.style = 'Table Grid' # Kenarlıklı stil
-            table.autofit = False # Manuel genişlik ayarı
-            table.allow_autofit = False
-
-            # Sütun genişlikleri (sayfa genişliğine göre ayarla)
-            # Toplam kullanılabilir genişlik = Sayfa Genişliği - Sol Marj - Sağ Marj
-            available_width = Cm(29.7) - Cm(1.27) - Cm(1.27)
-            col1_width = available_width * 0.3
-            col2_width = available_width * 0.7
-
-
-
-
-            for i, row_data in enumerate(data):
-                cell1 = table.cell(i, 0)
-                cell2 = table.cell(i, 1)
-
-                # Özellik hücresi (Sola Yaslı, Kalın)
-                p1 = cell1.paragraphs[0]
-                run1 = p1.add_run(row_data[0])
-                run1.font.bold = True
-                run1.font.name = 'Arial'
-                p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                self._set_cell_background(cell1, "E8EAF6") # Açık mavi arka plan
-
-                # Değer hücresi (Sola Yaslı)
-                p2 = cell2.paragraphs[0]
-                run2 = p2.add_run(row_data[1])
-                run2.font.name = 'Arial'
-                p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                self._set_cell_background(cell2, "FFFFFF") # Beyaz arka plan
-
-                # Hücre dikey hizalama (Ortala)
-                cell1.vertical_alignment = 1 # WD_ALIGN_VERTICAL.CENTER
-                cell2.vertical_alignment = 1 # WD_ALIGN_VERTICAL.CENTER
-
-
-            doc.add_page_break()
+            if self._should_include_section('property'):
+                self._add_property_section(doc)
 
             # Altyapı Durumu - Daha okunaklı tablo
-            heading = doc.add_heading('Altyapı Durumu', 1)
-            heading.runs[0].font.name = 'Arial'
-            heading.runs[0].font.size = Pt(24)
-            heading.runs[0].font.color.rgb = RGBColor(26, 35, 126)
-
-            altyapi_data = self._get_altyapi_durumu() # [['Özellik', 'Durum'], ...]
-            table = doc.add_table(rows=len(altyapi_data), cols=2)
-            table.style = 'Table Grid'
-            table.autofit = False
-            table.allow_autofit = False
-        
-
-            for i, (altyapi, durum) in enumerate(altyapi_data):
-                cell1 = table.cell(i, 0)
-                cell2 = table.cell(i, 1)
-
-                # Özellik hücresi
-                p1 = cell1.paragraphs[0]
-                run1 = p1.add_run(altyapi)
-                run1.font.bold = True
-                run1.font.name = 'Arial'
-                p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
-                self._set_cell_background(cell1, "E8EAF6")
-
-                # Durum hücresi (İkon ve Renk)
-                p2 = cell2.paragraphs[0]
-                status_run = p2.add_run('✓ Var' if durum == '✓' else '✗ Yok')
-                status_run.font.name = 'Arial'
-                status_run.font.bold = True
-                status_run.font.color.rgb = RGBColor(76, 175, 80) if durum == '✓' else RGBColor(244, 67, 54) # Yeşil / Kırmızı
-                p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                self._set_cell_background(cell2, "FFFFFF")
-
-                cell1.vertical_alignment = 1
-                cell2.vertical_alignment = 1
-
-            doc.add_page_break()
+            if self._should_include_section('infrastructure'):
+                self._add_infrastructure_section(doc)
 
             # İnşaat Alanı Hesaplama Tablosu
             heading = doc.add_heading('İnşaat Alanı Hesaplaması', 1)
             heading.runs[0].font.name = 'Arial'
             heading.runs[0].font.size = Pt(20)
-            heading.runs[0].font.color.rgb = RGBColor(33, 150, 243)
+            heading.runs[0].font.color.rgb = self.colors['accent']
             data = self._get_insaat_hesaplama()
             table = doc.add_table(rows=len(data), cols=2)
             table.style = 'Table Grid'
@@ -532,45 +474,13 @@ class DocumentGenerator:
             doc.add_page_break()
 
             # SWOT Analizi - 2x2 tablo
-            swot_heading = doc.add_heading('SWOT Analizi', 1)
-            swot_heading.runs[0].font.name = 'Arial'
-            swot_heading.runs[0].font.color.rgb = RGBColor(26, 35, 126)
-
-            swot_titles = ['Güçlü Yönler', 'Zayıf Yönler', 'Fırsatlar', 'Tehditler']
-            swot_colors = ['A5D6A7', 'EF9A9A', '90CAF9', 'FFD54F']
-            swot_data = self._swot_table_data()
-
-            table = doc.add_table(rows=2, cols=2)
-            table.style = 'Table Grid'
-            table.allow_autofit = False
-            # Başlıklar ve renkler
-            for i in range(2):
-                for j in range(2):
-                    idx = i*2 + j
-                    cell = table.cell(i, j)
-                    # Başlık
-                    p = cell.paragraphs[0]
-                    run = p.add_run(swot_titles[idx])
-                    run.font.bold = True
-                    run.font.size = Pt(13)
-                    run.font.name = 'Arial'
-                    self._set_cell_background(cell, swot_colors[idx])
-                    p.add_run('\n')
-                    # Maddeler
-                    items = swot_data[i][j]
-                    if items:
-                        for madde in items:
-                            p.add_run(f"• {madde}\n")
-                    else:
-                        p.add_run(" - Yok -\n")
-                    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-
-            doc.add_page_break()
+            if self._should_include_section('swot'):
+                self._add_swot_section(doc)
 
             # Analiz Özeti - Başlıklar ve paragraflar
             ozet_heading = doc.add_heading('Analiz Özeti', 1)
             ozet_heading.runs[0].font.name = 'Arial'
-            ozet_heading.runs[0].font.color.rgb = RGBColor(26, 35, 126)
+            ozet_heading.runs[0].font.color.rgb = self.colors['primary']
 
             ozet_sections = {
                 'Temel Değerlendirme': self.analiz_ozeti.get('temel_ozet', 'Değerlendirme bulunamadı.'),
@@ -593,89 +503,24 @@ class DocumentGenerator:
 
 
             # Arsa Fotoğrafları Bölümü
-            doc.add_page_break()
-            foto_heading = doc.add_heading('Arsa Fotoğrafları', 1)
-            foto_heading.runs[0].font.name = 'Arial'
-            foto_heading.runs[0].font.color.rgb = RGBColor(26, 35, 126)
-            print("DEBUG [Create Word]: _get_uploaded_images çağrılıyor...", flush=True)
-            uploaded_images = self._get_uploaded_images() # Kopyalanmış resimlerin yolları
-            print(f"DEBUG [Create Word]: _get_uploaded_images'dan dönen resimler: {uploaded_images}", flush=True)
-            if not uploaded_images:
-                p = doc.add_paragraph("Bu arsa için fotoğraf bulunmamaktadır.")
-                p.runs[0].font.name = 'Arial'
-                p.runs[0].font.italic = True
-                print("DEBUG [Create Word]: Eklenecek resim bulunamadı.")
-            else:
-                print(f"DEBUG [Create Word]: {len(uploaded_images)} adet resim eklenecek.")
-                # Resimleri 2x2 grid şeklinde ekle (yatay sayfaya daha uygun)
-                available_width = Cm(29.7) - Cm(1.27) - Cm(1.27)  # Sayfa genişliği - sol marj - sağ marj
-                max_width = Cm(13)  # Yaklaşık sayfa genişliğinin yarısı
-                max_height = Cm(8)  # Makul bir yükseklik
+            if self._should_include_section('photos'):
+                self._add_photos_section(doc)
 
-                num_images = len(uploaded_images)
-                num_cols = 2
-                num_rows = (num_images + num_cols - 1) // num_cols
-
-                table = doc.add_table(rows=num_rows * 2, cols=num_cols)
-                table.alignment = WD_TABLE_ALIGNMENT.CENTER
-
-                img_idx = 0
-                for r in range(0, num_rows * 2, 2):  # Resim satırları
-                    for c in range(num_cols):
-                        if img_idx < num_images:
-                            img_path = uploaded_images[img_idx]
-                            dest_path = os.path.join(self.sunum_klasoru, os.path.basename(img_path))
-                            img_cell = table.cell(r, c)
-                            cap_cell = table.cell(r + 1, c)
-                            print(f"DEBUG [Create Word]: Resim {img_idx+1} ekleniyor: {img_path}")
-                            print(f"DEBUG [Create Word]: Bu dosya var mı? {os.path.exists(img_path)}")
-
-                            # Hücre dikey hizalama
-                            img_cell.vertical_alignment = 1
-                            cap_cell.vertical_alignment = 0
-
-                            # Resim ekleme paragrafı
-                            p_img = img_cell.paragraphs[0]
-                            p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                            run_img = p_img.add_run()
-
-                            try:
-                                # Resmi ekle ve boyutlandır
-                                with Image.open(img_path) as img:
-                                    width_px, height_px = img.size
-                                    aspect_ratio = width_px / height_px
-                                    print(f"DEBUG [Create Word]: Orijinal boyut (px): {width_px}x{height_px}, Oran: {aspect_ratio:.2f}")
-
-                                # Boyut hesaplama
-                                target_width = max_width
-                                target_height = Cm(target_width.cm / aspect_ratio)
-
-                                if target_height > max_height:
-                                    target_height = max_height
-                                    target_width = Cm(target_height.cm * aspect_ratio)
-
-                                print(f"DEBUG [Create Word]: Hedef boyut (cm): {target_width.cm:.2f}x{target_height.cm:.2f}")
-                                run_img.add_picture(img_path, width=target_width)
-                                print(f"DEBUG [Create Word]: Resim {img_idx+1} başarıyla eklendi.")
-
-                                # Açıklama ekleme
-                                p_cap = cap_cell.paragraphs[0]
-                                p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                                run_cap = p_cap.add_run(f"Fotoğraf {img_idx + 1}")
-                                run_cap.font.name = 'Arial'
-                                run_cap.font.size = Pt(9)
-                                run_cap.italic = True
-
-                            except Exception as e:
-                                print(f"HATA [Word Resim Ekleme]: {img_path} eklenemedi: {e}")
-                                p_err = img_cell.paragraphs[0]
-                                p_err.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                                run_err = p_err.add_run(f"Resim Yüklenemedi\n({os.path.basename(img_path)})")
-                                run_err.font.color.rgb = RGBColor(255, 0, 0)
-                                run_err.font.size = Pt(9)
-
-                            img_idx += 1
-
+            # Raporun sonuna QR kod ekle (son sayfaya eklemeden önce)
+            qr_path = self._create_qr_code()
+            if qr_path:
+                doc.add_paragraph()  # Boşluk bırak
+                p = doc.add_paragraph()
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p.add_run().add_picture(qr_path, width=Inches(1.5))
+                
+                # QR kod açıklaması
+                p = doc.add_paragraph()
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run = p.add_run("Analiz detaylarına ulaşmak için QR kodu tarayın")
+                run.font.size = Pt(10)
+                run.italic = True
+                run.font.color.rgb = RGBColor(128, 128, 128)  # Gri renk
 
             # Footer ekle
             self._add_footer_word(doc, "Arsa Analiz Sistemi - invecoproje.com | " + datetime.now().strftime('%d.%m.%Y'))
@@ -698,6 +543,257 @@ class DocumentGenerator:
         except Exception as e:
             print(f"HATA [Create Word]: {str(e)}")
             return None
+
+    def _add_profile_section(self, doc):
+        """Profil bölümünü ekler"""
+        heading = doc.add_heading('Portföy Sorumlusu ve Analiz Detayları', 1)
+        heading.runs[0].font.color.rgb = self.colors['primary']
+        heading.runs[0].font.name = 'Arial'
+        heading.runs[0].font.size = Pt(22)
+        heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # Profil fotoğrafı (varsa)
+        profile_photo_path = self._get_profile_photo_path()
+        if profile_photo_path:
+            p_photo = doc.add_paragraph()
+            p_photo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            run_photo = p_photo.add_run()
+            run_photo.add_picture(profile_photo_path, width=Inches(1.5))
+            p_photo.space_after = Pt(8)
+
+        # Profil bilgileri tablosu
+        profile_data = self._get_profile_table_data()
+        table = doc.add_table(rows=len(profile_data), cols=2)
+        table.style = 'Table Grid'
+        table.autofit = False
+        table.allow_autofit = False
+        available_width = Cm(29.7) - Cm(1.27) - Cm(1.27)
+        col1_width = available_width * 0.35
+        col2_width = available_width * 0.65
+        for i, (label, value) in enumerate(profile_data):
+            cell1 = table.cell(i, 0)
+            cell2 = table.cell(i, 1)
+            p1 = cell1.paragraphs[0]
+            run1 = p1.add_run(label)
+            run1.font.bold = True
+            run1.font.name = 'Arial'
+            p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            self._set_cell_background(cell1, self.colors['background']) # Açık mavi
+            p2 = cell2.paragraphs[0]
+            run2 = p2.add_run(value)
+            run2.font.name = 'Arial'
+            p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            self._set_cell_background(cell2, "FFFFFF")
+            cell1.vertical_alignment = 1
+            cell2.vertical_alignment = 1
+        doc.add_paragraph()  # Biraz boşluk
+        doc.add_page_break()
+
+    def _add_property_section(self, doc):
+        """Arsa bilgileri bölümünü ekler"""
+        heading = doc.add_heading('Arsa Bilgileri', 1)
+        heading.runs[0].font.color.rgb = self.colors['primary']
+        heading.runs[0].font.name = 'Arial'
+        heading.runs[0].font.size = Pt(24)
+
+        # Ana bilgi tablosu - 2 sütunlu daha sade tasarım
+        data = self._get_arsa_bilgileri() # [['Özellik', 'Değer'], ...]
+
+        table = doc.add_table(rows=len(data), cols=2)
+        table.style = 'Table Grid' # Kenarlıklı stil
+        table.autofit = False # Manuel genişlik ayarı
+        table.allow_autofit = False
+
+        # Sütun genişlikleri (sayfa genişliğine göre ayarla)
+        # Toplam kullanılabilir genişlik = Sayfa Genişliği - Sol Marj - Sağ Marj
+        available_width = Cm(29.7) - Cm(1.27) - Cm(1.27)
+        col1_width = available_width * 0.3
+        col2_width = available_width * 0.7
+
+        for i, row_data in enumerate(data):
+            cell1 = table.cell(i, 0)
+            cell2 = table.cell(i, 1)
+
+            # Özellik hücresi (Sola Yaslı, Kalın)
+            p1 = cell1.paragraphs[0]
+            run1 = p1.add_run(row_data[0])
+            run1.font.bold = True
+            run1.font.name = 'Arial'
+            p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            self._set_cell_background(cell1, self.colors['background']) # Açık mavi arka plan
+
+            # Değer hücresi (Sola Yaslı)
+            p2 = cell2.paragraphs[0]
+            run2 = p2.add_run(row_data[1])
+            run2.font.name = 'Arial'
+            p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            self._set_cell_background(cell2, "FFFFFF") # Beyaz arka plan
+
+            # Hücre dikey hizalama (Ortala)
+            cell1.vertical_alignment = 1 # WD_ALIGN_VERTICAL.CENTER
+            cell2.vertical_alignment = 1 # WD_ALIGN_VERTICAL.CENTER
+
+        doc.add_page_break()
+
+    def _add_infrastructure_section(self, doc):
+        """Altyapı bölümünü ekler"""
+        heading = doc.add_heading('Altyapı Durumu', 1)
+        heading.runs[0].font.color.rgb = self.colors['primary']
+        heading.runs[0].font.name = 'Arial'
+        heading.runs[0].font.size = Pt(24)
+
+        altyapi_data = self._get_altyapi_durumu() # [['Özellik', 'Durum'], ...]
+        table = doc.add_table(rows=len(altyapi_data), cols=2)
+        table.style = 'Table Grid'
+        table.autofit = False
+        table.allow_autofit = False
+
+        for i, (altyapi, durum) in enumerate(altyapi_data):
+            cell1 = table.cell(i, 0)
+            cell2 = table.cell(i, 1)
+
+            # Özellik hücresi
+            p1 = cell1.paragraphs[0]
+            run1 = p1.add_run(altyapi)
+            run1.font.bold = True
+            run1.font.name = 'Arial'
+            p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            self._set_cell_background(cell1, self.colors['background'])
+
+            # Durum hücresi (İkon ve Renk)
+            p2 = cell2.paragraphs[0]
+            status_run = p2.add_run('✓ Var' if durum == '✓' else '✗ Yok')
+            status_run.font.name = 'Arial'
+            status_run.font.bold = True
+            status_run.font.color.rgb = RGBColor(76, 175, 80) if durum == '✓' else RGBColor(244, 67, 54) # Yeşil / Kırmızı
+            p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            self._set_cell_background(cell2, "FFFFFF")
+
+            cell1.vertical_alignment = 1
+            cell2.vertical_alignment = 1
+
+        doc.add_page_break()
+
+    def _add_swot_section(self, doc):
+        """SWOT analizi bölümünü ekler"""
+        swot_heading = doc.add_heading('SWOT Analizi', 1)
+        swot_heading.runs[0].font.color.rgb = self.colors['primary']
+        swot_heading.runs[0].font.name = 'Arial'
+
+        swot_titles = ['Güçlü Yönler', 'Zayıf Yönler', 'Fırsatlar', 'Tehditler']
+        swot_colors = ['A5D6A7', 'EF9A9A', '90CAF9', 'FFD54F']
+        swot_data = self._swot_table_data()
+
+        table = doc.add_table(rows=2, cols=2)
+        table.style = 'Table Grid'
+        table.allow_autofit = False
+        # Başlıklar ve renkler
+        for i in range(2):
+            for j in range(2):
+                idx = i*2 + j
+                cell = table.cell(i, j)
+                # Başlık
+                p = cell.paragraphs[0]
+                run = p.add_run(swot_titles[idx])
+                run.font.bold = True
+                run.font.size = Pt(13)
+                run.font.name = 'Arial'
+                self._set_cell_background(cell, swot_colors[idx])
+                p.add_run('\n')
+                # Maddeler
+                items = swot_data[i][j]
+                if items:
+                    for madde in items:
+                        p.add_run(f"• {madde}\n")
+                else:
+                    p.add_run(" - Yok -\n")
+                p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+        doc.add_page_break()
+
+    def _add_photos_section(self, doc):
+        """Fotoğraflar bölümünü ekler"""
+        foto_heading = doc.add_heading('Arsa Fotoğrafları', 1)
+        foto_heading.runs[0].font.color.rgb = self.colors['primary']
+        foto_heading.runs[0].font.name = 'Arial'
+        print("DEBUG [Create Word]: _get_uploaded_images çağrılıyor...", flush=True)
+        uploaded_images = self._get_uploaded_images() # Kopyalanmış resimlerin yolları
+        print(f"DEBUG [Create Word]: _get_uploaded_images'dan dönen resimler: {uploaded_images}", flush=True)
+        if not uploaded_images:
+            p = doc.add_paragraph("Bu arsa için fotoğraf bulunmamaktadır.")
+            p.runs[0].font.name = 'Arial'
+            p.runs[0].font.italic = True
+            print("DEBUG [Create Word]: Eklenecek resim bulunamadı.")
+        else:
+            print(f"DEBUG [Create Word]: {len(uploaded_images)} adet resim eklenecek.")
+            # Resimleri 2x2 grid şeklinde ekle (yatay sayfaya daha uygun)
+            available_width = Cm(29.7) - Cm(1.27) - Cm(1.27)  # Sayfa genişliği - sol marj - sağ marj
+            max_width = Cm(13)  # Yaklaşık sayfa genişliğinin yarısı
+            max_height = Cm(8)  # Makul bir yükseklik
+
+            num_images = len(uploaded_images)
+            num_cols = 2
+            num_rows = (num_images + num_cols - 1) // num_cols
+
+            table = doc.add_table(rows=num_rows * 2, cols=num_cols)
+            table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+            img_idx = 0
+            for r in range(0, num_rows * 2, 2):  # Resim satırları
+                for c in range(num_cols):
+                    if img_idx < num_images:
+                        img_path = uploaded_images[img_idx]
+                        dest_path = os.path.join(self.sunum_klasoru, os.path.basename(img_path))
+                        img_cell = table.cell(r, c)
+                        cap_cell = table.cell(r + 1, c)
+                        print(f"DEBUG [Create Word]: Resim {img_idx+1} ekleniyor: {img_path}")
+                        print(f"DEBUG [Create Word]: Bu dosya var mı? {os.path.exists(img_path)}")
+
+                        # Hücre dikey hizalama
+                        img_cell.vertical_alignment = 1
+                        cap_cell.vertical_alignment = 0
+
+                        # Resim ekleme paragrafı
+                        p_img = img_cell.paragraphs[0]
+                        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        run_img = p_img.add_run()
+
+                        try:
+                            # Resmi ekle ve boyutlandır
+                            with Image.open(img_path) as img:
+                                width_px, height_px = img.size
+                                aspect_ratio = width_px / height_px
+                                print(f"DEBUG [Create Word]: Orijinal boyut (px): {width_px}x{height_px}, Oran: {aspect_ratio:.2f}")
+
+                            # Boyut hesaplama
+                            target_width = max_width
+                            target_height = Cm(target_width.cm / aspect_ratio)
+
+                            if target_height > max_height:
+                                target_height = max_height
+                                target_width = Cm(target_height.cm * aspect_ratio)
+
+                            print(f"DEBUG [Create Word]: Hedef boyut (cm): {target_width.cm:.2f}x{target_height.cm:.2f}")
+                            run_img.add_picture(img_path, width=target_width)
+                            print(f"DEBUG [Create Word]: Resim {img_idx+1} başarıyla eklendi.")
+
+                            # Açıklama ekleme
+                            p_cap = cap_cell.paragraphs[0]
+                            p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                            run_cap = p_cap.add_run(f"Fotoğraf {img_idx + 1}")
+                            run_cap.font.name = 'Arial'
+                            run_cap.font.size = Pt(9)
+                            run_cap.italic = True
+
+                        except Exception as e:
+                            print(f"HATA [Word Resim Ekleme]: {img_path} eklenemedi: {e}")
+                            p_err = img_cell.paragraphs[0]
+                            p_err.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                            run_err = p_err.add_run(f"Resim Yüklenemedi\n({os.path.basename(img_path)})")
+                            run_err.font.color.rgb = RGBColor(255, 0, 0)
+                            run_err.font.size = Pt(9)
+
+                        img_idx += 1
 
     def _register_fonts(self):
         """Fontları kaydet - platform bağımsız (Türkçe karakterler için önemli)"""
@@ -799,7 +895,7 @@ class DocumentGenerator:
             topMargin=2*cm,
             bottomMargin=2*cm,
             title=f"Arsa Analiz Raporu - {self.arsa_data.get('il', '')}/{self.arsa_data.get('ilce', '')}",
-            author="Arsa Analiz Sistemi"
+            author="invecoproje.com"
         )
         frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
         doc.addPageTemplates([PageTemplate(id='footer', frames=frame, onPage=self._add_footer_pdf)])
@@ -922,42 +1018,44 @@ class DocumentGenerator:
         elements.append(PageBreak())
 
         # PROFİL SAYFASI
-        elements.append(Paragraph('Portföy Sorumlusu ve Analiz Detayları', styles['CustomHeading1']))
-        # Profil fotoğrafı (varsa)
-        profile_photo_path = self._get_profile_photo_path()
-        if profile_photo_path:
-            elements.append(RLImage(profile_photo_path, width=2.5*cm, height=2.5*cm))
-            elements.append(Spacer(1, 0.2*cm))
-        # Profil bilgileri tablosu
-        profile_data = self._get_profile_table_data()
-        table = Table(profile_data, colWidths=[doc.width*0.35, doc.width*0.65])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#E3F2FD')),
-            ('BACKGROUND', (1, 0), (1, -1), colors.white),
-            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('FONTNAME', (0, 0), (0, -1), base_font_bold),
-            ('FONTNAME', (1, 0), (1, -1), base_font),
-            ('FONTSIZE', (0, 0), (-1, -1), 11),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#BDBDBD')),
-            ('LEFTPADDING', (0, 0), (-1, -1), 8),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ]))
-        elements.append(table)
-        elements.append(Spacer(1, 0.8*cm))
-        elements.append(PageBreak())
+        if self._should_include_section('profile'):
+            elements.append(Paragraph('Portföy Sorumlusu ve Analiz Detayları', styles['CustomHeading1']))
+            # Profil fotoğrafı (varsa)
+            profile_photo_path = self._get_profile_photo_path()
+            if profile_photo_path:
+                elements.append(RLImage(profile_photo_path, width=2.5*cm, height=2.5*cm))
+                elements.append(Spacer(1, 0.2*cm))
+            # Profil bilgileri tablosu
+            profile_data = self._get_profile_table_data()
+            table = Table(profile_data, colWidths=[doc.width*0.35, doc.width*0.65])
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#E3F2FD')),
+                ('BACKGROUND', (1, 0), (1, -1), colors.white),
+                ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('FONTNAME', (0, 0), (0, -1), base_font_bold),
+                ('FONTNAME', (1, 0), (1, -1), base_font),
+                ('FONTSIZE', (0, 0), (-1, -1), 11),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#BDBDBD')),
+                ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ]))
+            elements.append(table)
+            elements.append(Spacer(1, 0.8*cm))
+            elements.append(PageBreak())
 
         # Arsa Bilgileri Tablosu
-        elements.append(Paragraph('Arsa Bilgileri', styles['CustomHeading1']))
-        arsa_bilgileri_data = self._get_arsa_bilgileri() # [['Özellik', 'Değer'], ...]
-        table = Table(arsa_bilgileri_data, colWidths=[doc.width*0.3, doc.width*0.7])
-        table.setStyle(info_table_style)
-        elements.append(table)
-        elements.append(Spacer(1, 0.8*cm))
+        if self._should_include_section('property'):
+            elements.append(Paragraph('Arsa Bilgileri', styles['CustomHeading1']))
+            arsa_bilgileri_data = self._get_arsa_bilgileri() # [['Özellik', 'Değer'], ...]
+            table = Table(arsa_bilgileri_data, colWidths=[doc.width*0.3, doc.width*0.7])
+            table.setStyle(info_table_style)
+            elements.append(table)
+            elements.append(Spacer(1, 0.8*cm))
 
         # İnşaat Alanı Hesaplama Tablosu
         elements.append(Paragraph('İnşaat Alanı Hesaplaması', styles['CustomHeading1']))
@@ -983,57 +1081,59 @@ class DocumentGenerator:
         elements.append(Spacer(1, 0.8*cm))
 
         # Altyapı Durumu Tablosu
-        elements.append(Paragraph('Altyapı Durumu', styles['CustomHeading1']))
-        altyapi_data = self._get_altyapi_durumu() # [['Özellik', 'Durum'], ...]
-        # Durumları daha açıklayıcı yapalım
-        altyapi_data_formatted = []
-        for item, status in altyapi_data:
-             status_text = "✓ Var" if status == '✓' else "✗ Yok"
-             # Renklendirme için Paragraph kullanabiliriz ama tablo stilinde zor
-             altyapi_data_formatted.append([item, status_text])
+        if self._should_include_section('infrastructure'):
+            elements.append(Paragraph('Altyapı Durumu', styles['CustomHeading1']))
+            altyapi_data = self._get_altyapi_durumu() # [['Özellik', 'Durum'], ...]
+            # Durumları daha açıklayıcı yapalım
+            altyapi_data_formatted = []
+            for item, status in altyapi_data:
+                 status_text = "✓ Var" if status == '✓' else "✗ Yok"
+                 # Renklendirme için Paragraph kullanabiliriz ama tablo stilinde zor
+                 altyapi_data_formatted.append([item, status_text])
 
-        table = Table(altyapi_data_formatted, colWidths=[doc.width*0.3, doc.width*0.7])
-        table.setStyle(altyapi_table_style)
-        elements.append(table)
-        elements.append(Spacer(1, 0.8*cm))
+            table = Table(altyapi_data_formatted, colWidths=[doc.width*0.3, doc.width*0.7])
+            table.setStyle(altyapi_table_style)
+            elements.append(table)
+            elements.append(Spacer(1, 0.8*cm))
 
         # SWOT Analizi - 2x2 tablo
-        elements.append(PageBreak())
-        elements.append(Paragraph('SWOT Analizi', styles['CustomHeading1']))
+        if self._should_include_section('swot'):
+            elements.append(PageBreak())
+            elements.append(Paragraph('SWOT Analizi', styles['CustomHeading1']))
 
-        swot_titles = ['Güçlü Yönler', 'Zayıf Yönler', 'Fırsatlar', 'Tehditler']
-        swot_colors = [colors.HexColor('#A5D6A7'), colors.HexColor('#EF9A9A'),
-                       colors.HexColor('#90CAF9'), colors.HexColor('#FFD54F')]
-        swot_data = self._swot_table_data()
-        swot_table_data = []
-        for i in range(2):
-            row = []
-            for j in range(2):
-                idx = i*2 + j
-                title = f"<b>{swot_titles[idx]}</b><br/>"
-                items = swot_data[i][j]
-                if items:
-                    text = title + "<br/>".join(f"• {madde}" for madde in items)
-                else:
-                    text = title + " - Yok -"
-                row.append(Paragraph(text, styles['CustomNormal']))
-            swot_table_data.append(row)
-        swot_table = Table(swot_table_data, colWidths=[doc.width/2]*2, rowHeights=None)
-        swot_table.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (0,0), swot_colors[0]),
-            ('BACKGROUND', (1,0), (1,0), swot_colors[1]),
-            ('BACKGROUND', (0,1), (0,1), swot_colors[2]),
-            ('BACKGROUND', (1,1), (1,1), swot_colors[3]),
-            ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#BDBDBD')),
-            ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#BDBDBD')),
-            ('VALIGN', (0,0), (-1,-1), 'TOP'),
-            ('LEFTPADDING', (0,0), (-1,-1), 8),
-            ('RIGHTPADDING', (0,0), (-1,-1), 8),
-            ('TOPPADDING', (0,0), (-1,-1), 6),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ]))
-        elements.append(swot_table)
-        elements.append(Spacer(1, 0.5*cm))
+            swot_titles = ['Güçlü Yönler', 'Zayıf Yönler', 'Fırsatlar', 'Tehditler']
+            swot_colors = [colors.HexColor('#A5D6A7'), colors.HexColor('#EF9A9A'),
+                           colors.HexColor('#90CAF9'), colors.HexColor('#FFD54F')]
+            swot_data = self._swot_table_data()
+            swot_table_data = []
+            for i in range(2):
+                row = []
+                for j in range(2):
+                    idx = i*2 + j
+                    title = f"<b>{swot_titles[idx]}</b><br/>"
+                    items = swot_data[i][j]
+                    if items:
+                        text = title + "<br/>".join(f"• {madde}" for madde in items)
+                    else:
+                        text = title + " - Yok -"
+                    row.append(Paragraph(text, styles['CustomNormal']))
+                swot_table_data.append(row)
+            swot_table = Table(swot_table_data, colWidths=[doc.width/2]*2, rowHeights=None)
+            swot_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (0,0), swot_colors[0]),
+                ('BACKGROUND', (1,0), (1,0), swot_colors[1]),
+                ('BACKGROUND', (0,1), (0,1), swot_colors[2]),
+                ('BACKGROUND', (1,1), (1,1), swot_colors[3]),
+                ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#BDBDBD')),
+                ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#BDBDBD')),
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('LEFTPADDING', (0,0), (-1,-1), 8),
+                ('RIGHTPADDING', (0,0), (-1,-1), 8),
+                ('TOPPADDING', (0,0), (-1,-1), 6),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+            ]))
+            elements.append(swot_table)
+            elements.append(Spacer(1, 0.5*cm))
 
         # Analiz Özeti
         elements.append(PageBreak())
@@ -1051,70 +1151,88 @@ class DocumentGenerator:
 
 
         # Arsa Fotoğrafları Bölümü
-        elements.append(PageBreak())
-        elements.append(Paragraph('Arsa Fotoğrafları', styles['CustomHeading1']))
+        if self._should_include_section('photos'):
+            elements.append(PageBreak())
+            elements.append(Paragraph('Arsa Fotoğrafları', styles['CustomHeading1']))
 
-        # --- YENİ LOG ---
-        print("DEBUG [Create PDF]: _get_uploaded_images çağrılıyor...")
-        uploaded_images = self._get_uploaded_images() # Kopyalanmış resim yolları
-        # --- YENİ LOG ---
-        print(f"DEBUG [Create PDF]: _get_uploaded_images'dan dönen resimler: {uploaded_images}", flush=True)
-
-        if not uploaded_images:
-            elements.append(Paragraph("Bu arsa için fotoğraf bulunmamaktadır.", styles['CustomNormal']))
             # --- YENİ LOG ---
-            print("DEBUG [Create PDF]: Eklenecek resim bulunamadı.")
-        else:
+            print("DEBUG [Create PDF]: _get_uploaded_images çağrılıyor...")
+            uploaded_images = self._get_uploaded_images() # Kopyalanmış resim yolları
             # --- YENİ LOG ---
-            print(f"DEBUG [Create PDF]: {len(uploaded_images)} adet resim eklenecek.")
-            # Resimleri ekle
-            max_img_width = doc.width * 0.9
-            max_img_height = doc.height * 0.4
+            print(f"DEBUG [Create PDF]: _get_uploaded_images'dan dönen resimler: {uploaded_images}", flush=True)
+
+            if not uploaded_images:
+                elements.append(Paragraph("Bu arsa için fotoğraf bulunmamaktadır.", styles['CustomNormal']))
+                # --- YENİ LOG ---
+                print("DEBUG [Create PDF]: Eklenecek resim bulunamadı.")
+            else:
+                # --- YENİ LOG ---
+                print(f"DEBUG [Create PDF]: {len(uploaded_images)} adet resim eklenecek.")
+                # Resimleri ekle
+                max_img_width = doc.width * 0.9
+                max_img_height = doc.height * 0.4
 
 
-            for i, img_path in enumerate(uploaded_images):
-                 # --- YENİ LOG ---
-                print(f"DEBUG [Create PDF]: Resim {i+1} ekleniyor: {img_path}")
-                print(f"DEBUG [Create PDF]: Bu dosya var mı? {os.path.exists(img_path)}")
-                try:
-                    # --- YENİ LOG ---
-                    print(f"DEBUG [Create PDF]: Pillow ile açılıyor: {img_path}")
-                    with Image.open(img_path) as pil_img:
-                        width_px, height_px = pil_img.size
-                        aspect_ratio = width_px / height_px
-                        print(f"DEBUG [Create PDF]: Orijinal boyut (px): {width_px}x{height_px}, Oran: {aspect_ratio:.2f}")
+                for i, img_path in enumerate(uploaded_images):
+                     # --- YENİ LOG ---
+                    print(f"DEBUG [Create PDF]: Resim {i+1} ekleniyor: {img_path}")
+                    print(f"DEBUG [Create PDF]: Bu dosya var mı? {os.path.exists(img_path)}")
+                    try:
+                        # --- YENİ LOG ---
+                        print(f"DEBUG [Create PDF]: Pillow ile açılıyor: {img_path}")
+                        with Image.open(img_path) as pil_img:
+                            width_px, height_px = pil_img.size
+                            aspect_ratio = width_px / height_px
+                            print(f"DEBUG [Create PDF]: Orijinal boyut (px): {width_px}x{height_px}, Oran: {aspect_ratio:.2f}")
 
-                    # Boyutlandırma
-                    img_width = max_img_width
-                    img_height = img_width / aspect_ratio
-                    if img_height > max_img_height:
-                        img_height = max_img_height
-                        img_width = img_height * aspect_ratio
-                    if img_width > max_img_width:
-                         img_width = max_img_width
-                         img_height = img_width / aspect_ratio
+                        # Boyutlandırma
+                        img_width = max_img_width
+                        img_height = img_width / aspect_ratio
+                        if img_height > max_img_height:
+                            img_height = max_img_height
+                            img_width = img_height * aspect_ratio
+                        if img_width > max_img_width:
+                             img_width = max_img_width
+                             img_height = img_width / aspect_ratio
 
-                    # --- YENİ LOG ---
-                    print(f"DEBUG [Create PDF]: Hedef boyut (pt): {img_width:.2f}x{img_height:.2f}")
-                    print(f"DEBUG [Create PDF]: RLImage oluşturuluyor...")
-                    rl_image = RLImage(img_path, width=img_width, height=img_height)
-                    elements.append(rl_image)
-                    # --- YENİ LOG ---
-                    print(f"DEBUG [Create PDF]: Resim {i+1} başarıyla elementlere eklendi.")
+                        # --- YENİ LOG ---
+                        print(f"DEBUG [Create PDF]: Hedef boyut (pt): {img_width:.2f}x{img_height:.2f}")
+                        print(f"DEBUG [Create PDF]: RLImage oluşturuluyor...")
+                        rl_image = RLImage(img_path, width=img_width, height=img_height)
+                        elements.append(rl_image)
+                        # --- YENİ LOG ---
+                        print(f"DEBUG [Create PDF]: Resim {i+1} başarıyla elementlere eklendi.")
 
-                    # Açıklama
-                    caption_text = f"Fotoğraf {i+1}: {os.path.splitext(os.path.basename(img_path))[0]}"
-                    elements.append(Paragraph(caption_text, styles['ImageCaption']))
-                    elements.append(Spacer(1, 0.5*cm))
+                        # Açıklama
+                        caption_text = f"Fotoğraf {i+1}: {os.path.splitext(os.path.basename(img_path))[0]}"
+                        elements.append(Paragraph(caption_text, styles['ImageCaption']))
+                        elements.append(Spacer(1, 0.5*cm))
 
-                    # Her 2 resimde bir sayfa sonu ekle (isteğe bağlı)
-                    # if (i + 1) % 2 == 0 and i + 1 < len(uploaded_images):
-                    #     elements.append(PageBreak())
+                        # Her 2 resimde bir sayfa sonu ekle (isteğe bağlı)
+                        # if (i + 1) % 2 == 0 and i + 1 < len(uploaded_images):
+                        #     elements.append(PageBreak())
 
-                except Exception as e:
-                    print(f"HATA [PDF Resim Ekleme]: {img_path} eklenemedi: {e}")
-                    error_text = f"Resim Yüklenemedi ({os.path.basename(img_path)}) - Hata: {e}"
-                    elements.append(Paragraph(error_text, styles['CustomNormal']))
+                    except Exception as e:
+                        print(f"HATA [PDF Resim Ekleme]: {img_path} eklenemedi: {e}")
+                        error_text = f"Resim Yüklenemedi ({os.path.basename(img_path)}) - Hata: {e}"
+                        elements.append(Paragraph(error_text, styles['CustomNormal']))
+
+        # QR kodu PDF'e ekle (son sayfaya eklemeden önce)
+        qr_path = self._create_qr_code()
+        if qr_path:
+            elements.append(Spacer(1, 20))
+            elements.append(RLImage(qr_path, width=4*cm, height=4*cm))
+            elements.append(Paragraph(
+                "Analiz detaylarına ulaşmak için QR kodu tarayın",
+                ParagraphStyle(
+                    'QRCaption',
+                    parent=styles['Normal'],
+                    fontSize=9,
+                    textColor=colors.gray,
+                    alignment=TA_CENTER,
+                    spaceAfter=20
+                )
+            ))
 
         # PDF'i oluştur
         # PDF'i oluştur

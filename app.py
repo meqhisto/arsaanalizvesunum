@@ -20,6 +20,11 @@ import sys
 from modules.document_generator import DocumentGenerator
 from decimal import Decimal
 from werkzeug.utils import secure_filename
+import logging
+from logging.handlers import RotatingFileHandler
+from modules.fiyat_tahmini import FiyatTahminModeli # <<< YENİ EKLEME
+
+
 
 import sys
 
@@ -51,6 +56,13 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Log ayarları
+handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+app.logger.addHandler(handler)
 
 # --- Kullanıcı Modeli ---
 class User(db.Model):
@@ -97,6 +109,13 @@ class ArsaAnaliz(db.Model):
     altyapi = db.Column(db.JSON)
     swot_analizi = db.Column(db.JSON)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    __table_args__ = (
+        db.Index('ix_user_il', 'user_id', 'il'),
+        db.Index('ix_created_at', 'created_at'),
+    )
+
+    # User ilişkisini ekle
+    user = db.relationship('User', backref=db.backref('analizler', lazy=True))
 
 class BolgeDagilimi(db.Model):
     __tablename__ = 'bolge_dagilimi'
@@ -149,6 +168,29 @@ class AnalizMedya(db.Model):
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     analiz = db.relationship('ArsaAnaliz', backref=db.backref('medyalar', lazy=True))
+
+# Portfolio modeli (User ve ArsaAnaliz modellerinden sonra ekleyin)
+class Portfolio(db.Model):
+    __tablename__ = 'portfolios'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    visibility = db.Column(db.String(20), default='public')  # 'public' veya 'private'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # İlişkiler
+    user = db.relationship('User', backref=db.backref('portfolios', lazy=True))
+    analizler = db.relationship('ArsaAnaliz', secondary='portfolio_arsalar', lazy='dynamic',
+                              backref=db.backref('portfolios', lazy=True))
+
+# Portfolio-Arsa ilişki tablosu
+portfolio_arsalar = db.Table('portfolio_arsalar',
+    db.Column('portfolio_id', db.Integer, db.ForeignKey('portfolios.id'), primary_key=True),
+    db.Column('arsa_id', db.Integer, db.ForeignKey('arsa_analizleri.id'), primary_key=True),
+    db.Column('added_at', db.DateTime, default=datetime.utcnow)
+)
 
 # Arsa sınıfı
 class Arsa:
@@ -319,6 +361,11 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.error(f"Sunucu hatası: {str(e)}", exc_info=True)
+    return "Bir hata oluştu. Lütfen daha sonra tekrar deneyin.", 500
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -366,6 +413,37 @@ def home():
     if 'user_id' in session:
         return redirect(url_for('index'))  # Kullanıcı giriş yaptıysa index.html'e yönlendir
     return redirect(url_for('login'))  # Kullanıcı giriş yapmadıysa login.html'e yönlendir
+
+
+@app.route('/change-password', methods=['POST'], endpoint='change_password') # endpoint adını belirtiyoruz
+@login_required # Kullanıcının giriş yapmış olması gerekebilir
+def change_password_route(): # Fonksiyon adı farklı olabilir ama endpoint önemlidir
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        # Mevcut kullanıcıyı al (örneğin session'dan ID ile)
+        user_id = session.get('user_id')
+        user = User.query.get(user_id) # User modelinize göre ayarlayın
+
+        if not user or not check_password_hash(user.password_hash, current_password): # password_hash, modelinizdeki hash'lenmiş şifre alanı olmalı
+            flash('Mevcut şifreniz yanlış!', 'danger')
+            return redirect(url_for('profile')) # Profil sayfasına geri yönlendir
+
+        if new_password != confirm_password:
+            flash('Yeni şifreler eşleşmiyor!', 'danger')
+            return redirect(url_for('profile'))
+
+        # Yeni şifreyi hash'le ve veritabanında güncelle
+        user.password_hash = generate_password_hash(new_password)
+        db.session.commit() # Veritabanı işlemini kaydet
+
+        flash('Şifreniz başarıyla güncellendi.', 'success')
+        return redirect(url_for('profile'))
+
+    # POST dışındaki istekler için (genelde buraya gelinmemeli)
+    return redirect(url_for('profile'))
 
 @app.route('/index')
 @login_required
@@ -641,17 +719,24 @@ def generate(format, file_id):
         print(f"DEBUG [Generate]: Kullanılacak arsa_data: {arsa_data}", flush=True) # Flush eklendi
         print(f"DEBUG [Generate]: Kullanılacak analiz_ozeti: {analiz_ozeti}", flush=True) # Flush eklendi
 
-        # --- YENİ LOG ---
-        print("DEBUG [Generate]: DocumentGenerator oluşturuluyor...", flush=True)
+        # URL parametrelerinden rapor ayarlarını al
+        theme = request.args.get('theme', 'classic')
+        color_scheme = request.args.get('color_scheme', 'blue')
+        sections = request.args.get('sections', '').split(',')
+
+        # Ayarları DocumentGenerator'a gönder
         doc_generator = DocumentGenerator(
             arsa_data,
             analiz_ozeti,
             file_id,
             PRESENTATIONS_DIR,
-            profile_info=profile_info
+            profile_info=profile_info,
+            settings={
+                'theme': theme,
+                'color_scheme': color_scheme,
+                'sections': sections
+            }
         )
-        # --- YENİ LOG ---
-        print("DEBUG [Generate]: DocumentGenerator başarıyla oluşturuldu.", flush=True)
 
         filename = None # Başlangıç değeri
         download_name = None # Başlangıç değeri
@@ -728,7 +813,8 @@ def profile():
                     filepath = os.path.join(user_upload_dir, filename)
                     file.save(filepath)
                     # Veritabanına göreceli yolu kaydet
-                    user.profil_foto = os.path.join('profiles', str(user.id), filename)
+                    relative_path = '/'.join(['profiles', str(user.id), filename])
+                    user.profil_foto = relative_path
 
             db.session.commit()
             flash('Profil başarıyla güncellendi!', 'success')
@@ -816,7 +902,36 @@ def analiz_detay(analiz_id):
         }
         session['analiz_ozeti'] = ozet
         print(f"DEBUG [Analiz Detay]: Session'a kaydedilen arsa_data: {session['arsa_data']}") # Debug için
+        
+        tahmin_sonucu = None
+        try:
+            # Fiyat tahmin modelini başlat
+            tahmin_modeli = FiyatTahminModeli(db.session)
 
+            # Tahmin için gerekli veriyi hazırla
+            prediction_input_data = {
+                "il": analiz.il,
+                "ilce": analiz.ilce,
+                "mahalle": analiz.mahalle,
+                "metrekare": metrekare,
+                "imar_durumu": analiz.imar_durumu,
+                # Modelin eğitildiği diğer özellikler varsa buraya ekleyin
+                # Örneğin:
+                 "taks": taks,
+                 "kaks": kaks,
+                 "bolge_fiyat": bolge_fiyat,
+                 "altyapi": altyapi, # Model altyapıyı kullanıyorsa
+            }
+
+            # Tahmini yap
+            tahmin_sonucu = tahmin_modeli.tahmin_yap(prediction_input_data)
+            print(f"DEBUG [Analiz Detay]: Fiyat tahmini sonucu: {tahmin_sonucu}")
+
+        except Exception as e:
+            app.logger.error(f"Fiyat tahmini sırasında hata oluştu: {e}", exc_info=True)
+            flash('Fiyat tahmini yapılırken bir sorun oluştu.', 'warning')
+        # --- YENİ: Fiyat Tahmini Entegrasyonu Sonu ---
+        
         # Medya dosyalarını getir
         medyalar = AnalizMedya.query.filter_by(analiz_id=analiz_id).order_by(AnalizMedya.uploaded_at).all()
 
@@ -832,7 +947,8 @@ def analiz_detay(analiz_id):
             ozet=ozet,
             user=user,  # Kullanıcı bilgilerini template'e gönder
             medyalar=medyalar, # Medya dosyalarını template'e gönder
-            file_id=file_id # Rapor oluşturma linkleri için file_id gönder
+            file_id=file_id, # Rapor oluşturma linkleri için file_id gönder
+            tahmin=tahmin_sonucu 
         )
 
     except Exception as e:
@@ -854,6 +970,7 @@ def analiz_detay(analiz_id):
         print("Lütfen analiz kaydındaki tüm sayısal alanların (metrekare, fiyat, bolge_fiyat, taks, kaks) boş veya None olmadığından emin olun.")
         print("Veritabanında eksik veya hatalı veri varsa düzeltin. Gerekirse analiz kaydını silip tekrar oluşturun.")
         flash('Analiz görüntülenirken bir hata oluştu. Detaylar için sunucu loglarını kontrol edin.', 'danger')
+        flash('Analiz görüntülenirken bir hata oluştu.', 'danger')
         return redirect(url_for('analizler'))
 
 @app.route('/analizler')
@@ -1041,9 +1158,59 @@ def medya_sil(analiz_id, medya_id):
 
     return redirect(url_for('analiz_detay', analiz_id=analiz_id))
 
+@app.route('/portfolios')
+@login_required
+def portfolios():
+    # Join ile User bilgilerini de getir
+    analizler = ArsaAnaliz.query.join(User)\
+        .add_columns(User.ad, User.soyad)\
+        .filter(User.is_active == True)\
+        .order_by(ArsaAnaliz.created_at.desc()).all()
+    
+    return render_template('portfolios.html', analizler=analizler)
+
+@app.route('/portfolio/create', methods=['GET', 'POST'])
+@login_required
+def portfolio_create():
+    if request.method == 'POST':
+        try:
+            # Yeni portföy oluştur
+            portfolio = Portfolio(
+                user_id=session['user_id'],
+                title=request.form.get('title'),
+                description=request.form.get('description'),
+                visibility=request.form.get('visibility', 'public')
+            )
+            
+            # Veritabanına kaydet
+            db.session.add(portfolio)
+            db.session.commit()
+            
+            flash('Portföy başarıyla oluşturuldu.', 'success')
+            return redirect(url_for('portfolios'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('Portföy oluşturulurken bir hata oluştu.', 'danger')
+            print(f"Portfolio creation error: {str(e)}")
+    
+    # GET isteği için form sayfasını göster
+    return render_template('portfolio_create.html')
+
+@app.route('/portfolio/<int:id>')
+@login_required
+def portfolio_detail(id):
+    portfolio = Portfolio.query.get_or_404(id)
+    
+    # Portföy private ise ve kullanıcının kendi portföyü değilse erişimi engelle
+    if portfolio.visibility == 'private' and portfolio.user_id != session['user_id']:
+        flash('Bu portföye erişim yetkiniz yok.', 'danger')
+        return redirect(url_for('portfolios'))
+    
+    return render_template('portfolio_detail.html', portfolio=portfolio)
+
 if __name__ == '__main__':
     # Veritabanı tablolarını oluştur (eğer yoksa)
     with app.app_context():
         db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
-

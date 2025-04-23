@@ -1,0 +1,79 @@
+<div class="modal fade" id="reportSettingsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rapor Ayarları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportSettingsForm">
+                    <!-- Tema Seçimi -->
+                    <div class="mb-3">
+                        <label class="form-label">Rapor Teması</label>
+                        <select class="form-select" name="theme">
+                            <option value="classic">Klasik</option>
+                            <option value="modern">Modern</option>
+                            <option value="professional">Profesyonel</option>
+                        </select>
+                    </div>
+
+                    <!-- Renk Şeması -->
+                    <div class="mb-3">
+                        <label class="form-label">Renk Şeması</label>
+                        <div class="d-flex gap-2">
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" name="color_scheme" value="blue" checked>
+                                <label class="form-check-label">Mavi</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" name="color_scheme" value="green">
+                                <label class="form-check-label">Yeşil</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" name="color_scheme" value="purple">
+                                <label class="form-check-label">Mor</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bölüm Seçimi -->
+                    <div class="mb-3">
+                        <label class="form-label">Rapor Bölümleri</label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="sections" value="profile" checked>
+                            <label class="form-check-label">Profil Bilgileri</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="sections" value="property" checked>
+                            <label class="form-check-label">Arsa Bilgileri</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="sections" value="infrastructure" checked>
+                            <label class="form-check-label">Altyapı Durumu</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="sections" value="swot" checked>
+                            <label class="form-check-label">SWOT Analizi</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="sections" value="photos" checked>
+                            <label class="form-check-label">Fotoğraflar</label>
+                        </div>
+                    </div>
+                </form>
+                <script>
+                    document.getElementById('reportSettingsForm').addEventListener('submit', function(e) {
+                        if (!this.checkValidity()) {
+                            e.preventDefault();
+                            alert('Lütfen tüm alanları doldurun!');
+                        }
+                    });
+                    </script>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="generateReport()">Rapor Oluştur</button>
+            </div>
+        </div>
+    </div>
+</div>
