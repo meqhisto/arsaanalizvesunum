@@ -16,55 +16,59 @@
                         <h3 class="text-center mb-0">Yeni Hesap Oluştur</h3>
                     </div>
                     <div class="card-body">
-                        {% if get_flashed_messages %}
                         {% with messages = get_flashed_messages(with_categories=true) %}
-                          {% if messages %}
-                            {% for category, msg in messages %}
-                              <div class="alert alert-{{ category }}" role="alert">{{ msg }}</div>
-                            {% endfor %}
-                          {% endif %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
                         {% endwith %}
-                        {% endif %}
-                        <form action="{{ url_for('register') }}" method="post">
+                        <form action="{{ url_for('register') }}" method="post" id="registerForm" onsubmit="return validateForm()">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Ad</label>
-                                    <input type="text" class="form-control" name="ad" required>
+                                    <input type="text" class="form-control" name="ad" id="ad" required>
+                                    <div class="invalid-feedback">Lütfen adınızı giriniz.</div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Soyad</label>
-                                    <input type="text" class="form-control" name="soyad" required>
+                                    <input type="text" class="form-control" name="soyad" id="soyad" required>
+                                    <div class="invalid-feedback">Lütfen soyadınızı giriniz.</div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">E-posta</label>
-                                    <input type="email" class="form-control" name="email" required>
+                                    <input type="email" class="form-control" name="email" id="email" required>
+                                    <div class="invalid-feedback">Lütfen geçerli bir e-posta adresi giriniz.</div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Telefon</label>
-                                    <input type="tel" class="form-control" name="telefon">
+                                    <input type="tel" class="form-control" name="telefon" id="telefon" pattern="[0-9]{10}" required>
+                                    <div class="invalid-feedback">Lütfen 10 haneli telefon numaranızı giriniz.</div>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Firma</label>
-                                <input type="text" class="form-control" name="firma">
+                                <input type="text" class="form-control" name="firma" id="firma">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Unvan</label>
-                                <input type="text" class="form-control" name="unvan">
+                                <input type="text" class="form-control" name="unvan" id="unvan">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Adres</label>
-                                <textarea class="form-control" name="adres" rows="3"></textarea>
+                                <textarea class="form-control" name="adres" id="adres" rows="3"></textarea>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Şifre</label>
-                                <input type="password" class="form-control" name="password" required>
+                                <input type="password" class="form-control" name="password" id="password" required>
+                                <div class="invalid-feedback">Şifre en az 6 karakter olmalıdır.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Şifre Tekrar</label>
-                                <input type="password" class="form-control" name="password_confirm" required>
+                                <input type="password" class="form-control" name="password_confirm" id="password_confirm" required>
+                                <div class="invalid-feedback">Şifreler eşleşmiyor.</div>
                             </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">Kayıt Ol</button>
@@ -80,6 +84,61 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function validateForm() {
+            let isValid = true;
+            const form = document.getElementById('registerForm');
+            
+            // E-posta kontrolü
+            const email = document.getElementById('email');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.value)) {
+                email.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                email.classList.remove('is-invalid');
+            }
+            
+            // Telefon kontrolü
+            const telefon = document.getElementById('telefon');
+            const telefonRegex = /^[0-9]{10}$/;
+            if (!telefonRegex.test(telefon.value)) {
+                telefon.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                telefon.classList.remove('is-invalid');
+            }
+            
+            // Şifre kontrolü
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('password_confirm');
+            
+            if (password.value.length < 6) {
+                password.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                password.classList.remove('is-invalid');
+            }
+            
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                confirmPassword.classList.remove('is-invalid');
+            }
+            
+            return isValid;
+        }
+        
+        // Form alanlarında değişiklik olduğunda doğrulama yap
+        document.querySelectorAll('#registerForm input').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.classList.contains('is-invalid')) {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 

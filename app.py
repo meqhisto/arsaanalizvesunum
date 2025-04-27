@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import sqlite3
 from functools import wraps
@@ -23,22 +23,26 @@ from werkzeug.utils import secure_filename
 import logging
 from logging.handlers import RotatingFileHandler
 from modules.fiyat_tahmini import FiyatTahminModeli # <<< YENİ EKLEME
+import secrets
 
 
 
 import sys
 
-
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'sizin_gizli_anahtariniz'
+application = app  # Flask uygulamasını application olarak ayarlayın
 
 # Jinja2 template engine'ine datetime modülünü ekle
 app.jinja_env.globals.update(datetime=datetime)
 
-# MySQL Veritabanı Ayarları (localhost:3306, kullanıcı=root, şifre boş)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3306/arsa_db'
+# MySQL Veritabanı Ayarları
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:altan@localhost:3306/arsa_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_POOL_SIZE'] = 10
+app.config['SQLALCHEMY_MAX_OVERFLOW'] = 20
+app.config['SQLALCHEMY_POOL_TIMEOUT'] = 30
+app.config['SQLALCHEMY_POOL_RECYCLE'] = 1800
 
 db = SQLAlchemy(app)
 
@@ -82,12 +86,32 @@ class User(db.Model):
     profil_foto = db.Column(db.String(200))  # Path to profile photo
     is_active = db.Column(db.Boolean, default=True)
     son_giris = db.Column(db.DateTime)
+    failed_attempts = db.Column(db.Integer, default=0)
+    reset_token = db.Column(db.String(255))
+    reset_token_expires = db.Column(db.DateTime)
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password, method='scrypt')
+        try:
+            print(f"Setting password for user {self.email}")  # Debug log
+            self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
+            print("Password hash generated successfully")  # Debug log
+        except Exception as e:
+            print(f"Error setting password: {str(e)}")  # Debug log
+            raise
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        try:
+            print(f"Checking password for user {self.email}")  # Debug log
+            print(f"Stored hash: {self.password_hash}")  # Debug log
+            result = check_password_hash(self.password_hash, password)
+            print(f"Password check result: {result}")  # Debug log
+            return result
+        except Exception as e:
+            print(f"Error checking password: {str(e)}")  # Debug log
+            import traceback
+            print("Full traceback:")  # Debug log
+            print(traceback.format_exc())  # Debug log
+            return False
 
 class ArsaAnaliz(db.Model):
     __tablename__ = 'arsa_analizleri'
@@ -369,37 +393,129 @@ def handle_exception(e):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-
         try:
-            # print("\n=== Login Debug Info ===") # İsteğe bağlı olarak açılabilir
-            # print(f"Login attempt for email: {email}") # İsteğe bağlı olarak açılabilir
+            email = request.form.get('email')
+            password = request.form.get('password')
+            remember = 'remember' in request.form
+
+            print(f"Login attempt - Email: {email}")  # Debug log
+
+            if not email or not password:
+                print("Email or password is missing")  # Debug log
+                flash('E-posta ve şifre alanları zorunludur!', 'danger')
+                return redirect(url_for('login'))
 
             user = User.query.filter_by(email=email).first()
-            # print(f"User found: {user is not None}") # İsteğe bağlı olarak açılabilir
+            print(f"User found: {user is not None}")  # Debug log
 
             if user:
-                # print(f"User ID: {user.id}") # İsteğe bağlı olarak açılabilir
-                # print(f"Stored hash: {user.password_hash}") # İsteğe bağlı olarak açılabilir
-                is_valid = user.check_password(password)
-                # print(f"Password verification result: {is_valid}") # İsteğe bağlı olarak açılabilir
+                print(f"User ID: {user.id}, Email: {user.email}")  # Debug log
+                print(f"Password hash: {user.password_hash}")  # Debug log
+                
+                try:
+                    is_valid = user.check_password(password)
+                    print(f"Password check result: {is_valid}")  # Debug log
+                except Exception as e:
+                    print(f"Password check error: {str(e)}")  # Debug log
+                    flash('Şifre doğrulama hatası!', 'danger')
+                    return redirect(url_for('login'))
 
                 if is_valid:
                     session['user_id'] = user.id
                     session['email'] = user.email
+                    
+                    user.failed_attempts = 0
+                    user.son_giris = datetime.utcnow()
+                    
+                    if remember:
+                        session.permanent = True
+                        app.permanent_session_lifetime = timedelta(days=30)
+                    
+                    db.session.commit()
+                    print("Login successful")  # Debug log
                     flash('Başarıyla giriş yaptınız!', 'success')
                     return redirect(url_for('index'))
+                else:
+                    user.failed_attempts = (user.failed_attempts or 0) + 1
+                    user.son_giris = datetime.utcnow()
+                    db.session.commit()
+                    
+                    if user.failed_attempts >= 5:
+                        flash('Çok fazla başarısız giriş denemesi. Lütfen 5 dakika bekleyin.', 'danger')
+                    else:
+                        flash('Geçersiz e-posta veya şifre!', 'danger')
+            else:
+                print("User not found")  # Debug log
+                flash('Geçersiz e-posta veya şifre!', 'danger')
 
-            flash('Geçersiz e-posta veya şifre!', 'danger')
             return redirect(url_for('login'))
 
         except Exception as e:
-            print(f"Login error: {str(e)}")
+            print(f"Login error details: {str(e)}")  # Debug log
+            import traceback
+            print("Full traceback:")  # Debug log
+            print(traceback.format_exc())  # Debug log
             flash('Giriş işlemi sırasında bir hata oluştu!', 'danger')
             return redirect(url_for('login'))
 
     return render_template('login.html')
+
+# Şifremi unuttum sayfası
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            # Şifre sıfırlama token'ı oluştur
+            token = secrets.token_urlsafe(32)
+            user.reset_token = token
+            user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+            db.session.commit()
+            
+            # E-posta gönderme işlemi burada yapılacak
+            # Şimdilik sadece token'ı log'a yazalım
+            print(f"Password reset token for {email}: {token}")
+            
+            flash('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.', 'success')
+        else:
+            flash('Bu e-posta adresi ile kayıtlı bir hesap bulunamadı.', 'danger')
+        
+        return redirect(url_for('login'))
+    
+    return render_template('forgot_password.html')
+
+# Şifre sıfırlama sayfası
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = User.query.filter_by(reset_token=token).first()
+    
+    if not user or user.reset_token_expires < datetime.utcnow():
+        flash('Geçersiz veya süresi dolmuş şifre sıfırlama bağlantısı.', 'danger')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        
+        if password != confirm_password:
+            flash('Şifreler eşleşmiyor!', 'danger')
+            return redirect(url_for('reset_password', token=token))
+        
+        if len(password) < 6:
+            flash('Şifre en az 6 karakter olmalıdır!', 'danger')
+            return redirect(url_for('reset_password', token=token))
+        
+        user.set_password(password)
+        user.reset_token = None
+        user.reset_token_expires = None
+        db.session.commit()
+        
+        flash('Şifreniz başarıyla güncellendi. Lütfen yeni şifrenizle giriş yapın.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('reset_password.html', token=token)
 
 # Çıkış yapma route'u
 @app.route('/logout')
@@ -466,7 +582,7 @@ def index():
 
     # Bölge dağılımı için labels ve data
     bolge_labels = [b.il for b in bolge_dagilimlari]
-    bolge_data = [b.analiz_sayisi for b in bolge_dagilimlari]
+    bolge_data = [float(b.toplam_deger) for b in bolge_dagilimlari]
 
     # Yatırım performansı için labels ve data
     perf_labels = [f"{yp.ay} {yp.yil}" for yp in yatirim_performanslari]
@@ -487,12 +603,24 @@ def index():
 def register():
     if request.method == 'POST':
         try:
-            # Check if user already exists
-            if User.query.filter_by(email=request.form.get('email')).first():
-                flash('Bu e-posta zaten kayıtlı.', 'danger')
+            # Şifre doğrulama kontrolü
+            password = request.form.get('password')
+            password_confirm = request.form.get('password_confirm')
+            
+            if password != password_confirm:
+                flash('Şifreler eşleşmiyor!', 'danger')
+                return redirect(url_for('register'))
+            
+            if len(password) < 6:
+                flash('Şifre en az 6 karakter olmalıdır!', 'danger')
                 return redirect(url_for('register'))
 
-            # Create new user with profile info
+            # E-posta kontrolü
+            if User.query.filter_by(email=request.form.get('email')).first():
+                flash('Bu e-posta adresi zaten kayıtlı!', 'danger')
+                return redirect(url_for('register'))
+
+            # Yeni kullanıcı oluştur
             user = User(
                 email=request.form.get('email'),
                 ad=request.form.get('ad'),
@@ -500,20 +628,25 @@ def register():
                 telefon=request.form.get('telefon'),
                 firma=request.form.get('firma'),
                 unvan=request.form.get('unvan'),
-                adres=request.form.get('adres')
+                adres=request.form.get('adres'),
+                is_active=True
             )
-            user.set_password(request.form.get('password'))
+            
+            # Şifreyi ayarla
+            user.set_password(password)
 
+            # Veritabanına kaydet
             db.session.add(user)
             db.session.commit()
 
-            flash('Kayıt başarılı. Lütfen giriş yapın.', 'success')
+            flash('Kayıt başarılı! Lütfen giriş yapın.', 'success')
             return redirect(url_for('login'))
 
         except Exception as e:
             db.session.rollback()
-            flash('Kayıt sırasında bir hata oluştu!', 'danger')
-            print(f"Registration error: {str(e)}")
+            flash(f'Kayıt sırasında bir hata oluştu: {str(e)}', 'danger')
+            app.logger.error(f'Registration error: {str(e)}')
+            return redirect(url_for('register'))
 
     return render_template('register.html')
 
@@ -1209,8 +1342,27 @@ def portfolio_detail(id):
     
     return render_template('portfolio_detail.html', portfolio=portfolio)
 
-if __name__ == '__main__':
-    # Veritabanı tablolarını oluştur (eğer yoksa)
+# Veritabanı tablolarını oluştur
+def init_db():
     with app.app_context():
-        db.create_all()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+        try:
+            # Önce tüm tabloları sil
+            db.drop_all()
+            # Bağlantıyı yeniden başlat
+            db.session.close()
+            db.session.remove()
+            # Sonra yeniden oluştur
+            db.create_all()
+            print("Veritabanı tabloları başarıyla oluşturuldu!")
+        except Exception as e:
+            print(f"Veritabanı oluşturma hatası: {str(e)}")
+            db.session.rollback()
+            raise
+
+if __name__ == '__main__':
+    try:
+        # Veritabanını başlat
+        init_db()
+        app.run(host='0.0.0.0', port=5000, debug=True)
+    except Exception as e:
+        print(f"Uygulama başlatma hatası: {str(e)}")
