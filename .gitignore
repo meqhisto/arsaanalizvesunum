@@ -47,4 +47,7 @@ static/presentations/
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Instance
+instance.zip 
