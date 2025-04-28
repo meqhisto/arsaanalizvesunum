@@ -52,7 +52,7 @@ if not PRESENTATIONS_DIR.exists():
     PRESENTATIONS_DIR.mkdir(parents=True)
 
 # Medya yükleme ayarları
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi'} # Video formatları eklendi
 MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
@@ -132,6 +132,7 @@ class ArsaAnaliz(db.Model):
     bolge_fiyat = db.Column(db.Numeric(15,2))
     altyapi = db.Column(db.JSON)
     swot_analizi = db.Column(db.JSON)
+    notlar = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     __table_args__ = (
         db.Index('ix_user_il', 'user_id', 'il'),
@@ -169,18 +170,17 @@ class YatirimPerformansi(db.Model):
 class DashboardStats(db.Model):
     __tablename__ = 'dashboard_stats'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Kullanıcı ID'si eklendi
-    toplam_analiz = db.Column(db.Integer, default=0)
-    aktif_projeler = db.Column(db.Integer, default=0)
-    toplam_deger = db.Column(db.Numeric(15, 2), default=0.00)
-    ortalama_roi = db.Column(db.Numeric(5, 2), default=0.00)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # İlişki tanımlama
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    toplam_arsa_sayisi = db.Column(db.Integer, default=0)
+    ortalama_fiyat = db.Column(db.Float, default=0)
+    en_yuksek_fiyat = db.Column(db.Float, default=0)
+    en_dusuk_fiyat = db.Column(db.Float, default=0)
+    toplam_deger = db.Column(db.Numeric(15,2), default=0)
+    son_guncelleme = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('dashboard_stats', lazy=True))
 
     def __repr__(self):
-        return f"<DashboardStats(toplam_analiz={self.toplam_analiz}, aktif_projeler={self.aktif_projeler}, toplam_deger={self.toplam_deger}, ortalama_roi={self.ortalama_roi})>"
+        return f"<DashboardStats(toplam_arsa_sayisi={self.toplam_arsa_sayisi}, ortalama_fiyat={self.ortalama_fiyat}, en_yuksek_fiyat={self.en_yuksek_fiyat}, en_dusuk_fiyat={self.en_dusuk_fiyat})>"
 
 # Medya modeli
 class AnalizMedya(db.Model):
@@ -565,6 +565,7 @@ def change_password_route(): # Fonksiyon adı farklı olabilir ama endpoint öne
 @login_required
 def index():
     user_id = session['user_id']
+    current_user = User.query.get(user_id)
 
     # Kullanıcının kendi istatistiklerini getir
     stats = DashboardStats.query.filter_by(user_id=user_id).first()
@@ -573,30 +574,65 @@ def index():
         db.session.add(stats)
         db.session.commit()
 
-    # Kullanıcının kendi bölge dağılımlarını getir
+    # Kullanıcının analizlerini getir
+    analizler = ArsaAnaliz.query.filter_by(user_id=user_id)\
+        .order_by(ArsaAnaliz.created_at.desc())\
+        .limit(5).all()
+
+    # Son aktiviteleri hazırla
+    son_aktiviteler = []
+    for analiz in analizler:
+        son_aktiviteler.append({
+            'tarih': analiz.created_at,
+            'mesaj': f"{analiz.il}, {analiz.ilce} bölgesinde yeni arsa analizi oluşturuldu"
+        })
+
+    # Bölge dağılımı için verileri hazırla
     bolge_dagilimlari = BolgeDagilimi.query.filter_by(user_id=user_id).all()
-
-    # Kullanıcının kendi yatırım performansını getir
-    yatirim_performanslari = YatirimPerformansi.query.filter_by(user_id=user_id)\
-        .order_by(YatirimPerformansi.yil, YatirimPerformansi.ay).all()
-
-    # Bölge dağılımı için labels ve data
     bolge_labels = [b.il for b in bolge_dagilimlari]
     bolge_data = [float(b.toplam_deger) for b in bolge_dagilimlari]
 
-    # Yatırım performansı için labels ve data
-    perf_labels = [f"{yp.ay} {yp.yil}" for yp in yatirim_performanslari]
-    perf_data = [float(yp.toplam_deger) for yp in yatirim_performanslari]
+    # Son 6 ayın analiz sayılarını hesapla
+    son_alti_ay = []
+    aylik_analiz_sayilari = []
+    for i in range(6):
+        ay = datetime.now().month - i
+        yil = datetime.now().year
+        if ay <= 0:
+            ay += 12
+            yil -= 1
+        
+        ay_analiz_sayisi = ArsaAnaliz.query.filter(
+            ArsaAnaliz.user_id == user_id,
+            db.extract('year', ArsaAnaliz.created_at) == yil,
+            db.extract('month', ArsaAnaliz.created_at) == ay
+        ).count()
+        
+        ay_isimleri = {
+            1: 'Ocak', 2: 'Şubat', 3: 'Mart', 4: 'Nisan',
+            5: 'Mayıs', 6: 'Haziran', 7: 'Temmuz', 8: 'Ağustos',
+            9: 'Eylül', 10: 'Ekim', 11: 'Kasım', 12: 'Aralık'
+        }
+        
+        son_alti_ay.insert(0, ay_isimleri[ay])
+        aylik_analiz_sayilari.insert(0, ay_analiz_sayisi)
+
+    # Ek istatistikler
+    toplam_deger = db.session.query(db.func.sum(ArsaAnaliz.fiyat)).filter_by(user_id=user_id).scalar() or 0
+    toplam_portfoy = ArsaAnaliz.query.filter_by(user_id=user_id).count()
 
     return render_template(
         'index.html',
+        current_user=current_user,
         stats=stats,
-        bolge_dagilimlari=bolge_dagilimlari,
-        yatirim_performanslari=yatirim_performanslari,
+        analizler=analizler,
+        son_aktiviteler=son_aktiviteler,
         bolge_labels=bolge_labels,
         bolge_data=bolge_data,
-        perf_labels=perf_labels,
-        perf_data=perf_data
+        son_alti_ay=son_alti_ay,
+        aylik_analiz_sayilari=aylik_analiz_sayilari,
+        toplam_deger=toplam_deger,
+        toplam_portfoy=toplam_portfoy
     )
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -673,6 +709,19 @@ def submit():
             taks = float(str(form_data.get('taks', '0.3')).replace(',', '').strip())
             kaks = float(str(form_data.get('kaks', '1.5')).replace(',', '').strip())
 
+            # Değerleri sınırla
+            if metrekare > 9999999.99:
+                metrekare = 9999999.99
+                flash('Metrekare değeri çok büyük, maksimum değer ile sınırlandı.', 'warning')
+            
+            if fiyat > 9999999999999.99:
+                fiyat = 9999999999999.99
+                flash('Fiyat değeri çok büyük, maksimum değer ile sınırlandı.', 'warning')
+                
+            if bolge_fiyat > 9999999999999.99:
+                bolge_fiyat = 9999999999999.99
+                flash('Bölge fiyat değeri çok büyük, maksimum değer ile sınırlandı.', 'warning')
+
             # Update form data with converted values
             form_data.update({
                 'metrekare': metrekare,
@@ -685,9 +734,6 @@ def submit():
         except (ValueError, TypeError) as e:
             print(f"Numeric conversion error: {e}")
             return jsonify({'error': 'Lütfen sayısal değerleri doğru formatta giriniz.'}), 400
-
-        # Create Arsa object with converted values
-        # arsa = Arsa(form_data) # Bu satır veritabanı kaydından sonra olmalı
 
         # Process SWOT data
         swot_data = {}
@@ -715,7 +761,7 @@ def submit():
             kaks=Decimal(str(kaks)),
             fiyat=Decimal(str(fiyat)),
             bolge_fiyat=Decimal(str(bolge_fiyat)),
-            altyapi=json.dumps(altyapi_list),  # altyapi_list'i direkt kullan
+            altyapi=json.dumps(altyapi_list),
             swot_analizi=json.dumps(swot_data)
         )
 
@@ -728,7 +774,7 @@ def submit():
             il=form_data.get('il')
         ).first()
 
-        fiyat_decimal = Decimal(str(form_data.get('fiyat', 0)))
+        fiyat_decimal = Decimal(str(fiyat))
 
         if bolge:
             bolge.analiz_sayisi += 1
@@ -748,7 +794,10 @@ def submit():
             stats = DashboardStats(user_id=user_id)
             db.session.add(stats)
 
-        stats.toplam_analiz += 1
+        stats.toplam_arsa_sayisi += 1
+        stats.ortalama_fiyat = (stats.ortalama_fiyat * (stats.toplam_arsa_sayisi - 1) + fiyat) / stats.toplam_arsa_sayisi
+        stats.en_yuksek_fiyat = max(stats.en_yuksek_fiyat, fiyat)
+        stats.en_dusuk_fiyat = min(stats.en_dusuk_fiyat, fiyat)
         stats.toplam_deger += fiyat_decimal
         # Ortalama ROI float kalabilir, Numeric ise Decimal'e çevirin
         try:
@@ -1156,7 +1205,7 @@ def analiz_sil(analiz_id):
         # İstatistikleri güncelle (Decimal kullanarak)
         stats = DashboardStats.query.filter_by(user_id=session['user_id']).first()
         if stats:
-            stats.toplam_analiz = max(0, stats.toplam_analiz - 1) # Negatife düşmesini engelle
+            stats.toplam_arsa_sayisi = max(0, stats.toplam_arsa_sayisi - 1) # Negatife düşmesini engelle
             stats.toplam_deger = max(Decimal('0.00'), stats.toplam_deger - (analiz.fiyat or Decimal('0.00')))
 
         # Bölge istatistiklerini güncelle (Decimal kullanarak)
@@ -1342,12 +1391,218 @@ def portfolio_detail(id):
     
     return render_template('portfolio_detail.html', portfolio=portfolio)
 
+@app.route('/analysis-form')
+@login_required
+def analysis_form():
+    return render_template('analysis_form.html')
+
+@app.route('/submit_analysis', methods=['POST'])
+@login_required
+def submit_analysis():
+    try:
+        user_id = session['user_id']
+        form_data = request.form.to_dict(flat=True)
+        altyapi_list = request.form.getlist('altyapi[]')
+        form_data['altyapi[]'] = altyapi_list
+
+        print("Raw form data:", form_data)
+        print("Altyapı verileri:", altyapi_list)
+        for key in ['strengths', 'weaknesses', 'opportunities', 'threats']:
+            print(f"SWOT {key}:", form_data.get(key, "Yok"))
+
+        # --- Sunucu Tarafı Validasyon Başlangıcı ---
+        errors = []
+        required_fields = {
+            'il': "İl", 'ilce': "İlçe", 'mahalle': "Mahalle", 'ada': "Ada No", 'parsel': "Parsel No",
+            'metrekare': "Metrekare", 'imar_durumu': "İmar Durumu", 'maliyet': "Maliyet",
+            'guncel_deger': "Güncel Değer", 'tarih': "Alım Tarihi"
+        }
+        
+        for field, label in required_fields.items():
+            if not form_data.get(field):
+                errors.append(f"{label} alanı zorunludur.")
+
+        # Sayısal Alan Kontrolleri
+        numeric_fields = {
+            'metrekare': "Metrekare", 'taks': "TAKS", 'kaks': "KAKS",
+            'maliyet': "Maliyet", 'guncel_deger': "Güncel Değer",
+            'deger_artis_orani': "Yıllık Değer Artış Oranı"
+        }
+        for field, label in numeric_fields.items():
+            value_str = form_data.get(field, '').replace(',', '').strip()
+            if value_str: # Alan boş değilse kontrol et
+                try:
+                    value_float = float(value_str)
+                    if value_float < 0:
+                        errors.append(f"{label} değeri negatif olamaz.")
+                    # Ekstra aralık kontrolleri eklenebilir (örn: TAKS 0-1 arası)
+                    if field == 'taks' and not (0 <= value_float <= 1):
+                         errors.append(f"{label} değeri 0 ile 1 arasında olmalıdır.")
+                    if field == 'deger_artis_orani' and not (0 <= value_float <= 100):
+                         errors.append(f"{label} değeri 0 ile 100 arasında olmalıdır.")
+                except ValueError:
+                    errors.append(f"{label} alanı geçerli bir sayı olmalıdır.")
+        
+        # Tarih Format Kontrolü
+        tarih_str = form_data.get('tarih', '')
+        if tarih_str:
+            try:
+                datetime.strptime(tarih_str, '%Y-%m-%d')
+            except ValueError:
+                errors.append("Alım Tarihi geçerli bir formatta (YYYY-MM-DD) olmalıdır.")
+
+        # String Uzunluk Kontrolleri (Modele göre)
+        length_checks = {
+            'il': 50, 'ilce': 50, 'mahalle': 100, 'ada': 20, 'parsel': 20,
+            'koordinatlar': 100, 'pafta': 50, 'imar_durumu': 50
+        }
+        for field, max_len in length_checks.items():
+            value = form_data.get(field, '')
+            if len(value) > max_len:
+                errors.append(f"{required_fields.get(field, field).capitalize()} alanı {max_len} karakterden uzun olamaz.")
+        
+        # SWOT JSON Kontrolü
+        for key in ['strengths', 'weaknesses', 'opportunities', 'threats']:
+            try:
+                json.loads(form_data.get(key, '[]'))
+            except json.JSONDecodeError:
+                errors.append(f"SWOT {key.capitalize()} verisi geçersiz formatta.")
+
+        if errors:
+            for error in errors:
+                flash(error, 'danger')
+            # Form verilerini session'da saklayarak kullanıcıya geri gönderebiliriz (isteğe bağlı iyileştirme)
+            # session['form_data_temp'] = form_data 
+            return redirect(url_for('analysis_form'))
+        # --- Sunucu Tarafı Validasyon Sonu ---
+
+        # Convert numeric values (validasyon başarılıysa)
+        try:
+            metrekare = float(str(form_data.get('metrekare')).replace(',', '').strip())
+            maliyet = float(str(form_data.get('maliyet')).replace(',', '').strip())
+            guncel_deger = float(str(form_data.get('guncel_deger')).replace(',', '').strip())
+            taks = float(str(form_data.get('taks', '0.3')).replace(',', '').strip())
+            kaks = float(str(form_data.get('kaks', '1.5')).replace(',', '').strip())
+            
+            print(f"Dönüştürülmüş değerler - metrekare: {metrekare}, maliyet: {maliyet}, güncel değer: {guncel_deger}")
+
+            # Değerleri sınırla (Bu kısım önceki adımlarda eklendi)
+            if metrekare > 9999999.99:
+                metrekare = 9999999.99
+                flash('Metrekare değeri çok büyük, maksimum değer ile sınırlandı.', 'warning')
+            if maliyet > 9999999999999.99:
+                maliyet = 9999999999999.99
+                flash('Maliyet değeri çok büyük, maksimum değer ile sınırlandı.', 'warning')
+            if guncel_deger > 9999999999999.99:
+                guncel_deger = 9999999999999.99
+                flash('Güncel değer değeri çok büyük, maksimum değer ile sınırlandı.', 'warning')
+
+            form_data.update({
+                'metrekare': metrekare,
+                'maliyet': maliyet,
+                'guncel_deger': guncel_deger,
+                'taks': taks,
+                'kaks': kaks
+            })
+
+        except (ValueError, TypeError) as e:
+            # Bu blok normalde validasyon sonrası çalışmamalı ama güvenlik için kalabilir
+            print(f"Numeric conversion error after validation: {e}")
+            flash('Sayısal değerlerde beklenmedik bir hata oluştu.', 'danger')
+            return redirect(url_for('analysis_form'))
+
+        # Process SWOT data (validasyon başarılıysa)
+        swot_data = {}
+        for key in ['strengths', 'weaknesses', 'opportunities', 'threats']:
+            swot_data[key] = json.loads(form_data.get(key, '[]'))
+
+        # Create new ArsaAnaliz object
+        yeni_analiz = ArsaAnaliz(
+            user_id=user_id,
+            il=form_data.get('il'),
+            ilce=form_data.get('ilce'),
+            mahalle=form_data.get('mahalle'),
+            ada=form_data.get('ada'),
+            parsel=form_data.get('parsel'),
+            koordinatlar=form_data.get('koordinatlar'),
+            pafta=form_data.get('pafta'),
+            metrekare=Decimal(str(metrekare)),
+            imar_durumu=form_data.get('imar_durumu'),
+            taks=Decimal(str(taks)),
+            kaks=Decimal(str(kaks)),
+            fiyat=Decimal(str(maliyet)),  # 'fiyat' yerine 'maliyet' kullanılıyor
+            bolge_fiyat=Decimal(str(guncel_deger)), # 'bolge_fiyat' yerine 'guncel_deger'
+            altyapi=json.dumps(altyapi_list),
+            swot_analizi=json.dumps(swot_data),
+            notlar=form_data.get('notlar') # Notlar alanını ekle
+        )
+
+        # Veritabanına kaydet ve istatistikleri güncelle...
+        db.session.add(yeni_analiz)
+        # db.session.commit() # Commit işlemi diğer güncellemelerle birlikte sonda yapılacak
+
+        # Bölge istatistiklerini güncelle
+        bolge = BolgeDagilimi.query.filter_by(
+            user_id=user_id,
+            il=form_data.get('il')
+        ).first()
+
+        fiyat_decimal = Decimal(str(maliyet))
+
+        if bolge:
+            bolge.analiz_sayisi += 1
+            bolge.toplam_deger += fiyat_decimal
+        else:
+            yeni_bolge = BolgeDagilimi(
+                user_id=user_id,
+                il=form_data.get('il'),
+                analiz_sayisi=1,
+                toplam_deger=fiyat_decimal
+            )
+            db.session.add(yeni_bolge)
+
+        # Dashboard istatistiklerini güncelle
+        stats = DashboardStats.query.filter_by(user_id=user_id).first()
+        if not stats:
+            stats = DashboardStats(user_id=user_id)
+            db.session.add(stats)
+
+        stats.toplam_arsa_sayisi += 1
+        # Ortalama fiyatı güvenli hesapla
+        if stats.toplam_arsa_sayisi > 0:
+             stats.ortalama_fiyat = ((stats.ortalama_fiyat * (stats.toplam_arsa_sayisi - 1)) + maliyet) / stats.toplam_arsa_sayisi
+        else:
+             stats.ortalama_fiyat = maliyet # İlk analiz ise doğrudan maliyeti ata
+        stats.en_yuksek_fiyat = max(stats.en_yuksek_fiyat or 0, maliyet)
+        stats.en_dusuk_fiyat = min(stats.en_dusuk_fiyat or float('inf'), maliyet)
+        stats.toplam_deger += fiyat_decimal
+
+        db.session.commit()
+
+        flash('Arsa analizi başarıyla kaydedildi.', 'success')
+        return redirect(url_for('analizler'))
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Submit analysis error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        print("Hata durumunda form verileri:")
+        # Hata durumunda form verilerini yazdırma
+        form_data_error = request.form.to_dict(flat=False) # Checkbox/multiselect için flat=False
+        for key, value in form_data_error.items():
+            print(f"  {key}: {value}")
+        flash(f'Arsa analizi kaydedilirken beklenmedik bir hata oluştu: {str(e)}', 'danger')
+        return redirect(url_for('analysis_form'))
+
+# Diger route fonksiyonları
+
 # Veritabanı tablolarını oluştur
 def init_db():
     with app.app_context():
         try:
             # Önce tüm tabloları sil
-            db.drop_all()
+           # db.drop_all()
             # Bağlantıyı yeniden başlat
             db.session.close()
             db.session.remove()

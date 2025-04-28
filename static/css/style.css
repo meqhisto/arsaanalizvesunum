@@ -8,7 +8,63 @@ body {
     line-height: 1.6;
     color: #333;
 }
+/* Favoriler kutusu */
+.favorites-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    min-height: 40px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
 
+/* SWOT listeleri */
+#strengthList .list-group-item,
+#weaknessList .list-group-item,
+#opportunityList .list-group-item,
+#threatList .list-group-item {
+    background: #fff;
+    border-left: 4px solid #007bff;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+/* Modal içi kartlar */
+.modal .card {
+    box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+    border-radius: 16px;
+}
+
+/* Form input grupları */
+.input-group .form-control {
+    border-radius: 8px 0 0 8px;
+}
+.input-group .input-group-text,
+.input-group .btn {
+    border-radius: 0 8px 8px 0;
+}
+
+/* Progress bar animasyonu */
+#formProgress {
+    background: linear-gradient(90deg, #007bff 0%, #6610f2 100%);
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+/* Mobilde modal ve form */
+@media (max-width: 768px) {
+    .modal-xl {
+        max-width: 98vw !important;
+        margin: 0 auto;
+    }
+    .card-body {
+        padding: 1rem;
+    }
+    .favorites-container {
+        padding: 0.5rem;
+    }
+}
 .container {
     max-width: 1400px;
     margin: 0 auto;
@@ -224,4 +280,126 @@ body {
 
 .fade-in {
     animation: fade-in 0.6s ease-out;
+}
+
+/* JSON yükleme alanı */
+#jsonFile {
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #f8f9fa;
+    padding: 0.5rem 1rem;
+    transition: border-color 0.2s;
+}
+#jsonFile:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* JSON yükleme açıklaması */
+.form-text {
+    color: #6c757d;
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+
+/* Form başlıkları */
+.card-header.bg-primary.text-white h2,
+.card-header.bg-primary.text-white h4 {
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+/* Form kartı */
+.card {
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    border: none;
+}
+
+/* Form inputları */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    transition: border-color 0.2s;
+    font-size: 1.05rem;
+    padding: 0.6rem 1rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px #007bff22;
+    outline: none;
+}
+
+/* Label'lar */
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.3rem;
+}
+
+/* Zorunlu alan yıldızı */
+.form-label .text-danger {
+    font-size: 1.1em;
+    vertical-align: middle;
+}
+
+/* Butonlar */
+.btn-primary, .btn-info, .btn-success, .btn-danger {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-primary:hover, .btn-info:hover, .btn-success:hover, .btn-danger:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+}
+
+/* Progress bar */
+.progress {
+    height: 10px;
+    border-radius: 8px;
+    background: #e9ecef;
+}
+.progress-bar {
+    background: linear-gradient(90deg, #007bff 0%, #6610f2 100%);
+    border-radius: 8px;
+}
+
+/* SWOT listeleri */
+#strengthList .list-group-item,
+#weaknessList .list-group-item,
+#opportunityList .list-group-item,
+#threatList .list-group-item {
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+/* Favoriler kutusu */
+.favorites-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    min-height: 40px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Mobil uyum */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    .favorites-container {
+        padding: 0.5rem;
+    }
+    .form-control, .form-select {
+        font-size: 1rem;
+        padding: 0.5rem 0.8rem;
+    }
 }

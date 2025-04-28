@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Raporlarım</h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Arsa</th>
+                    <th>Konum</th>
+                    <th>Tarih</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for analiz in analizler %}
+                <tr>
+                    <td>{{ analiz.il }} - {{ analiz.ilce }}</td>
+                    <td>{{ analiz.mahalle }}</td>
+                    <td>{{ analiz.created_at.strftime('%d.%m.%Y') }}</td>
+                    <td>
+                        <a href="{{ url_for('analiz_detay', analiz_id=analiz.id) }}" class="btn btn-sm btn-outline-primary">Görüntüle</a>
+                        <a href="{{ url_for('generate', format='pdf', file_id=analiz.id) }}" class="btn btn-sm btn-outline-secondary">PDF İndir</a>
+                        <a href="{{ url_for('generate', format='word', file_id=analiz.id) }}" class="btn btn-sm btn-outline-secondary">Word İndir</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
