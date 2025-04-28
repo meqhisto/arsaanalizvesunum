@@ -24,25 +24,53 @@ import logging
 from logging.handlers import RotatingFileHandler
 from modules.fiyat_tahmini import FiyatTahminModeli # <<< YENİ EKLEME
 import secrets
+import pyodbc
 
 
 
 import sys
+#from modules import create_app
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'sizin_gizli_anahtariniz'
 application = app  # Flask uygulamasını application olarak ayarlayın
+
+app.template_folder = 'templates'
+
+db = SQLAlchemy(app)
+with app.app_context():
+    db.create_all()
 
 # Jinja2 template engine'ine datetime modülünü ekle
 app.jinja_env.globals.update(datetime=datetime)
 
-# MySQL Veritabanı Ayarları
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:altan@localhost:3306/arsa_db'
+
+#mssql
+#conn_str = (
+#        r'DRIVER={SQL Server};'
+#        r'SERVER=46.221.49.106;'
+#        r'DATABASE=arsa_db;'
+#        r'UID=altan;'
+#        r'PWD=Yxrkt2bb7q8.;'
+#    )
+#try:
+#    conn = pyodbc.connect(conn_str)
+#    cursor = conn.cursor()
+#    cursor.execute("SELECT @@version;")
+#    row = cursor.fetchone()
+#    print(f"Bağlantı Başarılı: {row[0]}")
+#except pyodbc.Error as ex:
+#    sqlstate = ex.args[0]
+#    print(f"Bağlantı Hatası: {sqlstate}")
+#    sys.exit()
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://altan:Yxrkt2bb7q8.@46.221.49.106/arsa_db?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_POOL_SIZE'] = 10
-app.config['SQLALCHEMY_MAX_OVERFLOW'] = 20
-app.config['SQLALCHEMY_POOL_TIMEOUT'] = 30
-app.config['SQLALCHEMY_POOL_RECYCLE'] = 1800
+#app.config['SQLALCHEMY_POOL_SIZE'] = 10
+#app.config['SQLALCHEMY_MAX_OVERFLOW'] = 20
+#app.config['SQLALCHEMY_POOL_TIMEOUT'] = 30
+#app.config['SQLALCHEMY_POOL_RECYCLE'] = 1800
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'sizin_gizli_anahtariniz') # SECRET_KEY ekle
+
 
 db = SQLAlchemy(app)
 
@@ -1607,7 +1635,7 @@ def init_db():
             db.session.close()
             db.session.remove()
             # Sonra yeniden oluştur
-            db.create_all()
+            #db.create_all()
             print("Veritabanı tabloları başarıyla oluşturuldu!")
         except Exception as e:
             print(f"Veritabanı oluşturma hatası: {str(e)}")
