@@ -1,0 +1,154 @@
+/* Genel Ayarlar */
+body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #f7f9fc;
+    color: #2e2e2e;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    min-height: 100vh;
+    background-color: #1f2937; /* Koyu lacivert ton */
+    color: #fff;
+  }
+  
+  .sidebar a {
+    color: #e5e7eb;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    display: block;
+    margin-bottom: 0.5rem;
+    transition: background 0.2s;
+    text-decoration: none;
+  }
+  
+  .sidebar a:hover,
+  .sidebar a.active {
+    background-color: #374151; /* Hover tonu */
+    color: #fff;
+  }
+  
+  /* Kartlar */
+  .card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    background-color: #fff;
+  }
+  
+  /* Kart Başlıkları */
+  .card-header {
+    border-bottom: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+  
+  /* Butonlar */
+  .btn-primary {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    border: none;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    color: #fff;
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #4338ca, #6d28d9);
+  }
+  
+  .btn-outline-secondary {
+    border-radius: 10px;
+  }
+  
+  /* İstatistik Kartları */
+  .stat-card {
+    border-radius: 16px;
+    color: #fff;
+    padding: 1.25rem;
+    font-weight: 500;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  }
+  
+  /* İstatistik Renkleri */
+  .bg-green {
+    background: linear-gradient(135deg, #059669, #10b981);
+  }
+  
+  .bg-orange {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+  }
+  
+  /* Profil Kartı */
+  .profile-card img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #fff;
+  }
+  
+  .profile-card i {
+    font-size: 3rem;
+    color: #6b7280;
+  }
+  
+  /* Tablo */
+  .table thead th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+  }
+  
+  .table tbody td {
+    vertical-align: middle;
+  }
+  
+  /* Aktivite Çizgisi */
+  .activity-timeline {
+    position: relative;
+    padding-left: 20px;
+  }
+  
+  .activity-timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: #e2e8f0;
+  }
+  
+  .activity-item::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #6366f1;
+    border-radius: 50%;
+    position: absolute;
+    left: 0;
+    top: 6px;
+  }
+  
+  /* Mobil Uyumluluk */
+  @media (max-width: 768px) {
+    .sidebar {
+      min-height: auto;
+    }
+    
+    .sidebar a {
+      padding: 0.5rem 0.75rem;
+    }
+    
+    .card {
+      margin-bottom: 1rem;
+    }
+    
+    .btn {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+  }
+  
