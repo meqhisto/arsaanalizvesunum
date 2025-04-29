@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,104 +7,224 @@
     <title>Profil - {{ user.ad }} {{ user.soyad }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Genel Ayarlar */
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #f7f9fc;
+            color: #2e2e2e;
+        }
+        /* Sidebar */
+        .sidebar {
+            min-height: 100vh;
+            background-color: #1f2937;
+            color: #e5e7eb;
+        }
+        .sidebar a {
+            color: #e5e7eb;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #374151;
+            color: #fff;
+        }
+        /* Kartlar */
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            background-color: #fff;
+        }
+        /* Kart Başlıkları */
+        .card-header {
+            border-bottom: none;
+            background: transparent;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        /* Butonlar */
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border: none;
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4338ca, #6d28d9);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            border: none;
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            color: #fff;
+        }
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706, #ea580c);
+        }
+        .btn-outline-secondary {
+            border-radius: 10px;
+        }
+        /* Profil Kartı */
+        .profile-card img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #fff;
+        }
+        .profile-card i {
+            font-size: 3rem;
+            color: #6b7280;
+        }
+        /* Mobil Uyumluluk */
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            .sidebar a {
+                padding: 0.5rem 0.75rem;
+            }
+            .card {
+                margin-bottom: 1rem;
+            }
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Include navbar -->
-    {% include 'navbar.html' %}
-
-    <div class="container mt-4">
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <img src="{{ url_for('static', filename='uploads/' + user.profil_foto) if user.profil_foto else 'https://via.placeholder.com/150' }}" 
-                             class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                        <h4>{{ user.ad }} {{ user.soyad }}</h4>
-                        <p class="text-muted">{{ user.unvan }}</p>
-                        <p><i class="bi bi-building"></i> {{ user.firma }}</p>
-                    </div>
-                </div>
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar d-flex flex-column p-4">
+                <h4 class="mb-4">İnveco Panel</h4>
+                <a href="{{ url_for('index') }}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                <a href="{{ url_for('analizler') }}" class="active"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+                <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
+                <a href="{{ url_for('analizler') }}"><i class="bi bi-graph-up"></i> Raporlar</a>
+                <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
             </div>
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Profil Bilgileri</h5>
+            <!-- Ana İçerik -->
+            <div class="col-md-9 col-lg-10 p-4">
+                <!-- Breadcrumb Navigation -->
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Ana Sayfa</a></li>
+                        <li class="breadcrumb-item active">Profil</li>
+                    </ol>
+                </nav>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card mb-4 profile-card">
+                            <div class="card-body text-center">
+                                <img src="{{ url_for('static', filename='uploads/' + user.profil_foto) if user.profil_foto else 'https://via.placeholder.com/150' }}" 
+                                     class="rounded-circle img-fluid mb-3" 
+                                     style="width: 120px; height: 120px; object-fit: cover;" 
+                                     alt="Profil Fotoğrafı">
+                                <h4>{{ user.ad }} {{ user.soyad }}</h4>
+                                <p class="text-muted">{{ user.unvan }}</p>
+                                <p><i class="bi bi-building"></i> {{ user.firma }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Şifre Değiştir</h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="{{ url_for('change_password') }}" method="post">
+                                    <div class="mb-3">
+                                        <label class="form-label">Mevcut Şifre</label>
+                                        <input type="password" class="form-control" name="current_password" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Yeni Şifre</label>
+                                        <input type="password" class="form-control" name="new_password" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Yeni Şifre (Tekrar)</label>
+                                        <input type="password" class="form-control" name="confirm_password" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning w-100">Şifreyi Değiştir</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form action="{{ url_for('profile') }}" method="post" enctype="multipart/form-data">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Ad</label>
-                                    <input type="text" class="form-control" name="ad" value="{{ user.ad }}" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Soyad</label>
-                                    <input type="text" class="form-control" name="soyad" value="{{ user.soyad }}" required>
-                                </div>
+                    
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0"><i class="bi bi-person-circle me-2"></i>Profil Bilgileri</h4>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">E-posta</label>
-                                    <input type="email" class="form-control" value="{{ user.email }}" readonly>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Telefon</label>
-                                    <input type="tel" class="form-control" name="telefon" value="{{ user.telefon }}">
-                                </div>
+                            <div class="card-body">
+                                <form action="{{ url_for('profile') }}" method="post" enctype="multipart/form-data">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Ad</label>
+                                            <input type="text" class="form-control" name="ad" value="{{ user.ad }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Soyad</label>
+                                            <input type="text" class="form-control" name="soyad" value="{{ user.soyad }}" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">E-posta</label>
+                                            <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Telefon</label>
+                                            <input type="tel" class="form-control" name="telefon" value="{{ user.telefon }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Firma</label>
+                                            <input type="text" class="form-control" name="firma" value="{{ user.firma }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Ünvan</label>
+                                            <input type="text" class="form-control" name="unvan" value="{{ user.unvan }}">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Adres</label>
+                                            <textarea class="form-control" name="adres" rows="3">{{ user.adres }}</textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Profil Fotoğrafı</label>
+                                            <input type="file" class="form-control" name="profil_foto" accept="image/*">
+                                        </div>
+                                        <div class="col-12 mt-4">
+                                            <div class="d-flex justify-content-between">
+                                                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                                    <i class="bi bi-arrow-left me-2"></i>Anasayfaya Dön
+                                                </a>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-save me-2"></i>Profili Güncelle
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Firma</label>
-                                <input type="text" class="form-control" name="firma" value="{{ user.firma }}">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Unvan</label>
-                                <input type="text" class="form-control" name="unvan" value="{{ user.unvan }}">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Adres</label>
-                                <textarea class="form-control" name="adres" rows="3">{{ user.adres }}</textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Profil Fotoğrafı</label>
-                                <input type="file" class="form-control" name="profil_foto" accept="image/*">
-                            </div>
-                            <div class="mb-3">
-                            <button type="submit" class="btn btn-primary">Profili Güncelle</button>
-                            <a href="{{ url_for('index') }}" class="btn btn-primary">Anasayfaya Dön</a>
-
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Add Password Change Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Şifre Değiştir</h5>
-                    </div>
-                    <div class="card-body">
-                        <form action="{{ url_for('change_password') }}" method="post">
-                            <div class="mb-3">
-                                <label class="form-label">Mevcut Şifre</label>
-                                <input type="password" class="form-control" name="current_password" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Yeni Şifre</label>
-                                <input type="password" class="form-control" name="new_password" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Yeni Şifre (Tekrar)</label>
-                                <input type="password" class="form-control" name="confirm_password" required>
-                            </div>
-                            <button type="submit" class="btn btn-warning">Şifreyi Değiştir</button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

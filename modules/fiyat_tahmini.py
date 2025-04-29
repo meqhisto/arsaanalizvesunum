@@ -46,7 +46,7 @@ class BolgeselVeriAnalizi:
         query = """
             SELECT 
                 AVG(fiyat/metrekare) as ort_birim_fiyat,
-                STDDEV(fiyat/metrekare) as std_birim_fiyat,
+                SSTDEV(fiyat/metrekare) as std_birim_fiyat,
                 MIN(fiyat/metrekare) as min_birim_fiyat,
                 MAX(fiyat/metrekare) as max_birim_fiyat,
                 COUNT(*) as analiz_sayisi,
