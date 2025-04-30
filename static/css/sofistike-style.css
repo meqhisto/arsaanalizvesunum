@@ -11,6 +11,19 @@ body {
     background-color: #1f2937; /* Koyu lacivert ton */
     color: #fff;
   }
+
+  .offcanvas-body a {
+    display: block;
+    padding: 0.5rem 0;
+    text-decoration: none;
+    color: #333;
+  }
+  
+  .offcanvas-body a.active {
+    font-weight: 600;
+    color: #0d6efd;
+  }
+  
   
   .sidebar a {
     color: #e5e7eb;

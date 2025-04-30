@@ -970,7 +970,7 @@ def generate(format, file_id):
              # --- YENİ LOG ---
             print("DEBUG [Generate]: doc_generator.create_pdf() çağrılacak...", flush=True)
             filename = doc_generator.create_pdf()
-            download_name = f'arsa_analiz_{file_id}.pdf'
+            download_name = f'gayrimenkul_analiz_{file_id}.pdf'
              # --- YENİ LOG ---
             print(f"DEBUG [Generate]: create_pdf() tamamlandı. Dosya: {filename}", flush=True)
         else:

@@ -894,7 +894,7 @@ class DocumentGenerator:
             rightMargin=1.5*cm,
             topMargin=2*cm,
             bottomMargin=2*cm,
-            title=f"Arsa Analiz Raporu - {self.arsa_data.get('il', '')}/{self.arsa_data.get('ilce', '')}",
+            title=f"Gayrimenkul Analiz Raporu - {self.arsa_data.get('il', '')}/{self.arsa_data.get('ilce', '')}",
             author="invecoproje.com"
         )
         frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id='normal')
@@ -1011,7 +1011,7 @@ class DocumentGenerator:
         if self.logo_path and os.path.exists(self.logo_path):
             elements.append(RLImage(self.logo_path, width=4*cm, height=4*cm))
             elements.append(Spacer(1, 0.3*cm))
-        elements.append(Paragraph('Arsa Analiz Raporu', styles['CustomTitle']))
+        elements.append(Paragraph('Gayrimenkul Analiz Raporu', styles['CustomTitle']))
         elements.append(Paragraph(f"{self.arsa_data.get('il', '')}, {self.arsa_data.get('ilce', '')}", styles['CustomSubTitle']))
         elements.append(Spacer(1, 0.5*cm))
         elements.append(Paragraph(datetime.now().strftime('%d.%m.%Y'), styles['CustomNormal']))
@@ -1050,7 +1050,7 @@ class DocumentGenerator:
 
         # Arsa Bilgileri Tablosu
         if self._should_include_section('property'):
-            elements.append(Paragraph('Arsa Bilgileri', styles['CustomHeading1']))
+            elements.append(Paragraph('Portföy Bilgileri', styles['CustomHeading1']))
             arsa_bilgileri_data = self._get_arsa_bilgileri() # [['Özellik', 'Değer'], ...]
             table = Table(arsa_bilgileri_data, colWidths=[doc.width*0.3, doc.width*0.7])
             table.setStyle(info_table_style)
