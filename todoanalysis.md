@@ -37,7 +37,11 @@
 ### 4. Raporlama Özellikleri
 - [ ] Analiz sonuçlarının PDF veya Excel formatında dışa aktarılması
 - [ ] Grafikler ve görselleştirmeler oluşturulması
-
+- [ ] Varolan portföyün hartia entegrasyon analiz_detay sayfasında gösterilmesi ve bunun verilerinin koordinatlardan alınması
+- [ ] rapor sayfasında profil fotoğrafı görünsün
+- [ ] telefon numarası biçimlendirmesini düzelt,
+- [ ] kullanıcı portföyün satılık ya da güncel olup olmadığını etiketleyebilsin
+- [ ] Analiz kaydetmede fiyat girilirken , koysun
 ### 5. Kullanıcı Deneyimi İyileştirmeleri
 - [ ] Form doldurma sürecini daha kullanıcı dostu hale getirmek
 - [ ] Adım adım form doldurma özelliği eklemek
