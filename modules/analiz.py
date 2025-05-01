@@ -12,6 +12,7 @@ class AnalizMetrikleri:
     potansiyel_getiri: float
     risk_puani: int
     yatirim_suresi: int
+    uygunluk_puani: float # Uygunluk puanı eklendi
 
 class AnalizStratejisi(ABC):
     @abstractmethod
@@ -46,7 +47,23 @@ class ArsaAnalizci:
             'sanayi': 1.04,
             'diger': 1.03
         }
-    
+        # İmar durumuna göre uygunluk puanı katsayıları (Örnek değerler)
+        self.imar_uygunluk_katsayilari = {
+            'konut': 0.9,
+            'ticari': 0.8,
+            'karma': 0.85,
+            'sanayi': 0.7,
+            'diger': 0.6
+        }
+        # Altyapı uygunluk puanları (Örnek değerler)
+        self.altyapi_uygunluk_puanlari = {
+            'yol': 0.1,
+            'elektrik': 0.1,
+            'su': 0.1,
+            'dogalgaz': 0.05,
+            'kanalizasyon': 0.05
+        }
+
     def analiz_et(self, arsa_data):
         """
         Arsa verilerini analiz eder ve sonuçları hesaplar.
@@ -71,6 +88,9 @@ class ArsaAnalizci:
         
         # Yatırım değerlendirmesi
         arsa_data['yatirim_degerlendirmesi'] = self._degerlendir_yatirim(arsa_data)
+
+        # Uygunluk puanı hesaplama (YENİ EKLENEN)
+        arsa_data['uygunluk_puani'] = self._hesapla_uygunluk_puani(arsa_data)
         
         return arsa_data
     
@@ -184,6 +204,59 @@ class ArsaAnalizci:
             "yatirim_suresi_aciklama": f"Bu arsa için tavsiye edilen minimum yatırım süresi {arsa_data['yatirim_suresi']} yıldır."
         }
     
+    def _hesapla_uygunluk_puani(self, arsa_data):
+        """
+        Arsa uygunluk puanını hesaplar (0-100 arası).
+        
+        Args:
+            arsa_data (dict): Arsa verileri
+            
+        Returns:
+            float: Uygunluk puanı (0-100)
+        """
+        puan = 0
+        
+        # İmar durumu katkısı
+        imar_durumu = arsa_data.get('imar_durumu', '').lower()
+        puan += self.imar_uygunluk_katsayilari.get(imar_durumu, 0.5) * 30 # İmar durumu %30 etkili (Örnek ağırlık)
+        
+        # Metrekare katkısı (Örnek: Belirli aralıklarda daha yüksek puan)
+        metrekare = arsa_data.get('metrekare', 0)
+        if 500 <= metrekare <= 5000:
+            puan += 25 # Metrekare %25 etkili (Örnek ağırlık)
+        elif metrekare > 5000:
+             puan += 20
+        elif metrekare < 500 and metrekare > 0:
+             puan += 15
+
+        # Bölge karşılaştırması katkısı (Örnek: Bölge ortalamasına yakın veya altında olması pozitif)
+        bolge_karsilastirma = arsa_data.get('bolge_karsilastirma', 0)
+        if bolge_karsilastirma <= 0:
+            puan += 20 # Bölge karşılaştırması %20 etkili (Örnek ağırlık)
+        elif bolge_karsilastirma > 0 and bolge_karsilastirma <= 10:
+            puan += 10
+        
+        # Altyapı katkısı (Örnek: Her altyapı için sabit puan)
+        altyapi = arsa_data.get('altyapi', {})
+        if isinstance(altyapi, str):
+             try:
+                 altyapi = json.loads(altyapi)
+             except json.JSONDecodeError:
+                 altyapi = {}
+
+        if isinstance(altyapi, list):
+            for item in altyapi:
+                puan += self.altyapi_uygunluk_puanlari.get(item.lower(), 0) * 10 # Altyapı %10 etkili (Örnek ağırlık)
+        
+        # Puanı 0-100 arasına ölçeklendirme (Basit bir ölçeklendirme, daha karmaşık olabilir)
+        # Maksimum olası puanı tahmin et (Örnek ağırlıklara göre)
+        max_puan = (1.0 * 30) + 25 + 20 + (0.1 * 5 * 10) # En iyi imar, ideal metrekare, en iyi bölge, tüm altyapılar
+        olcekli_puan = (puan / max_puan) * 100 if max_puan > 0 else 0
+
+        # Puanı 0-100 arasına sabitleme
+        return round(max(0, min(100, olcekli_puan)), 2)
+
+
     def ozetle(self, arsa_data):
         """
         Arsa analiz sonuçlarını özetler ve metin oluşturur.
@@ -217,6 +290,9 @@ class ArsaAnalizci:
             f"{arsa_data['yatirim_degerlendirmesi']['fiyat_degerlendirme']} "
             f"{arsa_data['yatirim_degerlendirmesi']['yatirim_suresi_aciklama']}"
         )
+
+        # Uygunluk puanı özeti (YENİ EKLENEN)
+        uygunluk_ozet = f"Arsanın uygunluk puanı: {arsa_data['uygunluk_puani']}/100. Bu puan, arsanın imar durumu, büyüklüğü, konumu ve altyapı gibi faktörlere göre genel uygunluğunu göstermektedir."
         
         # Tavsiyeler
         if arsa_data['potansiyel_getiri'] > 7:
@@ -241,5 +317,6 @@ class ArsaAnalizci:
         return {
             "temel_ozet": temel_ozet,
             "yatirim_ozet": yatirim_ozet,
+            "uygunluk_ozet": uygunluk_ozet, # Uygunluk özeti eklendi
             "tavsiyeler": tavsiyeler
         }

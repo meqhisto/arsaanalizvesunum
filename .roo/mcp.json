@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "memoryBank": {
+      "command": "node",
+      "args": ["C:/Users/ustad/memory-bank-mcp/dist/index.js"],
+      "env": {
+        "GEMINI_API_KEY": "AIzaSyBeJM1VCgv4TcxO0sCS95A9WEhFUo37h8g"
+      }
+    }
+  }
+}
