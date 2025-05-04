@@ -129,13 +129,24 @@
 <h5 class="mb-0">Son Aktiviteler</h5>
 </div>
 <div class="card-body position-relative">
-<div class="activity-timeline">
-{% for aktivite in son_aktiviteler %}
-<div class="activity-item ps-3 mb-3">
-<small class="text-muted d-block">{{ aktivite.tarih.strftime('%d.%m.%Y %H:%M') }}</small>
-<span>{{ aktivite.mesaj }}</span>
+  <div class="activity-timeline">
+    {# app.py'den gelen genel aktiviteler döngüsü #}
+    {% for aktivite in son_aktiviteler %}
+    <div class="activity-item ps-3 mb-3">
+        <small class="text-muted d-block">{{ aktivite.tarih.strftime('%d.%m.%Y %H:%M') }}</small>
+        <span>{{ aktivite.mesaj }}</span> {# Örneğin: "Yeni analiz eklendi", "Profil güncellendi" #}
+    </div>
+    {% endfor %}
+
+    {# Kullanıcının son giriş zamanı (eğer varsa) #}
+    {% if current_user and current_user.son_giris %} {# current_user kontrolü eklendi #}
+    <div class="activity-item ps-3 mb-3">
+      <small class="text-muted d-block">{{ current_user.localize_datetime(current_user.son_giris) }}</small>
+      <span><i class="bi bi-box-arrow-in-right me-1"></i>Son girişiniz</span>
+    </div>
+    {% endif %}
 </div>
-{% endfor %}
+
 </div>
 </div>
 </div>
@@ -201,8 +212,8 @@ Henüz analiz eklenmedi. <a href="{{ url_for('submit') }}">Hemen ekleyin!</a>
 const ctx = document.getElementById('analysisChart').getContext('2d');
 new Chart(ctx, {
 type: 'line',
-data: {
-labels: {{ son_alti_ay|tojson }},
+    data: {
+      labels: {{ son_alti_ay|tojson }},
 datasets: [{
 label: 'Aylık Analizler',
 data: {{ aylik_analiz_sayilari|tojson }},

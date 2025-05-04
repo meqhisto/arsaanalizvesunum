@@ -16,13 +16,12 @@ Sprint Hedefi: **Temel arsa analiz işlevselliğini uygulamak ve sunum katmanın
 ## Devam Eden Görevler
 
 
-*   **Analiz Algoritması Geliştirme (Ayşe):** İmar düzenlemelerine dayalı arsa uygunluk puanlama algoritmasını uygulama.  Tahmini tamamlanma: 05.05.2025.
+
 *   **Sunum Katmanı İyileştirme (Mehmet):** Veri görselleştirme bileşenlerini, özellikle etkileşimli harita ve grafik ekranlarını iyileştirme. Yeni analiz sonuçlarını sunuma entegre etme üzerinde çalışıyor. Tahmini tamamlanma: 03.05.2025.
 
 *   **Dokümantasyon Güncelleme (Elif):** Kullanıcı dokümantasyonunu analiz ve sunum katmanlarındaki en son değişiklikleri yansıtacak şekilde güncelleme. Tahmini tamamlanma: 09.05.2025
-*   **Form Validasyonu İyileştirmeleri:** Form alanlarının doğrulanması için JavaScript kontrolleri güçlendirilmeli.
-*   **SWOT Analizi Geliştirmeleri:** SWOT analizi verilerinin daha etkili bir şekilde işlenmesi ve önceden tanımlanmış SWOT seçenekleri sunmak.
-.
+
+*   **SWOT Analizi Geliştirmeleri:** SWOT analizi verilerinin daha etkili bir şekilde işlenmesi ve önceden tanımlanmış SWOT seçenekleri sunmak. Swot analizlerinin güven skoruna etkisi için bir puanlama sistemi yapmak 
 *   **Raporlama Özellikleri:** Analiz sonuçlarının PDF veya Excel formatında dışa aktarılması ve grafikler/görselleştirmeler oluşturulması.
 *   **Kullanıcı Deneyimi İyileştirmeleri:** Form doldurma sürecini daha kullanıcı dostu hale getirmek, adım adım form doldurma ve otomatik kaydetme özelliği eklemek.
 
@@ -37,7 +36,7 @@ Sprint Hedefi: **Temel arsa analiz işlevselliğini uygulamak ve sunum katmanın
 
 ## Öncelikler
 
-3.  **Performans Darboğazlarını Giderme (Can):** Veri yükleme performansını iyileştirmek, duyarlı bir kullanıcı deneyimi için çok önemlidir.
+
 4.  **Temel Hata Yönetimi Uygulama:** Çökmeleri ve veri kaybını önlemek için temel hata yönetimi ekleyin.
 
 ## Sonraki Adımlar
@@ -46,20 +45,3 @@ Sprint Hedefi: **Temel arsa analiz işlevselliğini uygulamak ve sunum katmanın
 *   **Kod İncelemesi:** Veri entegrasyonu ve analiz algoritması modülleri için 06.05.2025 tarihine kadar kod incelemeleri yapın.
 *   **Performans Testi:** Önbellekleme stratejileri uygulandıktan sonra veri yükleme sürecinin kapsamlı performans testini yapın.
 *   **Hata Yönetimi Uygulama:** 08.05.2025 tarihine kadar temel hata yönetimi uygulayın.
-
-## Toplantı Notları
-
-**Sprint İnceleme Toplantısı - 29.04.2025**
-
-*   **Katılımcılar:** Proje Yöneticisi (PM), Burak, Ayşe, Mehmet, Can, Elif.
-*   **Temel Tartışmalar:**
-
-    *   Ayşe, hukuk ekibinden belirli imar düzenlemeleri hakkında açıklama talep etti. PM, hukuk ekibiyle bir toplantı planlayacak.
-    *   Can, veri yükleme sürecindeki performans darboğazlarını bildirdi. Önbellekleme stratejileri ve veritabanı sorgu optimizasyonuna odaklanılması konusunda anlaşıldı.
-    *   Mehmet, iyileştirilmiş sunum katmanının bir prototipini sundu. Geliştirilmiş veri görselleştirmesi hakkında olumlu geri bildirimler alındı.
-*   **Eylem Maddeleri:**
-    *   PM, 01.05.2025 tarihine kadar hukuk ekibiyle bir toplantı planlayacak.
-    *   Burak, veri formatı tutarsızlıklarını çözme üzerinde çalışmaya devam edecek.
-    *   Can, veri yükleme için önbellekleme stratejileri uygulayacak.
-
-Oluşturulma Tarihi: 30.04.2025

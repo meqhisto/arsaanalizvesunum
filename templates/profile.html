@@ -222,6 +222,16 @@
                                             <label class="form-label">Adres</label>
                                             <textarea class="form-control" name="adres" rows="3">{{ user.adres }}</textarea>
                                         </div>
+                                        <div class="row mb-3">
+                                            <label for="timezone" class="col-md-4 col-lg-3 col-form-label">Zaman Dilimi</label>
+                                            <div class="col-md-8 col-lg-9">
+                                                <select class="form-select" id="timezone" name="timezone">
+                                                    {% for tz in timezones %}
+                                                    <option value="{{ tz }}" {% if user.timezone == tz %}selected{% endif %}>{{ tz }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div class="col-12">
                                             <label class="form-label">Profil Fotoğrafı</label>
                                             <input type="file" class="form-control" name="profil_foto" accept="image/*">

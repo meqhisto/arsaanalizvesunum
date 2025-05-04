@@ -25,7 +25,7 @@ from logging.handlers import RotatingFileHandler
 from modules.fiyat_tahmini import FiyatTahminModeli # <<< YENİ EKLEME
 import secrets
 import pyodbc
-
+import pytz
 
 
 import sys
@@ -117,6 +117,7 @@ class User(db.Model):
     failed_attempts = db.Column(db.Integer, default=0)
     reset_token = db.Column(db.String(255))
     reset_token_expires = db.Column(db.DateTime)
+    timezone = db.Column(db.String(50), default='Europe/Istanbul')  # Kullanıcının zaman dilimi
 
     def set_password(self, password):
         try:
@@ -140,6 +141,23 @@ class User(db.Model):
             print("Full traceback:")  # Debug log
             print(traceback.format_exc())  # Debug log
             return False
+    def localize_datetime(self, utc_dt, format='%d.%m.%Y %H:%M'):
+        """Verilen UTC datetime nesnesini kullanıcının zaman dilimine çevirir ve formatlar."""
+        if not utc_dt:
+            return ""
+        try:
+            # Kullanıcının zaman dilimini al, yoksa veya geçersizse UTC kullan
+            user_tz_str = self.timezone if self.timezone in pytz.all_timezones else 'UTC'
+            user_tz = pytz.timezone(user_tz_str)
+        except pytz.UnknownTimeZoneError:
+            user_tz = pytz.utc # Hata durumunda UTC'ye dön
+
+        # Gelen datetime'ı timezone-aware UTC yap
+        aware_utc_dt = pytz.utc.localize(utc_dt)
+        # Kullanıcının zaman dilimine çevir
+        local_dt = aware_utc_dt.astimezone(user_tz)
+        return local_dt.strftime(format)
+
 
 class ArsaAnaliz(db.Model):
     __tablename__ = 'arsa_analizleri'
@@ -1002,6 +1020,7 @@ def generate(format, file_id):
 @login_required
 def profile():
     user = User.query.get(session['user_id'])
+    timezone = pytz.all_timezones
 
     if request.method == 'POST':
         try:
@@ -1011,6 +1030,12 @@ def profile():
             user.firma = request.form.get('firma')
             user.unvan = request.form.get('unvan')
             user.adres = request.form.get('adres')
+                        # Zaman dilimini al ve kontrol et
+            selected_timezone = request.form.get('timezone') 
+            if selected_timezone in pytz.all_timezones:
+                user.timezone = selected_timezone
+            else:
+                user.timezone = 'UTC' # Geçersizse veya yoksa varsayılana dön
 
             # Handle profile photo upload
             if 'profil_foto' in request.files:
@@ -1035,7 +1060,7 @@ def profile():
             flash('Profil güncellenirken bir hata oluştu!', 'danger')
             print(f"Profile update error: {str(e)}")
 
-    return render_template('profile.html', user=user)
+    return render_template('profile.html', user=user, timezones=timezone) # Değişken adını 'timezones' olarak düzelt
 
 @app.route('/analiz/<int:analiz_id>')
 @login_required
