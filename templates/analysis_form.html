@@ -13,9 +13,7 @@
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <!-- Ana CSS -->
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    <!-- Form Özel CSS -->
-    <link href="{{ url_for('static', filename='css/analysis_form.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/sofistike-style.css') }}" rel="stylesheet">
 </head>
 <body class="bg-light">
     <div class="container py-5">
@@ -315,6 +313,18 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
+                                    <label for="maliyet_kaynak" class="form-label">Maliyet Kaynağı</label> <!-- Yeni Alan -->
+                                    <select class="form-select" id="maliyet_kaynak" name="maliyet_kaynak">
+                                        <option value="" selected>Seçiniz</option>
+                                        <option value="satici">Satıcı Beyanı</option>
+                                        <option value="ekspertiz">Ekspertiz Raporu</option>
+                                        <option value="emsal">Emsal Araştırması</option>
+                                        <option value="diger">Diğer</option>
+                                    </select>
+                                </div>
+                            </div>
+                             <div class="row">
+                                <div class="col-md-6 mb-3">
                                     <label for="birim_maliyet" class="form-label">Birim Maliyet (TL/m²)</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="birim_maliyet" name="birim_maliyet" readonly>
@@ -322,18 +332,30 @@
                                     </div>
                                     <small class="form-text text-muted">Otomatik hesaplanır</small>
                                 </div>
-                            </div>
+                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="guncel_deger" class="form-label required-field">Güncel Değer (TL)</label>
+                                    <label for="guncel_deger" class="form-label required-field">Güncel Piyasa Değeri (TL)</label> <!-- Etiket Güncellendi -->
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="guncel_deger" name="guncel_deger" min="0" step="0.01" required>
                                         <span class="input-group-text">₺</span>
                                     </div>
                                     <div class="invalid-feedback">
-                                        Lütfen arsanın güncel değerini giriniz.
+                                        Lütfen arsanın güncel piyasa değerini giriniz.
                                     </div>
                                 </div>
+                                 <div class="col-md-6 mb-3">
+                                    <label for="guncel_deger_kaynak" class="form-label">Güncel Değer Kaynağı</label> <!-- Yeni Alan -->
+                                    <select class="form-select" id="guncel_deger_kaynak" name="guncel_deger_kaynak">
+                                        <option value="" selected>Seçiniz</option>
+                                        <option value="ekspertiz">Ekspertiz Raporu</option>
+                                        <option value="emsal">Emsal Araştırması</option>
+                                        <option value="piyasa">Piyasa Değeri</option>
+                                        <option value="diger">Diğer</option>
+                                    </select>
+                                </div>
+                            </div>
+                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="birim_deger" class="form-label">Birim Değer (TL/m²)</label>
                                     <div class="input-group">
@@ -564,35 +586,116 @@
                             try {
                                 const jsonData = JSON.parse(e.target.result);
                                 const form = document.getElementById('arsaAnaliz'); // Form ID'si düzeltildi
-                                form.querySelector('#il').value = jsonData?.properties?.ilAdi || '';
-                                form.querySelector('#ilce').value = jsonData?.properties?.ilceAdi || '';
-                                form.querySelector('#mahalle').value = jsonData?.properties?.mahalleAdi || '';
-                                form.querySelector('#ada').value = jsonData?.properties?.adaNo || '';
-                                form.querySelector('#parsel').value = jsonData?.properties?.parselNo || '';
-                                form.querySelector('#metrekare').value = jsonData?.properties?.alan || '';
-                                // Koordinatları formatla (varsa)
-                                if (jsonData?.geometry?.coordinates) {
-                                     // Genellikle [[[lon, lat]]] formatında gelir
-                                     const coords = jsonData.geometry.coordinates[0][0];
-                                     if (coords && coords.length > 0) {
-                                         // Ortalama veya ilk koordinatı alabiliriz
-                                         const lat = coords[0][1];
-                                         const lon = coords[0][0];
-                                         form.querySelector('#koordinatlar').value = `${lat}, ${lon}`;
-                                     }
+                                const properties = jsonData?.features?.[0]?.properties; // TKGM JSON yapısına göre
+
+                                if (!properties) {
+                                     alert('JSON dosyasında beklenen "features[0].properties" alanı bulunamadı.');
+                                     event.target.value = null; // Dosya seçimini temizle
+                                     return;
                                 }
+
+                                console.log("JSON Properties:", properties); // Yüklenen özellikleri logla
+
+                                // Alanları doldur (JSON anahtarlarının büyük/küçük harf duyarlılığına dikkat)
+                                form.querySelector('#il').value = properties.Il || properties.il || '';
+                                form.querySelector('#ilce').value = properties.Ilce || properties.ilce || '';
+                                form.querySelector('#mahalle').value = properties.Mahalle || properties.mahalleAdi || ''; // TKGM'de MahalleAdi olabilir
+                                form.querySelector('#ada').value = properties.Ada || properties.adaNo || ''; // TKGM'de adaNo olabilir
+                                form.querySelector('#parsel').value = properties.ParselNo || properties.parselNo || '';
+                                form.querySelector('#pafta').value = properties.Pafta || properties.pafta || '';
+
+                                // Alan değerini temizle ve doldur (noktayı kaldır, virgülü noktaya çevir)
+                                const alanStr = (properties.Alan || properties.alan || '').toString().replace(/\./g, '').replace(',', '.');
+                                form.querySelector('#metrekare').value = parseFloat(alanStr) || '';
+                                console.log("Metrekare dolduruldu:", form.querySelector('#metrekare').value); // DEBUG
+
+                                // Nitelik alanını doldur
+                                const nitelik = properties.Nitelik || properties.nitelik || properties.zeminKmdurum || ''; // Olası alan adları
+                                const nitelikInput = form.querySelector('#nitelik');
+                                if (nitelikInput) {
+                                    nitelikInput.value = nitelik;
+                                    console.log("Nitelik dolduruldu:", nitelik); // DEBUG
+                                } else {
+                                    console.warn("Nitelik input alanı bulunamadı."); // DEBUG
+                                }
+
+                                // Koordinatları formatla (varsa)
+                                const geometry = jsonData?.features?.[0]?.geometry;
+                                let lat = '';
+                                let lon = '';
+                                // Doğrudan erişim denemesi
+                                try {
+                                    if (geometry?.type === 'Polygon' && geometry?.coordinates?.[0]?.[0]?.length === 2) {
+                                        lon = geometry.coordinates[0][0][0]; // Longitude
+                                        lat = geometry.coordinates[0][0][1]; // Latitude
+                                        console.log(`Polygon koordinatları alındı (doğrudan): lat=${lat}, lon=${lon}`); // DEBUG
+                                    } else if (geometry?.type === 'Point' && geometry?.coordinates?.length === 2) {
+                                        lon = geometry.coordinates[0];
+                                        lat = geometry.coordinates[1];
+                                        console.log(`Point koordinatları alındı (doğrudan): lat=${lat}, lon=${lon}`); // DEBUG
+                                    } else {
+                                        console.warn("Desteklenmeyen geometri tipi veya geçersiz koordinat yapısı (doğrudan erişim):", geometry); // DEBUG
+                                    }
+                                } catch (coordError) {
+                                     console.error("Koordinatlara erişirken hata:", coordError); // DEBUG
+                                     lat = '';
+                                     lon = '';
+                                }
+
+
+                                // Değerlerin geçerli olup olmadığını kontrol et
+                                console.log(`Kontrol öncesi: lat=${lat} (${typeof lat}), lon=${lon} (${typeof lon})`); // DEBUG
+                                if (typeof lat === 'number' && typeof lon === 'number' && !isNaN(lat) && !isNaN(lon)) {
+                                     form.querySelector('#koordinatlar').value = `${lat}, ${lon}`; // lat, lon formatında yaz
+                                     console.log("Koordinatlar dolduruldu:", form.querySelector('#koordinatlar').value); // DEBUG
+                                } else {
+                                     form.querySelector('#koordinatlar').value = '';
+                                     console.log("Koordinatlar bulunamadı veya geçerli sayısal değerler değil."); // DEBUG
+                                }
+
+                                // Mevkii bilgisini Notlar alanına ekle (varsa)
+                                const mevkii = properties.Mevkii || properties.mevkii || '';
+                                const notlarInput = form.querySelector('#notlar');
+                                if (notlarInput && mevkii) {
+                                    const mevcutNotlar = notlarInput.value ? notlarInput.value + '\n' : '';
+                                    notlarInput.value = mevcutNotlar + `Mevkii (JSON): ${mevkii}`;
+                                    console.log("Mevkii notlara eklendi."); // DEBUG
+                                }
+
+                                // Nitelik değerine göre TAKS/KAKS alanlarını gizle/göster
+                                const taksKaksContainer = document.getElementById('taks-kaks-container');
+                                if (taksKaksContainer) {
+                                    // Nitelik "Arsa" içeriyorsa göster, değilse gizle (büyük/küçük harf duyarsız)
+                                    console.log("Nitelik kontrolü (TAKS/KAKS için):", nitelik.toLowerCase()); // Kontrol edilecek değeri logla
+                                    if (nitelik && nitelik.toLowerCase().includes('arsa')) {
+                                        console.log("TAKS/KAKS gösteriliyor.");
+                                        taksKaksContainer.style.display = ''; // Varsayılan görünüm (row)
+                                    } else {
+                                        console.log("TAKS/KAKS gizleniyor.");
+                                        taksKaksContainer.style.display = 'none';
+                                    }
+                                } else {
+                                     console.warn("TAKS/KAKS container bulunamadı."); // DEBUG
+                                }
+
+
                                 alert('JSON dosyasından bilgiler yüklendi.');
-                                // Birim fiyatları yeniden hesapla
-                                calculateBirimFiyat();
+                                // Birim fiyatları yeniden hesapla (Maliyet ve Güncel Değer JSON'da olmadığı için hesaplanamaz)
+                                // calculateBirimFiyat();
+
                             } catch (error) {
-                                console.error("JSON parse hatası:", error);
-                                alert('JSON dosyası okunamadı veya geçersiz formatta.');
+                                console.error("JSON parse veya alan doldurma hatası:", error); // DEBUG
+                                alert('JSON dosyası işlenirken bir hata oluştu. Lütfen konsolu kontrol edin.');
                             }
+                        };
+                        reader.onerror = function(e) { // Hata durumunu yakala
+                            console.error("FileReader hatası:", e); // DEBUG
+                            alert('Dosya okunurken bir hata oluştu.');
                         };
                         reader.readAsText(file);
                     } else if (file) {
                         alert('Lütfen geçerli bir JSON dosyası seçin.');
-                        event.target.value = null;
+                        event.target.value = null; // Geçersiz dosya seçimini temizle
                     }
                 });
             }

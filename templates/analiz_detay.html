@@ -280,7 +280,7 @@
             </div>
           </div>
           <!-- Fiyat Tahmini Kartı -->
-          {% if tahmin %}
+          {% if tahmin and tahmin.status == 'success' %} {# Başarılı tahmin varsa göster #}
           <div class="card mt-4">
             <div class="card-body">
               <div class="row mb-4">
@@ -320,14 +320,16 @@
                   {{ "{:,.2f} TL/m²".format(tahmin.bolge_istatistikleri.max_birim_fiyat).replace(',', 'X').replace('.', ',').replace('X', '.') }}
                 </div>
                 <div class="progress mt-2" style="height: 5px;">
-                  <div class="progress-bar bg-info" role="progressbar" 
-                       style="width: '{{ tahmin.bolge_istatistikleri['guven_skoru']|default(0) }}%';"
-                       aria-valuenow="{{ tahmin.bolge_istatistikleri['guven_skoru']|default(0) }}" 
-                       aria-valuemin="0" 
+                  {# Skora göre renk sınıfını belirle #}
+                  {% set skor = tahmin.bolge_istatistikleri['guven_skoru']|default(0) %}
+                  {% set renk_sinifi = 'bg-success' if skor > 70 else ('bg-warning' if skor >= 40 else 'bg-danger') %}
+                  <div class="progress-bar {{ renk_sinifi }}" role="progressbar" style="width: {{ skor }}%;"
+                       aria-valuenow="{{ skor }}"
+                       aria-valuemin="0"
                        aria-valuemax="100">
                   </div>
                 </div>
-                <small class="text-muted">Veri Güven Skoru: {{ "%.1f"|format(tahmin.bolge_istatistikleri['guven_skoru']|default(0)) }}%</small>
+                <small class="text-muted">Veri Güven Skoru: {{ "%.1f"|format(skor) }}%</small> {# skor değişkenini kullanalım #}
               </div>
               {% endif %}
               {% if tahmin.benzer_arsalar %}
@@ -358,10 +360,19 @@
               {% endif %}
             </div>
           </div>
-          {% elif tahmin is none %}
+          {# Tahmin başarılı değilse veya tahmin yoksa durumu göster #}
+          {% elif not tahmin or tahmin.status == 'failure' %}
           <div class="card mt-4">
             <div class="card-body">
-              <p class="text-muted">Bu arsa için fiyat tahmini yapılamadı. Yeterli veri bulunmuyor veya bir hata oluştu.</p>
+              <p class="text-warning">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                  Fiyat Tahmini Başarısız:
+                  {% if tahmin and tahmin.reason %}
+                      {{ tahmin.reason }}
+                  {% else %}
+                      Yeterli veri bulunmuyor veya bir hata oluştu.
+                  {% endif %}
+              </p>
             </div>
           </div>
           {% endif %}
@@ -454,11 +465,11 @@
                   <div class="col-md-4 mb-3">
                     <div class="card">
                       {% if medya.type == 'image' %}
-                        <img src="{{ url_for('static', filename='uploads/' + medya.filename) }}" 
+                        <img src="{{ url_for('static', filename='uploads/' + medya.filename) }}"
                             class="card-img-top" alt="Arsa Görseli {{ loop.index }}">
                       {% else %}
                         <video class="card-img-top" controls>
-                          <source src="{{ url_for('static', filename='uploads/' + medya.filename) }}" 
+                          <source src="{{ url_for('static', filename='uploads/' + medya.filename) }}"
                                 type="video/mp4">
                           Tarayıcınız video oynatmayı desteklemiyor.
                         </video>
@@ -508,17 +519,23 @@
               </div>
             </div>
           </div>
-          <!-- Rapor Oluşturma Butonları -->
+          <!-- Rapor İndirme Butonları -->
           <div class="card mb-4">
             <div class="card-body">
-              <h6>Rapor Oluştur</h6>
+              <h6 class="mb-3">Rapor Oluştur</h6>
               <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('generate', format='word', file_id=analiz.id) }}" class="btn btn-secondary">Word Raporu Oluştur</a>
-                <a href="{{ url_for('generate', format='pdf', file_id=analiz.id) }}" class="btn btn-secondary">PDF Raporu Oluştur</a>
-                <!-- Sunum Oluşturma Modalı -->
-                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#reportSettingsModal">
-                  Sunum Oluştur
-                </button>
+                  <button type="button" class="btn btn-danger" onclick="generateReport('pdf')">
+                      <i class="bi bi-file-earmark-pdf me-2"></i>PDF Raporu
+                  </button>
+                  <button type="button" class="btn btn-primary" onclick="generateReport('docx')">
+                      <i class="bi bi-file-earmark-word me-2"></i>Word Raporu
+                  </button>
+                  <button type="button" class="btn btn-warning" onclick="generateReport('pptx')">
+                      <i class="bi bi-file-earmark-ppt me-2"></i>Sunum Oluştur
+                  </button>
+                  <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#reportSettingsModal">
+                      <i class="bi bi-gear me-2"></i>Rapor Ayarları
+                  </button>
               </div>
             </div>
           </div>
@@ -527,76 +544,117 @@
     </div>
   </div>
 
-  <!-- Rapor Ayarları Modalı -->
+  <!-- Rapor Ayarları Modal -->
   <div class="modal fade" id="reportSettingsModal" tabindex="-1" aria-labelledby="reportSettingsModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="reportSettingsModalLabel">Sunum Ayarları</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title" id="reportSettingsModalLabel">Rapor Ayarları</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
         </div>
         <div class="modal-body">
           <form id="reportSettingsForm">
             <div class="mb-3">
-              <label for="reportFormat" class="form-label">Format Seçin</label>
+              <label for="reportFormat" class="form-label">Rapor Formatı</label>
               <select class="form-select" id="reportFormat" name="format">
-                <option value="pptx">PowerPoint (.pptx)</option>
-                <option value="word">Word (.docx)</option>
-                <option value="pdf">PDF (.pdf)</option>
+                <option value="pdf">PDF</option>
+                <option value="docx">Word (DOCX)</option>
+                <option value="pptx">PowerPoint (PPTX)</option>
               </select>
             </div>
             <div class="mb-3">
               <label for="colorScheme" class="form-label">Renk Şeması</label>
               <select class="form-select" id="colorScheme" name="color_scheme">
-                <option value="blue">Mavi</option>
-                <option value="green">Yeşil</option>
-                <option value="purple">Mor</option>
+                <option value="default">Varsayılan</option>
+                <option value="blue">Mavi Tonları</option>
+                <option value="green">Yeşil Tonları</option>
+                <option value="gray">Gri Tonları</option>
               </select>
             </div>
             <div class="mb-3">
               <label class="form-label">Dahil Edilecek Bölümler</label>
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="profile" id="includeProfile" name="sections" checked>
-                <label class="form-check-label" for="includeProfile">
-                  Analist Bilgileri
-                </label>
+                <input class="form-check-input" type="checkbox" value="ozet" id="includeOzet" name="sections[]" checked>
+                <label class="form-check-label" for="includeOzet">Özet Bilgiler</label>
               </div>
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="property" id="includeProperty" name="sections" checked>
-                <label class="form-check-label" for="includeProperty">
-                  Arsa Bilgileri
-                </label>
+                <input class="form-check-input" type="checkbox" value="detaylar" id="includeDetaylar" name="sections[]" checked>
+                <label class="form-check-label" for="includeDetaylar">Arsa Detayları</label>
               </div>
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="infrastructure" id="includeInfrastructure" name="sections" checked>
-                <label class="form-check-label" for="includeInfrastructure">
-                  Altyapı Durumu
-                </label>
+                <input class="form-check-input" type="checkbox" value="swot" id="includeSwot" name="sections[]" checked>
+                <label class="form-check-label" for="includeSwot">SWOT Analizi</label>
               </div>
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="swot" id="includeSwot" name="sections" checked>
-                <label class="form-check-label" for="includeSwot">
-                  SWOT Analizi
-                </label>
+                <input class="form-check-input" type="checkbox" value="tahmin" id="includeTahmin" name="sections[]" checked>
+                <label class="form-check-label" for="includeTahmin">Fiyat Tahmini</label>
               </div>
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="photos" id="includePhotos" name="sections" checked>
-                <label class="form-check-label" for="includePhotos">
-                  Arsa Fotoğrafları
-                </label>
+                <input class="form-check-input" type="checkbox" value="medya" id="includeMedya" name="sections[]">
+                <label class="form-check-label" for="includeMedya">Medya Galerisi</label>
               </div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-          <button type="button" class="btn btn-primary" id="generateReportBtn">Oluştur</button>
+          <button type="button" class="btn btn-primary" onclick="saveReportSettings()">Ayarları Kaydet ve Rapor Oluştur</button>
         </div>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ url_for('static', filename='js/analiz_detay.js') }}"></script>
+  <script>
+      function generateReport(format) {
+          // Rapor ayarlarını formdan al (varsayılanları kullanabiliriz veya modal'dan gelenleri)
+          const form = document.getElementById('reportSettingsForm');
+          const formData = new FormData(form);
+          const params = new URLSearchParams();
+
+          // Seçili formatı ayarla
+          params.set('format', format);
+
+          // Seçili renk şemasını ekle
+          params.set('color_scheme', formData.get('color_scheme') || 'default');
+
+          // Seçili bölümleri ekle
+          const sections = formData.getAll('sections[]');
+          if (sections.length > 0) {
+              sections.forEach(section => params.append('sections', section));
+          } else {
+              // Hiç bölüm seçilmediyse varsayılanları ekle (isteğe bağlı)
+              params.append('sections', 'ozet');
+              params.append('sections', 'detaylar');
+              params.append('sections', 'swot');
+              params.append('sections', 'tahmin');
+          }
+
+
+          // Analiz ID'sini al
+          const analizId = {{ analiz.id }};
+
+          // Rapor oluşturma URL'sine yönlendir
+          // Not: file_id şu an kullanılmıyor gibi görünüyor, doğrudan analiz_id ile oluşturabiliriz.
+          // Gerekirse file_id'yi de ekleyebiliriz.
+          window.location.href = `/generate/${format}/${analizId}?${params.toString()}`;
+      }
+
+       function saveReportSettings() {
+            // Ayarları kaydetme mantığı buraya eklenebilir (örn. localStorage)
+            // Şimdilik sadece seçili formatta rapor oluşturuyoruz
+            const selectedFormat = document.getElementById('reportFormat').value;
+            generateReport(selectedFormat);
+            // Modal'ı kapat
+            const modalElement = document.getElementById('reportSettingsModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                 modalInstance.hide();
+            } else {
+                 // Fallback if instance not found (should not happen with standard Bootstrap)
+                 const modal = new bootstrap.Modal(modalElement);
+                 modal.hide();
+            }
+       }
+  </script>
 </body>
-</html>
