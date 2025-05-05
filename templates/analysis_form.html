@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arsa Analiz Formu</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <!-- Ana CSS -->
+    <link href="{{ url_for('static', filename='css/sofistike-style') }}" rel="stylesheet">
+    <!-- Form Özel CSS -->
+    <link href="{{ url_for('static', filename='css/analysis_form.css') }}" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-center">Arsa Analiz Formu</h2>
+                <p class="text-center text-muted">Arsa yatırımınız için detaylı analiz oluşturun</p>
+            </div>
+        </div>
+
+        <!-- Flash mesajları -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form id="arsaAnaliz" action="{{ url_for('submit_analysis') }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <!-- Parsel Bilgileri -->
+                    <div class="card mb-4 fade-in">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-geo-alt"></i> Parsel Bilgileri
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="jsonDosya" class="form-label">Parsel Bilgisini JSON ile Yükle</label>
+                                    <input class="form-control" type="file" id="jsonDosya" accept=".json">
+                                    <small class="form-text text-muted">TKGM Parsel Sorgu'dan indirilen JSON dosyasını yükleyebilirsiniz.</small>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="il" class="form-label required-field">İl</label>
+                                    <input type="text" class="form-control" id="il" name="il" required>
+                                    <div class="invalid-feedback">
+                                        Lütfen il bilgisini giriniz.
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="ilce" class="form-label required-field">İlçe</label>
+                                    <input type="text" class="form-control" id="ilce" name="ilce" required>
+                                    <div class="invalid-feedback">
+                                        Lütfen ilçe bilgisini giriniz.
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="mahalle" class="form-label required-field">Mahalle</label>
+                                    <input type="text" class="form-control" id="mahalle" name="mahalle" required>
+                                    <div class="invalid-feedback">
+                                        Lütfen mahalle bilgisini giriniz.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="ada" class="form-label required-field">Ada No</label>
+                                    <input type="text" class="form-control" id="ada" name="ada" required pattern="\d+"> <!-- pattern eklendi -->
+                                    <div class="invalid-feedback">
+                                        Lütfen geçerli bir ada numarası giriniz (sadece sayı).
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="parsel" class="form-label required-field">Parsel No</label>
+                                    <input type="text" class="form-control" id="parsel" name="parsel" required pattern="\d+"> <!-- pattern eklendi -->
+                                    <div class="invalid-feedback">
+                                        Lütfen geçerli bir parsel numarası giriniz (sadece sayı).
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="pafta" class="form-label">Pafta No</label>
+                                    <input type="text" class="form-control" id="pafta" name="pafta">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="koordinatlar" class="form-label">Koordinatlar (Yaklaşık)</label>
+                                    <input type="text" class="form-control" id="koordinatlar" name="koordinatlar" placeholder="JSON dosyasından otomatik alınacak veya örn: 40.7128, -74.0060">
+                                     <div class="invalid-feedback">
+                                        Lütfen geçerli bir koordinat formatı giriniz (örn. 40.7128, -74.0060).
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Arsa Bilgileri -->
+                    <div class="card mb-4 fade-in">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-house"></i> Arsa Bilgileri
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3"> <!-- Boyut 4'e düşürüldü -->
+                                    <label for="metrekare" class="form-label required-field">Metrekare</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="metrekare" name="metrekare" min="1" max="9999999.99" step="0.01" required>
+                                        <span class="input-group-text">m²</span>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Lütfen geçerli bir metrekare değeri giriniz.
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3"> <!-- Boyut 4'e düşürüldü -->
+                                    <label for="imar_durumu" class="form-label required-field">İmar Durumu</label>
+                                    <select class="form-select" id="imar_durumu" name="imar_durumu" required>
+                                        <option value="" selected disabled>Seçiniz</option>
+                                        <option value="konut">Konut</option>
+                                        <option value="ticari">Ticari</option>
+                                        <option value="karma">Karma</option>
+                                        <option value="sanayi">Sanayi</option>
+                                        <option value="diger">Diğer</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Lütfen imar durumunu seçiniz.
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3"> <!-- Nitelik Alanı Eklendi -->
+                                    <label for="nitelik" class="form-label">Nitelik</label>
+                                    <input type="text" class="form-control" id="nitelik" name="nitelik" readonly placeholder="JSON'dan alınacak">
+                                </div>
+                            </div>
+                            <div class="row" id="taks-kaks-container"> <!-- ID Eklendi -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="taks" class="form-label">TAKS (Taban Alanı Katsayısı)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="taks" name="taks" min="0" max="1" step="0.01" value="0.3">
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        TAKS değeri 0 ile 1 arasında olmalıdır.
+                                    </div>
+                                    <small class="form-text text-muted">Örnek: 0.3 (Arsa alanının %30'u kadar taban alanı)</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="kaks" class="form-label">KAKS (Kat Alanı Katsayısı)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="kaks" name="kaks" min="0" step="0.01" value="1.5">
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Lütfen geçerli bir KAKS değeri giriniz.
+                                    </div>
+                                    <small class="form-text text-muted">Örnek: 1.5 (Arsa alanının 1.5 katı kadar inşaat alanı)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SWOT Analizi -->
+                    <div class="card mb-4 fade-in">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list-check"></i> SWOT Analizi
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Güçlü Yönler -->
+                            <div class="mb-4">
+                                <h6>Güçlü Yönler (Strengths)</h6>
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="yeniStrength" placeholder="Yeni güçlü yön ekleyin...">
+                                    <button class="btn btn-outline-secondary btn-sm" type="button" onclick="gosterOnTanimliSwot('strength')">Önerilenler</button> <!-- Önerilenler Butonu -->
+                                    <button class="btn btn-success" type="button" onclick="ekleSwot('strength')">
+                                        <i class="bi bi-plus-lg"></i> Ekle
+                                    </button>
+                                </div>
+                                <div id="strengthList" class="swot-container list-group"></div> <!-- list-group eklendi -->
+                                <input type="hidden" name="strengths" id="strengthsInput" value="[]">
+                            </div>
+                            <!-- Zayıf Yönler -->
+                            <div class="mb-4">
+                                <h6>Zayıf Yönler (Weaknesses)</h6>
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="yeniWeakness" placeholder="Yeni zayıf yön ekleyin...">
+                                     <button class="btn btn-outline-secondary btn-sm" type="button" onclick="gosterOnTanimliSwot('weakness')">Önerilenler</button> <!-- Önerilenler Butonu -->
+                                    <button class="btn btn-danger" type="button" onclick="ekleSwot('weakness')">
+                                        <i class="bi bi-plus-lg"></i> Ekle
+                                    </button>
+                                </div>
+                                <div id="weaknessList" class="swot-container list-group"></div> <!-- list-group eklendi -->
+                                <input type="hidden" name="weaknesses" id="weaknessesInput" value="[]">
+                            </div>
+                            <!-- Fırsatlar -->
+                            <div class="mb-4">
+                                <h6>Fırsatlar (Opportunities)</h6>
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="yeniOpportunity" placeholder="Yeni fırsat ekleyin...">
+                                     <button class="btn btn-outline-secondary btn-sm" type="button" onclick="gosterOnTanimliSwot('opportunity')">Önerilenler</button> <!-- Önerilenler Butonu -->
+                                    <button class="btn btn-info" type="button" onclick="ekleSwot('opportunity')">
+                                        <i class="bi bi-plus-lg"></i> Ekle
+                                    </button>
+                                </div>
+                                <div id="opportunityList" class="swot-container list-group"></div> <!-- list-group eklendi -->
+                                <input type="hidden" name="opportunities" id="opportunitiesInput" value="[]">
+                            </div>
+                            <!-- Tehditler -->
+                            <div>
+                                <h6>Tehditler (Threats)</h6>
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="yeniThreat" placeholder="Yeni tehdit ekleyin...">
+                                     <button class="btn btn-outline-secondary btn-sm" type="button" onclick="gosterOnTanimliSwot('threat')">Önerilenler</button> <!-- Önerilenler Butonu -->
+                                    <button class="btn btn-warning" type="button" onclick="ekleSwot('threat')">
+                                        <i class="bi bi-plus-lg"></i> Ekle
+                                    </button>
+                                </div>
+                                <div id="threatList" class="swot-container list-group"></div> <!-- list-group eklendi -->
+                                <input type="hidden" name="threats" id="threatsInput" value="[]">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Altyapı Bilgileri -->
+                    <div class="card mb-4 fade-in">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-wrench"></i> Altyapı Bilgileri
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 mb-2">
+                                    <label class="form-label">Altyapı Özellikleri</label>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-check checkbox-custom">
+                                        <input class="form-check-input" type="checkbox" id="yol" name="altyapi[]" value="yol">
+                                        <label class="form-check-label" for="yol">Yol</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-check checkbox-custom">
+                                        <input class="form-check-input" type="checkbox" id="elektrik" name="altyapi[]" value="elektrik">
+                                        <label class="form-check-label" for="elektrik">Elektrik</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-check checkbox-custom">
+                                        <input class="form-check-input" type="checkbox" id="su" name="altyapi[]" value="su">
+                                        <label class="form-check-label" for="su">Su</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-check checkbox-custom">
+                                        <input class="form-check-input" type="checkbox" id="dogalgaz" name="altyapi[]" value="dogalgaz">
+                                        <label class="form-check-label" for="dogalgaz">Doğalgaz</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-check checkbox-custom">
+                                        <input class="form-check-input" type="checkbox" id="kanalizasyon" name="altyapi[]" value="kanalizasyon">
+                                        <label class="form-check-label" for="kanalizasyon">Kanalizasyon</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-check checkbox-custom">
+                                        <input class="form-check-input" type="checkbox" id="telefon" name="altyapi[]" value="telefon">
+                                        <label class="form-check-label" for="telefon">Telefon</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-check checkbox-custom">
+                                        <input class="form-check-input" type="checkbox" id="internet" name="altyapi[]" value="internet">
+                                        <label class="form-check-label" for="internet">İnternet</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fiyat Bilgileri -->
+                    <div class="card mb-4 fade-in">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-cash-coin"></i> Fiyat Bilgileri
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="maliyet" class="form-label required-field">Maliyet (TL)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="maliyet" name="maliyet" min="0" step="0.01" required>
+                                        <span class="input-group-text">₺</span>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Lütfen arsa maliyetini giriniz.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="birim_maliyet" class="form-label">Birim Maliyet (TL/m²)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="birim_maliyet" name="birim_maliyet" readonly>
+                                        <span class="input-group-text">₺/m²</span>
+                                    </div>
+                                    <small class="form-text text-muted">Otomatik hesaplanır</small>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="guncel_deger" class="form-label required-field">Güncel Değer (TL)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="guncel_deger" name="guncel_deger" min="0" step="0.01" required>
+                                        <span class="input-group-text">₺</span>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Lütfen arsanın güncel değerini giriniz.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="birim_deger" class="form-label">Birim Değer (TL/m²)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="birim_deger" name="birim_deger" readonly>
+                                        <span class="input-group-text">₺/m²</span>
+                                    </div>
+                                    <small class="form-text text-muted">Otomatik hesaplanır</small>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="tarih" class="form-label required-field">Alım Tarihi</label>
+                                    <input type="date" class="form-control" id="tarih" name="tarih" required>
+                                    <div class="invalid-feedback">
+                                        Lütfen alım tarihini giriniz.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="deger_artis_orani" class="form-label">Yıllık Değer Artış Oranı (%)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="deger_artis_orani" name="deger_artis_orani" min="0" max="100" step="0.1" value="15">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Değerleme ve Analiz -->
+                    <div class="card mb-4 fade-in">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-graph-up"></i> Değerleme ve Analiz
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="risk_degerlendirmesi" class="form-label">Risk Değerlendirmesi</label>
+                                    <select class="form-select" id="risk_degerlendirmesi" name="risk_degerlendirmesi">
+                                        <option value="dusuk">Düşük Risk</option>
+                                        <option value="orta" selected>Orta Risk</option>
+                                        <option value="yuksek">Yüksek Risk</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="oneri_elde_tutma_suresi" class="form-label">Önerilen Elde Tutma Süresi</label>
+                                    <select class="form-select" id="oneri_elde_tutma_suresi" name="oneri_elde_tutma_suresi">
+                                        <option value="1-3">1-3 Yıl (Kısa Vadeli)</option>
+                                        <option value="3-5" selected>3-5 Yıl (Orta Vadeli)</option>
+                                        <option value="5-10">5-10 Yıl (Uzun Vadeli)</option>
+                                        <option value="10+">10+ Yıl (Çok Uzun Vadeli)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="uzun_vade_strateji" class="form-label">Uzun Vadeli Strateji</label>
+                                    <select class="form-select" id="uzun_vade_strateji" name="uzun_vade_strateji">
+                                        <option value="sat">Değerlendikten sonra sat</option>
+                                        <option value="gelistir">Geliştirme projesi yap</option>
+                                        <option value="kirala">Düzenle ve kirala</option>
+                                        <option value="beklet">Bekletme stratejisi</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notlar ve Ek Bilgiler -->
+                    <div class="card mb-4 fade-in">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-pencil-square"></i> Notlar
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="notlar" class="form-label">Ekstra Notlar</label>
+                                    <textarea class="form-control" id="notlar" name="notlar" rows="4" placeholder="Arsa ile ilgili özel notlar, görüşler veya hatırlatmalar..." maxlength="1000"></textarea> <!-- maxlength eklendi -->
+                                     <div class="invalid-feedback">
+                                        Notlar alanı en fazla 1000 karakter olmalıdır.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Arsa Medyaları -->
+                    <div class="card mb-4 fade-in">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="bi bi-images"></i> Arsa Medyaları
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="medya" class="form-label">Görsel/Video Yükle</label>
+                                <input class="form-control" type="file" id="medya" name="medya[]" multiple accept="image/*,video/*">
+                                <small class="form-text text-muted">Birden fazla dosya seçebilirsiniz (Ctrl/Cmd tuşuna basılı tutarak). İzin verilen formatlar: png, jpg, jpeg, gif, mp4, mov, avi.</small>
+                            </div>
+                            <div id="secilenDosyalar" class="mt-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Form Gönder -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-5">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="bi bi-save"></i> Arsayı Kaydet
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-light btn-lg px-5">
+                            <i class="bi bi-x-circle"></i> Vazgeç
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form doğrulama
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    // SWOT verilerini hazırla
+                    updateAllSwotInputs();
+                    
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+
+            // SWOT analizi için madde ekleme
+            window.ekleSwot = function(tip) {
+                const input = document.getElementById('yeni' + tip.charAt(0).toUpperCase() + tip.slice(1));
+                const list = document.getElementById(tip + 'List');
+                const hiddenInput = document.getElementById(tip + 'sInput');
+                
+                if (input.value.trim() !== '') {
+                    // Yeni madde ekle
+                    const item = document.createElement('div');
+                    item.className = 'swot-item';
+                    item.innerHTML = `
+                        <span>${input.value}</span>
+                        <button type="button" class="btn btn-sm btn-light" onclick="this.parentNode.remove(); updateSwotInput('${tip}');">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    `;
+                    list.appendChild(item);
+                    
+                    // Hidden input'u güncelle
+                    updateSwotInput(tip);
+                    
+                    // Input'u temizle
+                    input.value = '';
+                }
+            }
+
+            // SWOT hidden input güncellemesi
+            window.updateSwotInput = function(tip) {
+                const list = document.getElementById(tip + 'List');
+                const hiddenInput = document.getElementById(tip + 'sInput');
+                
+                const items = Array.from(list.querySelectorAll('.swot-item span')).map(span => span.textContent);
+                hiddenInput.value = JSON.stringify(items);
+                console.log(`${tip} güncellendi:`, hiddenInput.value);
+            }
+            
+            // Tüm SWOT hidden inputlarını güncellemek için yardımcı fonksiyon
+            window.updateAllSwotInputs = function() {
+                 ["strength", "weakness", "opportunity", "threat"].forEach(updateSwotInput);
+            }
+
+            // Birim maliyet ve değer hesaplama
+            const maliyetInput = document.getElementById('maliyet');
+            const guncelDegerInput = document.getElementById('guncel_deger');
+            const metrekareInput = document.getElementById('metrekare'); // Zaten tanımlı ama tekrar alalım
+            const birimMaliyetInput = document.getElementById('birim_maliyet');
+            const birimDegerInput = document.getElementById('birim_deger');
+
+            function calculateBirimFiyat() {
+                const metrekare = parseFloat(metrekareInput.value.replace(',', '.')) || 0;
+                
+                if (maliyetInput && birimMaliyetInput) {
+                    const maliyet = parseFloat(maliyetInput.value.replace(',', '.')) || 0;
+                    if (metrekare > 0) {
+                        birimMaliyetInput.value = (maliyet / metrekare).toFixed(2);
+                    } else {
+                        birimMaliyetInput.value = '';
+                    }
+                }
+                
+                if (guncelDegerInput && birimDegerInput) {
+                    const guncelDeger = parseFloat(guncelDegerInput.value.replace(',', '.')) || 0;
+                     if (metrekare > 0) {
+                        birimDegerInput.value = (guncelDeger / metrekare).toFixed(2);
+                    } else {
+                        birimDegerInput.value = '';
+                    }
+                }
+            }
+
+            if (maliyetInput) maliyetInput.addEventListener('input', calculateBirimFiyat);
+            if (guncelDegerInput) guncelDegerInput.addEventListener('input', calculateBirimFiyat);
+            if (metrekareInput) metrekareInput.addEventListener('input', calculateBirimFiyat);
+
+            // Sayfa yüklendiğinde de hesapla (eğer değerler varsa)
+            calculateBirimFiyat();
+
+             // JSON Dosyası Yükleme ve Formu Doldurma (validation.js'den taşındı)
+            const jsonDosyaInput = document.getElementById('jsonDosya');
+            if (jsonDosyaInput) {
+                jsonDosyaInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    if (file && file.type === "application/json") {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const jsonData = JSON.parse(e.target.result);
+                                const form = document.getElementById('arsaAnaliz'); // Form ID'si düzeltildi
+                                form.querySelector('#il').value = jsonData?.properties?.ilAdi || '';
+                                form.querySelector('#ilce').value = jsonData?.properties?.ilceAdi || '';
+                                form.querySelector('#mahalle').value = jsonData?.properties?.mahalleAdi || '';
+                                form.querySelector('#ada').value = jsonData?.properties?.adaNo || '';
+                                form.querySelector('#parsel').value = jsonData?.properties?.parselNo || '';
+                                form.querySelector('#metrekare').value = jsonData?.properties?.alan || '';
+                                // Koordinatları formatla (varsa)
+                                if (jsonData?.geometry?.coordinates) {
+                                     // Genellikle [[[lon, lat]]] formatında gelir
+                                     const coords = jsonData.geometry.coordinates[0][0];
+                                     if (coords && coords.length > 0) {
+                                         // Ortalama veya ilk koordinatı alabiliriz
+                                         const lat = coords[0][1];
+                                         const lon = coords[0][0];
+                                         form.querySelector('#koordinatlar').value = `${lat}, ${lon}`;
+                                     }
+                                }
+                                alert('JSON dosyasından bilgiler yüklendi.');
+                                // Birim fiyatları yeniden hesapla
+                                calculateBirimFiyat();
+                            } catch (error) {
+                                console.error("JSON parse hatası:", error);
+                                alert('JSON dosyası okunamadı veya geçersiz formatta.');
+                            }
+                        };
+                        reader.readAsText(file);
+                    } else if (file) {
+                        alert('Lütfen geçerli bir JSON dosyası seçin.');
+                        event.target.value = null;
+                    }
+                });
+            }
+
+             // Medya dosyası seçildiğinde isimlerini gösterme (validation.js'den taşındı)
+            const medyaInput = document.getElementById('medya');
+            const secilenDosyalarDiv = document.getElementById('secilenDosyalar');
+            if (medyaInput && secilenDosyalarDiv) {
+                medyaInput.addEventListener('change', function() {
+                    secilenDosyalarDiv.innerHTML = '';
+                    if (this.files.length > 0) {
+                        const list = document.createElement('ul');
+                        list.classList.add('list-unstyled', 'list-group', 'list-group-flush');
+                        for (let i = 0; i < this.files.length; i++) {
+                            const listItem = document.createElement('li');
+                            listItem.classList.add('list-group-item', 'list-group-item-action', 'list-group-item-light', 'py-1', 'px-2', 'mb-1', 'rounded');
+                            listItem.textContent = this.files[i].name;
+                            list.appendChild(listItem);
+                        }
+                        secilenDosyalarDiv.appendChild(list);
+                    }
+                });
+            }
+
+        });
+    </script>
+    <!-- Özel JS Dosyası -->
+    <script src="{{ url_for('static', filename='js/validation.js') }}"></script> 
+</body>
+</html>
