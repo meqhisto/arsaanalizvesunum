@@ -4,6 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import uuid
+import tempfile
+import traceback
+from flask import jsonify, request, send_file
 import sqlite3
 from functools import wraps
 import json  # Bu satırı ekleyin
@@ -26,6 +29,9 @@ from modules.fiyat_tahmini import FiyatTahminModeli # <<< YENİ EKLEME
 import secrets
 import pyodbc
 import pytz
+from itertools import zip_longest
+
+
 
 
 import sys
@@ -42,6 +48,8 @@ app.template_folder = 'templates'
 #
 # Jinja2 template engine'ine datetime modülünü ekle
 app.jinja_env.globals.update(datetime=datetime)
+app.jinja_env.globals.update(zip=zip)
+
 
 
 #mssql
@@ -259,7 +267,7 @@ class Portfolio(db.Model):
 portfolio_arsalar = db.Table('portfolio_arsalar',
     db.Column('portfolio_id', db.Integer, db.ForeignKey('portfolios.id'), primary_key=True),
     db.Column('arsa_id', db.Integer, db.ForeignKey('arsa_analizleri.id'), primary_key=True),
-    db.Column('added_at', db.DateTime, default=datetime.utcnow)
+    db.Column('added_at', db.DateTime, default=datetime.now)
 )
 
 # Arsa sınıfı
@@ -637,6 +645,7 @@ def index():
     bolge_dagilimlari = BolgeDagilimi.query.filter_by(user_id=user_id).all()
     bolge_labels = [b.il for b in bolge_dagilimlari]
     bolge_data = [float(b.toplam_deger) for b in bolge_dagilimlari]
+    zipped = list(zip(bolge_labels, bolge_data))
 
     # Son 6 ayın analiz sayılarını hesapla
     son_alti_ay = []
@@ -678,7 +687,10 @@ def index():
         son_alti_ay=son_alti_ay,
         aylik_analiz_sayilari=aylik_analiz_sayilari,
         toplam_deger=toplam_deger,
-        toplam_portfoy=toplam_portfoy
+        toplam_portfoy=toplam_portfoy,
+        zipped=zipped
+
+      
     )
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -1449,6 +1461,96 @@ def portfolio_detail(id):
 def analysis_form():
     return render_template('analysis_form.html')
 
+
+@app.route('/generate/pptx/<int:analiz_id>', methods=['POST'])
+def generate_pptx(analiz_id):
+    try:
+        # Form verilerini kontrol et
+        print("DEBUG: Gelen form verileri:", request.form)
+        
+        # Sections verisini al ve kontrol et
+        sections_data = request.form.get('sections')
+        color_scheme = request.form.get('color_scheme', 'blue')  # Varsayılan değer 'blue'
+        
+        if not sections_data:
+            sections = []
+        else:
+            try:
+                sections = json.loads(sections_data)
+                if not isinstance(sections, list):
+                    sections = []
+            except json.JSONDecodeError:
+                sections = []
+        
+        print("DEBUG: Parsed sections:", sections)
+        print("DEBUG: Color scheme:", color_scheme)
+        
+        # Analiz ve kullanıcı verilerini al
+        analiz = ArsaAnaliz.query.get_or_404(analiz_id)
+        user = User.query.get(analiz.user_id)
+
+        # JSON için veri yapısını oluştur
+        temp_data = {
+            'analiz': {
+                'id': analiz.id,
+                'il': analiz.il,
+                'ilce': analiz.ilce,
+                'mahalle': analiz.mahalle,
+                'ada': analiz.ada,
+                'parsel': analiz.parsel,
+                'metrekare': float(analiz.metrekare),
+                'imar_durumu': analiz.imar_durumu,
+                'taks': float(analiz.taks),
+                'kaks': float(analiz.kaks),
+                'fiyat': float(analiz.fiyat) if analiz.fiyat else 0,
+                'bolge_fiyat': float(analiz.bolge_fiyat) if analiz.bolge_fiyat else 0,
+                'altyapi': json.loads(analiz.altyapi) if isinstance(analiz.altyapi, str) else analiz.altyapi,
+                'swot': json.loads(analiz.swot_analizi) if isinstance(analiz.swot_analizi, str) else analiz.swot_analizi,
+                'created_at': analiz.created_at.strftime('%d.%m.%Y %H:%M')
+            },
+            'user': {
+                'ad': user.ad,
+                'soyad': user.soyad,
+                'email': user.email,
+                'telefon': user.telefon,
+                'firma': user.firma,
+                'unvan': user.unvan,
+                'adres': user.adres,
+                'profil_foto': user.profil_foto
+            }
+        }
+
+        # DocumentGenerator'ı çağır
+        file_id = str(uuid.uuid4())
+        output_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'presentations', file_id)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        doc_gen = DocumentGenerator(
+            temp_data['analiz'],
+            analiz_ozeti=None,
+            file_id=file_id,
+            output_dir=output_dir,
+            profile_info=temp_data['user'],
+            settings={
+                'sections': sections,
+                'color_scheme': color_scheme  # color_scheme ekle
+            }
+        )
+
+        pptx_path = doc_gen.create_pptx()
+        
+        if pptx_path and os.path.exists(pptx_path):
+            return send_file(pptx_path, 
+                           as_attachment=True,
+                           download_name=f"analiz_sunum_{analiz_id}.pptx")
+        else:
+            return jsonify({'error': 'Sunum oluşturulamadı'}), 500
+            
+    except Exception as e:
+        print(f"HATA [Generate PPTX]: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+   
 @app.route('/submit_analysis', methods=['POST'])
 @login_required
 def submit_analysis():

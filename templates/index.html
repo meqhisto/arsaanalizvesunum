@@ -1,274 +1,302 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>İnveco Proje - Ana Sayfa</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/css/sofistike-style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>İnveco Proje - Ana Sayfa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/sofistike-style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  
 </head>
+
 <body>
-<div class="container-fluid">
-<div class="row">
-<!-- Mobil Sidebar Tetikleyici -->
-<button class="btn btn-primary d-md-none m-3" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebar">
-    <i class="bi bi-list"></i> Menü
-  </button>
-  
-  <!-- Sidebar -->
-  <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebar">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">İnveco Panel</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body d-flex flex-column gap-2">
-      <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-      <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-      <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
-      <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-      <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
-    </div>
-  </div>
-  
-  <!-- Masaüstü Sidebar -->
-  <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
-    <h4 class="mb-4">İnveco Panel</h4>
-    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-    <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
-    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
-  </div>
-  
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Mobil Sidebar Tetikleyici -->
+      <button class="btn btn-primary d-md-none m-3" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebar">
+        <i class="bi bi-list"></i> Menü
+      </button>
 
-<!-- Main Content -->
-<div class="col-md-9 col-lg-10 p-4">
-<div class="d-flex justify-content-between align-items-center mb-4">
-<div>
-<h2>Ana Sayfa</h2>
-<p class="text-muted mb-0">Hoşgeldiniz, {{ current_user.ad }} {{ current_user.soyad }}!</p>
-</div>
-<div class="d-flex align-items-center gap-3">
-<button class="btn btn-light position-relative">
-<i class="bi bi-bell"></i>
-{% if bildirimler|length > 0 %}
-<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ bildirimler|length }}</span>
-{% endif %}
-</button>
-<div class="dropdown">
-<button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-<i class="bi bi-person-circle"></i> {{ current_user.email }}
-</button>
-<ul class="dropdown-menu">
-<li><a class="dropdown-item" href="{{ url_for('profile') }}">Profilim</a></li>
-<li><a class="dropdown-item" href="{{ url_for('logout') }}">Çıkış Yap</a></li>
-</ul>
-</div>
-</div>
-</div>
+      <!-- Sidebar -->
+      <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebar">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title">İnveco Panel</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column gap-2">
+          <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+          <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+          <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
+          <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+          <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
+        </div>
+      </div>
 
-<!-- Profil ve İstatistik Kartları -->
-<div class="row mb-4">
-<div class="col-md-4">
-<div class="card profile-card p-3 d-flex align-items-center">
-{% if current_user.profil_foto %}
-<img src="{{ url_for('static', filename='uploads/' ~ current_user.profil_foto) }}" alt="Profil Fotoğrafı">
-{% else %}
-<i class="bi bi-person-circle" style="font-size: 3rem;"></i>
-{% endif %}
-<div class="text-center mt-3">
-<h6>{{ current_user.ad }} {{ current_user.soyad }}</h6>
-<p class="text-muted mb-1">{{ current_user.firma }}</p>
-<p class="text-muted">{{ current_user.unvan }}</p>
-<a href="{{ url_for('profile') }}" class="btn btn-primary btn-sm">Profili Düzenle</a>
-</div>
-</div>
-</div>
+      <!-- Masaüstü Sidebar -->
+      <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
+        <h4 class="mb-4">İnveco Panel</h4>
+        <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+        <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+        <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
+        <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+        <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
+      </div>
 
-<div class="col-md-8">
-<div class="row g-3">
-<div class="col-md-6 col-lg-4">
-<div class="stat-card">
-<h6>Toplam Arsa</h6>
-<div>{{ stats.toplam_arsa_sayisi }}</div>
-</div>
-</div>
-<div class="col-md-6 col-lg-4">
-<div class="stat-card bg-green">
-<h6>Ortalama Fiyat</h6>
-<div id="ortalamaFiyat">{{ "%.2f"|format(stats.ortalama_fiyat) }} TL</div>
-</div>
-</div>
-<div class="col-md-6 col-lg-4">
-<div class="stat-card bg-orange">
-<h6>En Yüksek Fiyat</h6>
-<div id="enYuksekFiyat">{{ "%.2f"|format(stats.en_yuksek_fiyat) }} TL</div>
-</div>
-</div>
-</div>
-</div>
-</div>
 
-<!-- Grafik ve Aktiviteler -->
-<div class="row mb-4">
-<div class="col-md-8">
-<div class="card">
-<div class="card-header">
-<h5 class="mb-0">Analiz İstatistikleri</h5>
-</div>
-<div class="card-body">
-<canvas id="analysisChart"></canvas>
-</div>
-</div>
-</div>
-<div class="col-md-4">
-<div class="card">
-<div class="card-header">
-<h5 class="mb-0">Son Aktiviteler</h5>
-</div>
-<div class="card-body position-relative">
-  <div class="activity-timeline">
-    {# app.py'den gelen genel aktiviteler döngüsü #}
-    {% for aktivite in son_aktiviteler %}
-    <div class="activity-item ps-3 mb-3">
-        <small class="text-muted d-block">{{ aktivite.tarih.strftime('%d.%m.%Y %H:%M') }}</small>
-        <span>{{ aktivite.mesaj }}</span> {# Örneğin: "Yeni analiz eklendi", "Profil güncellendi" #}
-    </div>
-    {% endfor %}
+      <!-- Main Content -->
+      <div class="col-md-9 col-lg-10 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h2>Ana Sayfa</h2>
+            <p class="text-muted mb-0">Hoşgeldiniz, {{ current_user.ad }} {{ current_user.soyad }}!</p>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-light position-relative">
+              <i class="bi bi-bell"></i>
+              {% if bildirimler|length > 0 %}
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{
+                bildirimler|length }}</span>
+              {% endif %}
+            </button>
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle"></i> {{ current_user.email }}
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profilim</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Çıkış Yap</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
-    {# Kullanıcının son giriş zamanı (eğer varsa) #}
-    {% if current_user and current_user.son_giris %} {# current_user kontrolü eklendi #}
-    <div class="activity-item ps-3 mb-3">
-      <small class="text-muted d-block">{{ current_user.localize_datetime(current_user.son_giris) }}</small>
-      <span><i class="bi bi-box-arrow-in-right me-1"></i>Son girişiniz</span>
-    </div>
-    {% endif %}
-</div>
+        <!-- Profil ve İstatistik Kartları -->
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <div class="card profile-card p-3 d-flex align-items-center">
+              {% if current_user.profil_foto %}
+              <img src="{{ url_for('static', filename='uploads/' ~ current_user.profil_foto) }}" alt="Profil Fotoğrafı">
+              {% else %}
+              <i class="bi bi-person-circle" style="font-size: 3rem;"></i>
+              {% endif %}
+              <div class="text-center mt-3">
+                <h6>{{ current_user.ad }} {{ current_user.soyad }}</h6>
+                <p class="text-muted mb-1">{{ current_user.firma }}</p>
+                <p class="text-muted">{{ current_user.unvan }}</p>
+                <a href="{{ url_for('profile') }}" class="btn btn-primary btn-sm">Profili Düzenle</a>
+              </div>
+            </div>
+          </div>
 
-</div>
-</div>
-</div>
-</div>
-</div>
+          <div class="col-md-8">
+            <div class="row g-3">
+              <div class="col-md-6 col-lg-4">
+                <div class="stat-card">
+                  <h6>Toplam Arsa</h6>
+                  <div>{{ stats.toplam_arsa_sayisi }}</div>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <div class="stat-card bg-green">
+                  <h6>Ortalama Fiyat</h6>
+                  <div id="ortalamaFiyat">{{ "%.2f"|format(stats.ortalama_fiyat) }} TL</div>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <div class="stat-card bg-orange">
+                  <h6>En Yüksek Fiyat</h6>
+                  <div id="enYuksekFiyat">{{ "%.2f"|format(stats.en_yuksek_fiyat) }} TL</div>
+                </div>
 
-<!-- Son Analizler Tablosu -->
-<div class="card mb-4">
-<div class="card-header d-flex justify-content-between align-items-center">
-<h5 class="mb-0">Son Analizler</h5>
-<div class="d-flex align-items-center gap-2">
-<input type="text" id="analizArama" class="form-control form-control-sm" placeholder="Analiz ara...">
-<a href="{{ url_for('analizler') }}" class="btn btn-outline-secondary btn-sm">Tümünü Gör</a>
-<a href="{{ url_for('analysis_form') }}" class="btn btn-primary btn-sm">Yeni Analiz</a>
-</div>
-</div>
-<div class="card-body">
-<div class="table-responsive">
-<table class="table">
-<thead>
-<tr>
-<th>Arsa Adı</th>
-<th>Konum</th>
-<th>Durum</th>
-<th>Başlangıç</th>
-<th>İşlemler</th>
-</tr>
-</thead>
-<tbody>
-{% if analizler|length == 0 %}
-<tr>
-<td colspan="5" class="text-center text-muted">
-Henüz analiz eklenmedi. <a href="{{ url_for('submit') }}">Hemen ekleyin!</a>
-</td>
-</tr>
-{% else %}
-{% for analiz in analizler %}
-<tr>
-<td>{{ analiz.il }} - {{ analiz.ilce }}</td>
-<td>{{ analiz.mahalle }}</td>
-<td><span class="badge bg-success">Tamamlandı</span></td>
-<td>{{ analiz.created_at.strftime('%d.%m.%Y') }}</td>
-<td>
-<a href="{{ url_for('analiz_detay', analiz_id=analiz.id) }}" class="btn btn-sm btn-outline-primary">Görüntüle</a>
-<a href="{{ url_for('generate', format='pdf', file_id=analiz.id) }}" class="btn btn-sm btn-outline-secondary">Rapor</a>
-</td>
-</tr>
-{% endfor %}
-{% endif %}
-</tbody>
-</table>
-</div>
-</div>
-</div>
 
-</div> <!-- Main content sonu -->
-</div> <!-- Row sonu --> </div> <!-- Container sonu -->
+              </div>
+              
+              
+            </div>
+          </div>
+        </div>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
-<script>
-const ctx = document.getElementById('analysisChart').getContext('2d');
-new Chart(ctx, {
-type: 'line',
-    data: {
-      labels: {{ son_alti_ay|tojson }},
-datasets: [{
-label: 'Aylık Analizler',
-data: {{ aylik_analiz_sayilari|tojson }},
-borderColor: '#4f46e5',
-backgroundColor: 'rgba(79, 70, 229, 0.1)',
-tension: 0.3,
-fill: true
+        <!-- Grafik ve Aktiviteler -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Analiz İstatistikleri</h5>
+              </div>
+              <div class="card-body">
+                <canvas id="analysisChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Son Aktiviteler</h5>
+              </div>
+              <div class="card-body position-relative">
+                <div class="activity-timeline">
+                  {# app.py'den gelen genel aktiviteler döngüsü #}
+                  {% for aktivite in son_aktiviteler %}
+                  <div class="activity-item ps-3 mb-3">
+                    <small class="text-muted d-block">{{ aktivite.tarih.strftime('%d.%m.%Y %H:%M') }}</small>
+                    <span>{{ aktivite.mesaj }}</span> {# Örneğin: "Yeni analiz eklendi", "Profil güncellendi" #}
+                  </div>
+                  {% endfor %}
+
+                  {# Kullanıcının son giriş zamanı (eğer varsa) #}
+                  {% if current_user and current_user.son_giris %} {# current_user kontrolü eklendi #}
+                  <div class="activity-item ps-3 mb-3">
+                    <small class="text-muted d-block">{{ current_user.localize_datetime(current_user.son_giris)
+                      }}</small>
+                    <span><i class="bi bi-box-arrow-in-right me-1"></i>Son girişiniz</span>
+                  </div>
+                  {% endif %}
+                </div>
+
+              </div>
+              <!-- Bölge Dağılımı Kartı -->
+
+
+            </div>
+          </div>
+        </div>
+        
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Son Analizler</h5>
+            <div class="d-flex align-items-center gap-2">
+              <input type="text" id="analizArama" class="form-control form-control-sm" placeholder="Analiz ara...">
+              <a href="{{ url_for('analizler') }}" class="btn btn-outline-secondary btn-sm">Tümünü Gör</a>
+              <a href="{{ url_for('analysis_form') }}" class="btn btn-primary btn-sm">Yeni Analiz</a>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Arsa Adı</th>
+                    <th>Konum</th>
+                    <th>Durum</th>
+                    <th>Başlangıç</th>
+                    <th>İşlemler</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if analizler|length == 0 %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">
+                      Henüz analiz eklenmedi. <a href="{{ url_for('submit') }}">Hemen ekleyin!</a>
+                    </td>
+                  </tr>
+                  {% else %}
+                  {% for analiz in analizler %}
+                  <tr>
+                    <td>{{ analiz.il }} - {{ analiz.ilce }}</td>
+                    <td>{{ analiz.mahalle }}</td>
+                    <td><span class="badge bg-success">Tamamlandı</span></td>
+                    <td>{{ analiz.created_at.strftime('%d.%m.%Y') }}</td>
+                    <td>
+                      <a href="{{ url_for('analiz_detay', analiz_id=analiz.id) }}"
+                        class="btn btn-sm btn-outline-primary">Görüntüle</a>
+                      <a href="{{ url_for('generate', format='pdf', file_id=analiz.id) }}"
+                        class="btn btn-sm btn-outline-secondary">Rapor</a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+
+      <!-- Son Analizler Tablosu -->
+     
+
+
+
+      <!-- Scripts -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+      <script>
+        const ctx = document.getElementById('analysisChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: {{ son_alti_ay| tojson }},
+          datasets: [{
+            label: 'Aylık Analizler',
+            data: {{ aylik_analiz_sayilari| tojson }},
+          borderColor: '#4f46e5',
+          backgroundColor: 'rgba(79, 70, 229, 0.1)',
+          tension: 0.3,
+          fill: true
 }]
 },
-options: {
-responsive: true,
-plugins: {
-legend: { display: false }
-},
-scales: {
-y: { beginAtZero: true }
-}
-}
+          options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
 });
 
-document.getElementById('analizArama').addEventListener('keyup', function() {
-const value = this.value.toLowerCase();
-document.querySelectorAll('.table tbody tr').forEach(row => {
-const text = row.textContent.toLowerCase();
-row.style.display = text.includes(value) ? '' : 'none';
-});
-});
+        document.getElementById('analizArama').addEventListener('keyup', function () {
+          const value = this.value.toLowerCase();
+          document.querySelectorAll('.table tbody tr').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(value) ? '' : 'none';
+          });
+        });
 
-// Yeni fiyat formatlama fonksiyonu
-function formatTurkishCurrency(number) {
-return new Intl.NumberFormat('tr-TR', {
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
-}).format(number);
-}
+        // Yeni fiyat formatlama fonksiyonu
+        function formatTurkishCurrency(number) {
+          return new Intl.NumberFormat('tr-TR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }).format(number);
+        }
 
-// Fiyat kartlarını güncelle
-document.addEventListener('DOMContentLoaded', () => {
-const ortalamaFiyatElement = document.getElementById('ortalamaFiyat');
-const enYuksekFiyatElement = document.getElementById('enYuksekFiyat');
+        // Fiyat kartlarını güncelle
+        document.addEventListener('DOMContentLoaded', () => {
+          const ortalamaFiyatElement = document.getElementById('ortalamaFiyat');
+          const enYuksekFiyatElement = document.getElementById('enYuksekFiyat');
 
-if (ortalamaFiyatElement) {
-const rawValue = parseFloat(ortalamaFiyatElement.textContent.replace(',', '.'));
-if (!isNaN(rawValue)) {
-ortalamaFiyatElement.textContent = formatTurkishCurrency(rawValue) + ' TL';
-}
-}
+          if (ortalamaFiyatElement) {
+            const rawValue = parseFloat(ortalamaFiyatElement.textContent.replace(',', '.'));
+            if (!isNaN(rawValue)) {
+              ortalamaFiyatElement.textContent = formatTurkishCurrency(rawValue) + ' TL';
+            }
+          }
 
-if (enYuksekFiyatElement) {
-const rawValue = parseFloat(enYuksekFiyatElement.textContent.replace(',', '.'));
-if (!isNaN(rawValue)) {
-enYuksekFiyatElement.textContent = formatTurkishCurrency(rawValue) + ' TL';
-}
-}
-});
-</script>
+          if (enYuksekFiyatElement) {
+            const rawValue = parseFloat(enYuksekFiyatElement.textContent.replace(',', '.'));
+            if (!isNaN(rawValue)) {
+              enYuksekFiyatElement.textContent = formatTurkishCurrency(rawValue) + ' TL';
+            }
+          }
+        });
+      </script>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      
+      
 </body>
+
 </html>
