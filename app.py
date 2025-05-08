@@ -21,7 +21,7 @@ from modules.document_generator import DocumentGenerator
 from decimal import Decimal
 from werkzeug.utils import secure_filename
 import logging
-from logging.handlers import RotatingFileHandler
+from concurrent_log_handler import ConcurrentRotatingFileHandler # Import concurrent handler
 from modules.fiyat_tahmini import FiyatTahminModeli # <<< YENİ EKLEME
 import secrets
 import pyodbc
@@ -36,9 +36,6 @@ application = app  # Flask uygulamasını application olarak ayarlayın
 
 app.template_folder = 'templates'
 
-db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
 
 # Jinja2 template engine'ine datetime modülünü ekle
 app.jinja_env.globals.update(datetime=datetime)
@@ -63,34 +60,38 @@ app.jinja_env.globals.update(datetime=datetime)
 #    print(f"Bağlantı Hatası: {sqlstate}")
 #    sys.exit()
 
+# --- CONFIGURATION FIRST ---
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mssql+pyodbc://altan:Yxrkt2bb7q8.@46.221.49.106/arsa_db?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-#app.config['SQLALCHEMY_POOL_SIZE'] = 10
-#app.config['SQLALCHEMY_MAX_OVERFLOW'] = 20
-#app.config['SQLALCHEMY_POOL_TIMEOUT'] = 30
-#app.config['SQLALCHEMY_POOL_RECYCLE'] = 1800
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'sizin_gizli_anahtariniz') # SECRET_KEY ekle
-
-
-db = SQLAlchemy(app)
-
-BASE_DIR = Path(__file__).resolve().parent
-PRESENTATIONS_DIR = BASE_DIR / 'static' / 'presentations'
-if not PRESENTATIONS_DIR.exists():
-    PRESENTATIONS_DIR.mkdir(parents=True)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'sizin_gizli_anahtariniz')
 
 # Medya yükleme ayarları
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi'} # Video formatları eklendi
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi'}
 MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB
+BASE_DIR = Path(__file__).resolve().parent
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+PRESENTATIONS_DIR = BASE_DIR / 'static' / 'presentations'
+if not PRESENTATIONS_DIR.exists():
+    PRESENTATIONS_DIR.mkdir(parents=True)
+# --- END CONFIGURATION ---
+
+# Jinja2 template engine'ine datetime modülünü ekle
+app.jinja_env.globals.update(datetime=datetime)
+
+
+
+db=SQLAlchemy(app)
+db.init_app(app)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Log ayarları
-handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
+# Use ConcurrentRotatingFileHandler for thread-safe logging
+handler = ConcurrentRotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
@@ -122,7 +123,7 @@ class User(db.Model):
     def set_password(self, password):
         try:
             print(f"Setting password for user {self.email}")  # Debug log
-            self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
+            self.password_hash = generate_password_hash(password, method='sha256')
             print("Password hash generated successfully")  # Debug log
         except Exception as e:
             print(f"Error setting password: {str(e)}")  # Debug log
@@ -948,9 +949,22 @@ def generate(format, file_id):
         print(f"DEBUG [Generate]: Kullanılacak analiz_ozeti: {analiz_ozeti}", flush=True) # Flush eklendi
 
         # URL parametrelerinden rapor ayarlarını al
-        theme = request.args.get('theme', 'classic')
-        color_scheme = request.args.get('color_scheme', 'blue')
-        sections = request.args.get('sections', '').split(',')
+        theme = request.args.get('theme', 'classic') # Varsayılan tema
+        color_scheme = request.args.get('color_scheme', 'blue') # Varsayılan renk şeması
+
+        raw_sections_str = request.args.get('sections')
+        passed_sections_list = None # Başlangıçta None
+        if raw_sections_str is not None: # Eğer 'sections' parametresi URL'de varsa
+            # Virgülle ayrılmış string'i listeye çevir, boş elemanları ve baştaki/sondaki boşlukları temizle
+            passed_sections_list = [s.strip() for s in raw_sections_str.split(',') if s.strip()]
+
+        doc_generator_settings = {
+            'theme': theme,
+            'color_scheme': color_scheme,
+        }
+        # Sadece URL'den geçerli bir sections listesi geldiyse settings'e ekle
+        if passed_sections_list is not None: # Eğer sections parametresi vardıysa (boş liste bile olsa)
+            doc_generator_settings['sections'] = passed_sections_list
 
         # Ayarları DocumentGenerator'a gönder
         doc_generator = DocumentGenerator(
@@ -959,11 +973,7 @@ def generate(format, file_id):
             file_id,
             PRESENTATIONS_DIR,
             profile_info=profile_info,
-            settings={
-                'theme': theme,
-                'color_scheme': color_scheme,
-                'sections': sections
-            }
+            settings=doc_generator_settings
         )
 
         filename = None # Başlangıç değeri

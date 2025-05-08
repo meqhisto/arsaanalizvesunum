@@ -25,6 +25,7 @@ import sys
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 import sqlalchemy
+from pptx.enum.text import PP_ALIGN # PowerPoint metin hizalaması için import
 import qrcode  # En üstte import ekleyin
 
 class DocumentGenerator:
@@ -50,11 +51,30 @@ class DocumentGenerator:
         # --- YENİ LOG ---
         print("DEBUG [DocGen Init]: __init__ metodu tamamlandı.", flush=True)
         self.profile_info = profile_info or {}
-        self.settings = settings or {
+        
+        # Establish default settings
+        _default_settings = {
             'theme': 'classic',
             'color_scheme': 'blue',
-            'sections': ['profile', 'property', 'infrastructure', 'swot', 'photos']
+            'sections': ['profile', 'property', 'infrastructure', 'swot', 'photos', 'qr_code']
         }
+        
+        # Start with defaults
+        self.settings = _default_settings.copy()
+        
+        if settings: # If settings are provided from app.py
+            # Override theme and color_scheme if present
+            if 'theme' in settings:
+                self.settings['theme'] = settings['theme']
+            if 'color_scheme' in settings:
+                self.settings['color_scheme'] = settings['color_scheme']
+            
+            # Handle 'sections' specifically:
+            # If 'sections' is provided in settings AND it's a non-empty list, use it.
+            # Otherwise (if 'sections' not in settings, or is an empty list), keep the default 'sections'.
+            if 'sections' in settings and isinstance(settings['sections'], list) and settings['sections']:
+                self.settings['sections'] = settings['sections']
+
         self.colors = self._get_color_scheme()
         self.logo_path = "/static/logo.png"
 
@@ -65,19 +85,19 @@ class DocumentGenerator:
                 'primary': RGBColor(26, 35, 126),  # Koyu Mavi
                 'secondary': RGBColor(63, 81, 181), # Orta Mavi
                 'accent': RGBColor(33, 150, 243),   # Açık Mavi
-                'background': 'E3F2FD'              # En Açık Mavi
+                'background': '#E3F2FD'             # En Açık Mavi (HexColor için # eklendi)
             },
             'green': {
                 'primary': RGBColor(27, 94, 32),    # Koyu Yeşil
                 'secondary': RGBColor(56, 142, 60),  # Orta Yeşil
                 'accent': RGBColor(76, 175, 80),     # Açık Yeşil
-                'background': 'E8F5E9'               # En Açık Yeşil
+                'background': '#E8F5E9'              # En Açık Yeşil (HexColor için # eklendi)
             },
             'purple': {
                 'primary': RGBColor(74, 20, 140),    # Koyu Mor
                 'secondary': RGBColor(123, 31, 162), # Orta Mor
                 'accent': RGBColor(156, 39, 176),    # Açık Mor
-                'background': 'F3E5F5'               # En Açık Mor
+                'background': '#F3E5F5'              # En Açık Mor (HexColor için # eklendi)
             }
         }
         return schemes.get(self.settings['color_scheme'], schemes['blue'])
@@ -388,7 +408,6 @@ class DocumentGenerator:
             title_run = title.add_run('ARSA ANALİZ RAPORU')
             title_run.font.name = 'Arial'
             title_run.font.size = Pt(40)
-            title_run.font.color.rgb = self.colors['primary']
             title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
             # Alt başlık
@@ -414,13 +433,12 @@ class DocumentGenerator:
 
             # PROFİL SAYFASI (Kapaktan sonra)
             if self._should_include_section('profile'):
-                self._add_profile_section(doc)
+                self._add_profile_section_word(doc) # Metod adını _word ile değiştirelim
 
             # İçindekiler Sayfası
             toc_heading = doc.add_heading('İçindekiler', level=1)
             toc_heading.runs[0].font.name = 'Arial'
             toc_heading.runs[0].font.size = Pt(24)
-            toc_heading.runs[0].font.color.rgb = self.colors['primary']
             sections_list = [
                 'Arsa Bilgileri',
                 'Altyapı Durumu',
@@ -440,11 +458,11 @@ class DocumentGenerator:
 
             # Arsa Bilgileri Sayfası
             if self._should_include_section('property'):
-                self._add_property_section(doc)
+                self._add_property_section_word(doc) # Metod adını _word ile değiştirelim
 
             # Altyapı Durumu - Daha okunaklı tablo
             if self._should_include_section('infrastructure'):
-                self._add_infrastructure_section(doc)
+                self._add_infrastructure_section_word(doc) # Metod adını _word ile değiştirelim
 
             # İnşaat Alanı Hesaplama Tablosu
             heading = doc.add_heading('İnşaat Alanı Hesaplaması', 1)
@@ -477,13 +495,12 @@ class DocumentGenerator:
 
             # SWOT Analizi - 2x2 tablo
             if self._should_include_section('swot'):
-                self._add_swot_section(doc)
+                self._add_swot_section_word(doc) # Metod adını _word ile değiştirelim
 
             # Analiz Özeti - Başlıklar ve paragraflar
             ozet_heading = doc.add_heading('Analiz Özeti', 1)
             ozet_heading.runs[0].font.name = 'Arial'
             ozet_heading.runs[0].font.size = Pt(20)
-            ozet_heading.runs[0].font.color.rgb = self.colors['primary']
 
             ozet_sections = {
                 'Temel Değerlendirme': self.analiz_ozeti.get('temel_ozet', 'Değerlendirme bulunamadı.'),
@@ -516,7 +533,6 @@ class DocumentGenerator:
                  doc.add_page_break()
                  qr_heading = doc.add_heading('Analiz Detayları QR Kod', 1)
                  qr_heading.runs[0].font.name = 'Arial'
-                 qr_heading.runs[0].font.color.rgb = self.colors['primary']
                  qr_heading.alignment = WD_ALIGN_PARAGRAPH.CENTER
                  
                  p_qr = doc.add_paragraph()
@@ -547,11 +563,175 @@ class DocumentGenerator:
             sys.stdout.flush() # Zorla
             return None
 
+    def _add_profile_section_word(self, doc):
+        """Word belgesine profil bilgilerini ekler"""
+        doc.add_heading("Analist Bilgileri", level=1)
+
+        # Profil fotoğrafı ekle (varsa)
+        profile_photo_path = self._get_profile_photo_path()
+        if profile_photo_path and os.path.exists(profile_photo_path):
+            try:
+                p_photo = doc.add_paragraph()
+                p_photo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run_photo = p_photo.add_run()
+                run_photo.add_picture(profile_photo_path, width=Inches(1.5)) # Boyutu ayarla
+                p_photo.space_after = Pt(12)
+                print(f"DEBUG [Add Profile Word]: Profil fotoğrafı eklendi: {profile_photo_path}")
+            except Exception as e:
+                print(f"HATA [Add Profile Word]: Profil fotoğrafı eklenemedi: {e}")
+                traceback.print_exc(file=sys.stdout)
+                sys.stdout.flush()
+
+        data = self._get_profile_table_data()
+        table = doc.add_table(rows=len(data), cols=2)
+        table.style = 'Table Grid' # Veya istediğiniz başka bir stil
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+        # Sütun genişliklerini ayarla (isteğe bağlı)
+        table.columns[0].width = Inches(2.5)
+        table.columns[1].width = Inches(4.5)
+
+        for i, (label, value) in enumerate(data):
+            cell1 = table.cell(i, 0)
+            cell2 = table.cell(i, 1)
+            p1 = cell1.paragraphs[0]
+            run1 = p1.add_run(label)
+            run1.font.bold = True
+            run1.font.name = 'Arial'
+            p2 = cell2.paragraphs[0]
+            run2 = p2.add_run(str(value)) # Değeri stringe çevir
+            run2.font.name = 'Arial'
+
+        doc.add_paragraph() # Tablodan sonra boşluk
+        doc.add_page_break()
+
+    def _add_property_section_word(self, doc):
+        """Word belgesine arsa bilgilerini ekler"""
+        doc.add_heading("Arsa Bilgileri", level=1)
+        data = self._get_arsa_bilgileri()
+        table = doc.add_table(rows=len(data), cols=2)
+        table.style = 'Table Grid'
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+        # Sütun genişliklerini ayarla
+        table.columns[0].width = Inches(2.5)
+        table.columns[1].width = Inches(4.5)
+
+        for i, (label, value) in enumerate(data):
+            cell1 = table.cell(i, 0)
+            cell2 = table.cell(i, 1)
+            
+            p1 = cell1.paragraphs[0]
+            run1 = p1.add_run(label)
+            run1.font.bold = True
+            run1.font.name = 'Arial'
+            self._set_cell_background(cell1, "E3F2FD") # Arkaplan rengi
+            
+            p2 = cell2.paragraphs[0]
+            run2 = p2.add_run(str(value)) # Değeri stringe çevir
+            run2.font.name = 'Arial'
+            self._set_cell_background(cell2, "FFFFFF") # Arkaplan rengi
+
+        doc.add_paragraph() # Tablodan sonra boşluk
+        doc.add_page_break()
+
+    def _add_infrastructure_section_word(self, doc):
+        """Word belgesine altyapı durumunu ekler"""
+        doc.add_heading("Altyapı Durumu", level=1)
+        data = self._get_altyapi_durumu()
+        table = doc.add_table(rows=len(data), cols=2)
+        table.style = 'Table Grid'
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+        # Sütun genişliklerini ayarla
+        table.columns[0].width = Inches(3.5)
+        table.columns[1].width = Inches(3.5)
+
+        for i, (label, status) in enumerate(data):
+            cell1 = table.cell(i, 0)
+            cell2 = table.cell(i, 1)
+
+            p1 = cell1.paragraphs[0]
+            run1 = p1.add_run(label)
+            run1.font.bold = True
+            run1.font.name = 'Arial'
+            self._set_cell_background(cell1, "E3F2FD") # Arkaplan rengi
+
+            p2 = cell2.paragraphs[0]
+            run2 = p2.add_run(status)
+            run2.font.name = 'Arial'
+            # Duruma göre metin rengini ayarla
+            if status == '✓':
+                run2.font.color.rgb = RGBColor(0, 128, 0) # Yeşil
+            else:
+                run2.font.color.rgb = RGBColor(255, 0, 0) # Kırmızı
+            self._set_cell_background(cell2, "FFFFFF") # Arkaplan rengi
+
+        doc.add_paragraph() # Tablodan sonra boşluk
+        doc.add_page_break()
+
+    def _add_swot_section_word(self, doc):
+        """Word belgesine SWOT analizini ekler"""
+        doc.add_heading("SWOT Analizi", level=1)
+        swot_data = self._get_swot_analizi()
+
+        # SWOT başlıkları ve renkleri (Word'de renkler farklı uygulanabilir)
+        swot_titles = {
+            'Güçlü Yönler': RGBColor(0, 128, 0), # Yeşil
+            'Zayıf Yönler': RGBColor(255, 0, 0), # Kırmızı
+            'Fırsatlar': RGBColor(0, 0, 255),   # Mavi
+            'Tehditler': RGBColor(255, 165, 0)    # Turuncu
+        }
+
+        # 2x2 tablo oluştur
+        table = doc.add_table(rows=2, cols=2)
+        table.style = 'Table Grid' # Veya istediğiniz başka bir stil
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+        # Hücrelere başlıkları ve içerikleri yerleştir
+        cells_data = [
+            (swot_titles['Güçlü Yönler'], "Güçlü Yönler", swot_data.get('Güçlü Yönler', [])),
+            (swot_titles['Zayıf Yönler'], "Zayıf Yönler", swot_data.get('Zayıf Yönler', [])),
+            (swot_titles['Fırsatlar'], "Fırsatlar", swot_data.get('Fırsatlar', [])),
+            (swot_titles['Tehditler'], "Tehditler", swot_data.get('Tehditler', []))
+        ]
+
+        for i, (color, title, items) in enumerate(cells_data):
+            row = i // 2
+            col = i % 2
+            cell = table.cell(row, col)
+            
+            # Başlık paragrafı
+            p_title = cell.paragraphs[0] # Mevcut paragrafı kullan
+            run_title = p_title.add_run(title)
+            run_title.font.bold = True
+            run_title.font.name = 'Arial'
+            run_title.font.size = Pt(14)
+            run_title.font.color.rgb = color
+            
+            # İçerik maddeleri
+            for item_text in items:
+                p_item = cell.add_paragraph(f"- {item_text}")
+                p_item.runs[0].font.name = 'Arial'
+                p_item.runs[0].font.size = Pt(10)
+        doc.add_page_break()
+
+
     def create_pdf(self):
         try:
             print("DEBUG [Create PDF]: PDF belgesi oluşturma başladı.")
+            # --- FONT KAYITLARI BAŞLANGICI ---
+            # Projenizin ana dizinini bulun (app.py'nin olduğu yer)
+            project_base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            fonts_dir = os.path.join(project_base_dir, 'static', 'fonts') # Fontların olduğu varsayılan klasör
+
+            # Fontları ReportLab'a kaydet
+            # Bu dosya yollarının doğru olduğundan emin olun!
+            pdfmetrics.registerFont(TTFont('DejaVuSans', os.path.join(fonts_dir, 'DejaVuSans.ttf')))
+            pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', os.path.join(fonts_dir, 'DejaVuSans-Bold.ttf')))
+            # --- FONT KAYITLARI SONU ---
+
             # Fontları kaydet (Türkçe karakter desteği için)
-            self._register_fonts()
 
             # Stil şablonunu al
             styles = getSampleStyleSheet()
@@ -568,7 +748,6 @@ class DocumentGenerator:
             styleHeading1.fontSize = 24
             styleHeading1.leading = 28
             styleHeading1.spaceAfter = 14
-            styleHeading1.textColor = colors.HexColor(self.colors['primary'].rgb())
 
             styleHeading2 = styles['Heading2']
             styleHeading2.fontName = 'DejaVuSans-Bold'
@@ -576,7 +755,6 @@ class DocumentGenerator:
             styleHeading2.leading = 20
             styleHeading2.spaceBefore = 12
             styleHeading2.spaceAfter = 6
-            styleHeading2.textColor = colors.HexColor(self.colors['accent'].rgb())
 
 
             # Belge oluşturma ayarları
@@ -587,10 +765,10 @@ class DocumentGenerator:
 
             doc = SimpleDocTemplate(
                 filepath,
-                pagesize=A4,
+                pagesize=landscape(A4),
                 rightMargin=1.27*cm, leftMargin=1.27*cm,
                 topMargin=1.27*cm, bottomMargin=1.27*cm,
-                title=f"Arsa Analiz Raporu - {il}, {ilce}"
+                title=f"Gayrimenkul Analiz Raporu - {il}, {ilce}"
             )
 
             elements = []
@@ -612,7 +790,7 @@ class DocumentGenerator:
 
 
             # Başlık
-            title_text = f"ARSA ANALİZ RAPORU\n{il}, {ilce}"
+            title_text = f"GAYRİMENKUL ANALİZ RAPORU\n{il}, {ilce}"
             title_style = ParagraphStyle(
                 name='TitleStyle',
                 parent=styles['Heading1'],
@@ -621,7 +799,6 @@ class DocumentGenerator:
                 leading=40,
                 alignment=TA_CENTER,
                 spaceAfter=20,
-                textColor = colors.HexColor(self.colors['primary'].rgb())
             )
             elements.append(Paragraph(title_text, title_style))
 
@@ -647,11 +824,11 @@ class DocumentGenerator:
             # İçindekiler (Manuel olarak ekleyelim şimdilik)
             elements.append(Paragraph("İçindekiler", styleHeading1))
             toc_items = [
-                'Arsa Bilgileri',
+                'Gayrimenkul Bilgileri',
                 'Altyapı Durumu',
                 'SWOT Analizi',
                 'Analiz Özeti',
-                'Arsa Fotoğrafları'
+                'Gayrimenkul Fotoğrafları'
             ]
             for i, item in enumerate(toc_items, 1):
                  elements.append(Paragraph(f"{i}. {item}", styleN))
@@ -675,7 +852,7 @@ class DocumentGenerator:
             for label, value in insaat_data:
                  insaat_table_data.append([label, value])
 
-            insaat_table = Table(insaat_table_data, colWidths=[4*cm, 4*cm])
+            insaat_table = Table(insaat_table_data, colWidths=[5*cm, 5*cm])
             insaat_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(self.colors['background'])),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#475569')),
@@ -731,7 +908,6 @@ class DocumentGenerator:
                      leading=28,
                      alignment=TA_CENTER,
                      spaceAfter=14,
-                     textColor = colors.HexColor(self.colors['primary'].rgb())
                  )
                  elements.append(Paragraph("Analiz Detayları QR Kod", qr_heading_style))
 
@@ -1339,10 +1515,10 @@ class DocumentGenerator:
             height = cy
 
             try:
-                slide.shapes.add_picture(img_path, left, top, width=width, height=height)
-                print(f"DEBUG [Add Photos PPTX]: Resim eklendi: {img_path}") # Flush
+                slide.shapes.add_picture(images[i], left, top, width=width, height=height) # images[i] kullanılmalı
+                print(f"DEBUG [Add Photos PPTX]: Resim eklendi: {images[i]}") # Flush
             except Exception as e:
-                print(f"HATA [Add Photos PPTX]: Resim eklenemedi: {img_path} - {e}") # Flush
+                print(f"HATA [Add Photos PPTX]: Resim eklenemedi: {images[i]} - {e}") # Flush
                 traceback.print_exc(file=sys.stdout) # Konsola yazdır
                 sys.stdout.flush() # Zorla
                 # Hata durumunda metin kutusu ekleyebiliriz
@@ -1350,8 +1526,8 @@ class DocumentGenerator:
                 tf = txBox.text_frame
                 p = tf.add_paragraph()
                 p.text = "Resim yüklenemedi."
-                p.font.size = Pt(10)
-                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                if p.runs: p.runs[0].font.size = Pt(10) # Check if run exists
+                p.alignment = PP_ALIGN.CENTER # WD_ALIGN_PARAGRAPH yerine PP_ALIGN kullanılmalı
 
 
         print("DEBUG [Add Photos PPTX]: _add_photos_slide_pptx metodu tamamlandı.") # Flush

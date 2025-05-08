@@ -1,0 +1,124 @@
+2025-05-09 01:56:01,564 - ERROR - Fiyat tahmini sýrasýnda hata oluþtu: This Connection is closed
+Traceback (most recent call last):
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 1172, in analiz_detay
+    tahmin_sonucu = tahmin_modeli.tahmin_yap(prediction_input_data)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\modules\fiyat_tahmini.py", line 199, in tahmin_yap
+    bolge_stats = self.bolgesel_analiz.bolge_istatistikleri(
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\modules\fiyat_tahmini.py", line 76, in bolge_istatistikleri
+    result = self.db.execute(text(query), params).fetchone()
+  File "<string>", line 2, in execute
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
+    ret = self._execute_context(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1808, in _execute_context
+    conn = self._revalidate_connection()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 655, in _revalidate_connection
+    raise exc.ResourceClosedError("This Connection is closed")
+sqlalchemy.exc.ResourceClosedError: This Connection is closed
+2025-05-09 01:56:02,314 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:56:58,344 - ERROR - Fiyat tahmini sýrasýnda hata oluþtu: This Connection is closed
+Traceback (most recent call last):
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 1172, in analiz_detay
+    tahmin_sonucu = tahmin_modeli.tahmin_yap(prediction_input_data)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\modules\fiyat_tahmini.py", line 199, in tahmin_yap
+    bolge_stats = self.bolgesel_analiz.bolge_istatistikleri(
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\modules\fiyat_tahmini.py", line 76, in bolge_istatistikleri
+    result = self.db.execute(text(query), params).fetchone()
+  File "<string>", line 2, in execute
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
+    ret = self._execute_context(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1808, in _execute_context
+    conn = self._revalidate_connection()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 655, in _revalidate_connection
+    raise exc.ResourceClosedError("This Connection is closed")
+sqlalchemy.exc.ResourceClosedError: This Connection is closed
+2025-05-09 01:56:59,876 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:57:48,963 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:57:48,969 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:57:51,701 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:57:56,030 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.

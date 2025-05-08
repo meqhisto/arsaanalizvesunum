@@ -1,105 +1,69 @@
-2025-04-24 02:55:09,568 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:57:56,033 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback (most recent call last):
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-04-24 02:55:15,846 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:57:56,549 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback (most recent call last):
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
     self.raise_routing_exception(req)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
     raise request.routing_exception  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
     result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-04-24 02:55:39,698 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:59:23,512 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback (most recent call last):
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
     self.raise_routing_exception(req)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
     raise request.routing_exception  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
     result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-04-24 02:56:11,004 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:59:23,833 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback (most recent call last):
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-04-24 02:59:06,682 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-09 01:59:24,635 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback (most recent call last):
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
     self.raise_routing_exception(req)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
     raise request.routing_exception  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
     result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-04-24 03:03:32,031 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-04-24 03:04:01,251 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-04-24 03:04:09,288 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-04-28 02:04:09,116 - ERROR - Registration error: unsupported hash type scrypt
