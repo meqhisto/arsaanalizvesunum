@@ -16,17 +16,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const adaParselRegex = /^\d+$/;
             if (adaInput && adaInput.value.trim() && !adaParselRegex.test(adaInput.value.trim())) {
                 isValid = false;
-                adaInput.classList.add('is-invalid'); // Hata stili ekle
-                // Özel hata mesajı gösterilebilir (örn. bir div içinde)
-                alert('Ada numarası sadece sayı içermelidir.');
+                handleValidationError(adaInput, 'Ada numarası sadece sayı içermelidir.');
             } else if (adaInput) {
                  adaInput.classList.remove('is-invalid'); // Hata yoksa stili kaldır
             }
 
             if (parselInput && parselInput.value.trim() && !adaParselRegex.test(parselInput.value.trim())) {
                 isValid = false;
-                parselInput.classList.add('is-invalid');
-                alert('Parsel numarası sadece sayı içermelidir.');
+                handleValidationError(parselInput, 'Parsel numarası sadece sayı içermelidir.');
             } else if (parselInput) {
                  parselInput.classList.remove('is-invalid');
             }
@@ -37,8 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Koordinat alanı boş değilse ve formata uymuyorsa hata ver
             if (koordinatlarInput && koordinatlarInput.value.trim() && !koordinatRegex.test(koordinatlarInput.value.trim())) {
                 isValid = false;
-                koordinatlarInput.classList.add('is-invalid');
-                alert('Koordinatlar geçerli bir formatta (örn. 40.7128, -74.0060) olmalıdır.');
+                handleValidationError(koordinatlarInput, 'Koordinatlar geçerli bir formatta (örn. 40.7128, -74.0060) olmalıdır.');
             } else if (koordinatlarInput) {
                  koordinatlarInput.classList.remove('is-invalid');
             }
@@ -47,8 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const maxNotlarLength = 1000;
             if (notlarInput && notlarInput.value.length > maxNotlarLength) {
                 isValid = false;
-                notlarInput.classList.add('is-invalid');
-                alert(`Notlar alanı en fazla ${maxNotlarLength} karakter olmalıdır.`);
+                handleValidationError(notlarInput, `Notlar alanı en fazla ${maxNotlarLength} karakter olmalıdır.`);
             } else if (notlarInput) {
                  notlarInput.classList.remove('is-invalid');
             }
@@ -203,7 +198,21 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        if(maliyetInput) maliyetInput.addEventListener("input", hesaplaBirimMaliyet); // fiyatInput -> maliyetInput
+        const debounce = (func, wait) => {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        };
+
+        // Kullanımı
+        const debouncedCalculate = debounce(hesaplaBirimMaliyet, 300);
+        maliyetInput.addEventListener("input", debouncedCalculate);
         metrekareInput.addEventListener("input", hesaplaBirimMaliyet);
         // Ayrıca güncel değer için de benzer bir hesaplama yapılabilir (birim_deger alanı için)
     }
@@ -390,22 +399,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             console.log("Mevkii notlara eklendi."); // DEBUG
                         }
 
-                        // Nitelik değerine göre TAKS/KAKS alanlarını gizle/göster
-                        const taksKaksContainer = document.getElementById('taks-kaks-container');
-                        if (taksKaksContainer) {
-                            // Nitelik "Arsa" içeriyorsa göster, değilse gizle (büyük/küçük harf duyarsız)
-                            console.log("Nitelik kontrolü (TAKS/KAKS için):", nitelik.toLowerCase()); // Kontrol edilecek değeri logla
-                            if (nitelik && nitelik.toLowerCase().includes('arsa')) {
-                                console.log("TAKS/KAKS gösteriliyor.");
-                                taksKaksContainer.style.display = ''; // Varsayılan görünüm (row)
-                            } else {
-                                console.log("TAKS/KAKS gizleniyor.");
-                                taksKaksContainer.style.display = 'none';
-                            }
-                        } else {
-                             console.warn("TAKS/KAKS container bulunamadı."); // DEBUG
-                        }
-
+                       
 
                         alert('JSON dosyasından bilgiler yüklendi.');
                         // Birim fiyatları yeniden hesapla (Maliyet ve Güncel Değer JSON'da olmadığı için hesaplanamaz)
@@ -451,3 +445,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 });
+
+function handleValidationError(input, message) {
+    input.classList.add('is-invalid');
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'invalid-feedback';
+    errorDiv.textContent = message;
+    input.parentNode.appendChild(errorDiv);
+}

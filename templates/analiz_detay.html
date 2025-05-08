@@ -598,5 +598,67 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/analiz_detay.js') }}"></script>
+  <script>
+                        document.getElementById('generateReportBtn').addEventListener('click', function() {
+                  const form = document.getElementById('reportSettingsForm');
+                  const formData = new FormData();
+                  
+                  // Seçili bölümleri topla
+                  const sections = [];
+                  document.querySelectorAll('input[name="sections"]:checked').forEach(checkbox => {
+                      sections.push(checkbox.value);
+                  });
+                  
+                  // FormData'ya sections array'ini JSON string olarak ekle
+                  formData.append('sections', JSON.stringify(sections));
+                  formData.append('color_scheme', document.getElementById('colorScheme')?.value || 'blue');
+                  
+                  // Diğer form verilerini ekle
+                  formData.append('format', 'pptx');
+                  formData.append('color_scheme', 'blue');
+                  formData.append('analiz_id', '{{ analiz.id }}');
+              
+                  // Buton durumunu güncelle
+                  this.disabled = true;
+                  this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Oluşturuluyor...';
+              
+                  // Backend'e istek gönder
+                  fetch(`/generate/pptx/{{ analiz.id }}`, {
+                      method: 'POST',
+                      body: formData
+                  })
+                  .then(response => {
+                      if (!response.ok) {
+                          throw new Error('Sunumu oluşturulurken bir hata oluştu');
+                      }
+                      return response.blob();
+                  })
+                  .then(blob => {
+                      // Dosyayı indir
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `analiz_sunum_{{ analiz.id }}.pptx`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      
+                      // Buton durumunu sıfırla
+                      this.disabled = false;
+                      this.innerHTML = 'Oluştur';
+                      
+                      // Modal'ı kapat
+                      const modal = bootstrap.Modal.getInstance(document.getElementById('reportSettingsModal'));
+                      modal.hide();
+                  })
+                  .catch(error => {
+                      console.error('Hata:', error);
+                      alert('Sunum oluşturulurken bir hata oluştu');
+                      this.disabled = false;
+                      this.innerHTML = 'Oluştur';
+                  });
+              });
+    
+  </script>
 </body>
 </html>
