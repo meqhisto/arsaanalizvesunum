@@ -213,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Kullanımı
         const debouncedCalculate = debounce(hesaplaBirimMaliyet, 300);
         maliyetInput.addEventListener("input", debouncedCalculate);
-        metrekareInput.addEventListener("input", hesaplaBirimMaliyet);
+        metrekareInput.addEventListener("input", debouncedCalculate);
         // Ayrıca güncel değer için de benzer bir hesaplama yapılabilir (birim_deger alanı için)
     }
 
@@ -448,8 +448,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function handleValidationError(input, message) {
     input.classList.add('is-invalid');
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'invalid-feedback';
+    let errorDiv = input.parentNode.querySelector('.invalid-feedback');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback';
+        input.parentNode.appendChild(errorDiv);
+    }
     errorDiv.textContent = message;
-    input.parentNode.appendChild(errorDiv);
 }

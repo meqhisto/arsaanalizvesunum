@@ -42,9 +42,7 @@ application = app  # Flask uygulamasını application olarak ayarlayın
 
 app.template_folder = 'templates'
 
-db = SQLAlchemy(app)
-with app.app_context():
-    db.create_all()
+
 
 # Jinja2 template engine'ine datetime modülünü ekle
 app.jinja_env.globals.update(datetime=datetime)
