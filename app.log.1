@@ -1,105 +1,121 @@
-2025-05-10 02:56:32,600 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-11 01:21:24,657 - ERROR - Sunucu hatasý: 'Flask' object has no attribute 'login_manager'
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 02:56:32,610 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 284, in decorated_view
+    elif not current_user.is_authenticated:
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\local.py", line 422, in __get__
+    obj = instance._get_current_object()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\local.py", line 544, in _get_current_object
+    return self.__local()  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 25, in <lambda>
+    current_user = LocalProxy(lambda: _get_user())
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 370, in _get_user
+    current_app.login_manager._load_user()
+AttributeError: 'Flask' object has no attribute 'login_manager'
+2025-05-11 01:32:46,402 - ERROR - Sunucu hatasý: (pyodbc.ProgrammingError) ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT customers.id AS customers_id, customers.user_id AS customers_user_id, customers.name AS customers_name, customers.email AS customers_email, customers.phone AS customers_phone, customers.company AS customers_company, customers.title AS customers_title, customers.address AS customers_address, customers.customer_type AS customers_customer_type, customers.notes AS customers_notes, customers.status AS customers_status, customers.created_at AS customers_created_at, customers.updated_at AS customers_updated_at 
+FROM customers 
+WHERE customers.user_id = ?]
+[parameters: (1,)]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+pyodbc.ProgrammingError: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+
+The above exception was the direct cause of the following exception:
+
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 02:56:32,915 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\routes\crm.py", line 13, in dashboard
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
+    return self._iter().all()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
+    result = self.session.execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
+    ret = self._execute_context(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
+    self._handle_dbapi_exception(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
+    util.raise_(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT customers.id AS customers_id, customers.user_id AS customers_user_id, customers.name AS customers_name, customers.email AS customers_email, customers.phone AS customers_phone, customers.company AS customers_company, customers.title AS customers_title, customers.address AS customers_address, customers.customer_type AS customers_customer_type, customers.notes AS customers_notes, customers.status AS customers_status, customers.created_at AS customers_created_at, customers.updated_at AS customers_updated_at 
+FROM customers 
+WHERE customers.user_id = ?]
+[parameters: (1,)]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+2025-05-11 01:37:40,416 - ERROR - Sunucu hatasý: (pyodbc.ProgrammingError) ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT customers.id AS customers_id, customers.user_id AS customers_user_id, customers.name AS customers_name, customers.email AS customers_email, customers.phone AS customers_phone, customers.company AS customers_company, customers.title AS customers_title, customers.address AS customers_address, customers.customer_type AS customers_customer_type, customers.notes AS customers_notes, customers.status AS customers_status, customers.created_at AS customers_created_at, customers.updated_at AS customers_updated_at 
+FROM customers 
+WHERE customers.user_id = ?]
+[parameters: (1,)]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+pyodbc.ProgrammingError: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+
+The above exception was the direct cause of the following exception:
+
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 02:56:34,798 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 02:59:25,150 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 02:59:25,153 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 02:59:25,465 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\routes\crm.py", line 13, in dashboard
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
+    return self._iter().all()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
+    result = self.session.execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
+    ret = self._execute_context(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
+    self._handle_dbapi_exception(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
+    util.raise_(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT customers.id AS customers_id, customers.user_id AS customers_user_id, customers.name AS customers_name, customers.email AS customers_email, customers.phone AS customers_phone, customers.company AS customers_company, customers.title AS customers_title, customers.address AS customers_address, customers.customer_type AS customers_customer_type, customers.notes AS customers_notes, customers.status AS customers_status, customers.created_at AS customers_created_at, customers.updated_at AS customers_updated_at 
+FROM customers 
+WHERE customers.user_id = ?]
+[parameters: (1,)]
+(Background on this error at: https://sqlalche.me/e/14/f405)

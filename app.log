@@ -1,87 +1,37 @@
-2025-05-10 02:59:26,131 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-11 01:42:59,599 - ERROR - Sunucu hatasý: base.html
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 03:03:19,724 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\routes\crm.py", line 18, in dashboard
+    return render_template('crm/dashboard.html',
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\crm\dashboard.html", line 1, in top-level template code
+    {% extends "base.html" %}
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 59, in get_source
+    return self._get_source_fast(environment, template)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 95, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: base.html
+2025-05-11 01:53:33,929 - ERROR - Sunucu hatasý: Could not build url for endpoint 'dashboard'. Did you mean 'crm.dashboard' instead?
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 03:03:19,730 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 03:03:20,043 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-10 03:03:21,383 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-2025-05-11 00:03:19,938 - ERROR - Sunucu hatasý: '__main__.DashboardStats object' has no attribute 'toplam_arsa_alani'
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 521, in decorated_function
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 519, in decorated_function
     return f(*args, **kwargs)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 820, in index
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 829, in index
     return render_template(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
     return _render(
@@ -91,23 +41,39 @@ Traceback (most recent call last):
     self.environment.handle_exception()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
     raise rewrite_traceback_stack(source=source)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 198, in top-level template code
-    <div class="display-6">{{ "%.2f"|format(stats.toplam_arsa_alani) }}</div> {# Örnek veri #}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\filters.py", line 1043, in do_format
-    return soft_str(value) % (kwargs or args)
-jinja2.exceptions.UndefinedError: '__main__.DashboardStats object' has no attribute 'toplam_arsa_alani'
-2025-05-11 00:04:35,992 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 30, in top-level template code
+    <a href="{{ url_for('dashboard') }}"><i class="bi bi-geo-alt"></i> Arsa Haritasý</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'dashboard'. Did you mean 'crm.dashboard' instead?
+2025-05-11 01:54:13,634 - ERROR - Sunucu hatasý: Could not build url for endpoint 'dashboard'. Did you mean 'crm.dashboard' instead?
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 519, in decorated_function
+    return f(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 829, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 30, in top-level template code
+    <a href="{{ url_for('dashboard') }}"><i class="bi bi-geo-alt"></i> Arsa Haritasý</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'dashboard'. Did you mean 'crm.dashboard' instead?
