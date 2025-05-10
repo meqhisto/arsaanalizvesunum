@@ -73,3 +73,41 @@ Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-11 00:03:19,938 - ERROR - Sunucu hatasý: '__main__.DashboardStats object' has no attribute 'toplam_arsa_alani'
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 521, in decorated_function
+    return f(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 820, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 198, in top-level template code
+    <div class="display-6">{{ "%.2f"|format(stats.toplam_arsa_alani) }}</div> {# Örnek veri #}
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\filters.py", line 1043, in do_format
+    return soft_str(value) % (kwargs or args)
+jinja2.exceptions.UndefinedError: '__main__.DashboardStats object' has no attribute 'toplam_arsa_alani'
+2025-05-11 00:04:35,992 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.

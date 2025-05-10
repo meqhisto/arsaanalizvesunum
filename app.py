@@ -743,6 +743,21 @@ def index():
     user_id = session["user_id"]
     current_user = User.query.get(user_id)
 
+    # Bölge dağılımı için verileri hazırla
+    bolge_dagilimi = db.session.query(
+        ArsaAnaliz.il,
+        db.func.count(ArsaAnaliz.id).label('analiz_sayisi')
+    ).filter(
+        ArsaAnaliz.user_id == user_id
+    ).group_by(
+        ArsaAnaliz.il
+    ).order_by(
+        db.func.count(ArsaAnaliz.id).desc()
+    ).all()
+
+    bolge_labels = [b.il for b in bolge_dagilimi]
+    bolge_data = [b.analiz_sayisi for b in bolge_dagilimi]
+
     # Kullanıcının kendi istatistiklerini getir
     stats = DashboardStats.query.filter_by(user_id=user_id).first()
     if not stats:

@@ -21,7 +21,7 @@
 ## Yapılması Gerekenler
 
 ### 1. Form Validasyonu İyileştirmeleri
-- [ ] Form alanlarının doğrulanması için JavaScript kontrolleri güçlendirilmeli
+- [x] Form alanlarının doğrulanması için JavaScript kontrolleri güçlendirilmeli
 - [x] Sunucu tarafı validasyon kontrollerinin eklenmesi
 - [x] json dosyası eklenerek arazi bilgilerinin otomatik çekilmesi
 - [x] arsa görsellerinin eklenecek bir arayüzünün olması
@@ -53,4 +53,43 @@
 ### 8. Güvenlik Geliştirmeleri
 - [ ] CSRF koruması eklemek
 - [ ] XSS saldırılarına karşı koruma sağlamak
-- [ ] Veri girişi sanitizasyonu 
+- [ ] Veri girişi sanitizasyonu
+
+### 9. Harita Entegrasyonu
+- [ ] OpenStreetMap veya Google Maps API entegrasyonu
+- [ ] Arsa konumunun harita üzerinde gösterimi
+- [ ] Çevre arsaların harita üzerinde gösterimi
+- [ ] Yakındaki önemli noktaların (POI) gösterimi
+
+### 10. İleri Düzey Analiz Özellikleri
+- [ ] Yapay zeka destekli fiyat tahmini
+- [ ] Bölgesel trend analizi
+- [ ] Yatırım potansiyeli skorlaması
+- [ ] Benzer arsaların karşılaştırmalı analizi
+
+### 11. Portföy Yönetimi İyileştirmeleri
+- [ ] Portföy gruplandırma ve etiketleme
+- [ ] Portföy performans analizi
+- [ ] Portföy risk değerlendirmesi
+- [ ] Portföy raporlama özellikleri
+- [ ] Randevu,takvim ve hatırlatıcı oluşturma alanları
+- [ ] bir crm modülü yaratıp müşteri bilgileri girebilecekleri alanlar yaratmak
+
+
+
+### 12. Bildirim Sistemi
+- [ ] Önemli güncellemeler için e-posta bildirimleri
+- [ ] Takvim entegrasyonu ile hatırlatıcılar
+- [ ] Mobil push bildirimleri
+- [ ] Özelleştirilebilir bildirim tercihleri
+
+### 13. Çoklu Dil Desteği
+- [ ] Türkçe ve İngilizce dil seçenekleri
+- [ ] Dinamik dil değiştirme özelliği
+- [ ] Bölgesel format desteği (tarih, para birimi vs.)
+
+### 14. Veri Analizi ve Raporlama
+- [ ] İleri düzey filtreleme ve arama özellikleri
+- [ ] Özelleştirilebilir dashboard widget'ları
+- [ ] Detaylı analiz raporları ve grafikler
+- [ ] Excel ve PDF export özellikleri geliştirme

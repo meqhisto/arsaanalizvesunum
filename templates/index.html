@@ -2,301 +2,551 @@
 <html lang="tr">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>İnveco Proje - Ana Sayfa</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/sofistike-style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İnveco Proje - Ana Sayfa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/sofistike-style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
 
 <body>
-  <div class="container-fluid">
-    <div class="row">
-      <!-- Mobil Sidebar Tetikleyici -->
-      <button class="btn btn-primary d-md-none m-3" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebar">
-        <i class="bi bi-list"></i> Menü
-      </button>
-
-      <!-- Sidebar -->
-      <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebar">
-        <div class="offcanvas-header">
-          <h5 class="offcanvas-title">İnveco Panel</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body d-flex flex-column gap-2">
-          <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-          <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-          <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
-          <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-          <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
-        </div>
-      </div>
-
-      <!-- Masaüstü Sidebar -->
-      <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
-        <h4 class="mb-4">İnveco Panel</h4>
-        <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-        <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-        <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
-        <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-        <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
-      </div>
-
-
-      <!-- Main Content -->
-      <div class="col-md-9 col-lg-10 p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h2>Ana Sayfa</h2>
-            <p class="text-muted mb-0">Hoşgeldiniz, {{ current_user.ad }} {{ current_user.soyad }}!</p>
-          </div>
-          <div class="d-flex align-items-center gap-3">
-            <button class="btn btn-light position-relative">
-              <i class="bi bi-bell"></i>
-              {% if bildirimler|length > 0 %}
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{
-                bildirimler|length }}</span>
-              {% endif %}
+    <div class="container-fluid">
+        <div class="row">
+            <button class="btn btn-primary d-md-none m-3" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebar">
+                <i class="bi bi-list"></i> Menü
             </button>
-            <div class="dropdown">
-              <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                <i class="bi bi-person-circle"></i> {{ current_user.email }}
-              </button>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profilim</a></li>
-                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Çıkış Yap</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
 
-        <!-- Profil ve İstatistik Kartları -->
-        <div class="row mb-4">
-          <div class="col-md-4">
-            <div class="card profile-card p-3 d-flex align-items-center">
-              {% if current_user.profil_foto %}
-              <img src="{{ url_for('static', filename='uploads/' ~ current_user.profil_foto) }}" alt="Profil Fotoğrafı">
-              {% else %}
-              <i class="bi bi-person-circle" style="font-size: 3rem;"></i>
-              {% endif %}
-              <div class="text-center mt-3">
-                <h6>{{ current_user.ad }} {{ current_user.soyad }}</h6>
-                <p class="text-muted mb-1">{{ current_user.firma }}</p>
-                <p class="text-muted">{{ current_user.unvan }}</p>
-                <a href="{{ url_for('profile') }}" class="btn btn-primary btn-sm">Profili Düzenle</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-8">
-            <div class="row g-3">
-              <div class="col-md-6 col-lg-4">
-                <div class="stat-card">
-                  <h6>Toplam Arsa</h6>
-                  <div>{{ stats.toplam_arsa_sayisi }}</div>
+            <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebar">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">İnveco Panel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
                 </div>
-              </div>
-              <div class="col-md-6 col-lg-4">
-                <div class="stat-card bg-green">
-                  <h6>Ortalama Fiyat</h6>
-                  <div id="ortalamaFiyat">{{ "%.2f"|format(stats.ortalama_fiyat) }} TL</div>
+                <div class="offcanvas-body d-flex flex-column gap-2">
+                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+                    <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
+                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
                 </div>
-              </div>
-              <div class="col-md-6 col-lg-4">
-                <div class="stat-card bg-orange">
-                  <h6>En Yüksek Fiyat</h6>
-                  <div id="enYuksekFiyat">{{ "%.2f"|format(stats.en_yuksek_fiyat) }} TL</div>
-                </div>
-
-
-              </div>
-              
-              
             </div>
-          </div>
-        </div>
 
-        <!-- Grafik ve Aktiviteler -->
-        <div class="row mb-4">
-          <div class="col-md-8">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="mb-0">Analiz İstatistikleri</h5>
-              </div>
-              <div class="card-body">
-                <canvas id="analysisChart"></canvas>
-              </div>
+            <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
+                <h4 class="mb-4">İnveco Panel</h4>
+                <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+                <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
+                <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+                <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card">
-              <div class="card-header">
-                <h5 class="mb-0">Son Aktiviteler</h5>
-              </div>
-              <div class="card-body position-relative">
-                <div class="activity-timeline">
-                  {# app.py'den gelen genel aktiviteler döngüsü #}
-                  {% for aktivite in son_aktiviteler %}
-                  <div class="activity-item ps-3 mb-3">
-                    <small class="text-muted d-block">{{ aktivite.tarih.strftime('%d.%m.%Y %H:%M') }}</small>
-                    <span>{{ aktivite.mesaj }}</span> {# Örneğin: "Yeni analiz eklendi", "Profil güncellendi" #}
-                  </div>
-                  {% endfor %}
 
-                  {# Kullanıcının son giriş zamanı (eğer varsa) #}
-                  {% if current_user and current_user.son_giris %} {# current_user kontrolü eklendi #}
-                  <div class="activity-item ps-3 mb-3">
-                    <small class="text-muted d-block">{{ current_user.localize_datetime(current_user.son_giris)
-                      }}</small>
-                    <span><i class="bi bi-box-arrow-in-right me-1"></i>Son girişiniz</span>
-                  </div>
-                  {% endif %}
+            <div class="col-md-9 col-lg-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2>Ana Sayfa</h2>
+                        <p class="text-muted mb-0">Hoşgeldiniz, {{ current_user.ad }} {{ current_user.soyad }}!</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="dropdown">
+                            <button class="btn btn-light position-relative" type="button" id="bildirimDropdown"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell"></i>
+                                {% if bildirimler|length > 0 %}
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ bildirimler|length }}
+                                    <span class="visually-hidden">unread messages</span>
+                                </span>
+                                {% endif %}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bildirimDropdown">
+                                {% if bildirimler|length > 0 %}
+                                {% for bildirim in bildirimler %}
+                                <li><a class="dropdown-item" href="#">{{ bildirim.mesaj }} <small
+                                            class="text-muted">{{ bildirim.tarih.strftime('%H:%M') }}</small></a></li>
+                                {% endfor %}
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item text-center" href="#">Tüm Bildirimleri Gör</a></li>
+                                {% else %}
+                                <li><span class="dropdown-item-text text-muted">Yeni bildirim yok.</span></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> {{ current_user.email }}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profilim</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Çıkış Yap</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
-              </div>
-              <!-- Bölge Dağılımı Kartı -->
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <i class="bi bi-info-circle me-2"></i> Yeni özellikler yolda! Analiz raporlarına detaylı harita entegrasyonu çok yakında!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+
+                <div class="row mb-4 g-3">
+                    <div class="col-md-4 col-lg-3">
+                        <a href="{{ url_for('analysis_form') }}" class="card quick-access-card text-decoration-none">
+                            <div class="card-body text-center">
+                                <i class="bi bi-plus-circle-fill display-4 text-primary"></i>
+                                <h6 class="card-title mt-2">Yeni Analiz Ekle</h6>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <a href="{{ url_for('analizler') }}" class="card quick-access-card text-decoration-none">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-earmark-text-fill display-4 text-success"></i>
+                                <h6 class="card-title mt-2">Analizlerim</h6>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <a href="{{ url_for('analizler') }}" class="card quick-access-card text-decoration-none">
+                            <div class="card-body text-center">
+                                <i class="bi bi-geo-alt-fill display-4 text-danger"></i>
+                                <h6 class="card-title mt-2">Arsa Haritası</h6>
+                            </div>
+                        </a>
+                    </div>
+                     <div class="col-md-4 col-lg-3">
+                        <a href="{{ url_for('portfolios') }}" class="card quick-access-card text-decoration-none">
+                            <div class="card-body text-center">
+                                <i class="bi bi-graph-up display-4 text-warning"></i>
+                                <h6 class="card-title mt-2">Portföylerim</h6>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card profile-card p-3 d-flex align-items-center">
+                            {% if current_user.profil_foto %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ current_user.profil_foto) }}"
+                                alt="Profil Fotoğrafı" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                            {% else %}
+                            <i class="bi bi-person-circle" style="font-size: 6rem; color: #6c757d;"></i>
+                            {% endif %}
+                            <div class="text-center mt-3">
+                                <h6>{{ current_user.ad }} {{ current_user.soyad }}</h6>
+                                <p class="text-muted mb-1">{{ current_user.firma }}</p>
+                                <p class="text-muted">{{ current_user.unvan }}</p>
+                                <a href="{{ url_for('profile') }}" class="btn btn-primary btn-sm mt-2">Profili Düzenle</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-md-6 col-lg-4">
+                                <div class="stat-card card h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Toplam Analiz Sayısı</h6>
+                                         <div class="display-4">{{ stats.toplam_arsa_sayisi }}</div>
+                                         
+                                    </div>
+                                </div>
+                            </div>
+                             <div class="col-md-6 col-lg-4">
+                                <div class="stat-card card h-100 bg-green text-white">
+                                     <div class="card-body">
+                                        <h6 class="card-title">Ortalama Fiyat</h6>
+                                        <div class="display-6" id="ortalamaFiyat">{{ "%.2f"|format(stats.ortalama_fiyat) }} TL</div>
+                                     </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="stat-card card h-100 bg-orange text-white">
+                                    <div class="card-body">
+                                        <h6 class="card-title">En Yüksek Fiyat</h6>
+                                        <div class="display-6" id="enYuksekFiyat">{{ "%.2f"|format(stats.en_yuksek_fiyat) }} TL</div>
+                                    </div>
+                                </div>
+                            </div>
+                             <div class="col-md-6 col-lg-4">
+                                <div class="stat-card card h-100">
+                                     <div class="card-body">
+                                        <h6 class="card-title">Tamamlanan Analizler</h6>
+                                        <div class="display-4">{{ stats.tamamlanan_analiz_sayisi }}</div> {# Örnek veri #}
+                                     </div>
+                                </div>
+                            </div>
+                             <div class="col-md-6 col-lg-4">
+                                <div class="stat-card card h-100">
+                                     <div class="card-body">
+                                        <h6 class="card-title">Bekleyen Analizler</h6>
+                                        <div class="display-4">{{ stats.bekleyen_analiz_sayisi }}</div> {# Örnek veri #}
+                                     </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Analiz İstatistikleri (Son 6 Ay)</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="analysisChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h5 class="mb-0">Son Aktiviteler</h5>
+                            </div>
+                            <div class="card-body position-relative">
+                                <div class="activity-timeline">
+                                    {# app.py'den gelen genel aktiviteler döngüsü #}
+                                    {% for aktivite in son_aktiviteler %}
+                                    <div class="activity-item ps-3 mb-3">
+                                        <small class="text-muted d-block">{{ aktivite.tarih.strftime('%d.%m.%Y %H:%M')
+                                            }}</small>
+                                        <span>{{ aktivite.mesaj }}</span> {# Örneğin: "Yeni analiz eklendi", "Profil güncellendi" #}
+                                    </div>
+                                    {% endfor %}
+
+                                    {# Kullanıcının son giriş zamanı (eğer varsa) #}
+                                    {% if current_user and current_user.son_giris %} {# current_user kontrolü eklendi #}
+                                    <div class="activity-item ps-3 mb-3">
+                                        <small class="text-muted d-block">{{ current_user.localize_datetime(current_user.son_giris)
+                                            }}</small>
+                                        <span><i class="bi bi-box-arrow-in-right me-1"></i>Son girişiniz</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Analizlerin Bölge Dağılımı</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="regionDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-md-6">
+                         <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Yaklaşan Görevler & Hatırlatıcılar</h5>
+                                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-plus-circle"></i> Görev Ekle</button>
+                            </div>
+                            <div class="card-body">
+                                {# Örnek Görev Listesi #}
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Analiz #123 için raporu tamamla
+                                        <span class="badge bg-warning rounded-pill">Yarın</span>
+                                    </li>
+                                     <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Arsa #456 verilerini güncelle
+                                        <span class="badge bg-primary rounded-pill">3 Gün Sonra</span>
+                                    </li>
+                                     <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Müşteri A ile görüşme planla
+                                        <span class="badge bg-secondary rounded-pill">Gelecek Hafta</span>
+                                    </li>
+                                     {% if yaklasan_gorevler|length == 0 %}
+                                    <li class="list-group-item text-muted text-center">Yaklaşan göreviniz yok.</li>
+                                    {% endif %}
+                                     {# Jinja2 döngüsü ile gelecek görevler listelenebilir #}
+                                     {% for gorev in yaklasan_gorevler %}
+                                     <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ gorev.baslik }}
+                                        <span class="badge bg-info rounded-pill">{{ gorev.bitis_tarihi.strftime('%d.%m') }}</span>
+                                     </li>
+                                     {% endfor %}
+                                </ul>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+
+
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Son Analizler</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text" id="analizArama" class="form-control form-control-sm"
+                                placeholder="Analiz ara...">
+                            <a href="{{ url_for('analizler') }}" class="btn btn-outline-secondary btn-sm">Tümünü Gör</a>
+                            <a href="{{ url_for('analysis_form') }}" class="btn btn-primary btn-sm">Yeni Analiz</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Arsa Adı</th>
+                                        <th>Konum</th>
+                                        <th>Durum</th>
+                                        <th>Başlangıç</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if analizler|length == 0 %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">
+                                            Henüz analiz eklenmedi. <a href="{{ url_for('submit') }}">Hemen ekleyin!</a>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    {% for analiz in analizler %}
+                                    <tr>
+                                        <td>{{ analiz.il }} - {{ analiz.ilce }}</td>
+                                        <td>{{ analiz.mahalle }}</td>
+                                        <td><span class="badge bg-success">Tamamlandı</span></td>
+                                        <td>{{ analiz.created_at.strftime('%d.%m.%Y') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('analiz_detay', analiz_id=analiz.id) }}"
+                                                class="btn btn-sm btn-outline-primary">Görüntüle</a>
+                                            <a href="{{ url_for('generate', format='pdf', file_id=analiz.id) }}"
+                                                class="btn btn-sm btn-outline-secondary">Rapor</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">En Son Görüntülenen Analizler</h5>
+                    </div>
+                    <div class="card-body">
+                        {# Örnek En Son Görüntülenen Analizler Listesi #}
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <a href="#">Analiz #123 (İstanbul - Şişli)</a>
+                                <small class="text-muted ms-2">Bugün 10:30</small>
+                            </li>
+                             <li class="list-group-item">
+                                <a href="#">Analiz #456 (Ankara - Çankaya)</a>
+                                <small class="text-muted ms-2">Dün 15:00</small>
+                            </li>
+                             <li class="list-group-item">
+                                <a href="#">Analiz #789 (İzmir - Bornova)</a>
+                                <small class="text-muted ms-2">01.05.2023</small>
+                            </li>
+                             {% if son_goruntulenen_analizler|length == 0 %}
+                            <li class="list-group-item text-muted text-center">Henüz görüntülenen analiz yok.</li>
+                            {% endif %}
+                             {# Jinja2 döngüsü ile en son görüntülenen analizler listelenebilir #}
+                             {% for analiz in son_goruntulenen_analizler %}
+                             <li class="list-group-item">
+                                <a href="{{ url_for('analiz_detay', analiz_id=analiz.id) }}">{{ analiz.il }} - {{ analiz.ilce }}</a>
+                                <small class="text-muted ms-2">{{ analiz.goruntulenme_tarihi.strftime('%d.%m.%Y %H:%M') }}</small>
+                             </li>
+                             {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+
+                {# Bu bölüm genellikle daha karmaşık backend/frontend entegrasyonu gerektirir.
+                   Burada sadece bir placeholder veya basit bir tema değiştirme butonu örneği eklenebilir. #}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Özelleştirme</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Dashboard görünümünüzü buradan özelleştirebilirsiniz.</p>
+                        {# Örnek Tema Değiştirme Butonu #}
+                        <button class="btn btn-outline-secondary" id="themeToggleBtn">Temayı Değiştir (Açık/Koyu)</button>
+                    </div>
+                </div>
 
 
             </div>
-          </div>
         </div>
-        
-        <div class="card mb-4">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Son Analizler</h5>
-            <div class="d-flex align-items-center gap-2">
-              <input type="text" id="analizArama" class="form-control form-control-sm" placeholder="Analiz ara...">
-              <a href="{{ url_for('analizler') }}" class="btn btn-outline-secondary btn-sm">Tümünü Gör</a>
-              <a href="{{ url_for('analysis_form') }}" class="btn btn-primary btn-sm">Yeni Analiz</a>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Arsa Adı</th>
-                    <th>Konum</th>
-                    <th>Durum</th>
-                    <th>Başlangıç</th>
-                    <th>İşlemler</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% if analizler|length == 0 %}
-                  <tr>
-                    <td colspan="5" class="text-center text-muted">
-                      Henüz analiz eklenmedi. <a href="{{ url_for('submit') }}">Hemen ekleyin!</a>
-                    </td>
-                  </tr>
-                  {% else %}
-                  {% for analiz in analizler %}
-                  <tr>
-                    <td>{{ analiz.il }} - {{ analiz.ilce }}</td>
-                    <td>{{ analiz.mahalle }}</td>
-                    <td><span class="badge bg-success">Tamamlandı</span></td>
-                    <td>{{ analiz.created_at.strftime('%d.%m.%Y') }}</td>
-                    <td>
-                      <a href="{{ url_for('analiz_detay', analiz_id=analiz.id) }}"
-                        class="btn btn-sm btn-outline-primary">Görüntüle</a>
-                      <a href="{{ url_for('generate', format='pdf', file_id=analiz.id) }}"
-                        class="btn btn-sm btn-outline-secondary">Rapor</a>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                  {% endif %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        
-      </div>
-
-      <!-- Son Analizler Tablosu -->
-     
-
-
-
-      <!-- Scripts -->
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
-      <script>
-        const ctx = document.getElementById('analysisChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: {{ son_alti_ay| tojson }},
-          datasets: [{
-            label: 'Aylık Analizler',
-            data: {{ aylik_analiz_sayilari| tojson }},
-          borderColor: '#4f46e5',
-          backgroundColor: 'rgba(79, 70, 229, 0.1)',
-          tension: 0.3,
-          fill: true
-}]
-},
-          options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-});
-
-        document.getElementById('analizArama').addEventListener('keyup', function () {
-          const value = this.value.toLowerCase();
-          document.querySelectorAll('.table tbody tr').forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(value) ? '' : 'none';
-          });
-        });
-
-        // Yeni fiyat formatlama fonksiyonu
-        function formatTurkishCurrency(number) {
-          return new Intl.NumberFormat('tr-TR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          }).format(number);
-        }
-
-        // Fiyat kartlarını güncelle
-        document.addEventListener('DOMContentLoaded', () => {
-          const ortalamaFiyatElement = document.getElementById('ortalamaFiyat');
-          const enYuksekFiyatElement = document.getElementById('enYuksekFiyat');
-
-          if (ortalamaFiyatElement) {
-            const rawValue = parseFloat(ortalamaFiyatElement.textContent.replace(',', '.'));
-            if (!isNaN(rawValue)) {
-              ortalamaFiyatElement.textContent = formatTurkishCurrency(rawValue) + ' TL';
-            }
-          }
-
-          if (enYuksekFiyatElement) {
-            const rawValue = parseFloat(enYuksekFiyatElement.textContent.replace(',', '.'));
-            if (!isNaN(rawValue)) {
-              enYuksekFiyatElement.textContent = formatTurkishCurrency(rawValue) + ' TL';
-            }
-          }
-        });
-      </script>
-
-      </div>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-      
-      
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script>
+        // Chart.js initialization for analysis statistics
+        const analysisCtx = document.getElementById('analysisChart').getContext('2d');
+        new Chart(analysisCtx, {
+            type: 'line',
+            data: {
+                labels: {{ son_alti_ay | tojson }}, // Jinja2: Son 6 ayın etiketleri
+                datasets: [{
+                    label: 'Aylık Analizler',
+                    data: {{ aylik_analiz_sayilari | tojson }}, // Jinja2: Aylık analiz sayıları
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } } // Y ekseninde tam sayıları göster
+                }
+            }
+        });
+
+        // Chart.js initialization for region distribution
+        const regionCtx = document.getElementById('regionDistributionChart').getContext('2d');
+        new Chart(regionCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ bolge_labels | tojson }}, // Veritabanından gelen il isimleri
+                datasets: [{
+                    label: 'Bölge Dağılımı',
+                    data: {{ bolge_data | tojson }}, // Veritabanından gelen analiz sayıları
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)',
+                        'rgba(255, 159, 64, 0.8)',
+                        'rgba(201, 203, 207, 0.8)',
+                        'rgba(123, 104, 238, 0.8)',
+                        'rgba(50, 205, 50, 0.8)',
+                        'rgba(255, 20, 147, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(201, 203, 207, 1)',
+                        'rgba(123, 104, 238, 1)',
+                        'rgba(50, 205, 50, 1)',
+                        'rgba(255, 20, 147, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                return `${label}: ${value} analiz`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+
+        // JavaScript for table search filtering
+        document.getElementById('analizArama').addEventListener('keyup', function () {
+            const value = this.value.toLowerCase();
+            document.querySelectorAll('.table tbody tr').forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(value) ? '' : 'none';
+            });
+        });
+
+        // Function to format currency in Turkish locale
+        function formatTurkishCurrency(number) {
+            // Ensure the input is treated as a number
+            const num = parseFloat(number);
+            if (isNaN(num)) {
+                return number; // Return original if not a valid number
+            }
+            return new Intl.NumberFormat('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+        }
+
+        // Update price cards with formatted currency on DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            const ortalamaFiyatElement = document.getElementById('ortalamaFiyat');
+            const enYuksekFiyatElement = document.getElementById('enYuksekFiyat');
+
+            if (ortalamaFiyatElement) {
+                 // Remove " TL" and replace comma with dot before parsing
+                const rawValueText = ortalamaFiyatElement.textContent.replace(' TL', '').replace(',', '.');
+                const rawValue = parseFloat(rawValueText);
+
+                if (!isNaN(rawValue)) {
+                    ortalamaFiyatElement.textContent = formatTurkishCurrency(rawValue) + ' TL';
+                } else {
+                     // Handle cases where initial value might not be a number string
+                    console.error("Ortalama Fiyat değeri sayıya dönüştürülemedi:", ortalamaFiyatElement.textContent);
+                }
+            }
+
+            if (enYuksekFiyatElement) {
+                 // Remove " TL" and replace comma with dot before parsing
+                 const rawValueText = enYuksekFiyatElement.textContent.replace(' TL', '').replace(',', '.');
+                const rawValue = parseFloat(rawValueText);
+
+                if (!isNaN(rawValue)) {
+                    enYuksekFiyatElement.textContent = formatTurkishCurrency(rawValue) + ' TL';
+                } else {
+                    // Handle cases where initial value might not be a number string
+                    console.error("En Yüksek Fiyat değeri sayıya dönüştürülemedi:", enYuksekFiyatElement.textContent);
+                }
+            }
+
+            // Simple Theme Toggle Example (Requires CSS for dark mode styles)
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode'); // Add/remove a 'dark-mode' class to the body
+                    // You would need corresponding CSS rules for .dark-mode
+                    const currentTheme = document.body.classList.contains('dark-mode') ? 'Koyu' : 'Açık';
+                    themeToggleBtn.textContent = `Temayı Değiştir (${currentTheme})`;
+                });
+            }
+
+        });
+    </script>
 </body>
 
 </html>
