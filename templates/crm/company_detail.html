@@ -62,28 +62,72 @@
 </div>
 
 <!-- İlişkili Kişiler ve Fırsatlar (Daha sonra doldurulacak) -->
+<!-- templates/crm/company_detail.html -->
+
+{# ... (sayfanın üst kısmı, şirket temel bilgileri vb.) ... #}
+
+<!-- İlişkili Kişiler ve Fırsatlar -->
 <div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4">
+    <div class="col-lg-6 mb-4"> {# Kişiler için sütun #}
+        <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5><i class="bi bi-people-fill me-2"></i> Bağlı Kişiler (Yakında)</h5>
-                {# <a href="{{ url_for('crm_contact_new', company_id=company.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-circle"></i> Kişi Ekle</a> #}
+                <span><i class="bi bi-people-fill me-2"></i>Bağlı Kişiler ({{ company_contacts|length }})</span>
+                <a href="{{ url_for('crm_contact_new', company_id=company.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-person-plus-fill me-1"></i> Bu Şirkete Kişi Ekle
+                </a>
             </div>
-            <div class="card-body">
-                <p class="text-muted">Bu şirkete bağlı kişiler burada listelenecek.</p>
-                {# company_contacts listesi buraya gelecek #}
+            <div class="card-body p-0"> {# Padding'i kaldırıp list-group'u tam oturtalım #}
+                {% if company_contacts %}
+                    <ul class="list-group list-group-flush">
+                        {% for contact_item in company_contacts %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <a href="{{ url_for('crm_contact_detail', contact_id=contact_item.id) }}" class="fw-semibold text-decoration-none">{{ contact_item.first_name }} {{ contact_item.last_name }}</a>
+                                    {% if contact_item.role %}<small class="d-block text-muted">{{ contact_item.role }}</small>{% endif %}
+                                </div>
+                                <div class="text-end">
+                                    {% if contact_item.email %}<small class="d-block text-muted"><i class="bi bi-envelope me-1"></i>{{ contact_item.email }}</small>{% endif %}
+                                    {% if contact_item.phone %}<small class="d-block text-muted"><i class="bi bi-telephone me-1"></i>{{ contact_item.phone }}</small>{% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center p-3">Bu şirkete bağlı kişi bulunmamaktadır.</p>
+                {% endif %}
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card mb-4">
+
+    <div class="col-lg-6 mb-4"> {# Fırsatlar için sütun #}
+        <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5><i class="bi bi-cash-coin me-2"></i> Bağlı Fırsatlar (Yakında)</h5>
-                 {# <a href="{{ url_for('crm_deal_new', company_id=company.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-circle"></i> Fırsat Ekle</a> #}
+                <span><i class="bi bi-cash-coin me-2"></i>Bağlı Fırsatlar ({{ company_deals|length }})</span>
+                <a href="{{ url_for('crm_deal_new', company_id=company.id) }}" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-plus-circle-fill me-1"></i> Bu Şirkete Fırsat Ekle
+                </a>
             </div>
-            <div class="card-body">
-                <p class="text-muted">Bu şirkete bağlı satış fırsatları burada listelenecek.</p>
-                {# company_deals listesi buraya gelecek #}
+            <div class="card-body p-0">
+                {% if company_deals %}
+                    <ul class="list-group list-group-flush">
+                        {% for deal_item in company_deals %}
+                        <li class="list-group-item">
+                             <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('crm_deal_detail', deal_id=deal_item.id) }}" class="fw-semibold text-decoration-none">{{ deal_item.title }}</a>
+                                <span class="badge bg-primary rounded-pill">{{ deal_item.stage }}</span>
+                            </div>
+                            <small class="text-muted">Değer: {{ "%.2f"|format(deal_item.value) }} {{ deal_item.currency }}</small>
+                            {% if deal_item.contact %}
+                                <small class="d-block text-muted">Kontak: <a href="{{ url_for('crm_contact_detail', contact_id=deal_item.contact_id) }}">{{ deal_item.contact.first_name }} {{ deal_item.contact.last_name }}</a></small>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center p-3">Bu şirkete bağlı fırsat bulunmamaktadır.</p>
+                {% endif %}
             </div>
         </div>
     </div>

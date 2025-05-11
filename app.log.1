@@ -1,104 +1,108 @@
-2025-05-11 05:18:36,312 - ERROR - Sunucu hatasý: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
-FROM crm_tasks 
-WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
-[parameters: (1, 'Tamamlandý', 'Ýptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-pyodbc.ProgrammingError: ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-
-The above exception was the direct cause of the following exception:
-
+2025-05-12 00:39:36,773 - ERROR - Fiyat tahmini sýrasýnda hata oluþtu (ID: 4): local variable 'query_str' referenced before assignment
+2025-05-12 00:39:37,066 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 659, in decorated_function
-    return f(*args, **kwargs)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 1197, in index
-    yaklasan_gorevler = Task.query.filter(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
-    return self._iter().all()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
-    result = self.session.execute(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
-    result = conn._execute_20(statement, params or {}, execution_options)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
-    return meth(self, args_10style, kwargs_10style, execution_options)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
-    return connection._execute_clauseelement(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
-    ret = self._execute_context(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
-    self._handle_dbapi_exception(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
-    util.raise_(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
-    raise exception
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
-FROM crm_tasks 
-WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
-[parameters: (1, 'Tamamlandý', 'Ýptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
-2025-05-11 05:19:29,748 - ERROR - Sunucu hatasý: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
-FROM crm_tasks 
-WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
-[parameters: (1, 'Tamamlandý', 'Ýptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-pyodbc.ProgrammingError: ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-
-The above exception was the direct cause of the following exception:
-
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-12 00:44:26,144 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 659, in decorated_function
-    return f(*args, **kwargs)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 1197, in index
-    yaklasan_gorevler = Task.query.filter(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
-    return self._iter().all()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
-    result = self.session.execute(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
-    result = conn._execute_20(statement, params or {}, execution_options)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
-    return meth(self, args_10style, kwargs_10style, execution_options)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
-    return connection._execute_clauseelement(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
-    ret = self._execute_context(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
-    self._handle_dbapi_exception(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
-    util.raise_(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
-    raise exception
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
-FROM crm_tasks 
-WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
-[parameters: (1, 'Tamamlandý', 'Ýptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-12 00:48:49,587 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-12 00:48:56,308 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-12 00:52:34,136 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-12 00:53:32,478 - ERROR - Fiyat tahmini sýrasýnda hata oluþtu (ID: 4): local variable 'query_str' referenced before assignment
+2025-05-12 00:53:34,950 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-12 00:53:50,014 - ERROR - Fiyat tahmini sýrasýnda hata oluþtu (ID: 4): local variable 'query_str' referenced before assignment
+2025-05-12 00:53:50,274 - ERROR - Sunucu hatasý: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.

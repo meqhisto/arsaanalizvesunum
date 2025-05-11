@@ -10,6 +10,7 @@ from flask import (
     jsonify,
     send_file,
     send_from_directory,
+    
 )
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -45,6 +46,7 @@ import pytz
 from itertools import zip_longest
 from markupsafe import Markup, escape# Markup'ı import edin (bu zaten doğruydu)
 from decimal import Decimal
+
 
 import sys
 
@@ -875,31 +877,47 @@ def crm_contact_detail(contact_id):
 @app.route("/crm/contact/new", methods=["GET", "POST"])
 @login_required
 def crm_contact_new():
-    user_id = session["user_id"] # user_id'yi başta alalım
-    # Mevcut şirketleri al (forma göndermek için)
-    companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+    user_id = session["user_id"]
+    companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all() # Bu satır zaten vardı
 
     if request.method == "POST":
-        # ... (mevcut POST işleme kodu) ...
-        company_id_str = request.form.get("company_id")
-        # ...
+        # --- FORM VERİLERİNİ ALMA ---
+        # Bu satırların var olduğundan emin olun:
+        first_name = request.form.get("first_name", "").strip() # .strip() eklendi
+        last_name = request.form.get("last_name", "").strip()  # .strip() eklendi
+        email = request.form.get("email", "").strip()
+        phone = request.form.get("phone", "").strip()
+        company_id_str = request.form.get("company_id") # Bu string olarak kalabilir, sonra int'e çevrilir
+        role = request.form.get("role", "").strip()
+        status = request.form.get("status", "Lead") # Varsayılan "Lead"
+        source = request.form.get("source", "").strip()
+        notes = request.form.get("notes", "").strip()
+        # --- FORM VERİLERİNİ ALMA SONU ---
 
-        # Temel Doğrulama
+        # Temel Doğrulama (first_name ve last_name artık tanımlı olmalı)
         if not first_name or not last_name:
             flash("Ad ve Soyad alanları zorunludur.", "danger")
             return render_template("crm/contact_form.html", title="Yeni Kişi Ekle", contact=request.form, companies=companies)
 
-        # E-posta benzersizlik kontrolü
-        if email:
+        # E-posta benzersizlik kontrolü (kullanıcı bazında)
+        if email: # Sadece email girilmişse kontrol et
             existing_contact = Contact.query.filter_by(user_id=user_id, email=email).first()
             if existing_contact:
                 flash(f"'{email}' e-posta adresi ile kayıtlı başka bir kişi zaten mevcut.", "warning")
                 return render_template("crm/contact_form.html", title="Yeni Kişi Ekle", contact=request.form, companies=companies)
+
         try:
             new_contact = Contact(
-                # ... (diğer alanlar) ...
-                company_id=int(company_id_str) if company_id_str else None, # Güncellendi
-                # ...
+                user_id=user_id,
+                first_name=first_name,
+                last_name=last_name,
+                email=email if email else None, # E-posta boşsa None olarak kaydet
+                phone=phone if phone else None,
+                company_id=int(company_id_str) if company_id_str else None,
+                role=role if role else None,
+                status=status,
+                source=source if source else None,
+                notes=notes if notes else None
             )
             db.session.add(new_contact)
             db.session.commit()
@@ -909,14 +927,10 @@ def crm_contact_new():
             db.session.rollback()
             flash(f"Kişi eklenirken bir hata oluştu: {str(e)}", "danger")
             app.logger.error(f"CRM Contact New Error: {e}")
-            # Hata durumunda formu ve şirket listesini tekrar gönder
             return render_template("crm/contact_form.html", title="Yeni Kişi Ekle", contact=request.form, companies=companies)
 
-
-    # GET isteği için formu ve şirket listesini gönder
-    return render_template("crm/contact_form.html", title="Yeni Kişi Ekle", companies=companies)
-
-
+    # GET isteği için boş formu ve şirket listesini gönder
+    return render_template("crm/contact_form.html", title="Yeni Kişi Ekle", companies=companies, contact={}) # GET için boş contact
 @app.route("/crm/contact/<int:contact_id>/edit", methods=["GET", "POST"])
 @login_required
 def crm_contact_edit(contact_id):
@@ -1723,172 +1737,147 @@ def profile():
 def analiz_detay(analiz_id):
     try:
         analiz = ArsaAnaliz.query.get_or_404(analiz_id)
-        # Kullanıcı bilgilerini getir
-        user = User.query.get(analiz.user_id)
+        analiz_sahibi_user = User.query.get(analiz.user_id) # Analizin sahibi
 
-        # print(f"DEBUG: Session user_id: {session.get('user_id')}, Analiz user_id: {analiz.user_id}")  # Debug log
-        if analiz.user_id != session["user_id"]:
-            # print("DEBUG: Permission denied for analiz_detay")  # Debug log
-            flash("Bu analizi görüntüleme yetkiniz yok.", "danger")
-            return redirect(url_for("analizler"))
+        if not analiz_sahibi_user: # Kullanıcı bulunamazsa (veri bütünlüğü sorunu olabilir)
+            flash("Analize ait kullanıcı bulunamadı.", "danger")
+            return redirect(url_for('portfolios')) # Veya 'index'
 
-        # JSON verilerini dönüştür
-        altyapi = (
-            json.loads(analiz.altyapi)
-            if isinstance(analiz.altyapi, str)
-            else analiz.altyapi
-        )
-        swot_analizi = (
-            json.loads(analiz.swot_analizi)
-            if isinstance(analiz.swot_analizi, str)
-            else analiz.swot_analizi
-        )
+        current_user_id = session.get("user_id") # Giriş yapmış kullanıcı
+        
+        # Salt okunur modunu belirle
+        # Eğer kullanıcı giriş yapmamışsa (login_required bunu engellemeli ama yine de kontrol)
+        # veya analizin sahibi değilse salt okunur mod aktif olur.
+        read_only_mode = (current_user_id is None) or (analiz.user_id != current_user_id)
 
-        # Tüm sayısal değerleri güvenli şekilde float'a çevir
-        def safe_float(val):
+        # JSON verilerini güvenli bir şekilde parse et
+        altyapi = {}
+        if analiz.altyapi:
             try:
-                return float(val)
-            except (TypeError, ValueError):
-                return 0.0
+                altyapi_parsed = json.loads(analiz.altyapi)
+                # Beklenen yapıyı kontrol et (örneğin bir sözlük mü, liste mi?)
+                if isinstance(altyapi_parsed, list): # Eğer altyapi bir liste ise (eski formattaki gibi)
+                    # Bunu yeni bir sözlüğe dönüştürebiliriz veya şablonda ona göre işleyebiliriz.
+                    # Şimdilik liste olarak kabul edelim, şablonda buna göre işlem yapılmalı.
+                    altyapi = altyapi_parsed # Şablonun `altyapi`'yı liste olarak beklediğini varsayalım
+                elif isinstance(altyapi_parsed, dict):
+                    altyapi = altyapi_parsed
+                else: # Beklenmedik format
+                    app.logger.warning(f"Analiz ID {analiz_id} için altyapı verisi beklenmedik formatta: {analiz.altyapi}")
+                    altyapi = [] # Veya {} duruma göre
+            except json.JSONDecodeError:
+                app.logger.error(f"Analiz ID {analiz_id} için altyapı JSON parse hatası: {analiz.altyapi}")
+                altyapi = [] # Hata durumunda boş liste
+
+        swot_analizi = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
+        if analiz.swot_analizi:
+            try:
+                swot_parsed = json.loads(analiz.swot_analizi)
+                if isinstance(swot_parsed, dict): # Beklenen format {"strengths": [...], ...}
+                    swot_analizi = swot_parsed
+                else: # Beklenmedik format
+                    app.logger.warning(f"Analiz ID {analiz_id} için SWOT verisi beklenmedik formatta: {analiz.swot_analizi}")
+            except json.JSONDecodeError:
+                app.logger.error(f"Analiz ID {analiz_id} için SWOT JSON parse hatası: {analiz.swot_analizi}")
+
+        # Sayısal değerleri güvenli şekilde float'a çevir
+        def safe_float(val, default=0.0):
+            try: return float(val) if val is not None else default
+            except (TypeError, ValueError): return default
 
         metrekare = safe_float(analiz.metrekare)
         fiyat = safe_float(analiz.fiyat)
         bolge_fiyat = safe_float(analiz.bolge_fiyat)
-        taks = safe_float(analiz.taks)
-        kaks = safe_float(analiz.kaks)
+        taks = safe_float(analiz.taks, 0.3) # Varsayılan değerler eklendi
+        kaks = safe_float(analiz.kaks, 1.5) # Varsayılan değerler eklendi
 
-        analizci = ArsaAnalizci()
-        analiz_sonuclari = analizci.analiz_et(
-            {
-                "metrekare": metrekare,
-                "fiyat": fiyat,
-                "bolge_fiyat": bolge_fiyat,
-                "taks": taks,
-                "kaks": kaks,
-                "imar_durumu": analiz.imar_durumu,
-                "altyapi": altyapi,
-                "konum": {
-                    "il": analiz.il,
-                    "ilce": analiz.ilce,
-                    "mahalle": analiz.mahalle,
-                },
+        # ArsaAnalizci ile analiz yap
+        # Bu modüllerin ve sınıfların projenizde doğru şekilde tanımlı olduğundan emin olun.
+        try:
+            analizci = ArsaAnalizci() 
+            analiz_sonuclari_data = analizci.analiz_et({
+                "metrekare": metrekare, "fiyat": fiyat, "bolge_fiyat": bolge_fiyat,
+                "taks": taks, "kaks": kaks, "imar_durumu": analiz.imar_durumu,
+                "altyapi": altyapi, # Parse edilmiş altyapı verisi
+                "konum": {"il": analiz.il, "ilce": analiz.ilce, "mahalle": analiz.mahalle}
+            })
+            ozet = analizci.ozetle(analiz_sonuclari_data)
+        except Exception as e_analizci:
+            app.logger.error(f"ArsaAnalizci hatası (ID: {analiz_id}): {e_analizci}")
+            analiz_sonuclari_data = {"hata": "Analiz verileri işlenemedi."} # Hata durumunda boş veya hata mesajı
+            ozet = {"temel_ozet": "Özet oluşturulamadı.", "yatirim_ozet": "", "uygunluk_ozet": "", "tavsiyeler": ""}
+
+
+        # Rapor oluşturma için session'a veri yükleme (bu kısım salt okunur moddan bağımsız)
+        # Ancak, başkasının analizini görüntülerken kendi session'ınıza bu veriyi yüklemek
+        # bir sonraki kendi raporunuzu etkileyebilir. Bu mantığı gözden geçirmek gerekebilir.
+        # Belki de rapor oluşturma sadece analizin sahibi tarafından tetiklenebilmeli.
+        # Ya da session'daki `arsa_data`'yı daha dikkatli yönetmeli.
+        # Şimdilik, eğer salt okunur modda değilse session'a yazalım:
+        if not read_only_mode:
+            session["arsa_data"] = {
+                "id": analiz.id, "il": analiz.il, "ilce": analiz.ilce, "mahalle": analiz.mahalle,
+                "ada": analiz.ada, "parsel": analiz.parsel, "koordinatlar": analiz.koordinatlar,
+                "pafta": analiz.pafta, "metrekare": metrekare, "imar_durumu": analiz.imar_durumu,
+                "taks": taks, "kaks": kaks, "fiyat": fiyat, "bolge_fiyat": bolge_fiyat,
+                "altyapi[]": altyapi, # altyapi burada bir liste olmalı
+                "strengths": swot_analizi.get("strengths", []), "weaknesses": swot_analizi.get("weaknesses", []),
+                "opportunities": swot_analizi.get("opportunities", []), "threats": swot_analizi.get("threats", [])
             }
-        )
-        ozet = analizci.ozetle(analiz_sonuclari)
+            session["analiz_ozeti"] = ozet
+        elif "arsa_data" in session: # Başkasının analizine bakarken kendi session'ımızı temizleyelim
+            session.pop("arsa_data", None)
+            session.pop("analiz_ozeti", None)
 
-        # --- PDF/Word için session'a analiz verisi yükle ---
-        # Bu kısım önemli: Analiz detay sayfasından rapor oluşturulacaksa,
-        # session'daki verinin güncel analiz verisi olduğundan emin olmalıyız.
-        session["arsa_data"] = {
-            "id": analiz.id,  # <<< ÖNEMLİ: Analiz ID'sini ekle
-            "il": analiz.il,
-            "ilce": analiz.ilce,
-            "mahalle": analiz.mahalle,
-            "ada": analiz.ada,
-            "parsel": analiz.parsel,
-            "koordinatlar": analiz.koordinatlar,
-            "pafta": analiz.pafta,
-            "metrekare": float(metrekare),
-            "imar_durumu": analiz.imar_durumu,
-            "taks": float(taks),
-            "kaks": float(kaks),
-            "fiyat": float(fiyat),
-            "bolge_fiyat": float(bolge_fiyat),
-            "altyapi[]": altyapi,  # Anahtar adını DocumentGenerator'ın beklediği gibi yapalım
-            # SWOT alanları
-            "strengths": swot_analizi.get("strengths", []),
-            "weaknesses": swot_analizi.get("weaknesses", []),
-            "opportunities": swot_analizi.get("opportunities", []),
-            "threats": swot_analizi.get("threats", []),
-        }
-        session["analiz_ozeti"] = ozet
-        print(
-            f"DEBUG [Analiz Detay]: Session'a kaydedilen arsa_data: {session['arsa_data']}"
-        )  # Debug için
 
+        # Fiyat Tahmini
         tahmin_sonucu = None
         try:
-            # Fiyat tahmin modelini başlat
-            tahmin_modeli = FiyatTahminModeli(db.session)
-
-            # Tahmin için gerekli veriyi hazırla
+            tahmin_modeli = FiyatTahminModeli(db.engine)
             prediction_input_data = {
-                "il": analiz.il,
-                "ilce": analiz.ilce,
-                "mahalle": analiz.mahalle,
-                "metrekare": metrekare,
-                "imar_durumu": analiz.imar_durumu,
-                # Modelin eğitildiği diğer özellikler varsa buraya ekleyin
-                # Örneğin:
-                "taks": taks,
-                "kaks": kaks,
-                "bolge_fiyat": bolge_fiyat,
-                "altyapi": altyapi,  # Model altyapıyı kullanıyorsa
+            "il": analiz.il, 
+            "ilce": analiz.ilce, 
+            "mahalle": analiz.mahalle,
+            "metrekare": safe_float(analiz.metrekare), # safe_float ile float'a çevrilmiş olmalı
+            "imar_durumu": analiz.imar_durumu,
+            "taks": safe_float(analiz.taks, 0.3), # Varsayılan değerler
+            "kaks": safe_float(analiz.kaks, 1.5),
+            "bolge_fiyat": safe_float(analiz.bolge_fiyat), # Bu model tarafından kullanılmayabilir ama gönderilebilir
             }
-
-            # Tahmini yap
             tahmin_sonucu = tahmin_modeli.tahmin_yap(prediction_input_data)
-            print(f"DEBUG [Analiz Detay]: Fiyat tahmini sonucu: {tahmin_sonucu}")
+        except Exception as e_tahmin:
+            app.logger.error(f"Fiyat tahmini sırasında hata oluştu (ID: {analiz_id}): {e_tahmin}", exc_info=False) # exc_info=True logu çok uzatabilir
+            # flash("Fiyat tahmini yapılırken bir sorun oluştu.", "warning") # Kullanıcıya her zaman göstermek gerekmeyebilir
 
-        except Exception as e:
-            app.logger.error(f"Fiyat tahmini sırasında hata oluştu: {e}", exc_info=True)
-            flash("Fiyat tahmini yapılırken bir sorun oluştu.", "warning")
-        # --- YENİ: Fiyat Tahmini Entegrasyonu Sonu ---
-
-        # Medya dosyalarını getir
-        medyalar = (
-            AnalizMedya.query.filter_by(analiz_id=analiz_id)
-            .order_by(AnalizMedya.uploaded_at)
-            .all()
-        )
-
-        # UUID oluştur (dosya adı için, detay sayfasında da gerekebilir)
-        file_id = str(uuid.uuid4())
+        # Medya dosyaları
+        medyalar = AnalizMedya.query.filter_by(analiz_id=analiz_id).order_by(AnalizMedya.uploaded_at.asc()).all()
+        
+        # file_id'yi raporlama için analiz ID'si olarak kullanmak daha tutarlı
+        report_file_id = str(analiz.id) 
 
         return render_template(
             "analiz_detay.html",
             analiz=analiz,
-            altyapi=altyapi,
-            swot=swot_analizi,
-            sonuc=analiz_sonuclari,
+            altyapi=altyapi, # Parse edilmiş altyapı
+            swot=swot_analizi, # Parse edilmiş SWOT
+            sonuc=analiz_sonuclari_data, # `analiz_sonuclari` yerine `analiz_sonuclari_data`
             ozet=ozet,
-            user=user,  # Kullanıcı bilgilerini template'e gönder
-            medyalar=medyalar,  # Medya dosyalarını template'e gönder
-            file_id=file_id,  # Rapor oluşturma linkleri için file_id gönder
+            user=analiz_sahibi_user, # Analizin sahibinin User objesi
+            medyalar=medyalar,
+            file_id=report_file_id, # Rapor linkleri için analiz ID'si
             tahmin=tahmin_sonucu,
+            read_only_mode=read_only_mode # Salt okunur modu şablona gönder
         )
 
     except Exception as e:
-        import traceback
-
-        print("=== HATA DETAYLARI (analiz_detay) ===")
-        print(f"Exception type: {type(e).__name__}")
-        print(f"Exception message: {e}")
-        print("Traceback:")
-        traceback.print_exc()
-        print("--- Analiz edilen veri ---")
-        try:
-            print(f"analiz.id: {analiz_id}")  # analiz_id'yi yazdır
-            # Diğer analiz detaylarını yazdırmaya çalış (hata alabilir)
-            # print(f"analiz.il: {getattr(analiz, 'il', None)}")
-            # ...
-        except Exception as inner_e:
-            print(f"Ek veri yazılırken hata: {inner_e}")
-        print("--- Çözüm Önerisi ---")
-        print(
-            "Lütfen analiz kaydındaki tüm sayısal alanların (metrekare, fiyat, bolge_fiyat, taks, kaks) boş veya None olmadığından emin olun."
-        )
-        print(
-            "Veritabanında eksik veya hatalı veri varsa düzeltin. Gerekirse analiz kaydını silip tekrar oluşturun."
-        )
-        flash(
-            "Analiz görüntülenirken bir hata oluştu. Detaylar için sunucu loglarını kontrol edin.",
-            "danger",
-        )
-        flash("Analiz görüntülenirken bir hata oluştu.", "danger")
-        return redirect(url_for("analizler"))
-
-
+        app.logger.error(f"Analiz Detay Sayfası Hatası (ID: {analiz_id}): {str(e)}", exc_info=True)
+        flash("Analiz görüntülenirken beklenmedik bir hata oluştu. Lütfen daha sonra tekrar deneyin.", "danger")
+        # Hata durumunda, kullanıcının geldiği yere veya genel bir listeye yönlendirme
+        # referrer = request.referrer
+        # if referrer and url_for('login') not in referrer : # Login sayfasından gelmiyorsa
+        #     return redirect(referrer)
+        return redirect(url_for('portfolios')) # Veya 'index' veya 'analizler'
+  
 @app.route("/analizler")
 @login_required
 def analizler():
@@ -2100,21 +2089,142 @@ def medya_sil(analiz_id, medya_id):
     return redirect(url_for("analiz_detay", analiz_id=analiz_id))
 
 
+# app.py
+# request importunun olduğundan emin olun: from flask import request, ...
+# db importunun olduğundan emin olun (SQLAlchemy instance'ınız)
+
 @app.route("/portfolios")
-@login_required
+@login_required 
 def portfolios():
-    # Join ile User bilgilerini de getir
-    analizler = (
-        ArsaAnaliz.query.join(User)
-        .add_columns(User.ad, User.soyad)
-        .filter(User.is_active == True)
-        .order_by(ArsaAnaliz.created_at.desc())
-        .all()
+    page = request.args.get('page', 1, type=int)
+    search_term = request.args.get('search', '').strip() # URL'den 'search' parametresini al, boşlukları temizle
+    per_page = 15 # Sayfa başına gösterilecek analiz sayısı
+
+    # Temel sorgu: Aktif kullanıcıların analizlerini ve kullanıcı bilgilerini join et
+    base_query = db.session.query(
+        ArsaAnaliz, # ArsaAnaliz objesinin tamamını al
+        User.ad,    # User.ad sütununu al
+        User.soyad, # User.soyad sütununu al
+        User.profil_foto # User.profil_foto sütununu al
+    ).join(User, ArsaAnaliz.user_id == User.id).filter(User.is_active == True)
+    # NOT: Eğer ArsaAnaliz modelinde User ilişkisi (örn: analiz.user.ad) tanımlıysa,
+    # .add_columns() yerine sadece ArsaAnaliz'i çekip şablonda analiz.user.ad diyebilirsiniz.
+    # Ancak join().add_columns() genellikle daha performanslı olabilir veya daha esnektir.
+    # Sizin mevcut kodunuzda `.add_columns(User.ad, User.soyad)` vardı,
+    # ben `ArsaAnaliz` objesini de ekledim ki tüm ArsaAnaliz verilerine de sahip olalım.
+    # Bir önceki cevaptaki `.join(User).filter(User.is_active == True).add_columns(...)` yapısı da doğruydu.
+    # Önemli olan, şablonda kullanacağınız tüm verilere sahip olmak.
+
+    if search_term: # Eğer arama terimi varsa, sorguyu filtrele
+        search_like = f"%{search_term}%" # SQL LIKE için arama kalıbı
+        base_query = base_query.filter(
+            db.or_( # Birden fazla alanda arama yapmak için OR koşulu
+                ArsaAnaliz.il.ilike(search_like),
+                ArsaAnaliz.ilce.ilike(search_like),
+                ArsaAnaliz.mahalle.ilike(search_like),
+                User.ad.ilike(search_like),
+                User.soyad.ilike(search_like),
+                # İsteğe bağlı: ArsaAnaliz.ada, ArsaAnaliz.parsel gibi diğer alanlarda da arama eklenebilir
+                ArsaAnaliz.imar_durumu.ilike(search_like)
+            )
+        )
+    
+    # Sıralama ve sayfalama
+    final_query = base_query.order_by(ArsaAnaliz.created_at.desc())
+    paginated_results = final_query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    # Sayfalanmış sonuçlar artık (ArsaAnaliz_objesi, user_ad, user_soyad, user_profil_foto) tuple'ları içeriyor
+    # Şablonda kolay kullanım için bunları bir dict listesine dönüştürebiliriz veya doğrudan tuple olarak kullanabiliriz.
+    # Mevcut şablonunuz analiz.ArsaAnaliz.il gibi erişiyordu, bu yüzden bu yapıyı korumaya çalışalım.
+    # Eğer base_query = ArsaAnaliz.query.join(User)... şeklinde başlasaydık,
+    # sonuçlar direkt ArsaAnaliz objeleri olurdu ve şablonda analiz.user.ad kullanabilirdik.
+    
+    # Önceki .add_columns(User.ad, User.soyad) yapınıza göre şablonunuzda 
+    # `analiz.ArsaAnaliz.il` ve `analiz.ad` şeklinde erişim vardı. Bu yapıyı korumak için:
+    # `base_query`'yi `ArsaAnaliz.query.join(User).filter(User.is_active == True)` olarak alıp
+    # şablonda `analiz.il` ve `analiz.user.ad` kullanmak daha temiz olabilir.
+    # Şimdilik mevcut sorgu yapısıyla devam edelim:
+    
+    # `paginated_results.items` bize [(ArsaAnaliz_nesnesi, user_ad, user_soyad, user_profil_foto), ...] listesi verir.
+    # Şablonda `analiz.ArsaAnaliz.il` ve `analiz.ad` kullanıldığı için bu tuple yapısını şablona uygun hale getirelim.
+    # Bu, sorguyu `db.session.query(ArsaAnaliz, User)` yapıp sonra şablonda `result.ArsaAnaliz` ve `result.User` demekle eşdeğer.
+    
+    # En temiz yol: ArsaAnaliz objelerini çekip, user ilişkisi üzerinden kullanıcı bilgilerine erişmek.
+    # Bu, add_columns() kullanmaktan daha standart bir ORM yaklaşımıdır.
+    
+    clean_query = ArsaAnaliz.query.join(ArsaAnaliz.user).filter(User.is_active == True) # User ilişkisi modelde tanımlı olmalı
+
+    if search_term:
+        search_like = f"%{search_term}%"
+        clean_query = clean_query.filter(
+            db.or_(
+                ArsaAnaliz.il.ilike(search_like),
+                ArsaAnaliz.ilce.ilike(search_like),
+                ArsaAnaliz.mahalle.ilike(search_like),
+                User.ad.ilike(search_like), # İlişki üzerinden arama
+                User.soyad.ilike(search_like)
+            )
+        )
+
+    paginated_analyses_objects = clean_query.order_by(ArsaAnaliz.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    
+    # `paginated_analyses_objects.items` artık doğrudan ArsaAnaliz nesnelerinin bir listesidir.
+    # Şablonda `analiz.il` ve `analiz.user.ad` (eğer `user` ilişkisi `ArsaAnaliz` modelinde tanımlıysa)
+    # veya `analiz.kullanici_bilgisi.ad` (eğer `User`'ı ayrı bir query ile çekip birleştirirseniz)
+    # şeklinde erişebilirsiniz.
+    
+    # Mevcut şablonunuzdaki `analiz.ArsaAnaliz.il` ve `analiz.ad` kullanımına en uygun yapı,
+    # `portfolios` fonksiyonunda `ArsaAnaliz` ve `User` objelerini ayrı ayrı çekip
+    # şablona birleştirilmiş bir yapıda göndermek veya sorguyu ona göre düzenlemek.
+    # Bir önceki mesajdaki `add_columns` ile gelen tuple yapısı şablonunuzla uyumsuz olabilir.
+
+    # Şablonunuzdaki `analiz.ArsaAnaliz.il` ve `analiz.ad` kullanımı,
+    # `app.py`'deki `portfolios` fonksiyonundan gelen `analizler` listesinin
+    # her bir elemanının bir tuple veya özel bir nesne olduğunu ve bu nesnenin
+    # `.ArsaAnaliz` ve `.ad` gibi özelliklere sahip olduğunu varsayar.
+    # Orijinal `portfolios` fonksiyonunuz şöyleydi:
+    # analizler = ArsaAnaliz.query.join(User).add_columns(User.ad, User.soyad) ...
+    # Bu, `analizler` listesindeki her elemanın `(ArsaAnaliz_objesi, user_ad, user_soyad)` şeklinde bir tuple olmasını sağlar.
+    # Şablonda buna erişirken `analiz[0].il` (veya `analiz.ArsaAnaliz.il` eğer named tuple ise) ve `analiz[1]` (`analiz.ad`) şeklinde erişilir.
+    # Sizin şablonunuz `analiz.ArsaAnaliz.il` ve `analiz.ad` kullanıyor. Bu, `analiz` objesinin
+    # `ArsaAnaliz` adında bir property'si (ki bu ArsaAnaliz objesi) ve `ad` adında bir property'si (ki bu User.ad) olduğu anlamına gelir.
+    # Bu yapıyı korumak için sorguyu şöyle yapabiliriz:
+
+    final_query = db.session.query(ArsaAnaliz, User).join(User, ArsaAnaliz.user_id == User.id).filter(User.is_active == True)
+
+    if search_term:
+        search_like = f"%{search_term}%"
+        final_query = final_query.filter(
+            db.or_(
+                ArsaAnaliz.il.ilike(search_like),
+                ArsaAnaliz.ilce.ilike(search_like),
+                ArsaAnaliz.mahalle.ilike(search_like),
+                User.ad.ilike(search_like),
+                User.soyad.ilike(search_like)
+            )
+        )
+    
+    paginated_results = final_query.order_by(ArsaAnaliz.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    
+    # paginated_results.items şimdi [(ArsaAnaliz_obj, User_obj), (ArsaAnaliz_obj, User_obj), ...] listesi
+    # Şablona uygun hale getirmek için:
+    results_for_template = []
+    for arsa_analiz_obj, user_obj in paginated_results.items:
+        results_for_template.append({
+            "ArsaAnaliz": arsa_analiz_obj,
+            "ad": user_obj.ad,
+            "soyad": user_obj.soyad,
+            "profil_foto": user_obj.profil_foto 
+            # Eğer şablonda `analiz.profil_foto` gibi bir erişim varsa bunu da ekleyin
+        })
+
+    return render_template(
+        "portfolios.html",
+        analizler=results_for_template, # Artık şablondaki `analiz.ArsaAnaliz.il` ve `analiz.ad` çalışmalı
+        pagination=paginated_results,
+        title="Tüm Analizler",
+        search_term=search_term 
     )
-
-    return render_template("portfolios.html", analizler=analizler)
-
-
 @app.route("/portfolio/create", methods=["GET", "POST"])
 @login_required
 def portfolio_create():
@@ -2704,7 +2814,7 @@ def crm_company_new():
 def crm_company_detail(company_id):
     user_id = session["user_id"]
     company = Company.query.filter_by(id=company_id, user_id=user_id).first_or_404()
-    company_contacts = company.contacts.order_by(Contact.last_name).all()
+    company_contacts = company.contacts.order_by(Contact.last_name, Contact.first_name).all()
     company_deals = company.deals.order_by(Deal.created_at.desc()).all()
     return render_template(
         "crm/company_detail.html",
@@ -2919,250 +3029,232 @@ def generate_pptx(analiz_id):
         return jsonify({"error": str(e)}), 500
 
 
+# app.py
+
+# ... (diğer importlarınız ve fonksiyonlarınız) ...
+
 @app.route("/submit_analysis", methods=["POST"])
 @login_required
 def submit_analysis():
     try:
         user_id = session["user_id"]
-        form_data = request.form.to_dict(flat=True)
+        form_data_dict = request.form.to_dict() # Form verilerini al (flat=True varsayılan)
         altyapi_list = request.form.getlist("altyapi[]")
-        form_data["altyapi[]"] = altyapi_list
+        # form_data_dict'e altyapi[] eklemeye gerek yok, zaten ayrıca alıyoruz.
 
-        print("Raw form data:", form_data)
+        # Debug için loglama (bunları production'da kaldırabilirsiniz)
+        print("Raw form data (dict):", form_data_dict)
         print("Altyapı verileri:", altyapi_list)
         for key in ["strengths", "weaknesses", "opportunities", "threats"]:
-            print(f"SWOT {key}:", form_data.get(key, "Yok"))
+            print(f"SWOT {key}:", form_data_dict.get(key, "Yok"))
+
+        errors = [] # Hata mesajlarını toplamak için liste
 
         # --- Sunucu Tarafı Validasyon Başlangıcı ---
-        errors = []
+        # (Sizin validasyon kodunuz burada - olduğu gibi kalabilir)
         required_fields = {
-            "il": "İl",
-            "ilce": "İlçe",
-            "mahalle": "Mahalle",
-            "ada": "Ada No",
-            "parsel": "Parsel No",
-            "metrekare": "Metrekare",
-            "imar_durumu": "İmar Durumu",
-            "maliyet": "Maliyet",
-            "guncel_deger": "Güncel Değer",
-            "tarih": "Alım Tarihi",
+            "il": "İl", "ilce": "İlçe", "mahalle": "Mahalle",
+            "ada": "Ada No", "parsel": "Parsel No",
+            "metrekare": "Metrekare", "imar_durumu": "İmar Durumu",
+            "maliyet": "Maliyet", "guncel_deger": "Güncel Değer", "tarih": "Alım Tarihi"
         }
-
         for field, label in required_fields.items():
-            if not form_data.get(field):
+            if not form_data_dict.get(field, "").strip():
                 errors.append(f"{label} alanı zorunludur.")
 
-        # Sayısal Alan Kontrolleri
-        numeric_fields = {
-            "metrekare": "Metrekare",
-            "taks": "TAKS",
-            "kaks": "KAKS",
-            "maliyet": "Maliyet",
-            "guncel_deger": "Güncel Değer",
-            "deger_artis_orani": "Yıllık Değer Artış Oranı",
+        numeric_fields_config = { # numeric_fields yerine numeric_fields_config kullandım
+            "metrekare": {"label": "Metrekare", "min_val": 0.01, "max_val": 9999999.99},
+            "taks": {"label": "TAKS", "min_val": 0, "max_val": 1},
+            "kaks": {"label": "KAKS", "min_val": 0},
+            "maliyet": {"label": "Maliyet", "min_val": 0, "max_val": 9999999999999.99},
+            "guncel_deger": {"label": "Güncel Değer", "min_val": 0, "max_val": 9999999999999.99},
+            "deger_artis_orani": {"label": "Yıllık Değer Artış Oranı", "min_val": 0, "max_val": 100}
         }
-        for field, label in numeric_fields.items():
-            value_str = form_data.get(field, "").replace(",", "").strip()
-            if value_str:  # Alan boş değilse kontrol et
+        for field, config in numeric_fields_config.items(): # numeric_fields_config olarak güncelledim
+            value_str = form_data_dict.get(field, "").replace(",", "").strip()
+            if value_str:
                 try:
                     value_float = float(value_str)
-                    if value_float < 0:
-                        errors.append(f"{label} değeri negatif olamaz.")
-                    # Ekstra aralık kontrolleri eklenebilir (örn: TAKS 0-1 arası)
-                    if field == "taks" and not (0 <= value_float <= 1):
-                        errors.append(f"{label} değeri 0 ile 1 arasında olmalıdır.")
-                    if field == "deger_artis_orani" and not (0 <= value_float <= 100):
-                        errors.append(f"{label} değeri 0 ile 100 arasında olmalıdır.")
+                    if "min_val" in config and value_float < config["min_val"]:
+                         errors.append(f"{config['label']} en az {config['min_val']} olmalıdır.")
+                    if "max_val" in config and value_float > config["max_val"]:
+                         errors.append(f"{config['label']} en fazla {config['max_val']} olmalıdır.")
+                    # Sizin özel aralık kontrolleriniz
+                    if field == "taks" and not (0 <= value_float <= 1): # Zaten min/max ile kontrol ediliyor ama kalsın
+                        errors.append(f"{config['label']} değeri 0 ile 1 arasında olmalıdır.")
+                    if field == "deger_artis_orani" and not (0 <= value_float <= 100): # Zaten min/max ile kontrol ediliyor
+                        errors.append(f"{config['label']} değeri 0 ile 100 arasında olmalıdır.")
                 except ValueError:
-                    errors.append(f"{label} alanı geçerli bir sayı olmalıdır.")
-
-        # Tarih Format Kontrolü
-        tarih_str = form_data.get("tarih", "")
+                    errors.append(f"{config['label']} alanı geçerli bir sayı olmalıdır.")
+        
+        tarih_str = form_data_dict.get("tarih", "")
         if tarih_str:
             try:
                 datetime.strptime(tarih_str, "%Y-%m-%d")
             except ValueError:
-                errors.append(
-                    "Alım Tarihi geçerli bir formatta (YYYY-MM-DD) olmalıdır."
-                )
-
-        # String Uzunluk Kontrolleri (Modele göre)
+                errors.append("Alım Tarihi geçerli bir formatta (YYYY-MM-DD) olmalıdır.")
+        
         length_checks = {
-            "il": 50,
-            "ilce": 50,
-            "mahalle": 100,
-            "ada": 20,
-            "parsel": 20,
-            "koordinatlar": 100,
-            "pafta": 50,
-            "imar_durumu": 50,
+            "il": 50, "ilce": 50, "mahalle": 100, "ada": 20, "parsel": 20,
+            "koordinatlar": 100, "pafta": 50, "imar_durumu": 50, "notlar": 1000
         }
         for field, max_len in length_checks.items():
-            value = form_data.get(field, "")
+            value = form_data_dict.get(field, "")
             if len(value) > max_len:
-                errors.append(
-                    f"{required_fields.get(field, field).capitalize()} alanı {max_len} karakterden uzun olamaz."
-                )
+                label_for_error = required_fields.get(field, field.capitalize())
+                errors.append(f"{label_for_error} alanı {max_len} karakterden uzun olamaz.")
 
-        # SWOT JSON Kontrolü
+        swot_data_from_form = {}
         for key in ["strengths", "weaknesses", "opportunities", "threats"]:
+            swot_json_str = form_data_dict.get(key, "[]")
             try:
-                json.loads(form_data.get(key, "[]"))
+                swot_list = json.loads(swot_json_str)
+                if not isinstance(swot_list, list):
+                     errors.append(f"SWOT {key.capitalize()} verisi liste formatında olmalı.")
+                swot_data_from_form[key] = swot_list
             except json.JSONDecodeError:
                 errors.append(f"SWOT {key.capitalize()} verisi geçersiz formatta.")
+        # --- Sunucu Tarafı Validasyon Sonu ---
 
         if errors:
             for error in errors:
                 flash(error, "danger")
-            # Form verilerini session'da saklayarak kullanıcıya geri gönderebiliriz (isteğe bağlı iyileştirme)
-            # session['form_data_temp'] = form_data
+            session['analysis_form_errors'] = errors # Hataları session'a at
+            session['analysis_form_data'] = form_data_dict # Form verisini de at
+            session['analysis_form_data']['altyapi[]'] = altyapi_list # Checkbox'ları da ekle
             return redirect(url_for("analysis_form"))
-        # --- Sunucu Tarafı Validasyon Sonu ---
 
-        # Convert numeric values (validasyon başarılıysa)
+
+        # --- Sayısal Değerleri Dönüştürme (Validasyon Başarılıysa) ---
+        # Bu kısım sizin kodunuzda da vardı, küçük düzeltmelerle koruyorum.
+        # Ancak validasyon kısmında Decimal'e çevirmek ve bu `converted_data` objesini kullanmak daha iyiydi.
+        # Şimdilik float olarak devam edelim, ArsaAnaliz oluştururken Decimal'e çevireceğiz.
         try:
-            metrekare = float(str(form_data.get("metrekare")).replace(",", "").strip())
-            maliyet = float(str(form_data.get("maliyet")).replace(",", "").strip())
-            guncel_deger = float(
-                str(form_data.get("guncel_deger")).replace(",", "").strip()
-            )
-            taks = float(str(form_data.get("taks", "0.3")).replace(",", "").strip())
-            kaks = float(str(form_data.get("kaks", "1.5")).replace(",", "").strip())
+            metrekare = float(str(form_data_dict.get("metrekare")).replace(",", "").strip())
+            maliyet = float(str(form_data_dict.get("maliyet")).replace(",", "").strip())
+            guncel_deger = float(str(form_data_dict.get("guncel_deger")).replace(",", "").strip())
+            taks = float(str(form_data_dict.get("taks", "0.3")).replace(",", "").strip()) # Varsayılan değer formdan gelmezse
+            kaks = float(str(form_data_dict.get("kaks", "1.5")).replace(",", "").strip()) # Varsayılan değer formdan gelmezse
+            # deger_artis_orani_float = float(str(form_data_dict.get("deger_artis_orani", "15")).replace(",", "").strip()) # Eğer kullanılacaksa
 
-            print(
-                f"Dönüştürülmüş değerler - metrekare: {metrekare}, maliyet: {maliyet}, güncel değer: {guncel_deger}"
-            )
+            print(f"Dönüştürülmüş değerler - metrekare: {metrekare}, maliyet: {maliyet}, güncel değer: {guncel_deger}")
 
-            # Değerleri sınırla (Bu kısım önceki adımlarda eklendi)
-            if metrekare > 9999999.99:
-                metrekare = 9999999.99
-                flash(
-                    "Metrekare değeri çok büyük, maksimum değer ile sınırlandı.",
-                    "warning",
-                )
-            if maliyet > 9999999999999.99:
-                maliyet = 9999999999999.99
-                flash(
-                    "Maliyet değeri çok büyük, maksimum değer ile sınırlandı.",
-                    "warning",
-                )
-            if guncel_deger > 9999999999999.99:
-                guncel_deger = 9999999999999.99
-                flash(
-                    "Güncel değer değeri çok büyük, maksimum değer ile sınırlandı.",
-                    "warning",
-                )
-
-            form_data.update(
-                {
-                    "metrekare": metrekare,
-                    "maliyet": maliyet,
-                    "guncel_deger": guncel_deger,
-                    "taks": taks,
-                    "kaks": kaks,
-                }
-            )
-
+            # Değer sınırlamaları (bu kısım validasyonda yapıldı, burada tekrar kontrol edilebilir ama gereksiz olabilir)
         except (ValueError, TypeError) as e:
-            # Bu blok normalde validasyon sonrası çalışmamalı ama güvenlik için kalabilir
-            print(f"Numeric conversion error after validation: {e}")
+            print(f"Numeric conversion error after validation (should not happen): {e}")
             flash("Sayısal değerlerde beklenmedik bir hata oluştu.", "danger")
+            session['analysis_form_data'] = form_data_dict
+            session['analysis_form_data']['altyapi[]'] = altyapi_list
             return redirect(url_for("analysis_form"))
+        # --- Sayısal Değerleri Dönüştürme Sonu ---
 
-        # Process SWOT data (validasyon başarılıysa)
-        swot_data = {}
-        for key in ["strengths", "weaknesses", "opportunities", "threats"]:
-            swot_data[key] = json.loads(form_data.get(key, "[]"))
+        # SWOT verisini (zaten swot_data_from_form'da list olarak var) JSON string'e çevir
+        swot_json_for_db = json.dumps(swot_data_from_form)
+        altyapi_json_for_db = json.dumps(altyapi_list)
 
-        # Create new ArsaAnaliz object
+
+        # ArsaAnaliz objesini oluştur
         yeni_analiz = ArsaAnaliz(
             user_id=user_id,
-            il=form_data.get("il"),
-            ilce=form_data.get("ilce"),
-            mahalle=form_data.get("mahalle"),
-            ada=form_data.get("ada"),
-            parsel=form_data.get("parsel"),
-            koordinatlar=form_data.get("koordinatlar"),
-            pafta=form_data.get("pafta"),
+            il=form_data_dict.get("il"),
+            ilce=form_data_dict.get("ilce"),
+            mahalle=form_data_dict.get("mahalle"),
+            ada=form_data_dict.get("ada"),
+            parsel=form_data_dict.get("parsel"),
+            koordinatlar=form_data_dict.get("koordinatlar"),
+            pafta=form_data_dict.get("pafta"),
             metrekare=Decimal(str(metrekare)),
-            imar_durumu=form_data.get("imar_durumu"),
+            imar_durumu=form_data_dict.get("imar_durumu"),
+            # nitelik=form_data_dict.get("nitelik"), # Modelde varsa
             taks=Decimal(str(taks)),
             kaks=Decimal(str(kaks)),
-            fiyat=Decimal(str(maliyet)),  # 'fiyat' yerine 'maliyet' kullanılıyor
-            bolge_fiyat=Decimal(
-                str(guncel_deger)
-            ),  # 'bolge_fiyat' yerine 'guncel_deger'
-            altyapi=json.dumps(altyapi_list),
-            swot_analizi=json.dumps(swot_data),
-            notlar=form_data.get("notlar"),  # Notlar alanını ekle
+            fiyat=Decimal(str(maliyet)),
+            bolge_fiyat=Decimal(str(guncel_deger)),
+            # alim_tarihi=datetime.strptime(form_data_dict.get("tarih"), "%Y-%m-%d").date() if form_data_dict.get("tarih") else None, # Modelde varsa
+            # deger_artis_orani=Decimal(str(deger_artis_orani_float)), # Modelde varsa
+            altyapi=altyapi_json_for_db,
+            swot_analizi=swot_json_for_db,
+            notlar=form_data_dict.get("notlar")
         )
-
-        # Veritabanına kaydet ve istatistikleri güncelle...
         db.session.add(yeni_analiz)
-        # db.session.commit() # Commit işlemi diğer güncellemelerle birlikte sonda yapılacak
 
-        # Bölge istatistiklerini güncelle
-        bolge = BolgeDagilimi.query.filter_by(
-            user_id=user_id, il=form_data.get("il")
-        ).first()
-
-        fiyat_decimal = Decimal(str(maliyet))
-
-        if bolge:
-            bolge.analiz_sayisi += 1
-            bolge.toplam_deger += fiyat_decimal
-        else:
-            yeni_bolge = BolgeDagilimi(
-                user_id=user_id,
-                il=form_data.get("il"),
-                analiz_sayisi=1,
-                toplam_deger=fiyat_decimal,
-            )
-            db.session.add(yeni_bolge)
-
-        # Dashboard istatistiklerini güncelle
+        # --- Dashboard İstatistiklerini Güncelleme (DÜZELTİLMİŞ BÖLÜM) ---
         stats = DashboardStats.query.filter_by(user_id=user_id).first()
         if not stats:
-            stats = DashboardStats(user_id=user_id)
+            stats = DashboardStats(
+                user_id=user_id,
+                toplam_arsa_sayisi=0,
+                ortalama_fiyat=0.0,
+                en_yuksek_fiyat=0.0,
+                en_dusuk_fiyat=0.0, # Veya float('inf') ile başlayıp ilk eklemede ata
+                toplam_deger=Decimal('0.00')
+                # ortalama_roi=Decimal('0.00') # Eğer varsa
+            )
             db.session.add(stats)
+        
+        # Eğer stats veritabanından yeni çekildiyse ve alanlar None ise, 0 ata
+        if stats.toplam_arsa_sayisi is None: stats.toplam_arsa_sayisi = 0
+        if stats.ortalama_fiyat is None: stats.ortalama_fiyat = 0.0
+        if stats.en_yuksek_fiyat is None: stats.en_yuksek_fiyat = 0.0
+        if stats.en_dusuk_fiyat is None or stats.en_dusuk_fiyat == 0.0: # İlk ekleme veya 0 ise
+             stats.en_dusuk_fiyat = float('inf') # Karşılaştırma için sonsuzla başla
+        if stats.toplam_deger is None: stats.toplam_deger = Decimal('0.00')
 
         stats.toplam_arsa_sayisi += 1
-        # Ortalama fiyatı güvenli hesapla
-        if stats.toplam_arsa_sayisi > 0:
-            stats.ortalama_fiyat = (
-                (stats.ortalama_fiyat * (stats.toplam_arsa_sayisi - 1)) + maliyet
-            ) / stats.toplam_arsa_sayisi
-        else:
-            stats.ortalama_fiyat = maliyet  # İlk analiz ise doğrudan maliyeti ata
-        stats.en_yuksek_fiyat = max(stats.en_yuksek_fiyat or 0, maliyet)
-        stats.en_dusuk_fiyat = min(stats.en_dusuk_fiyat or float("inf"), maliyet)
-        stats.toplam_deger += fiyat_decimal
+        
+        current_maliyet_float = maliyet # Zaten float
 
-        db.session.commit()
+        # Ortalama fiyat
+        if stats.toplam_arsa_sayisi == 1: # İlk analiz
+            stats.ortalama_fiyat = current_maliyet_float
+        else:
+            stats.ortalama_fiyat = ((stats.ortalama_fiyat * (stats.toplam_arsa_sayisi - 1)) + current_maliyet_float) / stats.toplam_arsa_sayisi
+        
+        # En yüksek fiyat
+        if stats.toplam_arsa_sayisi == 1: # İlk analiz
+            stats.en_yuksek_fiyat = current_maliyet_float
+        else:
+            stats.en_yuksek_fiyat = max(stats.en_yuksek_fiyat, current_maliyet_float)
+        
+        # En düşük fiyat
+        stats.en_dusuk_fiyat = min(stats.en_dusuk_fiyat, current_maliyet_float)
+            
+        stats.toplam_deger += Decimal(str(current_maliyet_float)) # Decimal'e çevirerek ekle
+        stats.son_guncelleme = datetime.utcnow()
+        # --- Dashboard İstatistikleri Güncelleme Sonu ---
+
+        # Bölge istatistiklerini güncelle (Benzer None kontrolü burada da gerekebilir)
+        bolge = BolgeDagilimi.query.filter_by(user_id=user_id, il=yeni_analiz.il).first()
+        if not bolge:
+            bolge = BolgeDagilimi(user_id=user_id, il=yeni_analiz.il, analiz_sayisi=0, toplam_deger=Decimal('0.00'))
+            db.session.add(bolge)
+        
+        if bolge.analiz_sayisi is None: bolge.analiz_sayisi = 0
+        if bolge.toplam_deger is None: bolge.toplam_deger = Decimal('0.00')
+            
+        bolge.analiz_sayisi += 1
+        bolge.toplam_deger += Decimal(str(current_maliyet_float)) # Decimal'e çevirerek ekle
+        bolge.son_guncelleme = datetime.utcnow()
+
+        db.session.commit() # Tüm değişiklikleri tek seferde kaydet
 
         flash("Arsa analizi başarıyla kaydedildi.", "success")
-        return redirect(url_for("analizler"))
+        return redirect(url_for('analiz_detay', analiz_id=yeni_analiz.id)) # Analiz detayına yönlendir
 
     except Exception as e:
         db.session.rollback()
-        print(f"Submit analysis error: {str(e)}")
+        print(f"Submit analysis error: {str(e)}") # Konsola yazdır
         import traceback
-
-        traceback.print_exc()
-        print("Hata durumunda form verileri:")
-        # Hata durumunda form verilerini yazdırma
-        form_data_error = request.form.to_dict(
-            flat=False
-        )  # Checkbox/multiselect için flat=False
-        for key, value in form_data_error.items():
-            print(f"  {key}: {value}")
-        flash(
-            f"Arsa analizi kaydedilirken beklenmedik bir hata oluştu: {str(e)}",
-            "danger",
-        )
+        traceback.print_exc() # Tam traceback'i konsola yazdır
+        
+        # Hata durumunda form verilerini session'a kaydet ve formu tekrar göster
+        form_data_error_dict = request.form.to_dict()
+        form_data_error_dict['altyapi[]'] = request.form.getlist("altyapi[]")
+        session['analysis_form_data'] = form_data_error_dict
+        session['analysis_form_errors'] = [f"Beklenmedik bir hata oluştu: {str(e)}"] # Genel hata mesajı
+        
+        flash(f"Arsa analizi kaydedilirken beklenmedik bir hata oluştu. Lütfen alanları kontrol edin.", "danger")
         return redirect(url_for("analysis_form"))
-
-
 # Diger route fonksiyonları
 
 
