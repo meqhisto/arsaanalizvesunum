@@ -1,32 +1,15 @@
-2025-05-11 01:21:24,657 - ERROR - Sunucu hatasý: 'Flask' object has no attribute 'login_manager'
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 284, in decorated_view
-    elif not current_user.is_authenticated:
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\local.py", line 422, in __get__
-    obj = instance._get_current_object()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\local.py", line 544, in _get_current_object
-    return self.__local()  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 25, in <lambda>
-    current_user = LocalProxy(lambda: _get_user())
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 370, in _get_user
-    current_app.login_manager._load_user()
-AttributeError: 'Flask' object has no attribute 'login_manager'
-2025-05-11 01:32:46,402 - ERROR - Sunucu hatasý: (pyodbc.ProgrammingError) ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT customers.id AS customers_id, customers.user_id AS customers_user_id, customers.name AS customers_name, customers.email AS customers_email, customers.phone AS customers_phone, customers.company AS customers_company, customers.title AS customers_title, customers.address AS customers_address, customers.customer_type AS customers_customer_type, customers.notes AS customers_notes, customers.status AS customers_status, customers.created_at AS customers_created_at, customers.updated_at AS customers_updated_at 
-FROM customers 
-WHERE customers.user_id = ?]
-[parameters: (1,)]
+2025-05-11 05:18:36,312 - ERROR - Sunucu hatasý: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+FROM crm_tasks 
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (1, 'Tamamlandý', 'Ýptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
 (Background on this error at: https://sqlalche.me/e/14/f405)
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
     self.dialect.do_execute(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
     cursor.execute(statement, parameters)
-pyodbc.ProgrammingError: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+pyodbc.ProgrammingError: ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
 
 The above exception was the direct cause of the following exception:
 
@@ -35,10 +18,10 @@ Traceback (most recent call last):
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\routes\crm.py", line 13, in dashboard
-    customers = Customer.query.filter_by(user_id=current_user.id).all()
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 659, in decorated_function
+    return f(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 1197, in index
+    yaklasan_gorevler = Task.query.filter(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
     return self._iter().all()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
@@ -61,24 +44,24 @@ Traceback (most recent call last):
     self.dialect.do_execute(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
     cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT customers.id AS customers_id, customers.user_id AS customers_user_id, customers.name AS customers_name, customers.email AS customers_email, customers.phone AS customers_phone, customers.company AS customers_company, customers.title AS customers_title, customers.address AS customers_address, customers.customer_type AS customers_customer_type, customers.notes AS customers_notes, customers.status AS customers_status, customers.created_at AS customers_created_at, customers.updated_at AS customers_updated_at 
-FROM customers 
-WHERE customers.user_id = ?]
-[parameters: (1,)]
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+FROM crm_tasks 
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (1, 'Tamamlandý', 'Ýptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
 (Background on this error at: https://sqlalche.me/e/14/f405)
-2025-05-11 01:37:40,416 - ERROR - Sunucu hatasý: (pyodbc.ProgrammingError) ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT customers.id AS customers_id, customers.user_id AS customers_user_id, customers.name AS customers_name, customers.email AS customers_email, customers.phone AS customers_phone, customers.company AS customers_company, customers.title AS customers_title, customers.address AS customers_address, customers.customer_type AS customers_customer_type, customers.notes AS customers_notes, customers.status AS customers_status, customers.created_at AS customers_created_at, customers.updated_at AS customers_updated_at 
-FROM customers 
-WHERE customers.user_id = ?]
-[parameters: (1,)]
+2025-05-11 05:19:29,748 - ERROR - Sunucu hatasý: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+FROM crm_tasks 
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (1, 'Tamamlandý', 'Ýptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
 (Background on this error at: https://sqlalche.me/e/14/f405)
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
     self.dialect.do_execute(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
     cursor.execute(statement, parameters)
-pyodbc.ProgrammingError: ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+pyodbc.ProgrammingError: ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
 
 The above exception was the direct cause of the following exception:
 
@@ -87,10 +70,10 @@ Traceback (most recent call last):
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\routes\crm.py", line 13, in dashboard
-    customers = Customer.query.filter_by(user_id=current_user.id).all()
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 659, in decorated_function
+    return f(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 1197, in index
+    yaklasan_gorevler = Task.query.filter(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
     return self._iter().all()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
@@ -113,9 +96,9 @@ Traceback (most recent call last):
     self.dialect.do_execute(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
     cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42S02', "[42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid object name 'customers'. (208) (SQLExecDirectW); [42S02] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT customers.id AS customers_id, customers.user_id AS customers_user_id, customers.name AS customers_name, customers.email AS customers_email, customers.phone AS customers_phone, customers.company AS customers_company, customers.title AS customers_title, customers.address AS customers_address, customers.customer_type AS customers_customer_type, customers.notes AS customers_notes, customers.status AS customers_status, customers.created_at AS customers_created_at, customers.updated_at AS customers_updated_at 
-FROM customers 
-WHERE customers.user_id = ?]
-[parameters: (1,)]
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+FROM crm_tasks 
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (1, 'Tamamlandý', 'Ýptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
 (Background on this error at: https://sqlalche.me/e/14/f405)

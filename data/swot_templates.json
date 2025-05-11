@@ -1,0 +1,64 @@
+{
+    "arsa": {
+        "strengths": [
+            {
+                "text": "Ana yola yakınlık",
+                "impact_score": 4
+            },
+            {
+                "text": "Toplu taşıma erişimi",
+                "impact_score": 4
+            },
+            {
+                "text": "Düz ve kullanılabilir arazi yapısı",
+                "impact_score": 5
+            },
+            {
+                "text": "Yüksek imar hakkı",
+                "impact_score": 5
+            }
+        ],
+        "weaknesses": [
+            {
+                "text": "Altyapı eksiklikleri",
+                "impact_score": 4
+            },
+            {
+                "text": "İmar durumu kısıtlamaları",
+                "impact_score": 5
+            },
+            {
+                "text": "Zemin problemleri",
+                "impact_score": 5
+            }
+        ],
+        "opportunities": [
+            {
+                "text": "Bölgede planlanan yeni projeler",
+                "impact_score": 4
+            },
+            {
+                "text": "Gelişmekte olan bölge",
+                "impact_score": 4
+            },
+            {
+                "text": "İmar planı değişiklik potansiyeli",
+                "impact_score": 5
+            }
+        ],
+        "threats": [
+            {
+                "text": "Yakın çevrede rekabet",
+                "impact_score": 3
+            },
+            {
+                "text": "Ekonomik belirsizlikler",
+                "impact_score": 4
+            },
+            {
+                "text": "İmar değişikliği riskleri",
+                "impact_score": 5
+            }
+        ]
+    }
+}

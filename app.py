@@ -17,7 +17,8 @@ from datetime import datetime, timedelta
 import uuid
 import tempfile
 import traceback
-import sqlite3
+from sqlalchemy import text,cast,Date 
+
 from functools import wraps
 import json  # Bu satırı ekleyin
 from docx import Document
@@ -42,7 +43,8 @@ import secrets
 import pyodbc
 import pytz
 from itertools import zip_longest
-
+from markupsafe import Markup, escape# Markup'ı import edin (bu zaten doğruydu)
+from decimal import Decimal
 
 import sys
 
@@ -57,6 +59,17 @@ app.template_folder = "templates"
 # Jinja2 template engine'ine datetime modülünü ekle
 app.jinja_env.globals.update(datetime=datetime)
 app.jinja_env.globals.update(zip=zip)
+
+
+def nl2br_filter(value):
+    if value is None:
+        return ''
+    # Önce escape et, sonra \n'leri <br> ile değiştir ve Markup olarak işaretle
+    escaped_value = escape(value) # Şimdi escape fonksiyonu tanınacaktır
+    return Markup(escaped_value.replace('\n', '<br>\n'))
+
+app.jinja_env.filters['nl2br'] = nl2br_filter
+
 
 
 # mssql
@@ -510,7 +523,133 @@ class Arsa:
             "tam_kat_sayisi": int(teorik_kat_sayisi),
         }
 
+class Contact(db.Model):
+    __tablename__ = "crm_contacts"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    company_id = db.Column(db.Integer, db.ForeignKey("crm_companies.id"), nullable=True)
 
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120))
+    phone = db.Column(db.String(30))
+    role = db.Column(db.String(100))  # Pozisyonu
+    status = db.Column(db.String(50), default="Lead")  # Lead, Müşteri, Eski Müşteri, Partner vb.
+    source = db.Column(db.String(100)) # Müşteri kaynağı (Web, Referans vb.)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # İlişkiler
+    user = db.relationship("User", backref=db.backref("crm_contacts", lazy="dynamic"))
+    # company ilişkisi aşağıda Company modelinde tanımlanacak (backref)
+    interactions = db.relationship("Interaction", backref="contact", lazy="dynamic", cascade="all, delete-orphan")
+    deals = db.relationship("Deal", backref="contact", lazy="dynamic", cascade="all, delete-orphan")
+    tasks = db.relationship("Task", foreign_keys="[Task.contact_id]", backref="contact_tasks", lazy="dynamic", cascade="all, delete-orphan") # foreign_keys belirtildi
+
+    # Kullanıcı bazında e-posta benzersizliği için bir index (isteğe bağlı ama önerilir)
+    __table_args__ = (db.UniqueConstraint('user_id', 'email', name='uq_user_contact_email'),)
+
+    def __repr__(self):
+        return f"<Contact {self.first_name} {self.last_name}>"
+
+class Company(db.Model):
+    __tablename__ = "crm_companies"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+
+    name = db.Column(db.String(150), nullable=False)
+    industry = db.Column(db.String(100)) # Sektör
+    website = db.Column(db.String(200))
+    address = db.Column(db.Text)
+    phone = db.Column(db.String(30))
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # İlişkiler
+    user = db.relationship("User", backref=db.backref("crm_companies", lazy="dynamic"))
+    contacts = db.relationship("Contact", backref="company", lazy="dynamic")
+    deals = db.relationship("Deal", backref="company", lazy="dynamic", cascade="all, delete-orphan")
+
+    # Kullanıcı bazında şirket ismi benzersizliği
+    __table_args__ = (db.UniqueConstraint('user_id', 'name', name='uq_user_company_name'),)
+
+    def __repr__(self):
+        return f"<Company {self.name}>"
+
+class Interaction(db.Model):
+    __tablename__ = "crm_interactions"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    contact_id = db.Column(db.Integer, db.ForeignKey("crm_contacts.id"), nullable=False)
+    deal_id = db.Column(db.Integer, db.ForeignKey("crm_deals.id"), nullable=True) # İsteğe bağlı olarak bir anlaşmayla ilişkilendirilebilir
+
+    type = db.Column(db.String(50), nullable=False) # Telefon, E-posta, Toplantı, Not vb.
+    interaction_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    summary = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # İlişkiler
+    user = db.relationship("User", backref=db.backref("crm_interactions", lazy="dynamic"))
+    # contact ilişkisi Contact modelinde tanımlı
+    # deal ilişkisi Deal modelinde tanımlanacak
+
+    def __repr__(self):
+        return f"<Interaction {self.type} on {self.interaction_date.strftime('%Y-%m-%d')}>"
+
+class Deal(db.Model):
+    __tablename__ = "crm_deals"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    contact_id = db.Column(db.Integer, db.ForeignKey("crm_contacts.id"), nullable=False) # Birincil kontak
+    company_id = db.Column(db.Integer, db.ForeignKey("crm_companies.id"), nullable=True) # İlişkili şirket
+
+    title = db.Column(db.String(200), nullable=False)
+    value = db.Column(db.Numeric(15, 2), default=0.00)
+    currency = db.Column(db.String(10), default="TRY")
+    stage = db.Column(db.String(50), default="Potansiyel") # Potansiyel, Teklif, Müzakere, Kazanıldı, Kaybedildi
+    expected_close_date = db.Column(db.Date)
+    actual_close_date = db.Column(db.Date, nullable=True)
+    probability = db.Column(db.Integer, default=0) # Kazanma olasılığı % (0-100)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # İlişkiler
+    user = db.relationship("User", backref=db.backref("crm_deals", lazy="dynamic"))
+    # contact ve company ilişkileri ilgili modellerde backref ile tanımlı
+    interactions = db.relationship("Interaction", backref="deal", lazy="dynamic", cascade="all, delete-orphan")
+    tasks = db.relationship("Task", foreign_keys="[Task.deal_id]", backref="deal_tasks", lazy="dynamic", cascade="all, delete-orphan") # foreign_keys belirtildi
+
+    def __repr__(self):
+        return f"<Deal {self.title}>"
+
+class Task(db.Model):
+    __tablename__ = "crm_tasks"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False) # Görevi oluşturan/atanan ana kullanıcı
+    contact_id = db.Column(db.Integer, db.ForeignKey("crm_contacts.id"), nullable=True)
+    deal_id = db.Column(db.Integer, db.ForeignKey("crm_deals.id"), nullable=True)
+    assigned_to_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True) # Görevin atandığı kullanıcı (kendisi veya başkası olabilir)
+
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    due_date = db.Column(db.DateTime)
+    status = db.Column(db.String(50), default="Beklemede") # Beklemede, Devam Ediyor, Tamamlandı, İptal
+    priority = db.Column(db.String(50), default="Normal") # Düşük, Normal, Yüksek
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # İlişkiler
+    owner_user = db.relationship("User", foreign_keys=[user_id], backref=db.backref("owned_crm_tasks", lazy="dynamic"))
+    assigned_user = db.relationship("User", foreign_keys=[assigned_to_user_id], backref=db.backref("assigned_crm_tasks", lazy="dynamic"))
+    # contact_tasks ve deal_tasks ilişkileri ilgili modellerde backref ile tanımlı
+
+    def __repr__(self):
+        return f"<Task {self.title}>"
+
+# --- CRM Modelleri Sonu ---
 # Login required decorator
 def login_required(f):
     @wraps(f)
@@ -700,6 +839,207 @@ def home():
     return redirect(
         url_for("login")
     )  # Kullanıcı giriş yapmadıysa login.html'e yönlendir
+@app.route("/crm/contacts")
+@login_required
+def crm_contacts_list():
+    user_id = session["user_id"]
+    # Kullanıcının kendi kişilerini, soyadına ve adına göre sıralı alalım
+    contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
+    return render_template("crm/contacts_list.html", contacts=contacts, title="Kişiler")
+
+
+# ...
+
+@app.route("/crm/contact/<int:contact_id>")
+@login_required
+def crm_contact_detail(contact_id):
+    user_id = session["user_id"]
+    contact = Contact.query.filter_by(id=contact_id, user_id=user_id).first_or_404()
+    interactions = contact.interactions.order_by(Interaction.interaction_date.desc()).all()
+    
+    tasks = contact.tasks.order_by(
+        text("CASE WHEN crm_tasks.due_date IS NULL THEN 1 ELSE 0 END"),
+        Task.due_date.asc(),
+        Task.priority.desc()
+    ).all()
+    
+    return render_template(
+        "crm/contact_detail.html",
+        contact=contact,
+        title=f"{contact.first_name} {contact.last_name}",
+        interactions=interactions,
+        tasks=tasks
+    )
+    
+# app.py - crm_contact_new
+@app.route("/crm/contact/new", methods=["GET", "POST"])
+@login_required
+def crm_contact_new():
+    user_id = session["user_id"] # user_id'yi başta alalım
+    # Mevcut şirketleri al (forma göndermek için)
+    companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+
+    if request.method == "POST":
+        # ... (mevcut POST işleme kodu) ...
+        company_id_str = request.form.get("company_id")
+        # ...
+
+        # Temel Doğrulama
+        if not first_name or not last_name:
+            flash("Ad ve Soyad alanları zorunludur.", "danger")
+            return render_template("crm/contact_form.html", title="Yeni Kişi Ekle", contact=request.form, companies=companies)
+
+        # E-posta benzersizlik kontrolü
+        if email:
+            existing_contact = Contact.query.filter_by(user_id=user_id, email=email).first()
+            if existing_contact:
+                flash(f"'{email}' e-posta adresi ile kayıtlı başka bir kişi zaten mevcut.", "warning")
+                return render_template("crm/contact_form.html", title="Yeni Kişi Ekle", contact=request.form, companies=companies)
+        try:
+            new_contact = Contact(
+                # ... (diğer alanlar) ...
+                company_id=int(company_id_str) if company_id_str else None, # Güncellendi
+                # ...
+            )
+            db.session.add(new_contact)
+            db.session.commit()
+            flash(f"'{new_contact.first_name} {new_contact.last_name}' adlı kişi başarıyla eklendi.", "success")
+            return redirect(url_for("crm_contacts_list"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Kişi eklenirken bir hata oluştu: {str(e)}", "danger")
+            app.logger.error(f"CRM Contact New Error: {e}")
+            # Hata durumunda formu ve şirket listesini tekrar gönder
+            return render_template("crm/contact_form.html", title="Yeni Kişi Ekle", contact=request.form, companies=companies)
+
+
+    # GET isteği için formu ve şirket listesini gönder
+    return render_template("crm/contact_form.html", title="Yeni Kişi Ekle", companies=companies)
+
+
+@app.route("/crm/contact/<int:contact_id>/edit", methods=["GET", "POST"])
+@login_required
+def crm_contact_edit(contact_id):
+    user_id = session["user_id"]
+    contact_to_edit = Contact.query.filter_by(id=contact_id, user_id=user_id).first_or_404()
+    companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+
+    if request.method == "POST":
+        # Formdan gelen verileri al
+        contact_to_edit.first_name = request.form.get("first_name")
+        contact_to_edit.last_name = request.form.get("last_name")
+        new_email = request.form.get("email")  # <<< BU SATIRI EKLEYİN/KONTROL EDİN
+        contact_to_edit.phone = request.form.get("phone")
+        contact_to_edit.company_id = int(request.form.get("company_id")) if request.form.get("company_id") else None
+        contact_to_edit.role = request.form.get("role")
+        contact_to_edit.status = request.form.get("status")
+        contact_to_edit.source = request.form.get("source")
+        contact_to_edit.notes = request.form.get("notes")
+
+        # Temel Doğrulama
+        if not contact_to_edit.first_name or not contact_to_edit.last_name:
+            flash("Ad ve Soyad alanları zorunludur.", "danger")
+            return render_template("crm/contact_form.html", title=f"Kişi Düzenle: {contact_to_edit.first_name} {contact_to_edit.last_name}", contact=contact_to_edit, companies=companies, edit_mode=True)
+
+        # E-posta benzersizlik kontrolü (kullanıcı bazında, mevcut kişi hariç)
+        # new_email artık burada tanımlı olmalı
+        if new_email and new_email != contact_to_edit.email: # E-posta değiştiyse kontrol et
+            existing_contact = Contact.query.filter(
+                Contact.user_id == user_id,
+                Contact.email == new_email,
+                Contact.id != contact_id # Kendisi hariç
+            ).first()
+            if existing_contact:
+                flash(f"'{new_email}' e-posta adresi ile kayıtlı başka bir kişi zaten mevcut.", "warning")
+                return render_template("crm/contact_form.html", title=f"Kişi Düzenle: {contact_to_edit.first_name} {contact_to_edit.last_name}", contact=contact_to_edit, companies=companies, edit_mode=True)
+        
+        contact_to_edit.email = new_email if new_email else None
+
+        try:
+            db.session.commit()
+            flash(f"'{contact_to_edit.first_name} {contact_to_edit.last_name}' adlı kişi başarıyla güncellendi.", "success")
+            return redirect(url_for("crm_contact_detail", contact_id=contact_to_edit.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Kişi güncellenirken bir hata oluştu: {str(e)}", "danger")
+            app.logger.error(f"CRM Contact Edit Error: {e}")
+            return render_template("crm/contact_form.html", title=f"Kişi Düzenle: {contact_to_edit.first_name} {contact_to_edit.last_name}", contact=contact_to_edit, companies=companies, edit_mode=True)
+
+    return render_template("crm/contact_form.html", title=f"Kişi Düzenle: {contact_to_edit.first_name} {contact_to_edit.last_name}", contact=contact_to_edit, companies=companies, edit_mode=True)
+
+# ... (mevcut importlar) ...
+# Interaction modelini import ettiğinizden emin olun
+
+# --- Etkileşim (Interaction) Fonksiyonları ---
+
+@app.route("/crm/contact/<int:contact_id>/interaction/new", methods=["POST"])
+@login_required
+def crm_interaction_new(contact_id):
+    user_id = session["user_id"]
+    contact = Contact.query.filter_by(id=contact_id, user_id=user_id).first_or_404()
+
+    interaction_type = request.form.get("interaction_type")
+    interaction_date_str = request.form.get("interaction_date") # Formdan YYYY-MM-DDTHH:MM formatında gelecek
+    summary = request.form.get("summary")
+    # deal_id = request.form.get("deal_id") # Eğer bir fırsata da bağlanacaksa
+
+    if not interaction_type or not interaction_date_str or not summary:
+        flash("Etkileşim türü, tarihi ve özeti zorunludur.", "danger")
+        return redirect(url_for("crm_contact_detail", contact_id=contact.id))
+
+    try:
+        # Tarih ve saat string'ini datetime nesnesine çevir
+        interaction_datetime = datetime.strptime(interaction_date_str, "%Y-%m-%dT%H:%M")
+    except ValueError:
+        flash("Geçersiz tarih formatı. Lütfen doğru bir tarih ve saat girin.", "danger")
+        return redirect(url_for("crm_contact_detail", contact_id=contact.id))
+
+    try:
+        new_interaction = Interaction(
+            user_id=user_id,
+            contact_id=contact.id,
+            # deal_id=int(deal_id) if deal_id else None,
+            type=interaction_type,
+            interaction_date=interaction_datetime, # datetime nesnesini kullan
+            summary=summary
+        )
+        db.session.add(new_interaction)
+        db.session.commit()
+        flash("Yeni etkileşim başarıyla eklendi.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Etkileşim eklenirken bir hata oluştu: {str(e)}", "danger")
+        app.logger.error(f"CRM Interaction New Error: {e}")
+
+    return redirect(url_for("crm_contact_detail", contact_id=contact.id))
+
+# Basit bir etkileşim silme fonksiyonu (isteğe bağlı)
+@app.route("/crm/interaction/<int:interaction_id>/delete", methods=["POST"])
+@login_required
+def crm_interaction_delete(interaction_id):
+    user_id = session["user_id"]
+    interaction_to_delete = Interaction.query.filter_by(id=interaction_id, user_id=user_id).first_or_404()
+    
+    contact_id_redirect = interaction_to_delete.contact_id # Yönlendirme için sakla
+    # deal_id_redirect = interaction_to_delete.deal_id # Eğer fırsatlara da bağlıysa
+
+    try:
+        db.session.delete(interaction_to_delete)
+        db.session.commit()
+        flash("Etkileşim başarıyla silindi.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Etkileşim silinirken bir hata oluştu: {str(e)}", "danger")
+        app.logger.error(f"CRM Interaction Delete Error: {e}")
+    
+    # if deal_id_redirect:
+    #     return redirect(url_for('crm_deal_detail', deal_id=deal_id_redirect))
+    if contact_id_redirect:
+        return redirect(url_for('crm_contact_detail', contact_id=contact_id_redirect))
+    return redirect(url_for('crm_contacts_list')) # Varsayılan yönlendirme
+
+# --- Etkileşim (Interaction) Fonksiyonları Sonu ---
+
 
 
 @app.route(
@@ -743,8 +1083,9 @@ def index():
     user_id = session["user_id"]
     current_user = User.query.get(user_id)
 
-    # Bölge dağılımı için verileri hazırla
-    bolge_dagilimi = db.session.query(
+    # --- Mevcut Arsa Analiz Verileri ve İstatistikler ---
+    # Bölge dağılımı için verileri hazırla (Arsa Analizleri için)
+    arsa_bolge_dagilimi = db.session.query(
         ArsaAnaliz.il,
         db.func.count(ArsaAnaliz.id).label('analiz_sayisi')
     ).filter(
@@ -755,99 +1096,182 @@ def index():
         db.func.count(ArsaAnaliz.id).desc()
     ).all()
 
-    bolge_labels = [b.il for b in bolge_dagilimi]
-    bolge_data = [b.analiz_sayisi for b in bolge_dagilimi]
+    # Grafik için etiketler ve veriler (Arsa Analizleri için)
+    # Bu değişken isimleri index.html'deki grafiklerle eşleşmeli
+    # Eğer index.html'de "bolge_labels" ve "bolge_data" farklı bir amaçla kullanılıyorsa,
+    # aşağıdaki değişken isimlerini (örn: arsa_bolge_labels) değiştirip template'i de güncellemeniz gerekir.
+    grafik_bolge_labels = [b.il for b in arsa_bolge_dagilimi]
+    grafik_bolge_data_sayi = [b.analiz_sayisi for b in arsa_bolge_dagilimi]
 
-    # Kullanıcının kendi istatistiklerini getir
+
+    # Kullanıcının genel dashboard istatistiklerini getir
     stats = DashboardStats.query.filter_by(user_id=user_id).first()
     if not stats:
         stats = DashboardStats(user_id=user_id)
         db.session.add(stats)
-        db.session.commit()
+        # db.session.commit() # Commit'i sonda tek seferde yapalım
 
-    # Kullanıcının analizlerini getir
-    analizler = (
+    # Son Arsa Analizleri (limit 5)
+    son_arsa_analizleri = (
         ArsaAnaliz.query.filter_by(user_id=user_id)
         .order_by(ArsaAnaliz.created_at.desc())
         .limit(5)
         .all()
     )
 
-    # Son aktiviteleri hazırla
-    son_aktiviteler = []
-    for analiz in analizler:
-        son_aktiviteler.append(
+    # Son Aktiviteler (şimdilik sadece arsa analizleri için)
+    son_aktiviteler_listesi = []
+    for analiz in son_arsa_analizleri:
+        son_aktiviteler_listesi.append(
             {
                 "tarih": analiz.created_at,
-                "mesaj": f"{analiz.il}, {analiz.ilce} bölgesinde yeni arsa analizi oluşturuldu",
+                "mesaj": f"{analiz.il}, {analiz.ilce} bölgesinde yeni arsa analizi oluşturuldu.",
+                "url": url_for('analiz_detay', analiz_id=analiz.id), # Link için
+                "tip": "analiz" 
             }
         )
+    # CRM aktivitelerini de buraya ekleyip tarihe göre sıralayabilirsiniz (ileri seviye)
 
-    # Bölge dağılımı için verileri hazırla
+    # BolgeDagilimi verileri (Bu sizin orijinal kodunuzdan, toplam değer için)
+    bolge_dagilimlari_deger = BolgeDagilimi.query.filter_by(user_id=user_id).all()
+    # Eğer `zipped` bu veriyi kullanıyorsa:
+    # zipped_bolge_deger_labels = [b.il for b in bolge_dagilimlari_deger]
+    # zipped_bolge_deger_data = [float(b.toplam_deger) for b in bolge_dagilimlari_deger]
+    # zipped = list(zip(zipped_bolge_deger_labels, zipped_bolge_deger_data))
+    # VEYA sizin orijinal `zipped` mantığınız neyse onu koruyun.
+    # Şimdilik index.html'de `zipped` kullanılıp kullanılmadığını bilmediğim için bu kısmı yoruma alıyorum.
+    # Eğer kullanılıyorsa, yukarıdaki arsa_bolge_dagilimi'nden gelen `grafik_bolge_labels` ve `grafik_bolge_data_sayi`
+    # ile mi, yoksa BolgeDagilimi modelinden gelen toplam değerlerle mi oluşturulacağına karar verin.
+    # Orijinal kodunuzda hem `bolge_dagilimi` hem de `bolge_dagilimlari` vardı, bu biraz kafa karıştırıcı.
+    # `index.html`'deki `regionDistributionChart` hangi `bolge_labels` ve `bolge_data`'yı kullandığınıza bağlı.
+    # Varsayılan olarak analiz sayısını kullanan grafiği baz alıyorum.
+    # Eğer toplam değeri kullanan bir grafik varsa, o zaman BolgeDagilimi modeli kullanılmalı.
+    # Mevcut `index.html`'inizde `regionDistributionChart`'ın `bolge_data`'sı analiz sayısı mı, toplam değer mi?
+    # Orijinal kodunuzda `bolge_data = [float(b.toplam_deger) for b in bolge_dagilimlari]` vardı,
+    # ve `bolge_labels = [b.il for b in bolge_dagilimlari]` vardı. Bu, BolgeDagilimi modelini kullanıyor.
+    # Ancak aynı zamanda `bolge_dagilimi` sorgusuyla da benzer etiketler ve veriler çekiyorsunuz.
+    # Hangi grafiğin hangi veriyi kullandığını netleştirmek önemli.
+    # Ben şimdilik `index.html`'deki `regionDistributionChart`'ın `BolgeDagilimi` modelini kullandığını varsayarak
+    # o değişkenleri koruyorum, ancak `bolge_labels` ve `bolge_data` isim çakışması olabilir.
+    
+    # Orjinal kodunuzdaki `bolge_dagilimlari` ve ondan türetilen `bolge_labels`, `bolge_data`, `zipped`:
     bolge_dagilimlari = BolgeDagilimi.query.filter_by(user_id=user_id).all()
-    bolge_labels = [b.il for b in bolge_dagilimlari]
-    bolge_data = [float(b.toplam_deger) for b in bolge_dagilimlari]
-    zipped = list(zip(bolge_labels, bolge_data))
+    chart_bolge_labels_deger = [b.il for b in bolge_dagilimlari] # İsim çakışmasını önlemek için değiştirdim
+    chart_bolge_data_deger = [float(b.toplam_deger) for b in bolge_dagilimlari] # İsim çakışmasını önlemek için
+    zipped = list(zip(chart_bolge_labels_deger, chart_bolge_data_deger)) # `zipped`'in bu veriyi kullandığını varsayıyorum
 
-    # Son 6 ayın analiz sayılarını hesapla
-    son_alti_ay = []
-    aylik_analiz_sayilari = []
+
+    # Son 6 ayın Arsa Analiz sayılarını hesapla
+    son_alti_ay_analiz = []
+    aylik_analiz_sayilari_arsa = []
+    current_date = datetime.utcnow() # UTCnow kullanmak daha tutarlı olabilir
     for i in range(6):
-        ay = datetime.now().month - i
-        yil = datetime.now().year
-        if ay <= 0:
-            ay += 12
-            yil -= 1
+        # Ay ve yılı doğru hesapla
+        month_offset = current_date.month - 1 - i # -1 mevcut ayı 0. offset yapar
+        target_year = current_date.year + (month_offset // 12)
+        target_month = (month_offset % 12) + 1
 
         ay_analiz_sayisi = ArsaAnaliz.query.filter(
             ArsaAnaliz.user_id == user_id,
-            db.extract("year", ArsaAnaliz.created_at) == yil,
-            db.extract("month", ArsaAnaliz.created_at) == ay,
+            db.extract("year", ArsaAnaliz.created_at) == target_year,
+            db.extract("month", ArsaAnaliz.created_at) == target_month,
         ).count()
 
-        ay_isimleri = {
-            1: "Ocak",
-            2: "Şubat",
-            3: "Mart",
-            4: "Nisan",
-            5: "Mayıs",
-            6: "Haziran",
-            7: "Temmuz",
-            8: "Ağustos",
-            9: "Eylül",
-            10: "Ekim",
-            11: "Kasım",
-            12: "Aralık",
-        }
+        ay_isimleri = {1: "Oca", 2: "Şub", 3: "Mar", 4: "Nis", 5: "May", 6: "Haz", 7: "Tem", 8: "Ağu", 9: "Eyl", 10: "Eki", 11: "Kas", 12: "Ara"}
+        son_alti_ay_analiz.insert(0, f"{ay_isimleri[target_month]} {str(target_year)[-2:]}") # Örn: May 23
+        aylik_analiz_sayilari_arsa.insert(0, ay_analiz_sayisi)
 
-        son_alti_ay.insert(0, ay_isimleri[ay])
-        aylik_analiz_sayilari.insert(0, ay_analiz_sayisi)
 
-    # Ek istatistikler
-    toplam_deger = (
+    # Arsa Analizleri için Ek İstatistikler
+    toplam_arsa_degeri = (
         db.session.query(db.func.sum(ArsaAnaliz.fiyat))
         .filter_by(user_id=user_id)
-        .scalar()
-        or 0
+        .scalar() or Decimal(0) # Decimal ile başlatmak daha iyi
     )
-    toplam_portfoy = ArsaAnaliz.query.filter_by(user_id=user_id).count()
+    toplam_arsa_sayisi = ArsaAnaliz.query.filter_by(user_id=user_id).count()
+
+
+    # --- YENİ: CRM Özet Verileri ---
+    # 1. Yaklaşan Görevler (Önümüzdeki 7 gün içinde bitiş tarihi olan ve tamamlanmamış/iptal edilmemiş)
+    today_utc_date = datetime.utcnow().date() # Sadece tarih kısmını al
+    one_week_later_utc_date = today_utc_date + timedelta(days=7)
+    yaklasan_gorevler = Task.query.filter(
+        Task.assigned_to_user_id == user_id,
+        Task.status.notin_(['Tamamlandı', 'İptal Edildi']),
+        Task.due_date != None,
+        # SQL Server için datetime sütununu date'e cast et
+        cast(Task.due_date, Date) >= today_utc_date,
+        cast(Task.due_date, Date) <= one_week_later_utc_date
+    ).order_by(Task.due_date.asc()).limit(5).all()
+
+    # 2. Son Eklenen Kişiler (Son 5)
+    son_kisiler = Contact.query.filter_by(user_id=user_id).order_by(Contact.created_at.desc()).limit(5).all()
+
+    # 3. Açık Fırsatlar (Kazanıldı veya Kaybedildi olmayanlar - Son eklenen 5)
+    acik_firsatlar = Deal.query.filter(
+        Deal.user_id == user_id,
+        Deal.stage.notin_(['Kazanıldı', 'Kaybedildi'])
+    ).order_by(Deal.created_at.desc()).limit(5).all()
+    
+    # 4. Toplam Açık Fırsat Sayısı ve Değeri
+    toplam_acik_firsat_sayisi = Deal.query.filter(
+        Deal.user_id == user_id,
+        Deal.stage.notin_(['Kazanıldı', 'Kaybedildi'])
+    ).count()
+    
+    toplam_acik_firsat_degeri_try = db.session.query(db.func.sum(Deal.value)).filter(
+        Deal.user_id == user_id,
+        Deal.stage.notin_(['Kazanıldı', 'Kaybedildi']),
+        Deal.currency == 'TRY'
+    ).scalar() or Decimal(0)
+    # Diğer para birimleri için de benzer sorgularla toplam değerler hesaplanabilir.
+
+    # 5. Son Etkileşimler (kullanıcının oluşturduğu - Son 5)
+    son_etkilesimler = Interaction.query.filter_by(user_id=user_id).order_by(Interaction.interaction_date.desc()).limit(5).all()
+
+
+    # DashboardStats modelini CRM verileriyle de güncelleyebiliriz (isteğe bağlı)
+    # if stats:
+    #     stats.toplam_kisi_sayisi = Contact.query.filter_by(user_id=user_id).count() # Örnek
+    #     stats.acik_firsat_sayisi = toplam_acik_firsat_sayisi # Örnek
+    # db.session.commit() # Tüm değişiklikler için tek commit
 
     return render_template(
         "index.html",
         current_user=current_user,
-        stats=stats,
-        analizler=analizler,
-        son_aktiviteler=son_aktiviteler,
-        bolge_labels=bolge_labels,
-        bolge_data=bolge_data,
-        son_alti_ay=son_alti_ay,
-        aylik_analiz_sayilari=aylik_analiz_sayilari,
-        toplam_deger=toplam_deger,
-        toplam_portfoy=toplam_portfoy,
-        zipped=zipped,
+        stats=stats, # Genel dashboard istatistikleri (Arsa + CRM olabilir)
+        
+        # Arsa Analizleri Bölümü için Veriler
+        analizler=son_arsa_analizleri, # Son arsa analizleri (template'de `analizler` olarak kullanılıyor)
+        son_aktiviteler=son_aktiviteler_listesi, # Arsa analiz aktiviteleri (template'de `son_aktiviteler`)
+        
+        # `index.html`'deki "Analiz İstatistikleri (Son 6 Ay)" grafiği için:
+        son_alti_ay=son_alti_ay_analiz, # Template'de `son_alti_ay`
+        aylik_analiz_sayilari=aylik_analiz_sayilari_arsa, # Template'de `aylik_analiz_sayilari`
+        
+        # `index.html`'deki "Analizlerin Bölge Dağılımı" grafiği için:
+        # Eğer bu grafik BolgeDagilimi modelindeki toplam_deger'i kullanıyorsa:
+        bolge_labels=chart_bolge_labels_deger, # Template'de `bolge_labels`
+        bolge_data=chart_bolge_data_deger,   # Template'de `bolge_data`
+        # Yok eğer analiz sayısını kullanıyorsa:
+        # bolge_labels=grafik_bolge_labels,
+        # bolge_data=grafik_bolge_data_sayi,
+        
+        # Arsa Analizleri için Ek İstatistikler (Kartlarda gösterilen)
+        toplam_deger=toplam_arsa_degeri, # Template'de `toplam_deger` (Arsa için)
+        toplam_portfoy=toplam_arsa_sayisi, # Template'de `toplam_portfoy` (Arsa için)
+        
+        # `zipped` değişkeni (eğer hala kullanılıyorsa ve yukarıdaki chart_bolge... verilerini kullanıyorsa)
+        zipped=zipped, 
+        
+        # YENİ CRM ÖZET VERİLERİ
+        yaklasan_gorevler=yaklasan_gorevler,
+        son_kisiler=son_kisiler,
+        acik_firsatlar=acik_firsatlar,
+        toplam_acik_firsat_sayisi=toplam_acik_firsat_sayisi,
+        toplam_acik_firsat_degeri_try=toplam_acik_firsat_degeri_try,
+        son_etkilesimler=son_etkilesimler
     )
-
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -1732,6 +2156,654 @@ def portfolio_detail(id):
 
     return render_template("portfolio_detail.html", portfolio=portfolio)
 
+# app.py
+
+# ... diğer route'lar ...
+
+
+
+DEAL_STAGES = ["Potansiyel", "Görüşme Planlandı", "Teklif Sunuldu", "Müzakere", "Kazanıldı", "Kaybedildi", "Beklemede"]
+
+@app.route("/crm/deals")
+@login_required
+def crm_deals_list():
+    user_id = session["user_id"]
+    # Tüm fırsatları veya belirli bir filtreye göre alabiliriz
+    deals_query = Deal.query.filter_by(user_id=user_id)
+    
+    # Kanban görünümü için aşamalara göre gruplandırma
+    deals_by_stage = {}
+    for stage in DEAL_STAGES:
+        deals_by_stage[stage] = deals_query.filter_by(stage=stage).order_by(Deal.expected_close_date.asc()).all()
+    
+    # Henüz bir aşamaya atanmamış veya DEALS_STAGES dışında bir aşamada olanlar (opsiyonel)
+    # other_deals = deals_query.filter(Deal.stage.notin_(DEAL_STAGES)).order_by(Deal.created_at.desc()).all()
+    # if other_deals:
+    #     deals_by_stage["Diğer"] = other_deals
+
+    return render_template("crm/deals_list.html", deals_by_stage=deals_by_stage, stages=DEAL_STAGES, title="Fırsatlar")
+
+@app.route("/crm/deal/new", methods=["GET", "POST"])
+@login_required
+def crm_deal_new():
+    user_id = session["user_id"]
+    contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
+    companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+
+    if request.method == "POST":
+        title = request.form.get("title")
+        contact_id_str = request.form.get("contact_id")
+        company_id_str = request.form.get("company_id")
+        value_str = request.form.get("value", "0").replace(",", "") # Virgülü temizle
+        currency = request.form.get("currency", "TRY")
+        stage = request.form.get("stage", DEAL_STAGES[0]) # Varsayılan ilk aşama
+        expected_close_date_str = request.form.get("expected_close_date")
+        notes = request.form.get("notes")
+
+        if not title or not contact_id_str:
+            flash("Fırsat başlığı ve birincil kontak zorunludur.", "danger")
+            return render_template("crm/deal_form.html", title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form)
+
+        try:
+            value = Decimal(value_str) if value_str else Decimal("0.00")
+        except:
+            flash("Geçersiz değer formatı. Lütfen sayısal bir değer girin (örn: 1500.50).", "danger")
+            return render_template("crm/deal_form.html", title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form)
+        
+        expected_close_date = None
+        if expected_close_date_str:
+            try:
+                expected_close_date = datetime.strptime(expected_close_date_str, "%Y-%m-%d").date()
+            except ValueError:
+                flash("Geçersiz beklenen kapanış tarihi formatı. Lütfen YYYY-AA-GG formatında girin.", "danger")
+                return render_template("crm/deal_form.html", title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form)
+
+        try:
+            new_deal = Deal(
+                user_id=user_id,
+                title=title,
+                contact_id=int(contact_id_str),
+                company_id=int(company_id_str) if company_id_str else None,
+                value=value,
+                currency=currency,
+                stage=stage,
+                expected_close_date=expected_close_date,
+                notes=notes
+            )
+            db.session.add(new_deal)
+            db.session.commit()
+            flash(f"'{new_deal.title}' adlı fırsat başarıyla eklendi.", "success")
+            return redirect(url_for("crm_deals_list"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Fırsat eklenirken bir hata oluştu: {str(e)}", "danger")
+            app.logger.error(f"CRM Deal New Error: {e}")
+            return render_template("crm/deal_form.html", title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form)
+
+    return render_template("crm/deal_form.html", title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES)
+
+# app.py
+
+# ... (diğer importlar ve route'lar) ...
+
+@app.route("/crm/tasks")
+@login_required
+def crm_tasks_list():
+    user_id = session["user_id"]
+    tasks_query = Task.query.filter_by(user_id=user_id)
+    
+    filter_status = request.args.get('status')
+    if filter_status and filter_status in TASK_STATUSES:
+        tasks_query = tasks_query.filter_by(status=filter_status)
+    
+    tasks = tasks_query.order_by(
+        text("CASE WHEN crm_tasks.due_date IS NULL THEN 1 ELSE 0 END"), # NULL olanlar sona (1 > 0)
+        Task.due_date.asc(),
+        Task.priority.desc()
+    ).all()
+    
+    return render_template("crm/tasks_list.html", tasks=tasks, title="Görevler", statuses=TASK_STATUSES, current_status=filter_status)
+# --- Görev (Task) CRUD Fonksiyonları ---
+
+TASK_STATUSES = ["Beklemede", "Devam Ediyor", "Tamamlandı", "İptal Edildi", "Ertelendi"]
+TASK_PRIORITIES = ["Düşük", "Normal", "Yüksek", "Acil"]
+
+
+
+
+
+
+@app.route("/crm/task/new", methods=["GET", "POST"])
+@app.route("/crm/contact/<int:contact_id>/task/new", methods=["GET", "POST"])
+@app.route("/crm/deal/<int:deal_id>/task/new", methods=["GET", "POST"])
+@login_required
+def crm_task_new(contact_id=None, deal_id=None): # contact_id ve deal_id opsiyonel
+    user_id = session["user_id"]
+    # Form için ilgili kontakları, fırsatları ve kullanıcıları (atanacak kişi için) al
+    contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name).all()
+    deals = Deal.query.filter_by(user_id=user_id).order_by(Deal.title).all()
+    # users_for_assignment = User.query.filter_by(is_active=True).order_by(User.ad).all() # Eğer başkasına atama olacaksa
+
+    # URL'den gelen contact_id veya deal_id varsa, formda seçili gelsin
+    preselected_contact = Contact.query.get(contact_id) if contact_id else None
+    preselected_deal = Deal.query.get(deal_id) if deal_id else None
+
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description")
+        due_date_str = request.form.get("due_date")
+        status = request.form.get("status", TASK_STATUSES[0])
+        priority = request.form.get("priority", TASK_PRIORITIES[1])
+        
+        # Formdan gelen contact_id ve deal_id'yi al (URL'den geleni değil, formdakini)
+        posted_contact_id_str = request.form.get("contact_id")
+        posted_deal_id_str = request.form.get("deal_id")
+        # assigned_to_user_id_str = request.form.get("assigned_to_user_id")
+
+        if not title:
+            flash("Görev başlığı zorunludur.", "danger")
+            return render_template("crm/task_form.html", title="Yeni Görev Ekle", 
+                                   contacts=contacts, deals=deals, # users_for_assignment=users_for_assignment,
+                                   statuses=TASK_STATUSES, priorities=TASK_PRIORITIES,
+                                   preselected_contact=preselected_contact, preselected_deal=preselected_deal,
+                                   task=request.form)
+        
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, "%Y-%m-%dT%H:%M") # datetime-local için
+            except ValueError:
+                flash("Geçersiz bitiş tarihi formatı.", "danger")
+                return render_template("crm/task_form.html", title="Yeni Görev Ekle", 
+                                   contacts=contacts, deals=deals, # users_for_assignment=users_for_assignment,
+                                   statuses=TASK_STATUSES, priorities=TASK_PRIORITIES,
+                                   preselected_contact=preselected_contact, preselected_deal=preselected_deal,
+                                   task=request.form)
+        try:
+            new_task = Task(
+                user_id=user_id, # Oluşturan kullanıcı
+                title=title,
+                description=description,
+                due_date=due_date,
+                status=status,
+                priority=priority,
+                contact_id=int(posted_contact_id_str) if posted_contact_id_str else None,
+                deal_id=int(posted_deal_id_str) if posted_deal_id_str else None,
+                assigned_to_user_id=user_id # Şimdilik oluşturan kişiye ata
+                # assigned_to_user_id=int(assigned_to_user_id_str) if assigned_to_user_id_str else user_id 
+            )
+            db.session.add(new_task)
+            db.session.commit()
+            flash(f"'{new_task.title}' adlı görev başarıyla eklendi.", "success")
+            
+            if new_task.deal_id:
+                return redirect(url_for("crm_deal_detail", deal_id=new_task.deal_id))
+            elif new_task.contact_id:
+                return redirect(url_for("crm_contact_detail", contact_id=new_task.contact_id))
+            return redirect(url_for("crm_tasks_list"))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Görev eklenirken bir hata oluştu: {str(e)}", "danger")
+            app.logger.error(f"CRM Task New Error: {e}")
+            return render_template("crm/task_form.html", title="Yeni Görev Ekle", 
+                                   contacts=contacts, deals=deals, # users_for_assignment=users_for_assignment,
+                                   statuses=TASK_STATUSES, priorities=TASK_PRIORITIES,
+                                   preselected_contact=preselected_contact, preselected_deal=preselected_deal,
+                                   task=request.form)
+
+    return render_template("crm/task_form.html", title="Yeni Görev Ekle",
+                           contacts=contacts, deals=deals, # users_for_assignment=users_for_assignment,
+                           statuses=TASK_STATUSES, priorities=TASK_PRIORITIES,
+                           preselected_contact=preselected_contact, preselected_deal=preselected_deal)
+
+
+@app.route("/crm/task/<int:task_id>/edit", methods=["GET", "POST"])
+@login_required
+def crm_task_edit(task_id):
+    user_id = session["user_id"]
+    # Kullanıcının ya oluşturduğu ya da kendisine atanan görevi düzenlemesine izin ver
+    task_to_edit = Task.query.filter(Task.id == task_id, (Task.user_id == user_id) | (Task.assigned_to_user_id == user_id)).first_or_404()
+    
+    contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name).all()
+    deals = Deal.query.filter_by(user_id=user_id).order_by(Deal.title).all()
+    # users_for_assignment = User.query.filter_by(is_active=True).order_by(User.ad).all()
+
+    if request.method == "POST":
+        task_to_edit.title = request.form.get("title")
+        task_to_edit.description = request.form.get("description")
+        due_date_str = request.form.get("due_date")
+        task_to_edit.status = request.form.get("status")
+        task_to_edit.priority = request.form.get("priority")
+        task_to_edit.contact_id = int(request.form.get("contact_id")) if request.form.get("contact_id") else None
+        task_to_edit.deal_id = int(request.form.get("deal_id")) if request.form.get("deal_id") else None
+        # task_to_edit.assigned_to_user_id = int(request.form.get("assigned_to_user_id")) if request.form.get("assigned_to_user_id") else user_id
+
+        if not task_to_edit.title:
+            flash("Görev başlığı zorunludur.", "danger")
+            return render_template("crm/task_form.html", title=f"Görevi Düzenle: {task_to_edit.title}", task=task_to_edit,
+                                   contacts=contacts, deals=deals, #users_for_assignment=users_for_assignment,
+                                   statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, edit_mode=True)
+        
+        if due_date_str:
+            try:
+                task_to_edit.due_date = datetime.strptime(due_date_str, "%Y-%m-%dT%H:%M")
+            except ValueError:
+                flash("Geçersiz bitiş tarihi formatı.", "danger")
+                return render_template("crm/task_form.html", title=f"Görevi Düzenle: {task_to_edit.title}", task=task_to_edit,
+                                   contacts=contacts, deals=deals, #users_for_assignment=users_for_assignment,
+                                   statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, edit_mode=True)
+        else:
+            task_to_edit.due_date = None
+        
+        try:
+            db.session.commit()
+            flash(f"'{task_to_edit.title}' adlı görev başarıyla güncellendi.", "success")
+            if task_to_edit.deal_id:
+                return redirect(url_for("crm_deal_detail", deal_id=task_to_edit.deal_id))
+            elif task_to_edit.contact_id:
+                return redirect(url_for("crm_contact_detail", contact_id=task_to_edit.contact_id))
+            return redirect(url_for("crm_tasks_list"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Görev güncellenirken bir hata oluştu: {str(e)}", "danger")
+            app.logger.error(f"CRM Task Edit Error: {e}")
+            return render_template("crm/task_form.html", title=f"Görevi Düzenle: {task_to_edit.title}", task=task_to_edit,
+                                   contacts=contacts, deals=deals, #users_for_assignment=users_for_assignment,
+                                   statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, edit_mode=True)
+
+    return render_template("crm/task_form.html", title=f"Görevi Düzenle: {task_to_edit.title}", task=task_to_edit,
+                           contacts=contacts, deals=deals, #users_for_assignment=users_for_assignment,
+                           statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, edit_mode=True)
+
+
+@app.route("/crm/task/<int:task_id>/delete", methods=["POST"])
+@login_required
+def crm_task_delete(task_id):
+    user_id = session["user_id"]
+    task_to_delete = Task.query.filter(Task.id == task_id, (Task.user_id == user_id) | (Task.assigned_to_user_id == user_id)).first_or_404()
+    
+    # Yönlendirme için bilgileri sakla
+    redirect_url = url_for('crm_tasks_list')
+    if task_to_delete.deal_id:
+        redirect_url = url_for('crm_deal_detail', deal_id=task_to_delete.deal_id)
+    elif task_to_delete.contact_id:
+        redirect_url = url_for('crm_contact_detail', contact_id=task_to_delete.contact_id)
+
+    try:
+        task_title = task_to_delete.title
+        db.session.delete(task_to_delete)
+        db.session.commit()
+        flash(f"'{task_title}' adlı görev başarıyla silindi.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Görev silinirken bir hata oluştu: {str(e)}", "danger")
+        app.logger.error(f"CRM Task Delete Error: {e}")
+
+    return redirect(redirect_url)
+
+# Bir görevin durumunu hızlıca güncellemek için (örn: Tamamlandı olarak işaretle)
+@app.route("/crm/task/<int:task_id>/toggle_status", methods=["POST"])
+@login_required
+def crm_task_toggle_status(task_id):
+    user_id = session["user_id"]
+    task = Task.query.filter(Task.id == task_id, (Task.user_id == user_id) | (Task.assigned_to_user_id == user_id)).first_or_404()
+    
+    new_status_form = request.form.get("new_status") # Formdan yeni durum gelebilir
+
+    if new_status_form and new_status_form in TASK_STATUSES:
+        task.status = new_status_form
+    elif task.status == "Tamamlandı":
+        task.status = "Devam Ediyor" # Veya "Beklemede"
+    else:
+        task.status = "Tamamlandı"
+    
+    try:
+        db.session.commit()
+        flash(f"'{task.title}' görevinin durumu '{task.status}' olarak güncellendi.", "info")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Görev durumu güncellenirken hata: {str(e)}", "danger")
+        app.logger.error(f"CRM Task Toggle Status Error: {e}")
+
+    # AJAX isteği olup olmadığını kontrol et (daha sonra geliştirilebilir)
+    if request.referrer:
+        return redirect(request.referrer)
+    return redirect(url_for('crm_tasks_list'))
+
+# --- Görev (Task) CRUD Fonksiyonları Sonu ---
+
+@app.route("/crm/deal/<int:deal_id>/update_stage", methods=["POST"])
+@login_required
+def crm_deal_update_stage(deal_id):
+    user_id = session["user_id"]
+    deal_to_update = Deal.query.filter_by(id=deal_id, user_id=user_id).first_or_404()
+
+    data = request.get_json()
+    new_stage = data.get("stage")
+    # new_index = data.get("new_index") # İsteğe bağlı: Sıralamayı da kaydetmek isterseniz
+
+    if not new_stage:
+        return jsonify({"success": False, "message": "Yeni aşama bilgisi eksik."}), 400
+
+    if new_stage not in DEAL_STAGES: # DEAL_STAGES listesini kontrol et
+        return jsonify({"success": False, "message": f"Geçersiz aşama: {new_stage}"}), 400
+
+    try:
+        old_stage = deal_to_update.stage
+        deal_to_update.stage = new_stage
+        
+        # Eğer aşama "Kazanıldı" veya "Kaybedildi" ise ve fiili kapanış tarihi yoksa, bugünün tarihini ata
+        if new_stage in ["Kazanıldı", "Kaybedildi"] and not deal_to_update.actual_close_date:
+            deal_to_update.actual_close_date = datetime.utcnow().date()
+
+        # Eğer aşama "Kazanıldı" veya "Kaybedildi" durumundan çıkıyorsa, fiili kapanış tarihini temizle
+        elif old_stage in ["Kazanıldı", "Kaybedildi"] and new_stage not in ["Kazanıldı", "Kaybedildi"]:
+            deal_to_update.actual_close_date = None
+
+        # İsteğe bağlı: Eğer sıralamayı da kaydediyorsanız, burada deal_to_update.order = new_index gibi bir şey yapabilirsiniz.
+        # Bunun için Deal modelinize bir `order` (integer) alanı eklemeniz gerekir.
+
+        db.session.commit()
+        return jsonify({
+            "success": True, 
+            "message": "Fırsat aşaması güncellendi.", 
+            "deal_id": deal_to_update.id,
+            "deal_stage": deal_to_update.stage,
+            "actual_close_date": deal_to_update.actual_close_date.strftime('%Y-%m-%d') if deal_to_update.actual_close_date else None
+        })
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"CRM Deal Update Stage Error: {e}")
+        return jsonify({"success": False, "message": f"Sunucu hatası: {str(e)}"}), 500
+
+
+@app.route("/crm/deal/<int:deal_id>")
+@login_required
+def crm_deal_detail(deal_id):
+    user_id = session["user_id"]
+    deal = Deal.query.filter_by(id=deal_id, user_id=user_id).first_or_404()
+    interactions = deal.interactions.order_by(Interaction.interaction_date.desc()).all()
+    
+    tasks = deal.tasks.order_by(
+        text("CASE WHEN crm_tasks.due_date IS NULL THEN 1 ELSE 0 END"),
+        Task.due_date.asc(),
+        Task.priority.desc()
+    ).all()
+    
+    return render_template(
+        "crm/deal_detail.html",
+        deal=deal,
+        title=deal.title,
+        interactions=interactions,
+        tasks=tasks
+    )
+
+@app.route("/crm/deal/<int:deal_id>/edit", methods=["GET", "POST"])
+@login_required
+def crm_deal_edit(deal_id):
+    user_id = session["user_id"]
+    deal_to_edit = Deal.query.filter_by(id=deal_id, user_id=user_id).first_or_404()
+    contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
+    companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+
+    if request.method == "POST":
+        deal_to_edit.title = request.form.get("title")
+        contact_id_str = request.form.get("contact_id")
+        company_id_str = request.form.get("company_id")
+        value_str = request.form.get("value", "0").replace(",", "")
+        deal_to_edit.currency = request.form.get("currency", "TRY")
+        deal_to_edit.stage = request.form.get("stage")
+        expected_close_date_str = request.form.get("expected_close_date")
+        actual_close_date_str = request.form.get("actual_close_date") # Kazanıldı/Kaybedildi durumunda
+        deal_to_edit.notes = request.form.get("notes")
+
+        if not deal_to_edit.title or not contact_id_str:
+            flash("Fırsat başlığı ve birincil kontak zorunludur.", "danger")
+            return render_template("crm/deal_form.html", title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+
+        try:
+            deal_to_edit.value = Decimal(value_str) if value_str else Decimal("0.00")
+        except:
+            flash("Geçersiz değer formatı.", "danger")
+            return render_template("crm/deal_form.html", title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+
+        deal_to_edit.contact_id = int(contact_id_str)
+        deal_to_edit.company_id = int(company_id_str) if company_id_str else None
+        
+        if expected_close_date_str:
+            try:
+                deal_to_edit.expected_close_date = datetime.strptime(expected_close_date_str, "%Y-%m-%d").date()
+            except ValueError:
+                flash("Geçersiz beklenen kapanış tarihi formatı.", "danger")
+                return render_template("crm/deal_form.html", title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+        else:
+            deal_to_edit.expected_close_date = None
+
+        if deal_to_edit.stage in ["Kazanıldı", "Kaybedildi"] and actual_close_date_str:
+            try:
+                deal_to_edit.actual_close_date = datetime.strptime(actual_close_date_str, "%Y-%m-%d").date()
+            except ValueError:
+                flash("Geçersiz fiili kapanış tarihi formatı.", "danger")
+                return render_template("crm/deal_form.html", title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+        elif deal_to_edit.stage not in ["Kazanıldı", "Kaybedildi"]:
+             deal_to_edit.actual_close_date = None # Eğer kazanıldı/kaybedildi değilse fiili tarihi temizle
+
+        try:
+            db.session.commit()
+            flash(f"'{deal_to_edit.title}' adlı fırsat başarıyla güncellendi.", "success")
+            return redirect(url_for("crm_deal_detail", deal_id=deal_to_edit.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Fırsat güncellenirken bir hata oluştu: {str(e)}", "danger")
+            app.logger.error(f"CRM Deal Edit Error: {e}")
+            return render_template("crm/deal_form.html", title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+
+    return render_template("crm/deal_form.html", title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+
+@app.route("/crm/deal/<int:deal_id>/delete", methods=["POST"])
+@login_required
+def crm_deal_delete(deal_id):
+    user_id = session["user_id"]
+    deal_to_delete = Deal.query.filter_by(id=deal_id, user_id=user_id).first_or_404()
+
+    # Deal modelindeki interactions ve tasks ilişkilerinde cascade delete kullandık,
+    # bu yüzden bağlı etkileşimler ve görevler otomatik silinecektir.
+    try:
+        deal_title = deal_to_delete.title
+        db.session.delete(deal_to_delete)
+        db.session.commit()
+        flash(f"'{deal_title}' adlı fırsat başarıyla silindi.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Fırsat silinirken bir hata oluştu: {str(e)}", "danger")
+        app.logger.error(f"CRM Deal Delete Error: {e}")
+
+    return redirect(url_for("crm_deals_list"))
+
+# --- Fırsat (Deal) CRUD Fonksiyonları Sonu ---
+
+
+
+@app.route("/crm/contact/<int:contact_id>/delete", methods=["POST"]) # Genellikle POST ile yapılır
+@login_required
+def crm_contact_delete(contact_id):
+    user_id = session["user_id"]
+    contact_to_delete = Contact.query.filter_by(id=contact_id, user_id=user_id).first_or_404()
+
+    try:
+        # İlişkili kayıtların durumu (cascade silme modelde ayarlandıysa otomatik olur)
+        # Eğer cascade ayarlanmadıysa, önce ilişkili Interaction, Deal, Task vb. silmeniz gerekebilir.
+        # Modellerimizde cascade="all, delete-orphan" kullandığımız için bu otomatik olmalı.
+        
+        contact_name = f"{contact_to_delete.first_name} {contact_to_delete.last_name}"
+        db.session.delete(contact_to_delete)
+        db.session.commit()
+        flash(f"'{contact_name}' adlı kişi başarıyla silindi.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Kişi silinirken bir hata oluştu: {str(e)}", "danger")
+        app.logger.error(f"CRM Contact Delete Error: {e}")
+
+    return redirect(url_for("crm_contacts_list"))
+
+
+
+@app.route("/crm/companies")
+@login_required
+def crm_companies_list():
+    user_id = session["user_id"]
+    companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+    return render_template("crm/companies_list.html", companies=companies, title="Şirketler")
+
+@app.route("/crm/company/new", methods=["GET", "POST"])
+@login_required
+def crm_company_new():
+    if request.method == "POST":
+        user_id = session["user_id"]
+        name = request.form.get("name")
+        industry = request.form.get("industry")
+        website = request.form.get("website")
+        address = request.form.get("address")
+        phone = request.form.get("phone")
+        notes = request.form.get("notes")
+
+        if not name:
+            flash("Şirket adı zorunludur.", "danger")
+            return render_template("crm/company_form.html", title="Yeni Şirket Ekle", company=request.form)
+
+        # Şirket adı benzersizlik kontrolü (kullanıcı bazında)
+        existing_company = Company.query.filter_by(user_id=user_id, name=name).first()
+        if existing_company:
+            flash(f"'{name}' adlı şirket zaten mevcut.", "warning")
+            return render_template("crm/company_form.html", title="Yeni Şirket Ekle", company=request.form)
+
+        try:
+            new_company = Company(
+                user_id=user_id,
+                name=name,
+                industry=industry,
+                website=website,
+                address=address,
+                phone=phone,
+                notes=notes
+            )
+            db.session.add(new_company)
+            db.session.commit()
+            flash(f"'{new_company.name}' adlı şirket başarıyla eklendi.", "success")
+            return redirect(url_for("crm_companies_list"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Şirket eklenirken bir hata oluştu: {str(e)}", "danger")
+            app.logger.error(f"CRM Company New Error: {e}")
+
+    return render_template("crm/company_form.html", title="Yeni Şirket Ekle")
+
+@app.route("/crm/company/<int:company_id>")
+@login_required
+def crm_company_detail(company_id):
+    user_id = session["user_id"]
+    company = Company.query.filter_by(id=company_id, user_id=user_id).first_or_404()
+    company_contacts = company.contacts.order_by(Contact.last_name).all()
+    company_deals = company.deals.order_by(Deal.created_at.desc()).all()
+    return render_template(
+        "crm/company_detail.html",
+        company=company,
+        title=company.name,
+        company_contacts=company_contacts, 
+        company_deals=company_deals
+    )
+
+@app.route("/crm/company/<int:company_id>/edit", methods=["GET", "POST"])
+@login_required
+def crm_company_edit(company_id):
+    user_id = session["user_id"]
+    company_to_edit = Company.query.filter_by(id=company_id, user_id=user_id).first_or_404()
+
+    if request.method == "POST":
+        new_name = request.form.get("name")
+        company_to_edit.industry = request.form.get("industry")
+        company_to_edit.website = request.form.get("website")
+        company_to_edit.address = request.form.get("address")
+        company_to_edit.phone = request.form.get("phone")
+        company_to_edit.notes = request.form.get("notes")
+
+        if not new_name:
+            flash("Şirket adı zorunludur.", "danger")
+            return render_template("crm/company_form.html", title=f"Şirket Düzenle: {company_to_edit.name}", company=company_to_edit)
+
+        # Şirket adı benzersizlik kontrolü (kullanıcı bazında, mevcut şirket hariç)
+        if new_name != company_to_edit.name:
+            existing_company = Company.query.filter(
+                Company.user_id == user_id,
+                Company.name == new_name,
+                Company.id != company_id
+            ).first()
+            if existing_company:
+                flash(f"'{new_name}' adlı başka bir şirket zaten mevcut.", "warning")
+                return render_template("crm/company_form.html", title=f"Şirket Düzenle: {company_to_edit.name}", company=company_to_edit)
+        
+        company_to_edit.name = new_name
+
+        try:
+            db.session.commit()
+            flash(f"'{company_to_edit.name}' adlı şirket başarıyla güncellendi.", "success")
+            return redirect(url_for("crm_company_detail", company_id=company_to_edit.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Şirket güncellenirken bir hata oluştu: {str(e)}", "danger")
+            app.logger.error(f"CRM Company Edit Error: {e}")
+            return render_template("crm/company_form.html", title=f"Şirket Düzenle: {company_to_edit.name}", company=company_to_edit)
+
+    return render_template("crm/company_form.html", title=f"Şirket Düzenle: {company_to_edit.name}", company=company_to_edit)
+
+@app.route("/crm/company/<int:company_id>/delete", methods=["POST"])
+@login_required
+def crm_company_delete(company_id):
+    user_id = session["user_id"]
+    company_to_delete = Company.query.filter_by(id=company_id, user_id=user_id).first_or_404()
+
+    # ÖNEMLİ: Bir şirket silinmeden önce, ona bağlı kişilerin (Contacts)
+    # company_id alanlarının ne olacağına karar vermelisiniz.
+    # Seçenekler:
+    # 1. Bağlı kişilerin company_id'sini NULL yapmak:
+    #    for contact in company_to_delete.contacts:
+    #        contact.company_id = None
+    #    db.session.commit() # Kişileri güncelledikten sonra commit
+    # 2. Şirketle birlikte kişileri de silmek (Eğer Contact modelinde company ilişkisi cascade delete ise)
+    #    Bu genellikle istenmez, kişiler farklı bir şirkete atanabilir.
+    # 3. Silmeyi engellemek (Eğer şirkete bağlı kişiler varsa).
+    #    if company_to_delete.contacts.first():
+    #        flash(f"'{company_to_delete.name}' adlı şirkete bağlı kişiler bulunduğu için silinemez. Önce kişilerin şirket bağlantısını kaldırın.", "warning")
+    #        return redirect(url_for("crm_companies_list"))
+
+    # Şimdilik 1. seçeneği uygulayalım (bağlı kişilerin şirketini null yapalım)
+    # Bu, Contact modelindeki company ilişkisinin `nullable=True` olmasını gerektirir (ki öyle tanımlamıştık).
+    try:
+        company_name = company_to_delete.name
+        
+        # Bağlı kişilerin company_id'lerini null yap
+        updated_contacts_count = Contact.query.filter_by(company_id=company_id, user_id=user_id).update({"company_id": None})
+        if updated_contacts_count > 0:
+             app.logger.info(f"{updated_contacts_count} kişinin şirket bağlantısı '{company_name}' şirketinden kaldırıldı.")
+        
+        # Bağlı fırsatların company_id'lerini null yap (eğer Deal modelinde cascade delete yoksa)
+        # Deal modelindeki company ilişkisinde cascade delete olmadığı için bunu manuel yapmalıyız.
+        updated_deals_count = Deal.query.filter_by(company_id=company_id, user_id=user_id).update({"company_id": None})
+        if updated_deals_count > 0:
+            app.logger.info(f"{updated_deals_count} fırsatın şirket bağlantısı '{company_name}' şirketinden kaldırıldı.")
+
+        db.session.delete(company_to_delete)
+        db.session.commit()
+        flash(f"'{company_name}' adlı şirket başarıyla silindi.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Şirket silinirken bir hata oluştu: {str(e)}", "danger")
+        app.logger.error(f"CRM Company Delete Error: {e}")
+
+    return redirect(url_for("crm_companies_list"))
+
+# --- Şirket (Company) CRUD Fonksiyonları Sonu ---
 
 @app.route("/analysis-form")
 @login_required
@@ -2104,7 +3176,7 @@ def init_db():
             db.session.close()
             db.session.remove()
             # Sonra yeniden oluştur
-            # db.create_all()
+            db.create_all()
             print("Veritabanı tabloları başarıyla oluşturuldu!")
         except Exception as e:
             print(f"Veritabanı oluşturma hatası: {str(e)}")
@@ -2119,3 +3191,7 @@ if __name__ == "__main__":
         app.run(host="0.0.0.0", port=5000, debug=True)
     except Exception as e:
         print(f"Uygulama başlatma hatası: {str(e)}")
+        app.logger.error(f"Uygulama başlatma hatası: {str(e)}", exc_info=True)
+        # Uygulama başlatılamadı, gerekli önlemleri al
+        # Örneğin, veritabanı bağlantısını kontrol et veya hata mesajını logla
+        # Uygulama başlatılamadı, gerekli önlemleri al

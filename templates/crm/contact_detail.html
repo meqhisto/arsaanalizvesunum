@@ -1,0 +1,231 @@
+{% extends "crm/crm_base.html" %}
+
+{% block title %}{{ title }} - CRM Kişi Detayı{% endblock %}
+
+{% block crm_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-person-lines-fill me-2"></i> Kişi Detayı: {{ contact.first_name }} {{ contact.last_name }}
+    </h2>
+    <div>
+        <a href="{{ url_for('crm_contacts_list') }}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Listeye Dön
+        </a>
+        <a href="{{ url_for('crm_contact_edit', contact_id=contact.id) }}" class="btn btn-secondary me-2"> {# Artık aktif #}
+            <i class="bi bi-pencil-square me-1"></i> Düzenle
+        </a>
+        {# Silme Formu - Daha sonra eklenecek ... #}
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Temel Bilgiler</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Ad Soyad:</strong> {{ contact.first_name }} {{ contact.last_name }}</p>
+                <p><strong>E-posta:</strong> {{ contact.email if contact.email else '-' }}</p>
+                <p><strong>Telefon:</strong> {{ contact.phone if contact.phone else '-' }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Pozisyon/Rol:</strong> {{ contact.role if contact.role else '-' }}</p>
+                <p><strong>Şirket:</strong>
+                    {% if contact.company %}
+                        {{ contact.company.name }} {# Şirketler eklendiğinde link yapılabilir #}
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+                <p><strong>Durum:</strong> <span class="badge bg-primary">{{ contact.status }}</span></p>
+                <p><strong>Kaynak:</strong> {{ contact.source if contact.source else '-' }}</p>
+            </div>
+        </div>
+        {% if contact.notes %}
+        <hr>
+        <h6>Notlar:</h6>
+        <p>{{ contact.notes | nl2br }}</p>
+        {% endif %}
+        <hr>
+        <small class="text-muted">Eklenme Tarihi: {{ contact.created_at.strftime('%d.%m.%Y %H:%M') }}</small><br>
+        <small class="text-muted">Son Güncelleme: {{ contact.updated_at.strftime('%d.%m.%Y %H:%M') }}</small>
+    </div>
+</div>
+
+<!-- ... (Temel Bilgiler kartından sonra) ... -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-chat-dots-fill me-2"></i> Etkileşimler</h5>
+            </div>
+            <div class="card-body">
+                <!-- Yeni Etkileşim Ekleme Formu -->
+                <form action="{{ url_for('crm_interaction_new', contact_id=contact.id) }}" method="POST" class="mb-4 p-3 border rounded bg-light">
+                    <h6>Yeni Etkileşim Ekle</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="interaction_type" class="form-label">Tür <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="interaction_type" name="interaction_type" required>
+                                <option value="Telefon Araması">Telefon Araması</option>
+                                <option value="E-posta Gönderildi">E-posta Gönderildi</option>
+                                <option value="E-posta Alındı">E-posta Alındı</option>
+                                <option value="Toplantı">Toplantı</option>
+                                <option value="Not">Not</option>
+                                <option value="Diğer">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="interaction_date" class="form-label">Tarih ve Saat <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control form-control-sm" id="interaction_date" name="interaction_date" value="{{ datetime.utcnow().strftime('%Y-%m-%dT%H:%M') }}" required>
+                        </div>
+<!-- ... (İlişkili Fırsatlar kartından sonra) ... -->
+<div class="col-md-6"> {# Bu col-md-6 kapanışı Fırsatlar kartına aitti, bu yeni bir row veya col-md-12 olmalı #}
+</div> {# Bu önceki col-md-6'nın kapanışı varsayımıyla #}
+</div> {# Bu önceki row'un kapanışı varsayımıyla #}
+
+<div class="row"> {# Görevler için yeni bir satır #}
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-check2-square me-2"></i> Bu Kişiyle İlgili Görevler</h5>
+                <a href="{{ url_for('crm_task_new', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus-circle"></i> Yeni Görev Ekle
+                </a>
+            </div>
+<!-- ... (İlişkili Fırsatlar kartından sonra) ... -->
+<div class="col-md-6"> {# Bu col-md-6 kapanışı Fırsatlar kartına aitti, bu yeni bir row veya col-md-12 olmalı #}
+</div> {# Bu önceki col-md-6'nın kapanışı varsayımıyla #}
+</div> {# Bu önceki row'un kapanışı varsayımıyla #}
+
+<div class="row"> {# Görevler için yeni bir satır #}
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-check2-square me-2"></i> Bu Kişiyle İlgili Görevler</h5>
+                <a href="{{ url_for('crm_task_new', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus-circle"></i> Yeni Görev Ekle
+                </a>
+            </div>
+            <div class="card-body">
+                {% if tasks %}
+                    <ul class="list-group list-group-flush">
+                        {% for task in tasks %}
+                        <li class="list-group-item {% if task.status == 'Tamamlandı' %}list-group-item-success{% elif task.status == 'İptal Edildi' %}list-group-item-danger text-decoration-line-through{% elif task.due_date and task.due_date < datetime.utcnow() and task.status not in ['Tamamlandı', 'İptal Edildi'] %}list-group-item-warning{% endif %}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <form action="{{ url_for('crm_task_toggle_status', task_id=task.id) }}" method="POST" class="d-inline me-2">
+                                     <input type="hidden" name="new_status" value="{{ 'Devam Ediyor' if task.status == 'Tamamlandı' else 'Tamamlandı' }}">
+                                    <button type="submit" class="btn btn-sm p-0 border-0" title="Durumu Değiştir">
+                                        {% if task.status == 'Tamamlandı' %}<i class="bi bi-check-square-fill text-success fs-5"></i>
+                                        {% else %}<i class="bi bi-square text-muted fs-5"></i>{% endif %}
+                                    </button>
+                                </form>
+                                <a href="{{ url_for('crm_task_edit', task_id=task.id) }}" class="fw-bold text-decoration-none">{{ task.title }}</a>
+                                <small class="text-muted">{{ task.due_date.strftime('%d.%m.%Y %H:%M') if task.due_date else 'Tarihsiz' }}</small>
+                            </div>
+                            {% if task.description %}<p class="mb-1 small">{{ task.description|nl2br }}</p>{% endif %}
+                            <small>
+                                <span class="badge {% if task.priority == 'Acil' %}bg-danger{% elif task.priority == 'Yüksek' %}bg-warning text-dark{% elif task.priority == 'Normal' %}bg-info{% else %}bg-secondary{% endif %}">{{ task.priority }}</span>
+                                <span class="badge bg-light text-dark">{{ task.status }}</span>
+                                {% if task.deal %}| Fırsat: <a href="{{url_for('crm_deal_detail', deal_id=task.deal_id)}}">{{task.deal.title}}</a>{% endif %}
+                            </small>
+                            <div class="float-end">
+                                 <a href="{{ url_for('crm_task_edit', task_id=task.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
+                                <form action="{{ url_for('crm_task_delete', task_id=task.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bu görevi silmek istediğinizden emin misiniz?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Sil"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center">Bu kişiyle ilgili henüz görev yok.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+                    </div>
+                    <div class="mt-2">
+                        <label for="summary" class="form-label">Özet / Notlar <span class="text-danger">*</span></label>
+                        <textarea class="form-control form-control-sm" id="summary" name="summary" rows="3" required></textarea>
+                    </div>
+                    <div class="mt-2 text-end">
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="bi bi-plus-lg"></i> Ekle
+                        </button>
+                    </div>
+                </form>
+                <hr>
+                <!-- Etkileşim Listesi -->
+                {% if interactions %}
+                    <ul class="list-group list-group-flush">
+                        {% for interaction in interactions %}
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    {% if interaction.type == 'Telefon Araması' %}<i class="bi bi-telephone-fill text-primary me-2"></i>
+                                    {% elif 'E-posta' in interaction.type %}<i class="bi bi-envelope-fill text-info me-2"></i>
+                                    {% elif interaction.type == 'Toplantı' %}<i class="bi bi-calendar-event-fill text-success me-2"></i>
+                                    {% elif interaction.type == 'Not' %}<i class="bi bi-sticky-fill text-warning me-2"></i>
+                                    {% else %}<i class="bi bi-chat-dots text-secondary me-2"></i>
+                                    {% endif %}
+                                    {{ interaction.type }}
+                                </h6>
+                                <small class="text-muted">{{ interaction.interaction_date.strftime('%d.%m.%Y %H:%M') }}</small>
+                            </div>
+                            <p class="mb-1">{{ interaction.summary | nl2br }}</p>
+                            <small class="text-muted">
+                                Oluşturan: {{ interaction.user.ad }} {{ interaction.user.soyad if interaction.user.soyad else '' }}
+                                {# Eğer fırsata bağlıysa: 
+                                {% if interaction.deal_id and interaction.deal %}
+                                    | Fırsat: <a href="{{ url_for('crm_deal_detail', deal_id=interaction.deal_id) }}">{{ interaction.deal.title }}</a>
+                                {% endif %}
+                                #}
+                                <form action="{{ url_for('crm_interaction_delete', interaction_id=interaction.id) }}" method="POST" class="d-inline float-end" onsubmit="return confirm('Bu etkileşimi silmek istediğinizden emin misiniz?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Sil">
+                                        <i class="bi bi-x-lg small"></i>
+                                    </button>
+                                </form>
+                            </small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center">Bu kişiyle henüz bir etkileşim kaydedilmemiş.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ... (İlişkili Fırsatlar ve Görevler kartları) ... -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-cash-coin me-2"></i> İlişkili Fırsatlar (Yakında)</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Bu kişiyle ilişkili satış fırsatları burada listelenecek.</p>
+                {# Fırsatlar listesi buraya gelecek #}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-check2-square me-2"></i> İlişkili Görevler (Yakında)</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Bu kişiyle ilişkili görevler burada listelenecek.</p>
+                {# Görevler listesi buraya gelecek #}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

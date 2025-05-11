@@ -1,0 +1,91 @@
+{% extends "crm/crm_base.html" %}
+
+{% block title %}{{ title }} - CRM Şirket Detayı{% endblock %}
+
+{% block crm_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-buildings-fill me-2"></i> Şirket Detayı: {{ company.name }}
+    </h2>
+    <div>
+        <a href="{{ url_for('crm_companies_list') }}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i> Listeye Dön
+        </a>
+        <a href="{{ url_for('crm_company_edit', company_id=company.id) }}" class="btn btn-secondary me-2">
+            <i class="bi bi-pencil-square me-1"></i> Düzenle
+        </a>
+        <form action="{{ url_for('crm_company_delete', company_id=company.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bu şirketi silmek istediğinizden emin misiniz? Bağlı kişilerin ve fırsatların şirket bağlantıları kaldırılacaktır.');">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i> Sil
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Temel Bilgiler</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Şirket Adı:</strong> {{ company.name }}</p>
+                <p><strong>Sektör:</strong> {{ company.industry if company.industry else '-' }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Web Sitesi:</strong> 
+                    {% if company.website %}
+                        <a href="{{ company.website if company.website.startswith('http') else 'http://' + company.website }}" target="_blank" rel="noopener noreferrer">
+                            {{ company.website }} <i class="bi bi-box-arrow-up-right small"></i>
+                        </a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+                <p><strong>Telefon:</strong> {{ company.phone if company.phone else '-' }}</p>
+            </div>
+        </div>
+        {% if company.address %}
+        <hr>
+        <h6>Adres:</h6>
+        <p>{{ company.address | nl2br }}</p>
+        {% endif %}
+        {% if company.notes %}
+        <hr>
+        <h6>Notlar:</h6>
+        <p>{{ company.notes | nl2br }}</p>
+        {% endif %}
+        <hr>
+        <small class="text-muted">Eklenme Tarihi: {{ company.created_at.strftime('%d.%m.%Y %H:%M') }}</small><br>
+        <small class="text-muted">Son Güncelleme: {{ company.updated_at.strftime('%d.%m.%Y %H:%M') }}</small>
+    </div>
+</div>
+
+<!-- İlişkili Kişiler ve Fırsatlar (Daha sonra doldurulacak) -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-people-fill me-2"></i> Bağlı Kişiler (Yakında)</h5>
+                {# <a href="{{ url_for('crm_contact_new', company_id=company.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-circle"></i> Kişi Ekle</a> #}
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Bu şirkete bağlı kişiler burada listelenecek.</p>
+                {# company_contacts listesi buraya gelecek #}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-cash-coin me-2"></i> Bağlı Fırsatlar (Yakında)</h5>
+                 {# <a href="{{ url_for('crm_deal_new', company_id=company.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-circle"></i> Fırsat Ekle</a> #}
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Bu şirkete bağlı satış fırsatları burada listelenecek.</p>
+                {# company_deals listesi buraya gelecek #}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
