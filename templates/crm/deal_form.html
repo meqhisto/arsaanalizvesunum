@@ -1,0 +1,107 @@
+{% extends "crm/crm_base.html" %}
+
+{% block title %}{{ title }} - CRM{% endblock %}
+
+{% block crm_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-cash-stack me-2"></i> {{ title }}</h2>
+    <a href="{{ url_for('crm_deals_list') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Fırsat Listesine Dön
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="{{ request.url }}">
+            <div class="mb-3">
+                <label for="title" class="form-label">Fırsat Başlığı <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" value="{{ deal.title if deal else request.args.get('title', '') }}" required>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="contact_id" class="form-label">Birincil Kontak <span class="text-danger">*</span></label>
+                    <select class="form-select" id="contact_id" name="contact_id" required>
+                        <option value="">Kontak Seçin...</option>
+                        {% for contact_item in contacts %}
+                            <option value="{{ contact_item.id }}" 
+                                    {% if deal and deal.contact_id == contact_item.id %}selected
+                                    {% elif request.args.get('contact_id')|int == contact_item.id %}selected
+                                    {% endif %}>
+                                {{ contact_item.first_name }} {{ contact_item.last_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="company_id" class="form-label">İlişkili Şirket (Opsiyonel)</label>
+                    <select class="form-select" id="company_id" name="company_id">
+                        <option value="">Şirket Seçin...</option>
+                        {% for company_item in companies %}
+                            <option value="{{ company_item.id }}" 
+                                    {% if deal and deal.company_id == company_item.id %}selected
+                                    {% elif request.args.get('company_id')|int == company_item.id %}selected
+                                    {% endif %}>
+                                {{ company_item.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="value" class="form-label">Değer</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="value" name="value" value="{{ '%.2f'|format(deal.value) if deal and deal.value is not none else '' }}" placeholder="Örn: 1500.50">
+                        <select class="form-select" name="currency" style="max-width: 100px;">
+                            <option value="TRY" {% if (deal and deal.currency == 'TRY') or not deal %}selected{% endif %}>TRY</option>
+                            <option value="USD" {% if deal and deal.currency == 'USD' %}selected{% endif %}>USD</option>
+                            <option value="EUR" {% if deal and deal.currency == 'EUR' %}selected{% endif %}>EUR</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="stage" class="form-label">Aşama</label>
+                    <select class="form-select" id="stage" name="stage">
+                        {% for stage_item in stages %}
+                            <option value="{{ stage_item }}" 
+                                    {% if deal and deal.stage == stage_item %}selected
+                                    {% elif not deal and request.args.get('stage') == stage_item %}selected {# Kanban'dan eklerken aşamayı seçili getir #}
+                                    {% elif not deal and loop.first %}selected {# Yeni formda ilk aşamayı seçili yap #}
+                                    {% endif %}>
+                                {{ stage_item }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="expected_close_date" class="form-label">Tahmini Kapanış Tarihi</label>
+                    <input type="date" class="form-control" id="expected_close_date" name="expected_close_date" value="{{ deal.expected_close_date.strftime('%Y-%m-%d') if deal and deal.expected_close_date else '' }}">
+                </div>
+            </div>
+            
+            {% if edit_mode and deal.stage in ["Kazanıldı", "Kaybedildi"] %}
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="actual_close_date" class="form-label">Fiili Kapanış Tarihi</label>
+                    <input type="date" class="form-control" id="actual_close_date" name="actual_close_date" value="{{ deal.actual_close_date.strftime('%Y-%m-%d') if deal and deal.actual_close_date else '' }}">
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notlar</label>
+                <textarea class="form-control" id="notes" name="notes" rows="4">{{ deal.notes if deal else '' }}</textarea>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <a href="{{ url_for('crm_deals_list') }}" class="btn btn-secondary me-2">İptal</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i> Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

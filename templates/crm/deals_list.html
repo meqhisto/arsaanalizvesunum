@@ -1,0 +1,178 @@
+{% extends "crm/crm_base.html" %}
+
+{% block title %}Fırsatlar - CRM{% endblock %}
+
+{% block head_extra %}
+<style>
+    .kanban-board {
+        display: flex;
+        overflow-x: auto; /* Yatay kaydırma için */
+        gap: 1rem;
+        padding-bottom: 1rem; /* Kaydırma çubuğu için boşluk */
+    }
+    .kanban-column {
+        min-width: 300px; /* Sütun minimum genişliği */
+        max-width: 350px;
+        background-color: #f8f9fa;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+        flex-shrink: 0; /* Sütunların daralmasını engelle */
+    }
+    .kanban-column .card-header {
+        font-size: 0.9rem;
+        font-weight: bold;
+        padding: 0.5rem 0.75rem;
+    }
+    .kanban-deal-card {
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+        cursor: grab; /* Sürükleme hissi için */
+    }
+    .kanban-deal-card h6 {
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+    .kanban-deal-card p {
+        margin-bottom: 0.25rem;
+        color: #6c757d;
+    }
+    .kanban-deal-card .badge {
+        font-size: 0.7rem;
+    }
+        .kanban-deal-card.sortable-ghost { /* Sürüklenirken yer tutucunun stili */
+            opacity: 0.4;
+            background: #c8ebfb;
+        }
+    
+    </style>
+{% endblock %}
+
+{% block crm_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-kanban-fill me-2"></i> Fırsat Yönetimi</h2>
+    <a href="{{ url_for('crm_deal_new') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Yeni Fırsat Ekle
+    </a>
+</div>
+
+{% if deals_by_stage %}
+<div class="kanban-board">
+    {% for stage in stages %}
+        {% if stage in deals_by_stage and deals_by_stage[stage] or stage not in ["Kazanıldı", "Kaybedildi"] %} {# Kazanıldı/Kaybedildi boşsa gösterme, diğerlerini hep göster #}
+        <div class="kanban-column card">
+            <div class="card-header bg-light">
+                {{ stage }} ({{ deals_by_stage[stage]|length if stage in deals_by_stage else 0 }})
+            </div>
+            <div class="card-body p-2" id="stage-{{ stage|lower|replace(' ', '-') }}">
+                {% if stage in deals_by_stage and deals_by_stage[stage] %}
+                    {% for deal in deals_by_stage[stage] %}
+                    <div class="kanban-deal-card shadow-sm" data-deal-id="{{ deal.id }}">
+                        <h6><a href="{{ url_for('crm_deal_detail', deal_id=deal.id) }}">{{ deal.title }}</a></h6>
+                        <p class="mb-1">
+                            <i class="bi bi-person-circle me-1"></i> {{ deal.contact.first_name }} {{ deal.contact.last_name }}
+                            {% if deal.company %}<br><i class="bi bi-building me-1"></i> {{ deal.company.name }}{% endif %}
+                        </p>
+                        <p class="fw-bold">{{ "%.2f"|format(deal.value) if deal.value else 'N/A' }} {{ deal.currency }}</p>
+                        {% if deal.expected_close_date %}
+                        <p><i class="bi bi-calendar-check me-1"></i> Tahmini Kapanış: {{ deal.expected_close_date.strftime('%d.%m.%Y') }}</p>
+                        {% endif %}
+                        <div>
+                            <a href="{{ url_for('crm_deal_edit', deal_id=deal.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
+                            {# Silme formu daha sonra eklenebilir veya detay sayfasında kalabilir #}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted small text-center p-3">Bu aşamada fırsat yok.</p>
+                {% endif %}
+                <div class="text-center mt-2">
+                    <a href="{{ url_for('crm_deal_new', stage=stage) }}" class="btn btn-sm btn-outline-success w-100">
+                        <i class="bi bi-plus"></i> Bu Aşamaya Ekle
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% else %} {# Bu, {% if deals_by_stage %} bloğunun else kısmı #}
+<div class="alert alert-light text-center" role="alert">
+    <i class="bi bi-info-circle me-2"></i> Henüz hiç fırsat eklenmemiş.
+    <a href="{{ url_for('crm_deal_new') }}" class="alert-link">Hemen bir fırsat ekleyin!</a>
+</div>
+{% endif %} {# Bu, {% if deals_by_stage %} bloğunun kapanışı #}
+
+{% endblock %} {# BU, crm_content bloğunun kapanışı. EKLENMELİ! #}
+
+
+{% block scripts_extra %} {# Şimdi crm_content DIŞINDA doğru yerde #}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const columns = document.querySelectorAll('.kanban-column .card-body');
+            
+            columns.forEach(column => {
+                new Sortable(column, {
+                    group: 'deals',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    draggable: '.kanban-deal-card',
+
+                    onEnd: function (evt) {
+                        const dealId = evt.item.dataset.dealId;
+                        const newStageId = evt.to.id; 
+                        let newStageName = newStageId.replace('stage-', '');
+                        newStageName = newStageName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                        
+                        console.log("Fırsat ID:", dealId, "yeni aşamaya taşındı:", newStageName, "Hedef Sütun ID:", newStageId);
+
+                        fetch(`/crm/deal/${dealId}/update_stage`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ 
+                                stage: newStageName,
+                                new_index: evt.newIndex
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                console.error('Aşama güncelleme hatası:', response.statusText);
+                                alert('Fırsat aşaması güncellenirken bir hata oluştu.');
+                                window.location.reload();
+                                return Promise.reject(new Error(response.statusText)); // Hata zincirini kır
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Aşama başarıyla güncellendi:', data.message);
+                                // Burada Kanban kartının sayısını veya diğer UI elementlerini güncelleyebilirsiniz.
+                                // Şimdilik konsol logu yeterli.
+                            } else {
+                                console.error('Aşama güncelleme başarısız:', data.message);
+                                alert('Fırsat aşaması güncellenemedi: ' + data.message);
+                                window.location.reload();
+                            }
+                        })
+                        .catch(error => {
+                            // fetch'in kendisinde bir hata olursa (örn: ağ hatası) burası çalışır.
+                            // response.ok false ise catch'e düşmez, then bloğunda ele alınır.
+                            if (error.message !== 'Failed to fetch' && !error.message.includes("JSON.parse")) { // Reload'dan kaynaklı hataları tekrar gösterme
+                                console.error('Fetch/Network hatası:', error);
+                                alert('Bir ağ hatası oluştu veya sunucu yanıt vermedi. Lütfen tekrar deneyin.');
+                                // window.location.reload(); // Hata durumunda sürekli reload olmaması için dikkatli kullanın
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

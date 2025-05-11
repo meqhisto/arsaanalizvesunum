@@ -1,0 +1,104 @@
+2025-05-11 05:00:14,079 - ERROR - Sunucu hatası: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Incorrect syntax near the keyword 'IS'. (156) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+FROM crm_tasks 
+WHERE crm_tasks.deal_id = ? ORDER BY crm_tasks.due_date IS NULL, crm_tasks.due_date ASC, crm_tasks.priority DESC]
+[parameters: (1,)]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+pyodbc.ProgrammingError: ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Incorrect syntax near the keyword 'IS'. (156) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 659, in decorated_function
+    return f(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 2461, in crm_deal_detail
+    tasks = deal.tasks.order_by(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
+    return self._iter().all()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
+    result = self.session.execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
+    ret = self._execute_context(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
+    self._handle_dbapi_exception(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
+    util.raise_(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Incorrect syntax near the keyword 'IS'. (156) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+FROM crm_tasks 
+WHERE crm_tasks.deal_id = ? ORDER BY crm_tasks.due_date IS NULL, crm_tasks.due_date ASC, crm_tasks.priority DESC]
+[parameters: (1,)]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+2025-05-11 05:14:28,962 - ERROR - Sunucu hatası: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+FROM crm_tasks 
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (1, 'Tamamlandı', 'İptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+pyodbc.ProgrammingError: ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 659, in decorated_function
+    return f(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 1197, in index
+    yaklasan_gorevler = Task.query.filter(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
+    return self._iter().all()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
+    result = self.session.execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
+    ret = self._execute_context(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
+    self._handle_dbapi_exception(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
+    util.raise_(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+FROM crm_tasks 
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (1, 'Tamamlandı', 'İptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
+(Background on this error at: https://sqlalche.me/e/14/f405)

@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="sofistike_css.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sofistike_css.css') }}">
     <style>
         /* Genel Ayarlar */
         body {
@@ -168,22 +168,20 @@
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
   </div>
   <div class="offcanvas-body d-flex flex-column gap-2">
-    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-    <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
-    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
+                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
   </div>
 </div>
 
 <!-- Masaüstü Sidebar -->
 <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
   <h4 class="mb-4">İnveco Panel</h4>
-  <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-  <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-  <a href="{{ url_for('analizler') }}"><i class="bi bi-geo-alt"></i> Arsa Haritası</a>
-  <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-  <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
+                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
 </div>
       <!-- Main Content Area -->
       <div class="col-md-9 col-lg-10">
@@ -598,5 +596,67 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/analiz_detay.js') }}"></script>
+  <script>
+                        document.getElementById('generateReportBtn').addEventListener('click', function() {
+                  const form = document.getElementById('reportSettingsForm');
+                  const formData = new FormData();
+                  
+                  // Seçili bölümleri topla
+                  const sections = [];
+                  document.querySelectorAll('input[name="sections"]:checked').forEach(checkbox => {
+                      sections.push(checkbox.value);
+                  });
+                  
+                  // FormData'ya sections array'ini JSON string olarak ekle
+                  formData.append('sections', JSON.stringify(sections));
+                  formData.append('color_scheme', document.getElementById('colorScheme')?.value || 'blue');
+                  
+                  // Diğer form verilerini ekle
+                  formData.append('format', 'pptx');
+                  formData.append('color_scheme', 'blue');
+                  formData.append('analiz_id', '{{ analiz.id }}');
+              
+                  // Buton durumunu güncelle
+                  this.disabled = true;
+                  this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Oluşturuluyor...';
+              
+                  // Backend'e istek gönder
+                  fetch(`/generate/pptx/{{ analiz.id }}`, {
+                      method: 'POST',
+                      body: formData
+                  })
+                  .then(response => {
+                      if (!response.ok) {
+                          throw new Error('Sunumu oluşturulurken bir hata oluştu');
+                      }
+                      return response.blob();
+                  })
+                  .then(blob => {
+                      // Dosyayı indir
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `analiz_sunum_{{ analiz.id }}.pptx`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      
+                      // Buton durumunu sıfırla
+                      this.disabled = false;
+                      this.innerHTML = 'Oluştur';
+                      
+                      // Modal'ı kapat
+                      const modal = bootstrap.Modal.getInstance(document.getElementById('reportSettingsModal'));
+                      modal.hide();
+                  })
+                  .catch(error => {
+                      console.error('Hata:', error);
+                      alert('Sunum oluşturulurken bir hata oluştu');
+                      this.disabled = false;
+                      this.innerHTML = 'Oluştur';
+                  });
+              });
+    
+  </script>
 </body>
 </html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CRM Modülü{% endblock %} - İnveco Proje</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sofistike-style.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Mobil Sidebar Butonu -->
+            <button class="btn btn-primary d-md-none m-3" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebarCrm">
+                <i class="bi bi-list"></i> Menü
+            </button>
+
+            <!-- Mobil Sidebar -->
+            <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebarCrm">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title">CRM Menüsü</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+                </div>
+ <h4 class="mb-4">İnveco Panel</h4>
+                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
+                <!-- ... diğer ana sayfa linkleri ... -->
+                <hr>
+                <h5 class="text-muted small mb-2">CRM</h5>
+                                <!-- ... -->
+                    <!-- ... -->
+                    <a href="{{ url_for('crm_companies_list') }}" class="{{ 'active' if 'crm_compan' in request.endpoint else '' }}"><i class="bi bi-building"></i> Şirketler</a>
+                    <a href="{{ url_for('crm_deals_list') }}" class="{{ 'active' if 'crm_deal' in request.endpoint else '' }}"><i class="bi bi-cash-coin"></i> Fırsatlar</a>
+                    <a href="{{ url_for('crm_tasks_list') }}" class="{{ 'active' if 'crm_task' in request.endpoint else '' }}"><i class="bi bi-check2-square"></i> Görevler</a>                    <!-- ... -->
+                <!-- ... -->
+
+            </div>
+
+            <!-- Ana Sidebar (Desktop) -->
+            <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
+                <h4 class="mb-4">İnveco Panel</h4>
+                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
+                <!-- ... diğer ana sayfa linkleri ... -->
+                <hr>
+                <h5 class="text-muted small mb-2">CRM</h5>
+                                <!-- ... -->
+                    <!-- ... -->
+                    <a href="{{ url_for('crm_companies_list') }}" class="{{ 'active' if 'crm_compan' in request.endpoint else '' }}"><i class="bi bi-building"></i> Şirketler</a>
+                    <a href="{{ url_for('crm_deals_list') }}" class="{{ 'active' if 'crm_deal' in request.endpoint else '' }}"><i class="bi bi-cash-coin"></i> Fırsatlar</a>
+                    <a href="{{ url_for('crm_tasks_list') }}" class="{{ 'active' if 'crm_task' in request.endpoint else '' }}"><i class="bi bi-check2-square"></i> Görevler</a>                    <!-- ... -->
+                <!-- ... -->
+            </div>
+
+            <!-- Ana İçerik Alanı -->
+            <div class="col-md-9 col-lg-10 p-4">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block crm_content %}
+                <!-- CRM sayfalarına özgü içerik buraya gelecek -->
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts_extra %}{% endblock %}
+</body>
+</html>

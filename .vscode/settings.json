@@ -1,5 +1,5 @@
 {
-    "livePreview.defaultPreviewPath": "/templates/index.html",
+    "livePreview.defaultPreviewPath": "/templates/crm/crm_base.html",
     "git.ignoreLimitWarning": true,
     "python.testing.unittestArgs": [
         "-v",

@@ -1,0 +1,105 @@
+{% extends "crm/crm_base.html" %} {% block title %}Kişiler - CRM{% endblock %}
+{% block crm_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2><i class="bi bi-people-fill me-2"></i> Kişiler</h2>
+  <a href="{{ url_for('crm_contact_new') }}" class="btn btn-primary">
+    <i class="bi bi-plus-circle me-1"></i> Yeni Kişi Ekle
+  </a>
+</div>
+
+{% if contacts %}
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Ad Soyad</th>
+            <th>E-posta</th>
+            <th>Telefon</th>
+            <th>Şirket</th>
+            <th>Durum</th>
+            <th>Eklenme Tarihi</th>
+            <th>İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for contact in contacts %}
+          <tr>
+            <td>
+              <a
+                href="{{ url_for('crm_contact_detail', contact_id=contact.id) }}"
+              >
+                {{ contact.first_name }} {{ contact.last_name }}
+              </a>
+            </td>
+            <td>{{ contact.email if contact.email else '-' }}</td>
+            <td>{{ contact.phone if contact.phone else '-' }}</td>
+            <td>
+              {% if contact.company %} {{ contact.company.name }} {% else %} -
+              {% endif %}
+            </td>
+            <td><span class="badge bg-info">{{ contact.status }}</span></td>
+            <td>{{ contact.created_at.strftime('%d.%m.%Y') }}</td>
+            <!-- ... -->
+            <!-- ... -->
+            <td>
+              <a
+                href="{{ url_for('crm_contact_detail', contact_id=contact.id) }}"
+                class="btn btn-sm btn-outline-primary"
+                title="Görüntüle"
+              >
+                <i class="bi bi-eye"></i>
+              </a>
+              <a
+                href="{{ url_for('crm_contact_edit', contact_id=contact.id) }}"
+                class="btn btn-sm btn-outline-secondary"
+                title="Düzenle"
+              >
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <form
+                action="{{ url_for('crm_contact_delete', contact_id=contact.id) }}"
+                method="POST"
+                style="display: inline"
+                onsubmit="return confirm('Bu kişiyi ve ilişkili tüm verilerini (etkileşimler, fırsatlar, görevler) silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!');"
+              >
+                {# Action güncellendi ve uyarı mesajı detaylandırıldı #} {# CSRF
+                token (eğer Flask-WTF veya benzeri bir kütüphane
+                kullanıyorsanız) Eğer Flask-WTF kullanmıyorsanız ve basit bir
+                CSRF koruması istiyorsanız, session tabanlı bir token oluşturup
+                formla gönderebilir ve sunucuda doğrulayabilirsiniz. Şimdilik bu
+                kısmı basit tutuyorum. #} {#
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                />
+                #}
+                <button
+                  type="submit"
+                  class="btn btn-sm btn-outline-danger"
+                  title="Sil"
+                >
+                  {# Artık aktif #}
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+            <!-- ... -->
+            <!-- ... -->
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-light text-center" role="alert">
+  <i class="bi bi-info-circle me-2"></i> Henüz hiç kişi eklenmemiş.
+  <a href="{{ url_for('crm_contact_new') }}" class="alert-link"
+    >Hemen bir kişi ekleyin!</a
+  >
+</div>
+{% endif %} {% endblock %}

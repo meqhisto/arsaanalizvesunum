@@ -1,0 +1,179 @@
+<!-- SWOT Analizi Komponenti -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">SWOT Analizi</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Güçlü Yönler -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 border-success">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">Güçlü Yönler</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="swot-items" id="strengths">
+                            <div class="mb-3">
+                                <select class="form-select mb-2 swot-template" data-type="strength">
+                                    <option value="">Şablon seçin veya yeni giriş yapın</option>
+                                </select>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="strengths[]" placeholder="Güçlü yön ekleyin">
+                                    <select class="form-select" name="strength_scores[]" style="max-width: 100px;">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5" selected>5</option>
+                                    </select>
+                                    <button class="btn btn-outline-success add-item" type="button">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Zayıf Yönler -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h6 class="mb-0">Zayıf Yönler</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="swot-items" id="weaknesses">
+                            <div class="mb-3">
+                                <select class="form-select mb-2 swot-template" data-type="weakness">
+                                    <option value="">Şablon seçin veya yeni giriş yapın</option>
+                                </select>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="weaknesses[]" placeholder="Zayıf yön ekleyin">
+                                    <select class="form-select" name="weakness_scores[]" style="max-width: 100px;">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5" selected>5</option>
+                                    </select>
+                                    <button class="btn btn-outline-danger add-item" type="button">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fırsatlar -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">Fırsatlar</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="swot-items" id="opportunities">
+                            <div class="mb-3">
+                                <select class="form-select mb-2 swot-template" data-type="opportunity">
+                                    <option value="">Şablon seçin veya yeni giriş yapın</option>
+                                </select>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="opportunities[]" placeholder="Fırsat ekleyin">
+                                    <select class="form-select" name="opportunity_scores[]" style="max-width: 100px;">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5" selected>5</option>
+                                    </select>
+                                    <button class="btn btn-outline-primary add-item" type="button">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tehditler -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 border-warning">
+                    <div class="card-header bg-warning text-white">
+                        <h6 class="mb-0">Tehditler</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="swot-items" id="threats">
+                            <div class="mb-3">
+                                <select class="form-select mb-2 swot-template" data-type="threat">
+                                    <option value="">Şablon seçin veya yeni giriş yapın</option>
+                                </select>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="threats[]" placeholder="Tehdit ekleyin">
+                                    <select class="form-select" name="threat_scores[]" style="max-width: 100px;">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5" selected>5</option>
+                                    </select>
+                                    <button class="btn btn-outline-warning add-item" type="button">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SWOT Analizi JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // SWOT şablonlarını yükle
+    fetch('/api/swot-templates')
+        .then(response => response.json())
+        .then(templates => {
+            // Her bir SWOT tipi için şablonları ekle
+            ['strength', 'weakness', 'opportunity', 'threat'].forEach(type => {
+                const selects = document.querySelectorAll(`.swot-template[data-type="${type}"]`);
+                templates[type].forEach(template => {
+                    selects.forEach(select => {
+                        const option = document.createElement('option');
+                        option.value = template.id;
+                        option.textContent = template.text;
+                        select.appendChild(option);
+                    });
+                });
+            });
+        });
+
+    // Yeni madde ekleme
+    document.querySelectorAll('.add-item').forEach(button => {
+        button.addEventListener('click', function() {
+            const container = this.closest('.swot-items');
+            const newItem = container.querySelector('.mb-3').cloneNode(true);
+            newItem.querySelector('input').value = '';
+            newItem.querySelector('select').value = '5';
+            
+            // Silme butonu ekle
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-outline-secondary';
+            deleteBtn.innerHTML = '&times;';
+            deleteBtn.onclick = function() {
+                newItem.remove();
+            };
+            newItem.querySelector('.input-group').appendChild(deleteBtn);
+            
+            container.appendChild(newItem);
+        });
+    });
+
+    // Şablon seçildiğinde
+    document.querySelectorAll('.swot-template').forEach(select => {
+        select.addEventListener('change', function() {
+            if (this.value) {
+                const container = this.closest('.mb-3');
+                container.querySelector('input').value = this.options[this.selectedIndex].text;
+            }
+        });
+    });
+});
+</script>

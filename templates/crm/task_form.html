@@ -1,0 +1,98 @@
+{% extends "crm/crm_base.html" %}
+
+{% block title %}{{ title }} - CRM{% endblock %}
+
+{% block crm_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-list-task me-2"></i> {{ title }}</h2>
+    <a href="{{ request.referrer or url_for('crm_tasks_list') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Geri Dön
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="{{ request.url }}">
+            <div class="mb-3">
+                <label for="title" class="form-label">Görev Başlığı <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" value="{{ task.title if task else '' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Açıklama (Opsiyonel)</label>
+                <textarea class="form-control" id="description" name="description" rows="3">{{ task.description if task else '' }}</textarea>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="due_date" class="form-label">Bitiş Tarihi ve Saati</label>
+                    <input type="datetime-local" class="form-control" id="due_date" name="due_date" value="{{ task.due_date.strftime('%Y-%m-%dT%H:%M') if task and task.due_date else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="status" class="form-label">Durum</label>
+                    <select class="form-select" id="status" name="status">
+                        {% for status_item in statuses %}
+                        <option value="{{ status_item }}" {% if (task and task.status == status_item) or (not task and loop.first) %}selected{% endif %}>{{ status_item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="priority" class="form-label">Öncelik</label>
+                    <select class="form-select" id="priority" name="priority">
+                         {% for prio_item in priorities %}
+                        <option value="{{ prio_item }}" {% if (task and task.priority == prio_item) or (not task and prio_item == 'Normal') %}selected{% endif %}>{{ prio_item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="contact_id" class="form-label">İlişkili Kişi (Opsiyonel)</label>
+                    <select class="form-select" id="contact_id" name="contact_id">
+                        <option value="">Kişi Seçin...</option>
+                        {% for contact_item in contacts %}
+                        <option value="{{ contact_item.id }}" 
+                                {% if (task and task.contact_id == contact_item.id) or (preselected_contact and preselected_contact.id == contact_item.id and not task) %}selected{% endif %}>
+                            {{ contact_item.first_name }} {{ contact_item.last_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="deal_id" class="form-label">İlişkili Fırsat (Opsiyonel)</label>
+                    <select class="form-select" id="deal_id" name="deal_id">
+                        <option value="">Fırsat Seçin...</option>
+                        {% for deal_item in deals %}
+                        <option value="{{ deal_item.id }}" 
+                                {% if (task and task.deal_id == deal_item.id) or (preselected_deal and preselected_deal.id == deal_item.id and not task) %}selected{% endif %}>
+                            {{ deal_item.title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {# Başkasına Atama (Opsiyonel - İleride eklenebilir)
+            <div class="mb-3">
+                <label for="assigned_to_user_id" class="form-label">Atanan Kişi</label>
+                <select class="form-select" id="assigned_to_user_id" name="assigned_to_user_id">
+                    {% for user_item in users_for_assignment %}
+                    <option value="{{ user_item.id }}" {% if (task and task.assigned_to_user_id == user_item.id) or (not task and user_item.id == current_user.id) %}selected{% endif %}>
+                        {{ user_item.ad }} {{ user_item.soyad if user_item.soyad else '' }} ({{ user_item.email }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            #}
+
+            <div class="d-flex justify-content-end">
+                <a href="{{ request.referrer or url_for('crm_tasks_list') }}" class="btn btn-secondary me-2">İptal</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i> Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
