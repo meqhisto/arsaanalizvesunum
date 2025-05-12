@@ -4,25 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CRM Modülü{% endblock %} - İnveco Proje</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts - Inter for modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sofistike-style.css') }}">
     {% block head_extra %}{% endblock %}
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
+<body class="bg-light">
+    <div class="container-fluid p-0">
+        <div class="row g-0">
             <!-- Mobil Sidebar Butonu -->
-            <button class="btn btn-primary d-md-none m-3" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebarCrm">
+            <button class="btn btn-primary d-md-none m-3 rounded-pill shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebarCrm">
                 <i class="bi bi-list"></i> Menü
             </button>
 
             <!-- Mobil Sidebar -->
             <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebarCrm">
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title">CRM Menüsü</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+                <div class="offcanvas-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white;">
+                    <h5 class="offcanvas-title"><i class="bi bi-building"></i> CRM Menüsü</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
                 </div>
  <h4 class="mb-4">İnveco Panel</h4>
                     <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
@@ -43,10 +48,15 @@
 
             <!-- Ana Sidebar (Desktop) -->
             <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
-                <h4 class="mb-4">İnveco Panel</h4>
-                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <i class="bi bi-building fs-3"></i>
+                    <h4 class="mb-0">İnveco Panel</h4>
+                </div>
+                <div class="nav flex-column">
+                    <a href="{{ url_for('index') }}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
                     <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+                    <a href="{{ url_for('crm_contacts_list') }}" class="active"><i class="bi bi-person-rolodex"></i> CRM</a>
+                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
                     <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
                 <!-- ... diğer ana sayfa linkleri ... -->
                 <hr>
@@ -60,7 +70,66 @@
             </div>
 
             <!-- Ana İçerik Alanı -->
-            <div class="col-md-9 col-lg-10 p-4">
+                </div>
+                
+                <!-- Minimal User Info at bottom -->
+                <div class="mt-auto pt-3 border-top border-white border-opacity-25">
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 w-100">
+                        <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ana İçerik Alanı -->
+            <div class="col-md-9 col-lg-10 p-0 ms-auto content-area">
+                <!-- CRM Navigation Bar -->
+                <nav class="navbar navbar-expand-lg navbar-dark px-3 mb-3">
+                    <div class="container-fluid">
+                        <span class="navbar-brand">CRM Modülü</span>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#crmNavbar">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        
+                        <div class="collapse navbar-collapse" id="crmNavbar">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link {% if 'crm_contact' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person"></i> Kişiler</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if 'crm_company' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_companies_list') }}"><i class="bi bi-building"></i> Şirketler</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if 'crm_deal' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_deals_list') }}"><i class="bi bi-currency-dollar"></i> Fırsatlar</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if 'crm_task' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_tasks_list') }}"><i class="bi bi-check2-all"></i> Görevler</a>
+                                </li>
+                                {% if current_user.role == 'broker' %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% if 'crm_team_management' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_team_management') }}"><i class="bi bi-people"></i> Ekip Yönetimi</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if 'crm_team_dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_team_dashboard') }}"><i class="bi bi-graph-up"></i> Ekip Performans</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                            
+                            <!-- Hatırlatıcı Bildirimleri -->
+                            <div class="dropdown">
+                                <a class="nav-link text-light dropdown-toggle position-relative" href="#" id="reminderDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-bell fs-5"></i>
+                                    <span id="reminder-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; display: none;">0</span>
+                                </a>
+                                <ul id="reminder-list" class="dropdown-menu dropdown-menu-end" aria-labelledby="reminderDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                                    <li><span class="dropdown-item text-center">Hatırlatıcılar yükleniyor...</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- İçerik Alanı -->
+                <div class="p-4">
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
@@ -75,11 +144,15 @@
                 {% block crm_content %}
                 <!-- CRM sayfalarına özgü içerik buraya gelecek -->
                 {% endblock %}
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block scripts_extra %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/contact_form.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/task_form.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/reminders.js') }}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

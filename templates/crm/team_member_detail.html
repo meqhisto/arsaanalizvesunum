@@ -1,0 +1,304 @@
+{% extends "crm/crm_base.html" %}
+
+{% block crm_title %}{{ team_member.ad }} {{ team_member.soyad }} - Performans Detayı{% endblock %}
+
+{% block crm_content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ team_member.ad }} {{ team_member.soyad }} - Performans Detayı</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Yazdır
+                        </button>
+                        <a href="{{ url_for('crm_team_dashboard') }}" class="btn btn-sm btn-primary ms-2">
+                            <i class="bi bi-arrow-left"></i> Ekip Özete Dön
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Danışman Bilgileri -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                {% if team_member.profil_foto %}
+                                <img src="{{ team_member.profil_foto }}" alt="{{ team_member.ad }}" class="rounded-circle me-3" width="60" height="60">
+                                {% else %}
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <span style="font-size: 1.5rem;">{{ team_member.ad[0] }}{{ team_member.soyad[0] }}</span>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h4 class="mb-0">{{ team_member.ad }} {{ team_member.soyad }}</h4>
+                                    <p class="text-muted mb-0">{{ team_member.email }}</p>
+                                    <p class="text-muted mb-0">Son giriş: {{ team_member.son_giris.strftime('%d.%m.%Y %H:%M') if team_member.son_giris else 'Hiç giriş yapmadı' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body p-3">
+                                    <h6 class="card-subtitle mb-2 text-muted">Performans Özeti</h6>
+                                    <div class="progress mb-2" style="height: 24px">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                            style="width: {{ stats.completion_rate }}%" 
+                                            aria-valuenow="{{ stats.completion_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                            {{ stats.completion_rate }}% Tamamlanma Oranı
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div class="col">
+                                            <h4 class="mb-0">{{ stats.total_tasks }}</h4>
+                                            <small class="text-muted">Toplam Görev</small>
+                                        </div>
+                                        <div class="col">
+                                            <h4 class="mb-0">{{ stats.completed_tasks }}</h4>
+                                            <small class="text-muted">Tamamlanan</small>
+                                        </div>
+                                        <div class="col">
+                                            <h4 class="mb-0">{{ stats.pending_tasks }}</h4>
+                                            <small class="text-muted">Devam Eden</small>
+                                        </div>
+                                        <div class="col">
+                                            <h4 class="mb-0">{{ stats.overdue_tasks }}</h4>
+                                            <small class="text-muted">Geciken</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performans Detayları -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Görev Durumları</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="statusChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Görev Öncelikleri</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="priorityChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aylık Performans Grafiği -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Aylık Performans</h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="monthlyChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Son Görevler -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Son Görevler</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Görev</th>
+                                                    <th>Durumu</th>
+                                                    <th>Öncelik</th>
+                                                    <th>Oluşturulma</th>
+                                                    <th>Bilgi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for task in recent_tasks %}
+                                                <tr>
+                                                    <td>
+                                                        <a href="{{ url_for('crm_task_detail', task_id=task.id) }}">
+                                                            {{ task.title }}
+                                                        </a>
+                                                    </td>
+                                                    <td><span class="badge bg-{{ task.status_class }}">{{ task.status }}</span></td>
+                                                    <td>{{ task.priority }}</td>
+                                                    <td>{{ task.created_at.strftime('%d.%m.%Y') }}</td>
+                                                    <td>{{ task.days_info }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Görev Durumları Grafiği
+        var statusCtx = document.getElementById('statusChart').getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Beklemede', 'Devam Ediyor', 'Tamamlandı', 'İptal'],
+                datasets: [{
+                    data: [
+                        {{ stats.status_distribution.Beklemede }}, 
+                        {{ stats.status_distribution['Devam Ediyor'] }}, 
+                        {{ stats.status_distribution.Tamamlandı }}, 
+                        {{ stats.status_distribution['İptal'] }}
+                    ],
+                    backgroundColor: [
+                        '#6c757d',  // Beklemede - Secondary
+                        '#0d6efd',  // Devam Ediyor - Primary
+                        '#198754',  // Tamamlandı - Success
+                        '#dc3545'   // İptal - Danger
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Görev Öncelikleri Grafiği
+        var priorityCtx = document.getElementById('priorityChart').getContext('2d');
+        var priorityChart = new Chart(priorityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Düşük', 'Normal', 'Yüksek', 'Acil'],
+                datasets: [{
+                    data: [
+                        {{ stats.priority_distribution.Düşük }}, 
+                        {{ stats.priority_distribution.Normal }}, 
+                        {{ stats.priority_distribution.Yüksek }}, 
+                        {{ stats.priority_distribution.Acil }}
+                    ],
+                    backgroundColor: [
+                        '#0dcaf0',  // Düşük - Info
+                        '#6c757d',  // Normal - Secondary
+                        '#ffc107',  // Yüksek - Warning
+                        '#dc3545'   // Acil - Danger
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Aylık Performans Grafiği
+        var monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        var monthlyChart = new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ stats.months|tojson }},
+                datasets: [
+                    {
+                        label: 'Oluşturulan Görevler',
+                        data: [
+                            {% for month in stats.month_stats %}
+                                {{ month.created }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                        borderColor: 'rgba(13, 110, 253, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Tamamlanan Görevler',
+                        data: [
+                            {% for month in stats.month_stats %}
+                                {{ month.completed }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: 'rgba(25, 135, 84, 0.5)',
+                        borderColor: 'rgba(25, 135, 84, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    @media print {
+        .navbar, .sidebar, .card-header, .alert, .nav, footer, button, .btn {
+            display: none !important;
+        }
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        body {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+        canvas {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+    }
+</style>
+{% endblock %}

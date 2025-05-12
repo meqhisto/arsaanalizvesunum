@@ -39,7 +39,49 @@
                     {% endif %}
                 </p>
                 <p><strong>Durum:</strong> <span class="badge bg-primary">{{ contact.status }}</span></p>
+                <p><strong>Segment:</strong> 
+                    {% if contact.segment == 'Potansiyel' %}
+                        <span class="badge bg-info">{{ contact.segment }}</span>
+                    {% elif contact.segment == 'Aktif' %}
+                        <span class="badge bg-success">{{ contact.segment }}</span>
+                    {% elif contact.segment == 'VIP' %}
+                        <span class="badge bg-warning text-dark">{{ contact.segment }}</span>
+                    {% elif contact.segment == 'Pasif' %}
+                        <span class="badge bg-secondary">{{ contact.segment }}</span>
+                    {% elif contact.segment == 'Kaybedilen' %}
+                        <span class="badge bg-danger">{{ contact.segment }}</span>
+                    {% else %}
+                        <span class="badge bg-light text-dark">{{ contact.segment if contact.segment else 'Belirtilmemiş' }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Değer Puanı:</strong></p>
+                {% set score = contact.value_score if contact.value_score is not none else 0 %}
+                {% set color_class = "bg-danger" %}
+                {% if contact.value_score is not none %}
+                    {% if contact.value_score >= 75 %}
+                        {% set color_class = "bg-success" %}
+                    {% elif contact.value_score >= 50 %}
+                        {% set color_class = "bg-info" %}
+                    {% elif contact.value_score >= 25 %}
+                        {% set color_class = "bg-warning" %}
+                    {% endif %}
+                {% endif %}
+                <div class="progress mb-1" style="height: 10px;">
+                    <div class="progress-bar {{ color_class }}" role="progressbar" style="width: {{ score }}%" 
+                         aria-valuenow="{{ score }}" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+                <small class="text-muted mb-3 d-block">{{ score }}/100</small>
                 <p><strong>Kaynak:</strong> {{ contact.source if contact.source else '-' }}</p>
+                <p><strong>Etiketler:</strong> 
+                    {% if contact.tags and contact.tags is not none %}
+                        {% for tag in contact.tags %}
+                            <span class="badge bg-light text-dark">{{ tag }}</span>
+                        {% endfor %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
             </div>
         </div>
         {% if contact.notes %}

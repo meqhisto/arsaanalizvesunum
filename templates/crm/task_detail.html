@@ -1,0 +1,210 @@
+{% extends "crm/crm_base.html" %}
+
+{% block crm_title %}Görev Detayı - {{ task.title }}{% endblock %}
+
+{% block crm_content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Görev Detayı</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Yazdır
+                        </button>
+                        <a href="{{ url_for('crm_tasks_list') }}" class="btn btn-sm btn-primary ms-2">
+                            <i class="bi bi-arrow-left"></i> Görevlere Dön
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Görev Başlığı ve Durum -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h3>{{ task.title }}</h3>
+                            <p class="text-muted">
+                                <i class="bi bi-calendar"></i> Oluşturulma: {{ task.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                {% if task.due_date %}
+                                | <i class="bi bi-calendar-check"></i> Son Tarih: {{ task.due_date.strftime('%d.%m.%Y %H:%M') }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <span class="badge bg-{% if task.status == 'Tamamlandı' %}success{% elif task.status == 'Beklemede' %}secondary{% elif task.status == 'Devam Ediyor' %}primary{% elif task.status == 'İptal' %}danger{% else %}warning{% endif %} p-2">
+                                {{ task.status }}
+                            </span>
+                            <span class="badge bg-{% if task.priority == 'Düşük' %}info{% elif task.priority == 'Normal' %}secondary{% elif task.priority == 'Yüksek' %}warning{% elif task.priority == 'Acil' %}danger{% endif %} p-2 ms-2">
+                                {{ task.priority }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Görev Detayları -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Görev Açıklaması</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if task.description %}
+                                    <p>{{ task.description|nl2br }}</p>
+                                    {% else %}
+                                    <p class="text-muted">Bu görev için açıklama bulunmamaktadır.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Görev Bilgileri</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Oluşturan:</span>
+                                            <strong>{% if owner %}{{ owner.ad }} {{ owner.soyad }}{% else %}Bilinmiyor{% endif %}</strong>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Atanan:</span>
+                                            <strong>{% if assignee %}{{ assignee.ad }} {{ assignee.soyad }}{% else %}Atanmamış{% endif %}</strong>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Durum:</span>
+                                            <strong>{{ task.status }}</strong>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Öncelik:</span>
+                                            <strong>{{ task.priority }}</strong>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Görev Tipi:</span>
+                                            <strong>
+                                                {% if task.task_type == 'personal' %}
+                                                    Kişisel
+                                                {% elif task.task_type == 'team' %}
+                                                    Ekip
+                                                {% elif task.task_type == 'supervised' %}
+                                                    Denetimli
+                                                {% else %}
+                                                    {{ task.task_type }}
+                                                {% endif %}
+                                            </strong>
+                                        </li>
+                                        {% if task.due_date %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Son Tarih:</span>
+                                            <strong>{{ task.due_date.strftime('%d.%m.%Y %H:%M') }}</strong>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Kalan Süre:</span>
+                                            <strong>
+                                                {% if task.is_overdue() %}
+                                                    <span class="text-danger">Süre Doldu</span>
+                                                {% else %}
+                                                    {% set days_left = task.get_days_until_due() %}
+                                                    {% if days_left < 0 %}
+                                                        <span class="text-danger">{{ days_left|abs|round|int }} gün gecikti</span>
+                                                    {% elif days_left < 1 %}
+                                                        <span class="text-warning">Bugün son gün</span>
+                                                    {% else %}
+                                                        {{ days_left|round|int }} gün kaldı
+                                                    {% endif %}
+                                                {% endif %}
+                                            </strong>
+                                        </li>
+                                        {% endif %}
+                                        {% if task.completed_at %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Tamamlanma Tarihi:</span>
+                                            <strong>{{ task.completed_at.strftime('%d.%m.%Y %H:%M') }}</strong>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Tamamlanma Süresi:</span>
+                                            <strong>
+                                                {% set completion_time = task.get_completion_time() %}
+                                                {% if completion_time %}
+                                                    {{ completion_time|round(1) }} gün
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </strong>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Görev Aksiyonları -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Görev Aksiyonları</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <!-- Aksiyon butonları - yetkiye göre gösterilecek -->
+                                        {% if current_user.id == task.user_id or current_user.role == 'broker' %}
+                                        <a href="{{ url_for('crm_task_edit', task_id=task.id) if 'crm_task_edit' in url_list else '#' }}" class="btn btn-primary">
+                                            <i class="bi bi-pencil"></i> Düzenle
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if task.status != 'Tamamlandı' and task.status != 'İptal' and (current_user.id == task.assigned_to_user_id or current_user.role == 'broker') %}
+                                        <a href="{{ url_for('crm_task_complete', task_id=task.id) if 'crm_task_complete' in url_list else '#' }}" class="btn btn-success">
+                                            <i class="bi bi-check-circle"></i> Tamamlandı Olarak İşaretle
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if current_user.role == 'broker' %}
+                                        <a href="{{ url_for('crm_task_reassign', task_id=task.id) if 'crm_task_reassign' in url_list else '#' }}" class="btn btn-info">
+                                            <i class="bi bi-people"></i> Yeniden Ata
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if current_user.id == task.user_id or current_user.role == 'broker' %}
+                                        <form method="POST" action="/crm/task/{{ task.id }}/delete" class="d-inline" onsubmit="return confirm('Bu görevi silmek istediğinizden emin misiniz?');">
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="bi bi-trash"></i> Sil
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    @media print {
+        .navbar, .sidebar, .card-header, .alert, .nav, footer, button, .btn {
+            display: none !important;
+        }
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        body {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+    }
+</style>
+{% endblock %}

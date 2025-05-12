@@ -1,0 +1,387 @@
+{% extends "crm/crm_base.html" %}
+
+{% block crm_title %}Görev Performans Analizi{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .performance-card {
+        transition: all 0.3s ease;
+    }
+    .performance-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .metric-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    .task-status-badge {
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    .bg-light-success {
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+    .bg-light-primary {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+    .bg-light-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+    .bg-light-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block crm_content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Görev Performans Analizi</h5>
+                    <div>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-primary active period-filter" data-period="7">7 Gün</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary period-filter" data-period="30">30 Gün</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary period-filter" data-period="90">90 Gün</button>
+                        </div>
+                        <button class="btn btn-sm btn-primary ms-2" id="refresh-btn">
+                            <i class="bi bi-arrow-clockwise"></i> Yenile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Genel Performans Özeti -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card h-100 performance-card bg-light-success">
+                <div class="card-body text-center">
+                    <div class="metric-label">Tamamlanan Görevler</div>
+                    <div class="metric-value text-success" id="completed-tasks">{{ metrics.completed_tasks }}</div>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ (metrics.completed_tasks / metrics.total_tasks * 100) if metrics.total_tasks > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 performance-card bg-light-primary">
+                <div class="card-body text-center">
+                    <div class="metric-label">Zamanında Tamamlama</div>
+                    <div class="metric-value text-primary" id="on-time-rate">{{ "%.1f"|format(metrics.on_time_percentage) }}%</div>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ metrics.on_time_percentage }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 performance-card bg-light-warning">
+                <div class="card-body text-center">
+                    <div class="metric-label">Devam Eden Görevler</div>
+                    <div class="metric-value text-warning" id="in-progress-tasks">{{ metrics.in_progress_tasks }}</div>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ (metrics.in_progress_tasks / metrics.total_tasks * 100) if metrics.total_tasks > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 performance-card bg-light-danger">
+                <div class="card-body text-center">
+                    <div class="metric-label">Geciken Görevler</div>
+                    <div class="metric-value text-danger" id="overdue-tasks">{{ metrics.overdue_tasks }}</div>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ (metrics.overdue_tasks / metrics.total_tasks * 100) if metrics.total_tasks > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafikler -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h6 class="mb-0">Görev Dağılımı</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="taskStatusChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h6 class="mb-0">Haftalık Görev Tamamlama</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="weeklyCompletionChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ekip Üyesi Performansı -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">Ekip Üyesi Performans Analizi</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ekip Üyesi</th>
+                                    <th class="text-center">Atanan Görevler</th>
+                                    <th class="text-center">Tamamlanan</th>
+                                    <th class="text-center">Tamamlama Oranı</th>
+                                    <th class="text-center">Zamanında Tamamlama</th>
+                                    <th class="text-center">Ortalama Tamamlama Süresi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in team_members %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if member.profil_foto %}
+                                            <img src="{{ url_for('static', filename='uploads/profile_photos/' + member.profil_foto) }}" class="rounded-circle me-2" width="32" height="32">
+                                            {% else %}
+                                            <div class="bg-light rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                <i class="bi bi-person text-secondary"></i>
+                                            </div>
+                                            {% endif %}
+                                            <span>{{ member.ad }} {{ member.soyad }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ member.metrics.assigned_tasks }}</td>
+                                    <td class="text-center">{{ member.metrics.completed_tasks }}</td>
+                                    <td class="text-center">
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ member.metrics.completion_rate }}%"></div>
+                                        </div>
+                                        <small>{{ "%.1f"|format(member.metrics.completion_rate) }}%</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ member.metrics.on_time_rate }}%"></div>
+                                        </div>
+                                        <small>{{ "%.1f"|format(member.metrics.on_time_rate) }}%</small>
+                                    </td>
+                                    <td class="text-center">{{ "%.1f"|format(member.metrics.avg_completion_days) }} gün</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Son Tamamlanan Görevler -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">Son Tamamlanan Görevler</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Görev</th>
+                                    <th>Atanan</th>
+                                    <th>Son Tarih</th>
+                                    <th>Tamamlanma Tarihi</th>
+                                    <th>Durum</th>
+                                    <th>Süre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in recent_completed_tasks %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('crm_task_detail', task_id=task.id) }}">{{ task.title }}</a>
+                                    </td>
+                                    <td>{{ task.assignee.ad }} {{ task.assignee.soyad }}</td>
+                                    <td>{{ task.due_date.strftime('%d.%m.%Y') if task.due_date else '-' }}</td>
+                                    <td>{{ task.completed_at.strftime('%d.%m.%Y') }}</td>
+                                    <td>
+                                        {% set status_class = 'success' if task.was_completed_on_time else 'warning' %}
+                                        <span class="badge bg-{{ status_class }}">
+                                            {{ 'Zamanında' if task.was_completed_on_time else 'Gecikmeli' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ "%.1f"|format(task.completion_days) }} gün</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+// Jinja verilerini JavaScript değişkenlerine aktar
+var metricsData = {
+    completed_tasks: {{ metrics.completed_tasks|default(0) }},
+    in_progress_tasks: {{ metrics.in_progress_tasks|default(0) }},
+    pending_tasks: {{ metrics.pending_tasks|default(0) }},
+    overdue_tasks: {{ metrics.overdue_tasks|default(0) }},
+    cancelled_tasks: {{ metrics.cancelled_tasks|default(0) }},
+    on_time_percentage: {{ metrics.on_time_percentage|default(0) }}
+};
+
+var weeklyLabels = {{ weekly_labels|default([])|tojson }};
+var weeklyCompletedData = {{ weekly_completed_data|default([])|tojson }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Görev Durumu Pasta Grafiği
+    const statusChartCtx = document.getElementById('taskStatusChart').getContext('2d');
+    const statusChart = new Chart(statusChartCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Tamamlandı', 'Devam Ediyor', 'Beklemede', 'Gecikmiş', 'İptal'],
+            datasets: [{
+                data: [
+                    metricsData.completed_tasks, 
+                    metricsData.in_progress_tasks, 
+                    metricsData.pending_tasks, 
+                    metricsData.overdue_tasks,
+                    metricsData.cancelled_tasks
+                ],
+                backgroundColor: ['#28a745', '#007bff', '#6c757d', '#dc3545', '#6610f2'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // Haftalık Tamamlama Çizgi Grafiği
+    const weeklyChartCtx = document.getElementById('weeklyCompletionChart').getContext('2d');
+    const weeklyChart = new Chart(weeklyChartCtx, {
+        type: 'line',
+        data: {
+            labels: weeklyLabels,
+            datasets: [{
+                label: 'Tamamlanan Görevler',
+                data: weeklyCompletedData,
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+
+    // Periyot filtresi için olay dinleyicileri
+    document.querySelectorAll('.period-filter').forEach(button => {
+        button.addEventListener('click', function() {
+            // Tüm butonlardan active sınıfını kaldır
+            document.querySelectorAll('.period-filter').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Tıklanan butona active sınıfını ekle
+            this.classList.add('active');
+            
+            // Seçilen periyodu al
+            const period = this.getAttribute('data-period');
+            
+            // AJAX isteği ile verileri güncelle
+            updateDashboardData(period);
+        });
+    });
+
+    // Yenile butonu için olay dinleyicisi
+    document.getElementById('refresh-btn').addEventListener('click', function() {
+        const activePeriod = document.querySelector('.period-filter.active').getAttribute('data-period');
+        updateDashboardData(activePeriod);
+    });
+
+    // Verileri belirli bir periyot için güncelleme fonksiyonu
+    function updateDashboardData(period) {
+        fetch(`/crm/tasks/performance-data?period=${period}`)
+            .then(response => response.json())
+            .then(data => {
+                // Metrik verilerini güncelle
+                document.getElementById('completed-tasks').textContent = data.metrics.completed_tasks;
+                document.getElementById('on-time-rate').textContent = data.metrics.on_time_percentage.toFixed(1) + '%';
+                document.getElementById('in-progress-tasks').textContent = data.metrics.in_progress_tasks;
+                document.getElementById('overdue-tasks').textContent = data.metrics.overdue_tasks;
+                
+                // Görev durumu grafiğini güncelle
+                statusChart.data.datasets[0].data = [
+                    data.metrics.completed_tasks,
+                    data.metrics.in_progress_tasks,
+                    data.metrics.pending_tasks,
+                    data.metrics.overdue_tasks,
+                    data.metrics.cancelled_tasks
+                ];
+                statusChart.update();
+                
+                // Haftalık tamamlama grafiğini güncelle
+                weeklyChart.data.labels = data.weekly_labels;
+                weeklyChart.data.datasets[0].data = data.weekly_completed_data;
+                weeklyChart.update();
+            })
+            .catch(error => console.error('Veri güncellenirken hata:', error));
+    }
+});
+</script>
+{% endblock %}

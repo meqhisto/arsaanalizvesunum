@@ -12,6 +12,7 @@ from flask import (
     send_from_directory,
     
 )
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
@@ -71,6 +72,17 @@ def nl2br_filter(value):
     return Markup(escaped_value.replace('\n', '<br>\n'))
 
 app.jinja_env.filters['nl2br'] = nl2br_filter
+
+# Flask-Login setup
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Lütfen önce giriş yapın'
+login_manager.login_message_category = 'warning'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 
@@ -135,7 +147,7 @@ app.logger.addHandler(handler)
 
 
 # --- Kullanıcı Modeli ---
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -652,16 +664,16 @@ class Task(db.Model):
         return f"<Task {self.title}>"
 
 # --- CRM Modelleri Sonu ---
-# Login required decorator
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "user_id" not in session:
-            flash("Lütfen önce giriş yapın", "warning")
-            return redirect(url_for("login"))
-        return f(*args, **kwargs)
-
-    return decorated_function
+# Artık Flask-Login'in login_required decoratorünü kullanacağız, kendi decoratorümüzü kaldırıyoruz
+# def login_required(f):
+#    @wraps(f)
+#    def decorated_function(*args, **kwargs):
+#        if "user_id" not in session:
+#            flash("Lütfen önce giriş yapın", "warning")
+#            return redirect(url_for("login"))
+#        return f(*args, **kwargs)
+#
+#    return decorated_function
 
 
 @app.errorhandler(Exception)
@@ -701,6 +713,9 @@ def login():
                     return redirect(url_for("login"))
 
                 if is_valid:
+                    # Flask-Login kullanarak giriş yap
+                    login_user(user, remember=remember)
+                    # Eski session kullanımını da koru
                     session["user_id"] = user.id
                     session["email"] = user.email
 
@@ -812,8 +827,12 @@ def reset_password(token):
 # Çıkış yapma route'u
 @app.route("/logout")
 def logout():
-    session.clear()
-    flash("Başarıyla çıkış yaptınız", "info")
+    # Flask-Login kullanarak çıkış yap
+    logout_user()
+    # Eski session kullanımını da koru
+    session.pop("user_id", None)
+    session.pop("email", None)
+    flash("Başarıyla çıkış yaptınız!", "success")
     return redirect(url_for("login"))
 
 
