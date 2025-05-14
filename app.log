@@ -941,3 +941,52 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
+2025-05-14 04:23:50,677 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 04:23:52,990 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 04:23:53,501 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
