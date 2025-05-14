@@ -13,136 +13,204 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-style.css') }}">
     <style>
-        /* Genel Ayarlar */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --light-bg: #f8f9fa;
+            --border-radius: 0.75rem;
+            --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --sidebar-width: 250px;
+        }
+        
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f5f7ff, #e3e8ff);
+            background-color: #f5f7ff;
             color: #333;
-            min-height: 100vh;
-            margin: 0;
-            padding: 2rem 0;
-        }
-
-        /* Kartlar */
-        .auth-card {
-            background-color: white;
-            border-radius: var(--border-radius);
-            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
         }
         
-        .auth-logo {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .auth-logo i {
-            font-size: 3rem;
+        /* Modern Sidebar */
+        .sidebar {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: white;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
         
-        .btn-primary {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 0.6rem 1.4rem;
+        .sidebar h4 {
             font-weight: 600;
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
-            position: relative;
-            overflow: hidden;
-            z-index: 0;
+            letter-spacing: 0.5px;
+        }
+        
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Cards with subtle shadow and rounded corners */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        
+        /* Quick access cards */
+        .quick-access-card {
+            background-color: white;
             transition: all 0.3s ease;
         }
         
-        .btn-primary::after {
-            content: "";
-            position: absolute;
-            z-index: -1;
-            top: 0;
-            left: -40%;
-            width: 80%;
-            height: 100%;
-            background: linear-gradient(120deg, 
-                rgba(255, 255, 255, 0.2) 0%, 
-                rgba(255, 255, 255, 0.1) 40%, 
-                rgba(255, 255, 255, 0) 80%);
-            transform: skewX(-20deg);
-            transition: all 0.5s ease;
+        .quick-access-card:hover {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
         }
         
-        .btn-primary:hover::after {
-            left: 100%;
+        .quick-access-card i {
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-access-card:hover i {
+            transform: scale(1.2);
+        }
+        
+        /* Profile card */
+        .profile-card {
+            text-align: center;
+            background: white;
+        }
+        
+        /* Stats cards */
+        .stat-card {
+            background: white;
+        }
+        
+        .stat-card .card-body {
+            padding: 1.25rem;
+        }
+        
+        .stat-card .display-5, .stat-card .display-6 {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-        }
-
-        /* Form Kontrolleri */
-        .form-control:focus, .form-select:focus {
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
-        }
-
-        /* Giriş Kutusu Animasyonu */
-        .floating-input {
-            position: relative;
-            margin-top: 1.5rem;
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
         }
         
-        .floating-input input,
-        .floating-input textarea {
-            width: 100%;
-            padding: 10px 14px;
-            outline: 0;
-            border-radius: 12px;
-            border: 1px solid #D1D5DB;
-            background: rgba(249, 250, 251, 0.8);
-            font-size: 16px;
-            transition: all 0.2s ease;
-            z-index: 1;
-            position: relative;
+        /* Table styling */
+        .table {
+            border-radius: var(--border-radius);
+            overflow: hidden;
         }
         
-        .floating-input label {
-            position: absolute;
-            top: 1px;
-            left: 14px;
-            color: #030303;
-            font-size: 16px;
-            pointer-events: none;
-            transform-origin: 0 0;
-            transform: translate(0, -20px) scale(0.8);
-            transition: all 0.2s ease;
-            z-index: 0;
-            background: transparent;
-            padding: 0 4px;
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: none;
+            font-weight: 600;
         }
         
-        .floating-input input:placeholder-shown + label {
-            transform: translate(0, 0) scale(1);
-            background: transparent;
-            padding: 0;
-            top: 14px;
-            font-size: 16px;
+        /* Alerts */
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
         }
-
-        /* Mobil Uyumluluk */
+        
+        /* Mobile styles */
         @media (max-width: 768px) {
             .card {
-                border-radius: 16px;
+                margin-bottom: 1rem;
             }
-            .btn {
-                font-size: 0.85rem;
-                padding: 0.5rem;
+            
+            .offcanvas-body a {
+                padding: 12px 15px;
+                display: flex;
+                align-items: center;
+                color: #333;
+                text-decoration: none;
+                border-radius: var(--border-radius);
+                margin-bottom: 8px;
+                transition: background-color 0.3s;
+            }
+            
+            .offcanvas-body a:hover, .offcanvas-body a.active {
+                background-color: #f8f9fa;
+            }
+            
+            .offcanvas-body a i {
+                margin-right: 10px;
+                font-size: 1.2rem;
+            }
+            
+            /* Ana içerik alanı tam genişlikte göster */
+            .content-area {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+            
+            /* İstatistik kartları mobilde tek sütun */
+            .stat-card-col {
+                width: 100%;
+            }
+        }
+        
+        /* Tablet */
+        @media (min-width: 768px) and (max-width: 992px) {
+            .sidebar {
+                width: 220px;
+            }
+            
+            .content-area {
+                width: calc(100% - 220px) !important;
+            }
+            
+            /* İki sütunlu grid */
+            .stat-card-col {
+                width: 50%;
             }
         }
     </style>
@@ -168,7 +236,7 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
-            <form action="{{ url_for('register') }}" method="post" id="registerForm" onsubmit="return validateForm()" class="needs-validation" novalidate>
+            <form action="{{ url_for('auth.register') }}" method="post" id="registerForm" onsubmit="return validateForm()" class="needs-validation" novalidate>
                 <div class="row g-4">
                     <div class="col-md-6">
                         <div class="floating-input">
@@ -233,9 +301,9 @@
             </form>
             <div class="text-center mt-4 pt-3 border-top">
                 <p class="mb-0 text-muted">Zaten hesabınız var mı? 
-                    <a href="{{ url_for('login') }}" class="text-primary fw-medium">
-                        <i class="bi bi-box-arrow-in-right me-1"></i>Giriş Yap
-                    </a>
+                  <a href="{{ url_for('auth.login') }}" class="text-primary fw-medium">
+    <i class="bi bi-box-arrow-in-right me-1"></i>Giriş Yap
+</a>
                 </p>
             </div>
         </div>

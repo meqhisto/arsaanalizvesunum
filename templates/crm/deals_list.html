@@ -54,7 +54,7 @@
 {% block crm_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-kanban-fill me-2"></i> Fırsat Yönetimi</h2>
-    <a href="{{ url_for('crm_deal_new') }}" class="btn btn-primary">
+    <a href="{{ url_for('crm.crm_deal_new') }}" class="btn btn-primary">
         <i class="bi bi-plus-circle me-1"></i> Yeni Fırsat Ekle
     </a>
 </div>
@@ -71,7 +71,7 @@
                 {% if stage in deals_by_stage and deals_by_stage[stage] %}
                     {% for deal in deals_by_stage[stage] %}
                     <div class="kanban-deal-card shadow-sm" data-deal-id="{{ deal.id }}">
-                        <h6><a href="{{ url_for('crm_deal_detail', deal_id=deal.id) }}">{{ deal.title }}</a></h6>
+                        <h6><a href="{{ url_for('crm.crm_deal_detail', deal_id=deal.id) }}">{{ deal.title }}</a></h6>
                         <p class="mb-1">
                             <i class="bi bi-person-circle me-1"></i> {{ deal.contact.first_name }} {{ deal.contact.last_name }}
                             {% if deal.company %}<br><i class="bi bi-building me-1"></i> {{ deal.company.name }}{% endif %}
@@ -81,7 +81,7 @@
                         <p><i class="bi bi-calendar-check me-1"></i> Tahmini Kapanış: {{ deal.expected_close_date.strftime('%d.%m.%Y') }}</p>
                         {% endif %}
                         <div>
-                            <a href="{{ url_for('crm_deal_edit', deal_id=deal.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
+                            <a href="{{ url_for('crm.crm_deal_edit', deal_id=deal.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
                             {# Silme formu daha sonra eklenebilir veya detay sayfasında kalabilir #}
                         </div>
                     </div>
@@ -90,7 +90,7 @@
                     <p class="text-muted small text-center p-3">Bu aşamada fırsat yok.</p>
                 {% endif %}
                 <div class="text-center mt-2">
-                    <a href="{{ url_for('crm_deal_new', stage=stage) }}" class="btn btn-sm btn-outline-success w-100">
+                    <a href="{{ url_for('crm.crm_deal_new', stage=stage) }}" class="btn btn-sm btn-outline-success w-100">
                         <i class="bi bi-plus"></i> Bu Aşamaya Ekle
                     </a>
                 </div>
@@ -102,7 +102,7 @@
 {% else %} {# Bu, {% if deals_by_stage %} bloğunun else kısmı #}
 <div class="alert alert-light text-center" role="alert">
     <i class="bi bi-info-circle me-2"></i> Henüz hiç fırsat eklenmemiş.
-    <a href="{{ url_for('crm_deal_new') }}" class="alert-link">Hemen bir fırsat ekleyin!</a>
+    <a href="{{ url_for('crm.crm_deal_new') }}" class="alert-link">Hemen bir fırsat ekleyin!</a>
 </div>
 {% endif %} {# Bu, {% if deals_by_stage %} bloğunun kapanışı #}
 

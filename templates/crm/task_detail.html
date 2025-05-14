@@ -13,7 +13,7 @@
                         <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
                             <i class="bi bi-printer"></i> Yazdır
                         </button>
-                        <a href="{{ url_for('crm_tasks_list') }}" class="btn btn-sm btn-primary ms-2">
+                        <a href="{{ url_for('crm.crm_tasks_list') }}" class="btn btn-sm btn-primary ms-2">
                             <i class="bi bi-arrow-left"></i> Görevlere Dön
                         </a>
                     </div>
@@ -150,19 +150,19 @@
                                     <div class="d-flex flex-wrap gap-2">
                                         <!-- Aksiyon butonları - yetkiye göre gösterilecek -->
                                         {% if current_user.id == task.user_id or current_user.role == 'broker' %}
-                                        <a href="{{ url_for('crm_task_edit', task_id=task.id) if 'crm_task_edit' in url_list else '#' }}" class="btn btn-primary">
+                                        <a href="{{ url_for('crm.crm_task_edit', task_id=task.id) if 'crm_task_edit' in url_list else '#' }}" class="btn btn-primary">
                                             <i class="bi bi-pencil"></i> Düzenle
                                         </a>
                                         {% endif %}
                                         
                                         {% if task.status != 'Tamamlandı' and task.status != 'İptal' and (current_user.id == task.assigned_to_user_id or current_user.role == 'broker') %}
-                                        <a href="{{ url_for('crm_task_complete', task_id=task.id) if 'crm_task_complete' in url_list else '#' }}" class="btn btn-success">
+                                        <a href="{{ url_for('crm.crm_task_complete', task_id=task.id) if 'crm_task_complete' in url_list else '#' }}" class="btn btn-success">
                                             <i class="bi bi-check-circle"></i> Tamamlandı Olarak İşaretle
                                         </a>
                                         {% endif %}
                                         
                                         {% if current_user.role == 'broker' %}
-                                        <a href="{{ url_for('crm_task_reassign', task_id=task.id) if 'crm_task_reassign' in url_list else '#' }}" class="btn btn-info">
+                                        <a href="{{ url_for('crm.crm_task_reassign', task_id=task.id) if 'crm_task_reassign' in url_list else '#' }}" class="btn btn-info">
                                             <i class="bi bi-people"></i> Yeniden Ata
                                         </a>
                                         {% endif %}

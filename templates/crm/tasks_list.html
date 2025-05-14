@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-check2-all me-2"></i> Görevlerim</h2>
     <div class="d-flex align-items-center">
-        <form method="GET" action="{{ url_for('crm_tasks_list') }}" class="d-flex me-2">
+        <form method="GET" action="{{ url_for('crm.crm_tasks_list') }}" class="d-flex me-2">
             <select name="status" class="form-select form-select-sm me-2" onchange="this.form.submit()">
                 <option value="">Tüm Durumlar</option>
                 {% for status_item in statuses %}
@@ -15,7 +15,7 @@
             </select>
             {# <button type="submit" class="btn btn-sm btn-outline-secondary">Filtrele</button> #}
         </form>
-        <a href="{{ url_for('crm_task_new') }}" class="btn btn-primary">
+        <a href="{{ url_for('crm.crm_task_new') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i> Yeni Görev Ekle
         </a>
     </div>
@@ -27,7 +27,7 @@
     <div class="list-group-item list-group-item-action flex-column align-items-start {% if task.status == 'Tamamlandı' %}list-group-item-success{% elif task.status == 'İptal Edildi' %}list-group-item-danger text-decoration-line-through{% elif task.due_date and task.due_date < datetime.utcnow() and task.status not in ['Tamamlandı', 'İptal Edildi'] %}list-group-item-warning{% endif %}">
         <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">
-                <form action="{{ url_for('crm_task_toggle_status', task_id=task.id) }}" method="POST" class="d-inline me-2">
+                <form action="{{ url_for('crm.crm_task_toggle_status', task_id=task.id) }}" method="POST" class="d-inline me-2">
                     <input type="hidden" name="new_status" value="{{ 'Devam Ediyor' if task.status == 'Tamamlandı' else 'Tamamlandı' }}">
                     <button type="submit" class="btn btn-sm p-0 border-0" title="Durumu Değiştir">
                         {% if task.status == 'Tamamlandı' %}
@@ -37,7 +37,7 @@
                         {% endif %}
                     </button>
                 </form>
-                <a href="{{ url_for('crm_task_edit', task_id=task.id) }}" class="text-decoration-none">{{ task.title }}</a>
+                <a href="{{ url_for('crm.crm_task_edit', task_id=task.id) }}" class="text-decoration-none">{{ task.title }}</a>
             </h5>
             <small class="text-muted">
                 {% if task.due_date %}
@@ -69,15 +69,15 @@
             {% endif %}
             
             {% if task.contact %}
-                <i class="bi bi-person-fill"></i> <a href="{{ url_for('crm_contact_detail', contact_id=task.contact_id) }}" class="text-muted">{{ task.contact.first_name }} {{ task.contact.last_name }}</a>
+                <i class="bi bi-person-fill"></i> <a href="{{ url_for('crm.crm_contact_detail', contact_id=task.contact_id) }}" class="text-muted">{{ task.contact.first_name }} {{ task.contact.last_name }}</a>
             {% endif %}
             {% if task.deal %}
-                | <i class="bi bi-piggy-bank-fill"></i> <a href="{{ url_for('crm_deal_detail', deal_id=task.deal_id) }}" class="text-muted">{{ task.deal.title }}</a>
+                | <i class="bi bi-piggy-bank-fill"></i> <a href="{{ url_for('crm.crm_deal_detail', deal_id=task.deal_id) }}" class="text-muted">{{ task.deal.title }}</a>
             {% endif %}
         </small>
         <div class="float-end">
-             <a href="{{ url_for('crm_task_edit', task_id=task.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
-            <form action="{{ url_for('crm_task_delete', task_id=task.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bu görevi silmek istediğinizden emin misiniz?');">
+             <a href="{{ url_for('crm.crm_task_edit', task_id=task.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
+            <form action="{{ url_for('crm.crm_task_delete', task_id=task.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bu görevi silmek istediğinizden emin misiniz?');">
                 <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Sil"><i class="bi bi-trash"></i></button>
             </form>
         </div>
@@ -92,7 +92,7 @@
     {% else %}
         Henüz hiç görev eklenmemiş.
     {% endif %}
-    <a href="{{ url_for('crm_task_new') }}" class="alert-link">Hemen bir görev ekleyin!</a>
+    <a href="{{ url_for('crm.crm_task_new') }}" class="alert-link">Hemen bir görev ekleyin!</a>
 </div>
 {% endif %}
 {% endblock %}

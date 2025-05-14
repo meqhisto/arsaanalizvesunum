@@ -45,7 +45,7 @@
                                         <td>{{ member.unvan }}</td>
                                         <td>{{ member.telefon }}</td>
                                         <td>
-                                            <form action="{{ url_for('crm_team_remove_member', user_id=member.id) }}" method="post" class="d-inline">
+                                            <form action="{{ url_for('crm.crm_team_remove_member', user_id=member.id) }}" method="post" class="d-inline">
                                                 <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Bu danışmanı ekibinizden çıkarmak istediğinize emin misiniz?')">
                                                     <i class="fas fa-user-minus"></i> Ekipten Çıkar
                                                 </button>
@@ -84,7 +84,7 @@
                                         <td>{{ user.unvan }}</td>
                                         <td>{{ user.telefon }}</td>
                                         <td>
-                                            <form action="{{ url_for('crm_team_add_member', user_id=user.id) }}" method="post" class="d-inline">
+                                            <form action="{{ url_for('crm.crm_team_add_member', user_id=user.id) }}" method="post" class="d-inline">
                                                 <button type="submit" class="btn btn-outline-primary btn-sm">
                                                     <i class="fas fa-user-plus"></i> Ekibe Ekle
                                                 </button>

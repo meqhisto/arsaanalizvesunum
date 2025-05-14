@@ -104,7 +104,7 @@
             </div>
             <div class="card-body">
                 <!-- Yeni Etkileşim Ekleme Formu -->
-                <form action="{{ url_for('crm_interaction_new', contact_id=contact.id) }}" method="POST" class="mb-4 p-3 border rounded bg-light">
+                <form action="{{ url_for('crm.crm_interaction_new', contact_id=contact.id) }}" method="POST" class="mb-4 p-3 border rounded bg-light">
                     <h6>Yeni Etkileşim Ekle</h6>
                     <div class="row g-3">
                         <div class="col-md-3">
@@ -132,7 +132,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="bi bi-check2-square me-2"></i> Bu Kişiyle İlgili Görevler</h5>
-                <a href="{{ url_for('crm_task_new', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary">
+                <a href="{{ url_for('crm.crm_task_new', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-plus-circle"></i> Yeni Görev Ekle
                 </a>
             </div>
@@ -146,7 +146,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5><i class="bi bi-check2-square me-2"></i> Bu Kişiyle İlgili Görevler</h5>
-                <a href="{{ url_for('crm_task_new', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary">
+                <a href="{{ url_for('crm.crm_task_new', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-plus-circle"></i> Yeni Görev Ekle
                 </a>
             </div>
@@ -156,25 +156,25 @@
                         {% for task in tasks %}
                         <li class="list-group-item {% if task.status == 'Tamamlandı' %}list-group-item-success{% elif task.status == 'İptal Edildi' %}list-group-item-danger text-decoration-line-through{% elif task.due_date and task.due_date < datetime.utcnow() and task.status not in ['Tamamlandı', 'İptal Edildi'] %}list-group-item-warning{% endif %}">
                             <div class="d-flex w-100 justify-content-between">
-                                <form action="{{ url_for('crm_task_toggle_status', task_id=task.id) }}" method="POST" class="d-inline me-2">
+                                <form action="{{ url_for('crm.crm_task_toggle_status', task_id=task.id) }}" method="POST" class="d-inline me-2">
                                      <input type="hidden" name="new_status" value="{{ 'Devam Ediyor' if task.status == 'Tamamlandı' else 'Tamamlandı' }}">
                                     <button type="submit" class="btn btn-sm p-0 border-0" title="Durumu Değiştir">
                                         {% if task.status == 'Tamamlandı' %}<i class="bi bi-check-square-fill text-success fs-5"></i>
                                         {% else %}<i class="bi bi-square text-muted fs-5"></i>{% endif %}
                                     </button>
                                 </form>
-                                <a href="{{ url_for('crm_task_edit', task_id=task.id) }}" class="fw-bold text-decoration-none">{{ task.title }}</a>
+                                <a href="{{ url_for('crm.crm_task_edit', task_id=task.id) }}" class="fw-bold text-decoration-none">{{ task.title }}</a>
                                 <small class="text-muted">{{ task.due_date.strftime('%d.%m.%Y %H:%M') if task.due_date else 'Tarihsiz' }}</small>
                             </div>
                             {% if task.description %}<p class="mb-1 small">{{ task.description|nl2br }}</p>{% endif %}
                             <small>
                                 <span class="badge {% if task.priority == 'Acil' %}bg-danger{% elif task.priority == 'Yüksek' %}bg-warning text-dark{% elif task.priority == 'Normal' %}bg-info{% else %}bg-secondary{% endif %}">{{ task.priority }}</span>
                                 <span class="badge bg-light text-dark">{{ task.status }}</span>
-                                {% if task.deal %}| Fırsat: <a href="{{url_for('crm_deal_detail', deal_id=task.deal_id)}}">{{task.deal.title}}</a>{% endif %}
+                                {% if task.deal %}| Fırsat: <a href="{{url_for('crm.crm_deal_detail', deal_id=task.deal_id)}}">{{task.deal.title}}</a>{% endif %}
                             </small>
                             <div class="float-end">
-                                 <a href="{{ url_for('crm_task_edit', task_id=task.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
-                                <form action="{{ url_for('crm_task_delete', task_id=task.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bu görevi silmek istediğinizden emin misiniz?');">
+                                 <a href="{{ url_for('crm.crm_task_edit', task_id=task.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
+                                <form action="{{ url_for('crm.crm_task_delete', task_id=task.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bu görevi silmek istediğinizden emin misiniz?');">
                                     <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Sil"><i class="bi bi-trash"></i></button>
                                 </form>
                             </div>
@@ -225,10 +225,10 @@
                                 Oluşturan: {{ interaction.user.ad }} {{ interaction.user.soyad if interaction.user.soyad else '' }}
                                 {# Eğer fırsata bağlıysa: 
                                 {% if interaction.deal_id and interaction.deal %}
-                                    | Fırsat: <a href="{{ url_for('crm_deal_detail', deal_id=interaction.deal_id) }}">{{ interaction.deal.title }}</a>
+                                    | Fırsat: <a href="{{ url_for('crm.crm_deal_detail', deal_id=interaction.deal_id) }}">{{ interaction.deal.title }}</a>
                                 {% endif %}
                                 #}
-                                <form action="{{ url_for('crm_interaction_delete', interaction_id=interaction.id) }}" method="POST" class="d-inline float-end" onsubmit="return confirm('Bu etkileşimi silmek istediğinizden emin misiniz?');">
+                                <form action="{{ url_for('crm.crm_interaction_delete', interaction_id=interaction.id) }}" method="POST" class="d-inline float-end" onsubmit="return confirm('Bu etkileşimi silmek istediğinizden emin misiniz?');">
                                     <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Sil">
                                         <i class="bi bi-x-lg small"></i>
                                     </button>

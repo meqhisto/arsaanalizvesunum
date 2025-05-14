@@ -13,7 +13,7 @@
                         <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
                             <i class="bi bi-printer"></i> Yazdır
                         </button>
-                        <a href="{{ url_for('crm_team_management') }}" class="btn btn-sm btn-primary ms-2">
+                        <a href="{{ url_for('crm.crm_team_management') }}" class="btn btn-sm btn-primary ms-2">
                             <i class="bi bi-people"></i> Ekip Yönetimi
                         </a>
                     </div>
@@ -82,7 +82,7 @@
                                 {% for member in team_performance %}
                                 <tr>
                                     <td>
-                                        <a href="{{ url_for('crm_team_member_detail', user_id=member.id) }}">
+                                        <a href="{{ url_for('crm.crm_team_member_detail', user_id=member.id) }}">
                                             {{ member.name }}
                                         </a>
                                     </td>
@@ -125,7 +125,7 @@
                                 {% for task in recently_completed_tasks %}
                                 <tr>
                                     <td>
-                                        <a href="{{ url_for('crm_task_detail', task_id=task.id) }}">
+                                        <a href="{{ url_for('crm.crm_task_detail', task_id=task.id) }}">
                                             {{ task.title }}
                                         </a>
                                     </td>
@@ -158,7 +158,7 @@
                                 {% for task in upcoming_deadlines %}
                                 <tr class="{% if task.days_left < 0 %}table-danger{% elif task.days_left < 2 %}table-warning{% endif %}">
                                     <td>
-                                        <a href="{{ url_for('crm_task_detail', task_id=task.id) }}">
+                                        <a href="{{ url_for('crm.crm_task_detail', task_id=task.id) }}">
                                             {{ task.title }}
                                         </a>
                                     </td>

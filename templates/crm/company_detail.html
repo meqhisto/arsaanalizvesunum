@@ -8,13 +8,13 @@
         <i class="bi bi-buildings-fill me-2"></i> Şirket Detayı: {{ company.name }}
     </h2>
     <div>
-        <a href="{{ url_for('crm_companies_list') }}" class="btn btn-outline-secondary me-2">
+        <a href="{{ url_for('crm.crm_companies_list') }}" class="btn btn-outline-secondary me-2">
             <i class="bi bi-arrow-left me-1"></i> Listeye Dön
         </a>
-        <a href="{{ url_for('crm_company_edit', company_id=company.id) }}" class="btn btn-secondary me-2">
+        <a href="{{ url_for('crm.crm_company_edit', company_id=company.id) }}" class="btn btn-secondary me-2">
             <i class="bi bi-pencil-square me-1"></i> Düzenle
         </a>
-        <form action="{{ url_for('crm_company_delete', company_id=company.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bu şirketi silmek istediğinizden emin misiniz? Bağlı kişilerin ve fırsatların şirket bağlantıları kaldırılacaktır.');">
+        <form action="{{ url_for('crm.crm_company_delete', company_id=company.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bu şirketi silmek istediğinizden emin misiniz? Bağlı kişilerin ve fırsatların şirket bağlantıları kaldırılacaktır.');">
             <button type="submit" class="btn btn-danger">
                 <i class="bi bi-trash me-1"></i> Sil
             </button>
@@ -72,7 +72,7 @@
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-people-fill me-2"></i>Bağlı Kişiler ({{ company_contacts|length }})</span>
-                <a href="{{ url_for('crm_contact_new', company_id=company.id) }}" class="btn btn-sm btn-outline-primary">
+                <a href="{{ url_for('crm.crm_contact_new', company_id=company.id) }}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-person-plus-fill me-1"></i> Bu Şirkete Kişi Ekle
                 </a>
             </div>
@@ -83,7 +83,7 @@
                         <li class="list-group-item">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <a href="{{ url_for('crm_contact_detail', contact_id=contact_item.id) }}" class="fw-semibold text-decoration-none">{{ contact_item.first_name }} {{ contact_item.last_name }}</a>
+                                    <a href="{{ url_for('crm.crm_contact_detail', contact_id=contact_item.id) }}" class="fw-semibold text-decoration-none">{{ contact_item.first_name }} {{ contact_item.last_name }}</a>
                                     {% if contact_item.role %}<small class="d-block text-muted">{{ contact_item.role }}</small>{% endif %}
                                 </div>
                                 <div class="text-end">
@@ -115,12 +115,12 @@
                         {% for deal_item in company_deals %}
                         <li class="list-group-item">
                              <div class="d-flex justify-content-between align-items-center">
-                                <a href="{{ url_for('crm_deal_detail', deal_id=deal_item.id) }}" class="fw-semibold text-decoration-none">{{ deal_item.title }}</a>
+                                <a href="{{ url_for('crm.crm_deal_detail', deal_id=deal_item.id) }}" class="fw-semibold text-decoration-none">{{ deal_item.title }}</a>
                                 <span class="badge bg-primary rounded-pill">{{ deal_item.stage }}</span>
                             </div>
                             <small class="text-muted">Değer: {{ "%.2f"|format(deal_item.value) }} {{ deal_item.currency }}</small>
                             {% if deal_item.contact %}
-                                <small class="d-block text-muted">Kontak: <a href="{{ url_for('crm_contact_detail', contact_id=deal_item.contact_id) }}">{{ deal_item.contact.first_name }} {{ deal_item.contact.last_name }}</a></small>
+                                <small class="d-block text-muted">Kontak: <a href="{{ url_for('crm.crm_contact_detail', contact_id=deal_item.contact_id) }}">{{ deal_item.contact.first_name }} {{ deal_item.contact.last_name }}</a></small>
                             {% endif %}
                         </li>
                         {% endfor %}

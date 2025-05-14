@@ -220,7 +220,7 @@
                                 {% for task in recent_completed_tasks %}
                                 <tr>
                                     <td>
-                                        <a href="{{ url_for('crm_task_detail', task_id=task.id) }}">{{ task.title }}</a>
+                                        <a href="{{ url_for('crm.crm_task_detail', task_id=task.id) }}">{{ task.title }}</a>
                                     </td>
                                     <td>{{ task.assignee.ad }} {{ task.assignee.soyad }}</td>
                                     <td>{{ task.due_date.strftime('%d.%m.%Y') if task.due_date else '-' }}</td>
