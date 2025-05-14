@@ -24,7 +24,7 @@
             <td>{{ analiz.ilce }}</td>
             <td>{{ "{:,.2f}".format(analiz.fiyat) }} TL</td>
             <td>
-                <form method="post" action="{{ url_for('portfolio_remove_analiz', id=portfolio.id, analiz_id=analiz.id) }}" style="display:inline;">
+                <form method="post" action="{{ url_for('portfolio.portfolio_list_remove_analiz', id=portfolio.id, analiz_id=analiz.id) }}" style="display:inline;">
                     <button type="submit" class="btn btn-danger btn-sm">Çıkar</button>
                 </form>
             </td>
@@ -32,5 +32,5 @@
         {% endfor %}
     </tbody>
 </table>
-<a href="{{ url_for('portfolio_add_analiz', id=portfolio.id) }}" class="btn btn-success">Analiz Ekle</a>
-<a href="{{ url_for('portfolios') }}" class="btn btn-secondary">Geri</a> 
+<a href="{{ url_for('portfolio.portfolio_add_analiz', id=portfolio.id) }}" class="btn btn-success">Analiz Ekle</a>
+<a href="{{ url_for('portfolio.portfolios_list') }}" class="btn btn-secondary">Geri</a>

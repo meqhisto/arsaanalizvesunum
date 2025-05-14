@@ -13,9 +13,211 @@
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <!-- Ana CSS -->
-    <link href="{{ url_for('static', filename='css/sofistike-style') }}" rel="stylesheet">
-    <!-- Form Özel CSS -->
+    <link href="{{ url_for('static', filename='css/sofistike-style.css') }}" rel="stylesheet">  
+      <!-- Form Özel CSS -->
     <link href="{{ url_for('static', filename='css/analysis_form.css') }}" rel="stylesheet">
+        <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --light-bg: #f8f9fa;
+            --border-radius: 0.75rem;
+            --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --sidebar-width: 250px;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7ff;
+            color: #333;
+        }
+        
+        /* Modern Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar h4 {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Cards with subtle shadow and rounded corners */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        
+        /* Quick access cards */
+        .quick-access-card {
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-access-card:hover {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+        
+        .quick-access-card i {
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-access-card:hover i {
+            transform: scale(1.2);
+        }
+        
+        /* Profile card */
+        .profile-card {
+            text-align: center;
+            background: white;
+        }
+        
+        /* Stats cards */
+        .stat-card {
+            background: white;
+        }
+        
+        .stat-card .card-body {
+            padding: 1.25rem;
+        }
+        
+        .stat-card .display-5, .stat-card .display-6 {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Table styling */
+        .table {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: none;
+            font-weight: 600;
+        }
+        
+        /* Alerts */
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .card {
+                margin-bottom: 1rem;
+            }
+            
+            .offcanvas-body a {
+                padding: 12px 15px;
+                display: flex;
+                align-items: center;
+                color: #333;
+                text-decoration: none;
+                border-radius: var(--border-radius);
+                margin-bottom: 8px;
+                transition: background-color 0.3s;
+            }
+            
+            .offcanvas-body a:hover, .offcanvas-body a.active {
+                background-color: #f8f9fa;
+            }
+            
+            .offcanvas-body a i {
+                margin-right: 10px;
+                font-size: 1.2rem;
+            }
+            
+            /* Ana içerik alanı tam genişlikte göster */
+            .content-area {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+            
+            /* İstatistik kartları mobilde tek sütun */
+            .stat-card-col {
+                width: 100%;
+            }
+        }
+        
+        /* Tablet */
+        @media (min-width: 768px) and (max-width: 992px) {
+            .sidebar {
+                width: 220px;
+            }
+            
+            .content-area {
+                width: calc(100% - 220px) !important;
+            }
+            
+            /* İki sütunlu grid */
+            .stat-card-col {
+                width: 50%;
+            }
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container py-5">
@@ -447,7 +649,7 @@
                         <button type="submit" class="btn btn-primary btn-lg px-5">
                             <i class="bi bi-save"></i> Arsayı Kaydet
                         </button>
-                        <a href="{{ url_for('index') }}" class="btn btn-light btn-lg px-5">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-light btn-lg px-5">
                             <i class="bi bi-x-circle"></i> Vazgeç
                         </a>
                     </div>

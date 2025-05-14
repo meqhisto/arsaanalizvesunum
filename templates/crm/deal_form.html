@@ -5,7 +5,7 @@
 {% block crm_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-cash-stack me-2"></i> {{ title }}</h2>
-    <a href="{{ url_for('crm_deals_list') }}" class="btn btn-outline-secondary">
+    <a href="{{ url_for('crm.crm_deals_list') }}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i> Fırsat Listesine Dön
     </a>
 </div>
@@ -96,7 +96,7 @@
             </div>
 
             <div class="d-flex justify-content-end">
-                <a href="{{ url_for('crm_deals_list') }}" class="btn btn-secondary me-2">İptal</a>
+                <a href="{{ url_for('crm.crm_deals_list') }}" class="btn btn-secondary me-2">İptal</a>
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-save me-1"></i> Kaydet
                 </button>

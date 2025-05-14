@@ -1,0 +1,17 @@
+[build]
+  command = "pip install -r requirements.txt && gunicorn app:app"
+  publish = "static"
+  functions = "functions"
+
+[dev]
+  command = "python -m flask run"
+  targetPort = 5000
+  publish = "static"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[functions]
+  included_files = ["app.py", "bootstrap.py"] # Or any other files your functions need

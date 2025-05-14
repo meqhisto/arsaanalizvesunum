@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analizlerim - Arsa Yatırım</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --accent-color: #4895ef;
+        --success-color: #4cc9f0;
+        --light-bg: #f8f9fa;
+        --border-radius: 0.75rem;
+        --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        --sidebar-width: 250px;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f5f7ff;
+        color: #333;
+      }
+
+      /* Modern Sidebar */
+      .sidebar {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        color: white;
+        min-height: 100vh;
+        position: sticky;
+        top: 0;
+        left: 0;
+        box-shadow: var(--box-shadow);
+        z-index: 1000;
+        overflow-y: auto;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar h4 {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      .sidebar a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        padding: 12px 15px;
+        border-radius: var(--border-radius);
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+      }
+
+      .sidebar a:hover,
+      .sidebar a.active {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: white;
+        transform: translateX(5px);
+      }
+
+      .sidebar a i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+      }
+
+      /* Cards with subtle shadow and rounded corners */
+      .card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+      }
+
+      .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-weight: 600;
+      }
+
+      /* Quick access cards */
+      .quick-access-card {
+        background-color: white;
+        transition: all 0.3s ease;
+      }
+
+      .quick-access-card:hover {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      }
+
+      .quick-access-card i {
+        transition: transform 0.3s ease;
+      }
+
+      .quick-access-card:hover i {
+        transform: scale(1.2);
+      }
+
+      /* Profile card */
+      .profile-card {
+        text-align: center;
+        background: white;
+      }
+
+      /* Stats cards */
+      .stat-card {
+        background: white;
+      }
+
+      .stat-card .card-body {
+        padding: 1.25rem;
+      }
+
+      .stat-card .display-5,
+      .stat-card .display-6 {
+        font-weight: 600;
+        color: var(--primary-color);
+      }
+
+      /* Buttons */
+      .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+
+      .btn-primary:hover {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+      }
+
+      /* Table styling */
+      .table {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+      }
+
+      .table thead th {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        font-weight: 600;
+      }
+
+      /* Alerts */
+      .alert {
+        border-radius: var(--border-radius);
+        border: none;
+      }
+
+      /* Mobile styles */
+      @media (max-width: 768px) {
+        .card {
+          margin-bottom: 1rem;
+        }
+
+        .offcanvas-body a {
+          padding: 12px 15px;
+          display: flex;
+          align-items: center;
+          color: #333;
+          text-decoration: none;
+          border-radius: var(--border-radius);
+          margin-bottom: 8px;
+          transition: background-color 0.3s;
+        }
+
+        .offcanvas-body a:hover,
+        .offcanvas-body a.active {
+          background-color: #f8f9fa;
+        }
+
+        .offcanvas-body a i {
+          margin-right: 10px;
+          font-size: 1.2rem;
+        }
+
+        /* Ana içerik alanı tam genişlikte göster */
+        .content-area {
+          width: 100% !important;
+          margin-left: 0 !important;
+        }
+
+        /* İstatistik kartları mobilde tek sütun */
+        .stat-card-col {
+          width: 100%;
+        }
+      }
+
+      /* Tablet */
+      @media (min-width: 768px) and (max-width: 992px) {
+        .sidebar {
+          width: 220px;
+        }
+
+        .content-area {
+          width: calc(100% - 220px) !important;
+        }
+
+        /* İki sütunlu grid */
+        .stat-card-col {
+          width: 50%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Mobil Sidebar Tetikleyici -->
+        <button
+          class="btn btn-primary d-md-none m-3"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#mobilSidebar"
+        >
+          <i class="bi bi-list"></i> Menü
+        </button>
+
+        <!-- Sidebar -->
+        <div
+          class="offcanvas offcanvas-start d-md-none"
+          tabindex="-1"
+          id="mobilSidebar"
+        >
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title">İnveco Panel</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="offcanvas"
+            ></button>
+          </div>
+          <div class="offcanvas-body d-flex flex-column gap-2">
+            <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+            <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+            <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+            <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
+            <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
+          </div>
+        </div>
+
+        <!-- Masaüstü Sidebar -->
+        <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
+          <h4 class="mb-4">İnveco Panel</h4>
+          <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+          <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+          <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+          <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
+          <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
+        </div>
+
+        <!-- Ana İçerik -->
+        <div class="col-md-9 col-lg-10 p-4">
+          <!-- Arama ve Filtreleme Bölümü -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <form id="filterForm" class="row g-3">
+                <div class="col-md-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="searchText"
+                    placeholder="Ara..."
+                  />
+                </div>
+                <div class="col-md-3">
+                  <select class="form-select" id="filterIl">
+                    <option value="">İl Seçin</option>
+                    {% for il_item in iller %} {# Değişken adı il -> il_item
+                    yapıldı #}
+                    <option value="{{ il_item }}">{{ il_item }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <select class="form-select" id="filterImarDurumu">
+                    <option value="">İmar Durumu</option>
+                    <option value="konut">Konut</option>
+                    <option value="ticari">Ticari</option>
+                    <option value="karma">Karma</option>
+                    <option value="sanayi">Sanayi</option>
+                    <option value="diger">Diğer</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <select class="form-select" id="sortBy">
+                    <option value="date_desc">Tarihe Göre (Yeni-Eski)</option>
+                    <option value="date_asc">Tarihe Göre (Eski-Yeni)</option>
+                    <option value="price_desc">
+                      Fiyata Göre (Yüksek-Düşük)
+                    </option>
+                    <option value="price_asc">
+                      Fiyata Göre (Düşük-Yüksek)
+                    </option>
+                  </select>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Analiz Listesi -->
+          {% for month, month_analizler in grouped_analizler.items() %}
+          <h3 class="month-header">{{ month }}</h3>
+          <div class="row g-4 mb-4">
+            {% for analiz_item_loop in month_analizler %} {# Değişken adı analiz
+            -> analiz_item_loop yapıldı #}
+            <div class="col-md-6">
+              <div class="card analysis-card h-100">
+                <div class="card-body">
+                  <h5 class="card-title mb-3">
+                    {{ analiz_item_loop.il }}, {{ analiz_item_loop.ilce }}
+                    <small class="text-muted"
+                      >{{ analiz_item_loop.mahalle }}</small
+                    >
+                  </h5>
+                  <div class="row g-3 mb-3">
+                    <div class="col-6">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-rulers me-2 text-primary"></i>
+                        <div>
+                          <small class="text-muted d-block">Alan</small>
+                          <strong
+                            >{{ "{:,.0f}".format(analiz_item_loop.metrekare) }}
+                            m²</strong
+                          >
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-cash me-2 text-success"></i>
+                        <div>
+                          <small class="text-muted d-block">m² Fiyatı</small>
+                          <strong
+                            >{{ "{:,.0f}".format(analiz_item_loop.fiyat /
+                            analiz_item_loop.metrekare if
+                            analiz_item_loop.metrekare else 0) }} ₺</strong
+                          >
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-building me-2 text-warning"></i>
+                        <div>
+                          <small class="text-muted d-block">İmar</small>
+                          <strong
+                            data-imar="{{ analiz_item_loop.imar_durumu|title }}"
+                            >{{ analiz_item_loop.imar_durumu|title }}</strong
+                          >
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-tag me-2 text-info"></i>
+                        <div>
+                          <small class="text-muted d-block">Toplam Fiyat</small>
+                          <strong data-price="{{ analiz_item_loop.fiyat }}"
+                            >{{ "{:,.0f}".format(analiz_item_loop.fiyat) }}
+                            ₺</strong
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="d-flex justify-content-between align-items-center mt-3"
+                  >
+                    <small class="text-muted">
+                      <i class="bi bi-calendar3"></i>
+                      <span data-date="{{ analiz_item_loop.created_at }}"
+                        >{{ analiz_item_loop.created_at.strftime('%d.%m.%Y')
+                        }}</span
+                      >
+                    </small>
+                    <div class="btn-group">
+                      <a
+                        href="{{ url_for('analysis.analiz_detay', analiz_id=analiz_item_loop.id) }}"
+                        class="btn btn-sm btn-outline-primary"
+                      >
+                        <i class="bi bi-eye"></i> Görüntüle
+                      </a>
+                      <button
+                        onclick="confirmDelete('{{ analiz_item_loop.id }}')"
+                        class="btn btn-sm btn-outline-danger"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %} {% if not grouped_analizler %}
+          <div class="alert alert-light text-center" role="alert">
+            <i class="bi bi-info-circle me-2"></i> Henüz hiç analiz
+            oluşturulmamış.
+            <a href="{{ url_for('main.analysis_form') }}" class="alert-link"
+              >Hemen yeni bir analiz oluşturun!</a
+            >
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Silme Onay Modalı -->
+    <div
+      class="modal fade"
+      id="deleteModal"
+      tabindex="-1"
+      aria-labelledby="deleteModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Analizi Sil</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            Bu analizi silmek istediğinizden emin misiniz?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              İptal
+            </button>
+            <form id="deleteForm" method="POST">
+              {# Action JS ile ayarlanacak #}
+              <button type="submit" class="btn btn-danger">Sil</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function confirmDelete(analizId) {
+        const deleteForm = document.getElementById("deleteForm");
+        // URL'i doğru Blueprint ve rota adı ile oluşturun
+        deleteForm.action =
+          `{{ url_for('analysis.analiz_sil', analiz_id=0) }}`.replace(
+            "/0",
+            `/${analizId}`
+          );
+        const deleteModal = new bootstrap.Modal(
+          document.getElementById("deleteModal")
+        );
+        deleteModal.show();
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchText = document.getElementById("searchText");
+        const filterIl = document.getElementById("filterIl");
+        const filterImarDurumu = document.getElementById("filterImarDurumu");
+        const sortBy = document.getElementById("sortBy");
+
+        function filterCards() {
+          const cards = document.querySelectorAll(".analysis-card");
+          const search = searchText.value.toLowerCase().trim();
+          const selectedIl = filterIl.value.toLowerCase().trim();
+          const selectedImar = filterImarDurumu.value.toLowerCase().trim();
+
+          cards.forEach((card) => {
+            const titleElement = card.querySelector(".card-title");
+            const imarElement = card.querySelector("[data-imar]");
+
+            if (!titleElement || !imarElement) return;
+
+            const fullText = titleElement.textContent.toLowerCase();
+            const imar = imarElement.getAttribute("data-imar").toLowerCase();
+
+            const matchesSearch = !search || fullText.includes(search);
+            const matchesIl = !selectedIl || fullText.includes(selectedIl); // İl adına göre filtreleme (titleElement içinde geçmeli)
+            const matchesImar = !selectedImar || imar === selectedImar;
+
+            // Kartın üst col-md-6 parent'ını gizle/göster
+            const parentCol = card.closest(".col-md-6");
+            if (parentCol) {
+              parentCol.style.display =
+                matchesSearch && matchesIl && matchesImar ? "" : "none";
+            }
+          });
+        }
+
+        function sortCards() {
+          const containers = document.querySelectorAll(".row.g-4.mb-4"); // Her ay grubunun container'ı
+
+          containers.forEach((container) => {
+            // Sadece görünür kartları al
+            const cards = Array.from(
+              container.querySelectorAll(".col-md-6")
+            ).filter((colDiv) => colDiv.style.display !== "none");
+
+            cards.sort((a, b) => {
+              const cardA = a.querySelector(".analysis-card");
+              const cardB = b.querySelector(".analysis-card");
+              if (!cardA || !cardB) return 0;
+
+              const valueA = getSortValue(cardA);
+              const valueB = getSortValue(cardB);
+
+              switch (sortBy.value) {
+                case "date_asc":
+                  return valueA.date - valueB.date;
+                case "date_desc":
+                  return valueB.date - valueA.date;
+                case "price_asc":
+                  return valueA.price - valueB.price;
+                case "price_desc":
+                  return valueB.price - valueA.price;
+                default:
+                  return 0;
+              }
+            });
+            // Sıralanmış kartları (col-md-6 div'leriyle birlikte) container'a yeniden ekle
+            cards.forEach((cardDiv) => container.appendChild(cardDiv));
+          });
+        }
+
+        function getSortValue(cardElement) {
+          // Parametre olarak .analysis-card elementini alır
+          const dateElement = cardElement.querySelector("[data-date]");
+          const priceElement = cardElement.querySelector("[data-price]");
+
+          return {
+            date: dateElement
+              ? new Date(dateElement.getAttribute("data-date"))
+              : new Date(0),
+            price: priceElement
+              ? parseFloat(priceElement.getAttribute("data-price"))
+              : 0,
+          };
+        }
+
+        // Event listeners
+        [searchText, filterIl, filterImarDurumu, sortBy].forEach((element) => {
+          if (element) {
+            // Elementin varlığını kontrol et
+            element.addEventListener("change", () => {
+              filterCards();
+              if (
+                ["date_asc", "date_desc", "price_asc", "price_desc"].includes(
+                  sortBy.value
+                )
+              ) {
+                sortCards();
+              }
+            });
+
+            if (element === searchText) {
+              element.addEventListener("input", () => {
+                // input olayı arama için daha iyi
+                filterCards();
+                if (
+                  ["date_asc", "date_desc", "price_asc", "price_desc"].includes(
+                    sortBy.value
+                  )
+                ) {
+                  sortCards();
+                }
+              });
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

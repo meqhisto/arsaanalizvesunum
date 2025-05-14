@@ -1,0 +1,210 @@
+{% extends "crm/crm_base.html" %}
+
+{% block crm_title %}Ekip Performans Özeti{% endblock %}
+
+{% block crm_content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Ekip Performans Özeti</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Yazdır
+                        </button>
+                        <a href="{{ url_for('crm.crm_team_management') }}" class="btn btn-sm btn-primary ms-2">
+                            <i class="bi bi-people"></i> Ekip Yönetimi
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> Bu sayfada ekibinizin performans özetini görebilirsiniz. Tamamlanan ve devam eden görevler, görev tamamlama oranları ve daha fazlası.
+                    </div>
+
+                    <!-- Özet Kartlar -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Toplam Görev</h5>
+                                    <h2 class="display-4">{{ stats.total_tasks }}</h2>
+                                    <p class="card-text">Ekibe atanmış tüm görevler</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Tamamlanan</h5>
+                                    <h2 class="display-4">{{ stats.completed_tasks }}</h2>
+                                    <p class="card-text">{{ stats.completion_rate }}% tamamlanma oranı</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body">
+                                    <h5 class="card-title">Devam Eden</h5>
+                                    <h2 class="display-4">{{ stats.pending_tasks }}</h2>
+                                    <p class="card-text">Aktif çalışılan görevler</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Geciken</h5>
+                                    <h2 class="display-4">{{ stats.overdue_tasks }}</h2>
+                                    <p class="card-text">Son tarihi geçmiş görevler</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ekip Üyelerinin Performansı -->
+                    <h5 class="border-bottom pb-2 mb-3">Ekip Üyelerinin Performansı</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Danışman</th>
+                                    <th>Toplam Görev</th>
+                                    <th>Tamamlanan</th>
+                                    <th>Devam Eden</th>
+                                    <th>Geciken</th>
+                                    <th>Tamamlama Oranı</th>
+                                    <th>Ortalama Süre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in team_performance %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('crm.crm_team_member_detail', user_id=member.id) }}">
+                                            {{ member.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ member.total_tasks }}</td>
+                                    <td>{{ member.completed_tasks }}</td>
+                                    <td>{{ member.pending_tasks }}</td>
+                                    <td>{{ member.overdue_tasks }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                style="width: {{ member.completion_rate }}%;" 
+                                                aria-valuenow="{{ member.completion_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ member.completion_rate }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ member.avg_completion_time }} gün</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Son Tamamlanan Görevler -->
+                    <h5 class="border-bottom pb-2 mb-3 mt-4">Son Tamamlanan Görevler</h5>
+                    {% if recently_completed_tasks|length == 0 %}
+                    <p class="text-muted">Henüz tamamlanan görev bulunmuyor.</p>
+                    {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Görev</th>
+                                    <th>Atanan</th>
+                                    <th>Tamamlanma Tarihi</th>
+                                    <th>Süre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in recently_completed_tasks %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('crm.crm_task_detail', task_id=task.id) }}">
+                                            {{ task.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ task.assignee }}</td>
+                                    <td>{{ task.completed_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>{{ task.days_to_complete }} gün</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+
+                    <!-- Yaklaşan Son Tarihler -->
+                    <h5 class="border-bottom pb-2 mb-3 mt-4">Yaklaşan Son Tarihler</h5>
+                    {% if upcoming_deadlines|length == 0 %}
+                    <p class="text-muted">Yaklaşan son tarih bulunmuyor.</p>
+                    {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Görev</th>
+                                    <th>Atanan</th>
+                                    <th>Son Tarih</th>
+                                    <th>Kalan Süre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in upcoming_deadlines %}
+                                <tr class="{% if task.days_left < 0 %}table-danger{% elif task.days_left < 2 %}table-warning{% endif %}">
+                                    <td>
+                                        <a href="{{ url_for('crm.crm_task_detail', task_id=task.id) }}">
+                                            {{ task.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ task.assignee }}</td>
+                                    <td>{{ task.due_date.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if task.days_left < 0 %}
+                                            <span class="text-danger">{{ task.days_left|abs }} gün gecikti</span>
+                                        {% elif task.days_left == 0 %}
+                                            <span class="text-warning">Bugün</span>
+                                        {% else %}
+                                            {{ task.days_left }} gün kaldı
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    @media print {
+        .navbar, .sidebar, .card-header, .alert, .nav, footer, button, .btn {
+            display: none !important;
+        }
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        body {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+    }
+</style>
+{% endblock %}

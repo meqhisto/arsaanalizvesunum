@@ -1,118 +1,390 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portföyler - Arsa Yatırım</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/sofistike-style.css">
-</head>
-<body>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/css/sofistike-style.css" />
+    
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --light-bg: #f8f9fa;
+            --border-radius: 0.75rem;
+            --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --sidebar-width: 250px;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7ff;
+            color: #333;
+        }
+        
+        /* Modern Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            left: 0;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar h4 {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Cards with subtle shadow and rounded corners */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        
+        /* Quick access cards */
+        .quick-access-card {
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-access-card:hover {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+        
+        .quick-access-card i {
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-access-card:hover i {
+            transform: scale(1.2);
+        }
+        
+        /* Profile card */
+        .profile-card {
+            text-align: center;
+            background: white;
+        }
+        
+        /* Stats cards */
+        .stat-card {
+            background: white;
+        }
+        
+        .stat-card .card-body {
+            padding: 1.25rem;
+        }
+        
+        .stat-card .display-5, .stat-card .display-6 {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Table styling */
+        .table {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: none;
+            font-weight: 600;
+        }
+        
+        /* Alerts */
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .card {
+                margin-bottom: 1rem;
+            }
+            
+            .offcanvas-body a {
+                padding: 12px 15px;
+                display: flex;
+                align-items: center;
+                color: #333;
+                text-decoration: none;
+                border-radius: var(--border-radius);
+                margin-bottom: 8px;
+                transition: background-color 0.3s;
+            }
+            
+            .offcanvas-body a:hover, .offcanvas-body a.active {
+                background-color: #f8f9fa;
+            }
+            
+            .offcanvas-body a i {
+                margin-right: 10px;
+                font-size: 1.2rem;
+            }
+            
+            /* Ana içerik alanı tam genişlikte göster */
+            .content-area {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+            
+            /* İstatistik kartları mobilde tek sütun */
+            .stat-card-col {
+                width: 100%;
+            }
+        }
+        
+        /* Tablet */
+        @media (min-width: 768px) and (max-width: 992px) {
+            .sidebar {
+                width: 220px;
+            }
+            
+            .content-area {
+                width: calc(100% - 220px) !important;
+            }
+            
+            /* İki sütunlu grid */
+            .stat-card-col {
+                width: 50%;
+            }
+        }
+    </style>
+  </head>
+  
+  <body>
     <div class="container-fluid">
-        <div class="row">
-           <!-- Mobil Sidebar Tetikleyici -->
-<button class="btn btn-primary d-md-none m-3" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebar">
-    <i class="bi bi-list"></i> Menü
-  </button>
-  
-  <!-- Sidebar -->
-  <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebar">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">İnveco Panel</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body d-flex flex-column gap-2">
-                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
-    </div>
-  </div>
-  
-  <!-- Masaüstü Sidebar -->
-  <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
-    <h4 class="mb-4">İnveco Panel</h4>
-                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
-  </div>
+      <div class="row">
+        <!-- Mobil Sidebar Tetikleyici -->
+        <button
+          class="btn btn-primary d-md-none m-3"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#mobilSidebar"
+        >
+          <i class="bi bi-list"></i> Menü
+        </button>
+
+        <!-- Sidebar -->
+        <div
+          class="offcanvas offcanvas-start d-md-none"
+          tabindex="-1"
+          id="mobilSidebar"
+        >
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title">İnveco Panel</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="offcanvas"
+            ></button>
+          </div>
+          <div class="offcanvas-body d-flex flex-column gap-2">
+            <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+            <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+            <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+            <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
+            <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
+          </div>
+        </div>
+
+        <!-- Masaüstü Sidebar -->
+        <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
+          <h4 class="mb-4">İnveco Panel</h4>
+          <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+          <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+          <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+          <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
+          <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
+        </div>
+
+        <!-- Main Content Area -->
+         
+<!-- portfolios.html -->
+
+<!-- ... (head ve sidebar kodları) ... -->
 
             <!-- Main Content Area -->
             <div class="col-md-9 col-lg-10 ms-sm-auto px-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1>Portföyler</h1>
+                <div class="d-flex justify-content-between align-items-center my-4"> <!-- my-4 eklendi -->
+                    <h1>{{ title }}</h1> {# Dinamik başlık #}
+                    {# Yeni Analiz butonu burada kalabilir veya başka bir yere taşınabilir #}
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#analysisModal">
                         <i class="bi bi-plus-circle"></i> Yeni Analiz
                     </button>
                 </div>
 
-                <!-- Arama Alanı -->
+                <!-- Arama Formu -->
                 <div class="row mb-4">
-                    <div class="col-md-6 mx-auto">
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input type="text" class="form-control" id="searchInput" 
-                                   placeholder="Analiz ara (İl, İlçe, Mahalle...)" onkeyup="filterAnalyses()">
-                        </div>
+                    <div class="col-md-8 col-lg-6 mx-auto">
+                        <form method="GET" action="{{ url_for('portfolio.portfolios_list') }}" id="portfolioSearchForm">
+                            <div class="input-group shadow-sm"> {# Hafif gölge eklendi #}
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control border-start-0" id="searchInput" name="search"
+                                       placeholder="Analizlerde ara (İl, İlçe, Mahalle, Kullanıcı Adı...)" 
+                                       value="{{ search_term or '' }}">
+                                {% if search_term %}
+                                    <a href="{{ url_for('portfolio.portfolios_list') }}" class="btn btn-outline-secondary border-start-0" title="Filtreyi Temizle"><i class="bi bi-x-lg"></i></a>
+                                {% endif %}
+                                <button class="btn btn-primary" type="submit">Ara</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
-                <!-- Analizler -->
+                <!-- Analizler Listesi -->
                 <div class="row" id="analysisList">
-                    {% for analiz in analizler %}
-                        <div class="col-md-4 mb-4 analysis-card">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ analiz.ArsaAnaliz.il }} - {{ analiz.ArsaAnaliz.ilce }}</h5>
-                                    <h6 class="card-subtitle mb-2 text-muted">
-                                        {{ analiz.ad }} {{ analiz.soyad }}
-                                    </h6>
-                                    <p class="card-text">
-                                        <strong>Metrekare:</strong> {{ "{:,.2f}".format(analiz.ArsaAnaliz.metrekare) }} m²<br>
-                                        <strong>Fiyat:</strong> {{ "{:,.2f}".format(analiz.ArsaAnaliz.fiyat) }} TL<br>
-                                        <strong>İmar:</strong> {{ analiz.ArsaAnaliz.imar_durumu }}
-                                    </p>
-                                    <p class="text-muted">
-                                        <small><i class="bi bi-clock"></i> {{ analiz.ArsaAnaliz.created_at.strftime('%d.%m.%Y') }}</small>
-                                    </p>
-                                </div>
-                                <div class="card-footer">
-                                    <a href="{{ url_for('analiz_detay', analiz_id=analiz.ArsaAnaliz.id) }}" 
-                                       class="btn btn-primary btn-sm">Detaylar</a>
+                    {% if analizler %}
+                        {% for analiz_data in analizler %} {# Değişken adı güncellendi (results_for_template'e uygun) #}
+                            <div class="col-md-6 col-lg-4 mb-4 analysis-card"> {# col-md-6 col-lg-4 olarak güncellendi #}
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex align-items-center mb-2">
+                                            {% if analiz_data.profil_foto %}
+                                                <img src="{{ url_for('static', filename='uploads/' + analiz_data.profil_foto) }}" alt="{{ analiz_data.ad }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                            {% else %}
+                                                <i class="bi bi-person-circle fs-4 me-2 text-muted"></i>
+                                            {% endif %}
+                                            <h6 class="card-subtitle text-muted small mb-0">
+                                                {{ analiz_data.ad }} {{ analiz_data.soyad }}
+                                            </h6>
+                                        </div>
+                                        <h5 class="card-title mt-1">
+                                            <a href="{{ url_for('analysis.analiz_detay', analiz_id=analiz_data.ArsaAnaliz.id) }}" class="text-decoration-none stretched-link">
+                                                {{ analiz_data.ArsaAnaliz.il }} - {{ analiz_data.ArsaAnaliz.ilce }}
+                                            </a>
+                                        </h5>
+                                        <p class="card-text small text-muted mb-2">
+                                            {{ analiz_data.ArsaAnaliz.mahalle }}
+                                        </p>
+                                        <ul class="list-unstyled small mt-auto"> {# mt-auto ile aşağıya iteme #}
+                                            <li><strong>Metrekare:</strong> {{ "{:,.0f}".format(analiz_data.ArsaAnaliz.metrekare) }} m²</li>
+                                            <li><strong>Fiyat:</strong> {{ "{:,.0f}".format(analiz_data.ArsaAnaliz.fiyat) }} TL</li>
+                                            <li><strong>İmar:</strong> {{ analiz_data.ArsaAnaliz.imar_durumu }}</li>
+                                        </ul>
+                                    </div>
+                                    <div class="card-footer bg-light text-center">
+                                        <small class="text-muted"><i class="bi bi-clock"></i> {{ analiz_data.ArsaAnaliz.created_at.strftime('%d.%m.%Y') }}</small>
+                                    </div>
                                 </div>
                             </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-warning text-center" role="alert">
+                                {% if search_term %}
+                                    "{{ search_term }}" için sonuç bulunamadı. <a href="{{ url_for('portfolio.portfolios_list') }}">Tüm analizleri göster.</a>
+                                {% else %}
+                                    Gösterilecek analiz bulunamadı.
+                                {% endif %}
+                            </div>
                         </div>
-                    {% endfor %}
+                    {% endif %}
                 </div>
-            </div>
-        </div>
-    </div>
-    <!-- Include the Analysis Modal from index.html -->
+
+                <!-- Sayfalama Kontrolleri -->
+                {% if pagination and pagination.pages > 1 %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <nav aria-label="Analizler sayfalama">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('portfolio.portfolios_list', page=pagination.prev_num, search=search_term if search_term else None) }}">Önceki</a>
+                                </li>
+                                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                                    {% if page_num %}
+                                        <li class="page-item {% if pagination.page == page_num %}active{% endif %}">
+                                            <a class="page-link" href="{{ url_for('portfolio.portfolios_list', page=page_num, search=search_term if search_term else None) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    {% endif %}
+                                {% endfor %}
+                                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                    <a class="page-link" href="{{ url_for('portfolio.portfolios_list', page=pagination.next_num, search=search_term if search_term else None) }}">Sonraki</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div> <!-- Ana İçerik Alanı Sonu -->
+        </div> <!-- Row Sonu -->
+    </div> <!-- Container Fluid Sonu -->
+
+    <!-- Analysis Modal -->
     {% include 'analysis_modal.html' %}
 
-    <script>
-    function filterAnalyses() {
-        const searchText = document.getElementById('searchInput').value.toLowerCase();
-        const cards = document.getElementsByClassName('analysis-card');
-        
-        Array.from(cards).forEach(card => {
-            const title = card.querySelector('.card-title').textContent.toLowerCase();
-            const text = card.querySelector('.card-text').textContent.toLowerCase();
-            const user = card.querySelector('.card-subtitle').textContent.toLowerCase();
-            
-            if (title.includes(searchText) || text.includes(searchText) || user.includes(searchText)) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-    </script>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

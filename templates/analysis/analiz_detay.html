@@ -9,146 +9,204 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sofistike_css.css') }}">
     <style>
-        /* Genel Ayarlar */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --light-bg: #f8f9fa;
+            --border-radius: 0.75rem;
+            --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --sidebar-width: 250px;
+        }
+        
         body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: #f7f9fc;
-            color: #2e2e2e;
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7ff;
+            color: #333;
         }
-        /* Sidebar */
+        
+        /* Modern Sidebar */
         .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
             min-height: 100vh;
-            background-color: #1f2937;
-            color: #e5e7eb;
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
+        
+        .sidebar h4 {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
         .sidebar a {
-            color: #e5e7eb;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            display: block;
-            margin-bottom: 0.5rem;
-            transition: background 0.2s;
+            color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
         }
-        .sidebar a:hover,
-        .sidebar a.active {
-            background-color: #374151;
-            color: #fff;
+        
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(5px);
         }
-        /* Kartlar */
+        
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Cards with subtle shadow and rounded corners */
         .card {
             border: none;
-            border-radius: 20px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-            background-color: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        /* Kart Başlıkları */
-        .card-header {
-            border-bottom: none;
-            background: transparent;
-            font-weight: 600;
-            font-size: 1.25rem;
-        }
-        /* Butonlar */
-        .btn-primary {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            border: none;
-            border-radius: 10px;
-            padding: 0.5rem 1rem;
-            font-weight: 500;
-            color: #fff;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #4338ca, #6d28d9);
-        }
-        .btn-outline-secondary {
-            border-radius: 10px;
-        }
-        /* İstatistik Kartları */
-        .stat-card {
-            border-radius: 16px;
-            color: #fff;
-            padding: 1.25rem;
-            font-weight: 500;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-        }
-        /* İstatistik Renkleri */
-        .bg-green {
-            background: linear-gradient(135deg, #059669, #10b981);
-        }
-        .bg-orange {
-            background: linear-gradient(135deg, #f59e0b, #f97316);
-        }
-        /* Tablo */
-        .table thead th {
-            background-color: #f1f5f9;
-            color: #475569;
-            font-weight: 600;
-        }
-        .table tbody td {
-            vertical-align: middle;
-        }
-        /* Aktivite Çizgisi */
-        .activity-timeline {
-            position: relative;
-            padding-left: 20px;
-        }
-        .activity-timeline::before {
-            content: '';
-            position: absolute;
-            left: 6px;
-            top: 0;
-            width: 2px;
-            height: 100%;
-            background: #e2e8f0;
-        }
-        .activity-item::before {
-            content: '';
-            width: 10px;
-            height: 10px;
-            background: #6366f1;
-            border-radius: 50%;
-            position: absolute;
-            left: 0;
-            top: 6px;
-        }
-        /* Analiz Kartları için Ek Stiller */
-        .analysis-card {
-            transition: transform 0.2s;
-        }
-        .analysis-card:hover {
+        
+        .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
         }
-        .month-header {
-            font-size: 1.5rem;
-            color: #475569;
-            margin: 1.5rem 0 1rem 0;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e2e8f0;
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             font-weight: 600;
         }
-        .price-badge {
-            font-size: 0.9rem;
-            background-color: #f1f5f9;
-            color: #475569;
-            padding: 0.3rem 0.6rem;
-            border-radius: 10px;
+        
+        /* Quick access cards */
+        .quick-access-card {
+            background-color: white;
+            transition: all 0.3s ease;
         }
-        /* Mobil Uyumluluk */
+        
+        .quick-access-card:hover {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+        
+        .quick-access-card i {
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-access-card:hover i {
+            transform: scale(1.2);
+        }
+        
+        /* Profile card */
+        .profile-card {
+            text-align: center;
+            background: white;
+        }
+        
+        /* Stats cards */
+        .stat-card {
+            background: white;
+        }
+        
+        .stat-card .card-body {
+            padding: 1.25rem;
+        }
+        
+        .stat-card .display-5, .stat-card .display-6 {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Table styling */
+        .table {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: none;
+            font-weight: 600;
+        }
+        
+        /* Alerts */
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
+        }
+        
+        /* Mobile styles */
         @media (max-width: 768px) {
-            .sidebar {
-                min-height: auto;
-            }
-            .sidebar a {
-                padding: 0.5rem 0.75rem;
-            }
             .card {
                 margin-bottom: 1rem;
             }
-            .btn {
+            
+            .offcanvas-body a {
+                padding: 12px 15px;
+                display: flex;
+                align-items: center;
+                color: #333;
+                text-decoration: none;
+                border-radius: var(--border-radius);
+                margin-bottom: 8px;
+                transition: background-color 0.3s;
+            }
+            
+            .offcanvas-body a:hover, .offcanvas-body a.active {
+                background-color: #f8f9fa;
+            }
+            
+            .offcanvas-body a i {
+                margin-right: 10px;
+                font-size: 1.2rem;
+            }
+            
+            /* Ana içerik alanı tam genişlikte göster */
+            .content-area {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+            
+            /* İstatistik kartları mobilde tek sütun */
+            .stat-card-col {
                 width: 100%;
-                margin-bottom: 0.5rem;
+            }
+        }
+        
+        /* Tablet */
+        @media (min-width: 768px) and (max-width: 992px) {
+            .sidebar {
+                width: 220px;
+            }
+            
+            .content-area {
+                width: calc(100% - 220px) !important;
+            }
+            
+            /* İki sütunlu grid */
+            .stat-card-col {
+                width: 50%;
             }
         }
     </style>
@@ -168,20 +226,22 @@
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
   </div>
   <div class="offcanvas-body d-flex flex-column gap-2">
-                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
+    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
+    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
   </div>
 </div>
 
 <!-- Masaüstü Sidebar -->
 <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
   <h4 class="mb-4">İnveco Panel</h4>
-                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
+    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi.bi-graph-up"></i> Portföyler</a>
+    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
 </div>
       <!-- Main Content Area -->
       <div class="col-md-9 col-lg-10">
@@ -206,8 +266,8 @@
           <!-- Breadcrumb Navigation -->
           <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Ana Sayfa</a></li>
-              <li class="breadcrumb-item"><a href="{{ url_for('analizler') }}">Analizlerim</a></li>
+              <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Ana Sayfa</a></li>
+              <li class="breadcrumb-item"><a href="{{ url_for('analysis.analizler') }}">Analizlerim</a></li>
               <li class="breadcrumb-item active">{{ analiz.il }}, {{ analiz.ilce }}</li>
             </ol>
           </nav>
@@ -319,7 +379,7 @@
                 </div>
                 <div class="progress mt-2" style="height: 5px;">
                   <div class="progress-bar bg-info" role="progressbar" 
-                       style="width: '{{ tahmin.bolge_istatistikleri['guven_skoru']|default(0) }}%';"
+                       style="width: {{ tahmin.bolge_istatistikleri['guven_skoru']|default(0) }}%;"
                        aria-valuenow="{{ tahmin.bolge_istatistikleri['guven_skoru']|default(0) }}" 
                        aria-valuemin="0" 
                        aria-valuemax="100">
@@ -336,7 +396,7 @@
                   <thead>
                     <tr>
                       <th>Mahalle</th>
-                      <th>Alan</th>
+                      <th>Alan</</th>
                       <th>İmar Durumu</th>
                       <th>Fiyat</th>
                     </tr>
@@ -433,8 +493,9 @@
           <!-- Medya Galerisi -->
           <div class="card mb-4">
             <div class="card-body">
-              <!-- Medya Yükleme Formu -->
-              <form id="medyaForm" action="{{ url_for('medya_yukle', analiz_id=analiz.id) }}" method="post" enctype="multipart/form-data" class="mb-4">
+              <!-- Medya Yükleme Formu (sadece analiz sahibi görebilir) -->
+              {% if not read_only_mode and analiz.user_id == get_current_user().id %}
+              <form id="medyaForm" action="{{ url_for('analysis.medya_yukle', analiz_id=analiz.id) }}" method="post" enctype="multipart/form-data" class="mb-4">
                 <div class="row g-3 align-items-end">
                   <div class="col-md-8">
                     <input type="file" name="medya" accept="image/*,video/*" class="form-control" required>
@@ -446,6 +507,7 @@
                   </div>
                 </div>
               </form>
+              {% endif %}
               <!-- Medya Galerisi -->
               <div class="row" id="medyaGaleri">
                 {% for medya in analiz.medyalar %}
@@ -462,12 +524,16 @@
                         </video>
                       {% endif %}
                       <div class="card-body">
-                        <p class="card-text text-truncate">{{ medya.filename }}</p>
+                        <p class="card-text text-truncate">{{ medya.filename.split('/')[-1] }}</p> {# Sadece dosya adını göster #}
                         <div class="d-flex justify-content-between align-items-center">
                           <small class="text-muted">{{ medya.uploaded_at.strftime('%d.%m.%Y') }}</small>
-                          <button class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-trash"></i>
-                          </button>
+                          {% if not read_only_mode and analiz.user_id == get_current_user().id %}
+                          <form action="{{ url_for('analysis.medya_sil', analiz_id=analiz.id, medya_id=medya.id) }}" method="post" onsubmit="return confirm('Bu medyayı silmek istediğinizden emin misiniz?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </form>
+                          {% endif %}
                         </div>
                       </div>
                     </div>
@@ -482,37 +548,38 @@
               <div class="mb-3">
                 <h6><i class="bi bi-info-circle me-2"></i>Temel Özet</h6>
                 <div class="p-3 bg-light rounded">
-                  {{ ozet.temel_ozet }}
+                  {{ ozet.temel_ozet | nl2br }} {# nl2br filtresi eklendi #}
                 </div>
               </div>
               <div class="mb-3">
                 <h6><i class="bi bi-graph-up-arrow me-2"></i>Yatırım Özeti</h6>
                 <div class="p-3 bg-light rounded">
-                  {{ ozet.yatirim_ozet }}
+                  {{ ozet.yatirim_ozet | nl2br }} {# nl2br filtresi eklendi #}
                 </div>
               </div>
               <!-- Uygunluk Puanı Özeti (YENİ EKLENEN) -->
               <div class="mb-3">
                 <h6><i class="bi bi-check-circle me-2"></i>Uygunluk Puanı</h6>
                 <div class="p-3 bg-light rounded">
-                  {{ ozet.uygunluk_ozet }}
+                  {{ ozet.uygunluk_ozet | nl2br }} {# nl2br filtresi eklendi #}
                 </div>
               </div>
               <div>
                 <h6><i class="bi bi-lightbulb me-2"></i>Tavsiyeler</h6>
                 <div class="p-3 bg-light rounded">
-                  {{ ozet.tavsiyeler }}
+                  {{ ozet.tavsiyeler | nl2br }} {# nl2br filtresi eklendi #}
                 </div>
               </div>
             </div>
           </div>
-          <!-- Rapor Oluşturma Butonları -->
+          <!-- Rapor Oluşturma Butonları (sadece analiz sahibi görebilir) -->
+          {% if not read_only_mode and analiz.user_id == get_current_user().id %}
           <div class="card mb-4">
             <div class="card-body">
               <h6>Rapor Oluştur</h6>
               <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('generate', format='word', file_id=analiz.id) }}" class="btn btn-secondary">Word Raporu Oluştur</a>
-                <a href="{{ url_for('generate', format='pdf', file_id=analiz.id) }}" class="btn btn-secondary">PDF Raporu Oluştur</a>
+                <a href="{{ url_for('analysis.generate_report', format_type='word', analiz_id_param=analiz.id) }}" class="btn btn-secondary">Word Raporu Oluştur</a>
+                <a href="{{ url_for('analysis.generate_report', format_type='pdf', analiz_id_param=analiz.id) }}" class="btn btn-secondary">PDF Raporu Oluştur</a>
                 <!-- Sunum Oluşturma Modalı -->
                 <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#reportSettingsModal">
                   Sunum Oluştur
@@ -520,6 +587,7 @@
               </div>
             </div>
           </div>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -535,14 +603,9 @@
         </div>
         <div class="modal-body">
           <form id="reportSettingsForm">
-            <div class="mb-3">
-              <label for="reportFormat" class="form-label">Format Seçin</label>
-              <select class="form-select" id="reportFormat" name="format">
-                <option value="pptx">PowerPoint (.pptx)</option>
-                <option value="word">Word (.docx)</option>
-                <option value="pdf">PDF (.pdf)</option>
-              </select>
-            </div>
+            {# Format seçimi artık gizli, sadece PPTX için #}
+            <input type="hidden" name="format" value="pptx">
+            
             <div class="mb-3">
               <label for="colorScheme" class="form-label">Renk Şeması</label>
               <select class="form-select" id="colorScheme" name="color_scheme">
@@ -583,80 +646,103 @@
                   Arsa Fotoğrafları
                 </label>
               </div>
+               <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="insaat_hesaplama" id="includeInsaat" name="sections" checked>
+                <label class="form-check-label" for="includeInsaat">
+                  İnşaat Hesaplama
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="qr_code" id="includeQRCode" name="sections" checked>
+                <label class="form-check-label" for="includeQRCode">
+                  QR Kod
+                </label>
+              </div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-          <button type="button" class="btn btn-primary" id="generateReportBtn">Oluştur</button>
+          <button type="button" class="btn btn-primary" id="generateReportBtn">Sunum Oluştur</button>
         </div>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ url_for('static', filename='js/analiz_detay.js') }}"></script>
+  {# <script src="{{ url_for('static', filename='js/analiz_detay.js') }}"></script> #} {# Ayrı JS dosyası varsa #}
   <script>
-                        document.getElementById('generateReportBtn').addEventListener('click', function() {
-                  const form = document.getElementById('reportSettingsForm');
-                  const formData = new FormData();
-                  
-                  // Seçili bölümleri topla
-                  const sections = [];
-                  document.querySelectorAll('input[name="sections"]:checked').forEach(checkbox => {
-                      sections.push(checkbox.value);
-                  });
-                  
-                  // FormData'ya sections array'ini JSON string olarak ekle
-                  formData.append('sections', JSON.stringify(sections));
-                  formData.append('color_scheme', document.getElementById('colorScheme')?.value || 'blue');
-                  
-                  // Diğer form verilerini ekle
-                  formData.append('format', 'pptx');
-                  formData.append('color_scheme', 'blue');
-                  formData.append('analiz_id', '{{ analiz.id }}');
-              
-                  // Buton durumunu güncelle
-                  this.disabled = true;
-                  this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Oluşturuluyor...';
-              
-                  // Backend'e istek gönder
-                  fetch(`/generate/pptx/{{ analiz.id }}`, {
-                      method: 'POST',
-                      body: formData
-                  })
-                  .then(response => {
-                      if (!response.ok) {
-                          throw new Error('Sunumu oluşturulurken bir hata oluştu');
-                      }
-                      return response.blob();
-                  })
-                  .then(blob => {
-                      // Dosyayı indir
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `analiz_sunum_{{ analiz.id }}.pptx`;
-                      document.body.appendChild(a);
-                      a.click();
-                      window.URL.revokeObjectURL(url);
-                      
-                      // Buton durumunu sıfırla
-                      this.disabled = false;
-                      this.innerHTML = 'Oluştur';
-                      
-                      // Modal'ı kapat
-                      const modal = bootstrap.Modal.getInstance(document.getElementById('reportSettingsModal'));
-                      modal.hide();
-                  })
-                  .catch(error => {
-                      console.error('Hata:', error);
-                      alert('Sunum oluşturulurken bir hata oluştu');
-                      this.disabled = false;
-                      this.innerHTML = 'Oluştur';
-                  });
-              });
-    
+    document.addEventListener('DOMContentLoaded', function() {
+        const generateReportBtn = document.getElementById('generateReportBtn');
+        if (generateReportBtn) {
+            generateReportBtn.addEventListener('click', function() {
+                const form = document.getElementById('reportSettingsForm');
+                const formData = new FormData();
+                
+                const sections = [];
+                document.querySelectorAll('input[name="sections"]:checked').forEach(checkbox => {
+                    sections.push(checkbox.value);
+                });
+                
+                formData.append('sections', JSON.stringify(sections));
+                formData.append('color_scheme', document.getElementById('colorScheme')?.value || 'blue');
+                // formData.append('format', 'pptx'); // Zaten gizli input ile gönderiliyor
+                // formData.append('analiz_id', '{{ analiz.id }}'); // Bu da URL'den alınacak
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Oluşturuluyor...';
+            
+                // Backend'e istek gönder
+                // URL'i doğru Blueprint ve rota adı ile oluşturun
+                const targetUrl = "{{ url_for('analysis.generate_pptx', analiz_id=analiz.id) }}";
+
+                fetch(targetUrl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Sunum oluşturulurken bir hata oluştu') });
+                    }
+                    // Dosya adını header'dan almaya çalışalım (isteğe bağlı)
+                    const contentDisposition = response.headers.get('content-disposition');
+                    let filename = `analiz_sunum_{{ analiz.id }}.pptx`; // Varsayılan ad
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+                        if (filenameMatch && filenameMatch.length === 2)
+                            filename = filenameMatch[1];
+                    }
+                    return response.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                    
+                    this.disabled = false;
+                    this.innerHTML = 'Sunum Oluştur';
+                    
+                    const modalElement = document.getElementById('reportSettingsModal');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) modal.hide();
+                    }
+                })
+                .catch(error => {
+                    console.error('Hata:', error);
+                    alert(error.message || 'Sunum oluşturulurken bir hata oluştu.');
+                    this.disabled = false;
+                    this.innerHTML = 'Sunum Oluştur';
+                });
+            });
+        }
+    });
   </script>
 </body>
 </html>

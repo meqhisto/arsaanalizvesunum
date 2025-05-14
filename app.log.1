@@ -1,15 +1,231 @@
-2025-05-11 05:18:36,312 - ERROR - Sunucu hatas�: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
-FROM crm_tasks 
-WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
-[parameters: (1, 'Tamamland�', '�ptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
+2025-05-14 01:26:33,329 - ERROR - Sunucu hatas�: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-14 01:27:33,429 - ERROR - Sunucu hatas�: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-14 01:28:34,741 - ERROR - Sunucu hatas�: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-14 01:29:35,723 - ERROR - Sunucu hatas�: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-14 01:30:36,725 - ERROR - Sunucu hatas�: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-14 01:31:37,729 - ERROR - Sunucu hatas�: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-14 01:32:38,743 - ERROR - Sunucu hatas�: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-14 02:17:06,089 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:17:10,786 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:17:22,092 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 02:18:14,932 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 02:18:18,001 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 02:23:43,741 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 02:25:09,433 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 02:25:12,747 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 02:25:16,091 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 02:34:17,389 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 02:35:58,140 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:36:03,736 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:36:13,073 - ERROR - app - Sunucu hatası oluştu: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'ortalama_roi'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 1 dashboard_stats.id AS dashboard_stats_id, dashboard_stats.user_id AS dashboard_stats_user_id, dashboard_stats.toplam_arsa_sayisi AS dashboard_stats_toplam_arsa_sayisi, dashboard_stats.ortalama_fiyat AS dashboard_stats_ortalama_fiyat, dashboard_stats.en_yuksek_fiyat AS dashboard_stats_en_yuksek_fiyat, dashboard_stats.en_dusuk_fiyat AS dashboard_stats_en_dusuk_fiyat, dashboard_stats.toplam_deger AS dashboard_stats_toplam_deger, dashboard_stats.ortalama_roi AS dashboard_stats_ortalama_roi, dashboard_stats.son_guncelleme AS dashboard_stats_son_guncelleme 
+FROM dashboard_stats 
+WHERE dashboard_stats.user_id = ?]
+[parameters: (2,)]
 (Background on this error at: https://sqlalche.me/e/14/f405)
+Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
     self.dialect.do_execute(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
     cursor.execute(statement, parameters)
-pyodbc.ProgrammingError: ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+pyodbc.ProgrammingError: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'ortalama_roi'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
 
 The above exception was the direct cause of the following exception:
 
@@ -18,9 +234,66 @@ Traceback (most recent call last):
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 659, in decorated_function
-    return f(*args, **kwargs)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 1197, in index
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 57, in index
+    stats = DashboardStats.query.filter_by(user_id=user_id).first()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2824, in first
+    return self.limit(1)._iter().first()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
+    result = self.session.execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
+    ret = self._execute_context(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
+    self._handle_dbapi_exception(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
+    util.raise_(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'ortalama_roi'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 1 dashboard_stats.id AS dashboard_stats_id, dashboard_stats.user_id AS dashboard_stats_user_id, dashboard_stats.toplam_arsa_sayisi AS dashboard_stats_toplam_arsa_sayisi, dashboard_stats.ortalama_fiyat AS dashboard_stats_ortalama_fiyat, dashboard_stats.en_yuksek_fiyat AS dashboard_stats_en_yuksek_fiyat, dashboard_stats.en_dusuk_fiyat AS dashboard_stats_en_dusuk_fiyat, dashboard_stats.toplam_deger AS dashboard_stats_toplam_deger, dashboard_stats.ortalama_roi AS dashboard_stats_ortalama_roi, dashboard_stats.son_guncelleme AS dashboard_stats_son_guncelleme 
+FROM dashboard_stats 
+WHERE dashboard_stats.user_id = ?]
+[parameters: (2,)]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+
+2025-05-14 02:38:13,440 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:38:41,962 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:39:54,419 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:40:06,120 - ERROR - app - Sunucu hatası oluştu: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'team_id'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'assigned_by_user_id'. (207); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.reminder_enabled AS crm_tasks_reminder_enabled, crm_tasks.reminder_time AS crm_tasks_reminder_time, crm_tasks.is_recurring AS crm_tasks_is_recurring, crm_tasks.recurrence_type AS crm_tasks_recurrence_type, crm_tasks.recurrence_interval AS crm_tasks_recurrence_interval, crm_tasks.recurrence_end_date AS crm_tasks_recurrence_end_date, crm_tasks.completed_at AS crm_tasks_completed_at, crm_tasks.team_id AS crm_tasks_team_id, crm_tasks.assigned_by_user_id AS crm_tasks_assigned_by_user_id, crm_tasks.previous_assignee_id AS crm_tasks_previous_assignee_id, crm_tasks.reassigned_at AS crm_tasks_reassigned_at, crm_tasks.reassigned_by_id AS crm_tasks_reassigned_by_id, crm_tasks.reassignment_reason AS crm_tasks_reassignment_reason, crm_tasks.task_type AS crm_tasks_task_type, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+FROM crm_tasks 
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND CAST(crm_tasks.due_date AS DATE) >= ? AND CAST(crm_tasks.due_date AS DATE) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (2, 'Tamamlandı', 'İptal Edildi', datetime.datetime(2025, 5, 13, 0, 0), datetime.datetime(2025, 5, 20, 0, 0))]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+pyodbc.ProgrammingError: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'team_id'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'assigned_by_user_id'. (207); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 120, in index
     yaklasan_gorevler = Task.query.filter(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
     return self._iter().all()
@@ -44,24 +317,27 @@ Traceback (most recent call last):
     self.dialect.do_execute(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
     cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'team_id'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'assigned_by_user_id'. (207); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.reminder_enabled AS crm_tasks_reminder_enabled, crm_tasks.reminder_time AS crm_tasks_reminder_time, crm_tasks.is_recurring AS crm_tasks_is_recurring, crm_tasks.recurrence_type AS crm_tasks_recurrence_type, crm_tasks.recurrence_interval AS crm_tasks_recurrence_interval, crm_tasks.recurrence_end_date AS crm_tasks_recurrence_end_date, crm_tasks.completed_at AS crm_tasks_completed_at, crm_tasks.team_id AS crm_tasks_team_id, crm_tasks.assigned_by_user_id AS crm_tasks_assigned_by_user_id, crm_tasks.previous_assignee_id AS crm_tasks_previous_assignee_id, crm_tasks.reassigned_at AS crm_tasks_reassigned_at, crm_tasks.reassigned_by_id AS crm_tasks_reassigned_by_id, crm_tasks.reassignment_reason AS crm_tasks_reassignment_reason, crm_tasks.task_type AS crm_tasks_task_type, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
 FROM crm_tasks 
-WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
-[parameters: (1, 'Tamamland�', '�ptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND CAST(crm_tasks.due_date AS DATE) >= ? AND CAST(crm_tasks.due_date AS DATE) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (2, 'Tamamlandı', 'İptal Edildi', datetime.datetime(2025, 5, 13, 0, 0), datetime.datetime(2025, 5, 20, 0, 0))]
 (Background on this error at: https://sqlalche.me/e/14/f405)
-2025-05-11 05:19:29,748 - ERROR - Sunucu hatas�: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+
+2025-05-14 02:41:11,780 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:42:13,420 - ERROR - app - Sunucu hatası oluştu: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'team_id'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'assigned_by_user_id'. (207); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.reminder_enabled AS crm_tasks_reminder_enabled, crm_tasks.reminder_time AS crm_tasks_reminder_time, crm_tasks.is_recurring AS crm_tasks_is_recurring, crm_tasks.recurrence_type AS crm_tasks_recurrence_type, crm_tasks.recurrence_interval AS crm_tasks_recurrence_interval, crm_tasks.recurrence_end_date AS crm_tasks_recurrence_end_date, crm_tasks.completed_at AS crm_tasks_completed_at, crm_tasks.team_id AS crm_tasks_team_id, crm_tasks.assigned_by_user_id AS crm_tasks_assigned_by_user_id, crm_tasks.previous_assignee_id AS crm_tasks_previous_assignee_id, crm_tasks.reassigned_at AS crm_tasks_reassigned_at, crm_tasks.reassigned_by_id AS crm_tasks_reassigned_by_id, crm_tasks.reassignment_reason AS crm_tasks_reassignment_reason, crm_tasks.task_type AS crm_tasks_task_type, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
 FROM crm_tasks 
-WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
-[parameters: (1, 'Tamamland�', '�ptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND CAST(crm_tasks.due_date AS DATE) >= ? AND CAST(crm_tasks.due_date AS DATE) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (2, 'Tamamlandı', 'İptal Edildi', datetime.datetime(2025, 5, 13, 0, 0), datetime.datetime(2025, 5, 20, 0, 0))]
 (Background on this error at: https://sqlalche.me/e/14/f405)
+Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
     self.dialect.do_execute(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
     cursor.execute(statement, parameters)
-pyodbc.ProgrammingError: ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+pyodbc.ProgrammingError: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'team_id'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'assigned_by_user_id'. (207); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
 
 The above exception was the direct cause of the following exception:
 
@@ -70,9 +346,9 @@ Traceback (most recent call last):
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 659, in decorated_function
-    return f(*args, **kwargs)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\app.py", line 1197, in index
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 120, in index
     yaklasan_gorevler = Task.query.filter(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
     return self._iter().all()
@@ -96,9 +372,754 @@ Traceback (most recent call last):
     self.dialect.do_execute(
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
     cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42000', "[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]'date' is not a recognized built-in function name. (195) (SQLExecDirectW); [42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
-[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'team_id'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'assigned_by_user_id'. (207); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT TOP 5 crm_tasks.id AS crm_tasks_id, crm_tasks.user_id AS crm_tasks_user_id, crm_tasks.contact_id AS crm_tasks_contact_id, crm_tasks.deal_id AS crm_tasks_deal_id, crm_tasks.assigned_to_user_id AS crm_tasks_assigned_to_user_id, crm_tasks.title AS crm_tasks_title, crm_tasks.description AS crm_tasks_description, crm_tasks.due_date AS crm_tasks_due_date, crm_tasks.status AS crm_tasks_status, crm_tasks.priority AS crm_tasks_priority, crm_tasks.reminder_enabled AS crm_tasks_reminder_enabled, crm_tasks.reminder_time AS crm_tasks_reminder_time, crm_tasks.is_recurring AS crm_tasks_is_recurring, crm_tasks.recurrence_type AS crm_tasks_recurrence_type, crm_tasks.recurrence_interval AS crm_tasks_recurrence_interval, crm_tasks.recurrence_end_date AS crm_tasks_recurrence_end_date, crm_tasks.completed_at AS crm_tasks_completed_at, crm_tasks.team_id AS crm_tasks_team_id, crm_tasks.assigned_by_user_id AS crm_tasks_assigned_by_user_id, crm_tasks.previous_assignee_id AS crm_tasks_previous_assignee_id, crm_tasks.reassigned_at AS crm_tasks_reassigned_at, crm_tasks.reassigned_by_id AS crm_tasks_reassigned_by_id, crm_tasks.reassignment_reason AS crm_tasks_reassignment_reason, crm_tasks.task_type AS crm_tasks_task_type, crm_tasks.created_at AS crm_tasks_created_at, crm_tasks.updated_at AS crm_tasks_updated_at 
 FROM crm_tasks 
-WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND date(crm_tasks.due_date) >= ? AND date(crm_tasks.due_date) <= ? ORDER BY crm_tasks.due_date ASC]
-[parameters: (1, 'Tamamland�', '�ptal Edildi', datetime.datetime(2025, 5, 11, 0, 0), datetime.datetime(2025, 5, 18, 0, 0))]
+WHERE crm_tasks.assigned_to_user_id = ? AND (crm_tasks.status NOT IN (?, ?)) AND crm_tasks.due_date IS NOT NULL AND CAST(crm_tasks.due_date AS DATE) >= ? AND CAST(crm_tasks.due_date AS DATE) <= ? ORDER BY crm_tasks.due_date ASC]
+[parameters: (2, 'Tamamlandı', 'İptal Edildi', datetime.datetime(2025, 5, 13, 0, 0), datetime.datetime(2025, 5, 20, 0, 0))]
 (Background on this error at: https://sqlalche.me/e/14/f405)
+
+2025-05-14 02:43:42,933 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'portfolio.portfolios_list'. Did you mean 'crm.crm_companies_list' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 241, in top-level template code
+    <a href="{{ url_for('portfolio.portfolios_list') }}">Portföyler</a> {# portfolio_bp.portfolios_list oldu varsayıyorum #}
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'portfolio.portfolios_list'. Did you mean 'crm.crm_companies_list' instead?
+
+2025-05-14 02:46:11,154 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:47:24,681 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'portfolio.portfolios_list'. Did you mean 'crm.crm_companies_list' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 241, in top-level template code
+    <a href="{{ url_for('portfolio.portfolios_list') }}">Portföyler</a> {# portfolio_bp.portfolios_list oldu varsayıyorum #}
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'portfolio.portfolios_list'. Did you mean 'crm.crm_companies_list' instead?
+
+2025-05-14 02:48:01,969 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:48:05,154 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'portfolio.portfolios_list'. Did you mean 'crm.crm_companies_list' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 241, in top-level template code
+    <a href="{{ url_for('portfolio.portfolios_list') }}">Portföyler</a> {# portfolio_bp.portfolios_list oldu varsayıyorum #}
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'portfolio.portfolios_list'. Did you mean 'crm.crm_companies_list' instead?
+
+2025-05-14 02:51:39,669 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 02:51:41,742 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 258, in top-level template code
+    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+
+2025-05-14 02:56:25,100 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'profile'. Did you mean 'main.profile' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 262, in top-level template code
+    <a href="{{ url_for('profile') }}" class="active"><i class="bi bi-gear"></i> Ayarlar</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'profile'. Did you mean 'main.profile' instead?
+
+2025-05-14 02:56:53,411 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'profile'. Did you mean 'main.profile' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 262, in top-level template code
+    <a href="{{ url_for('profile') }}" class="active"><i class="bi bi-gear"></i> Ayarlar</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'profile'. Did you mean 'main.profile' instead?
+
+2025-05-14 03:00:58,195 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'main.logout'. Did you mean 'auth.logout' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 244, in top-level template code
+    <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger btn-sm w-100 mt-2">
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'main.logout'. Did you mean 'auth.logout' instead?
+
+2025-05-14 03:02:19,934 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'main.portfolios'. Did you mean 'main.profile' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 340, in top-level template code
+    <li><a class="dropdown-item" href="{{ url_for('main.portfolios') }}"><i class="bi bi-graph-up me-2"></i> Portföylerim</a></li>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'main.portfolios'. Did you mean 'main.profile' instead?
+
+2025-05-14 03:02:52,906 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 340, in top-level template code
+    <li><a class="dropdown-item" href="{{ url_for('portfolio.portfolios') }}"><i class="bi bi-graph-up me-2"></i> Portföylerim</a></li>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
+
+2025-05-14 03:04:48,628 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'main.settings'. Did you mean 'main.index' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 341, in top-level template code
+    <li><a class="dropdown-item" href="{{ url_for('main.settings') }}"><i class="bi bi-gear me-2"></i> Ayarlar</a></li>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'main.settings'. Did you mean 'main.index' instead?
+
+2025-05-14 03:05:14,052 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'analysis.analysis_form'. Did you mean 'main.analysis_form' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 153, in index
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 366, in top-level template code
+    <a href="{{ url_for('analysis.analysis_form') }}" class="card quick-access-card text-decoration-none h-100">
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'analysis.analysis_form'. Did you mean 'main.analysis_form' instead?
+
+2025-05-14 03:07:27,578 - ERROR - app - Sunucu hatası oluştu: analizler.html
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\analysis_bp.py", line 346, in analizler
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 148, in render_template
+    ctx.app.jinja_env.get_or_select_template(template_name_or_list),
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 59, in get_source
+    return self._get_source_fast(environment, template)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 95, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: analizler.html
+
+2025-05-14 03:07:32,011 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\crm_bp.py", line 32, in crm_contacts_list
+    return render_template('contacts_list.html', contacts=contacts, title="Kişiler")
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\crm\contacts_list.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %} {% block title %}Kişiler - CRM{% endblock %}
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\crm\crm_base.html", line 32, in top-level template code
+    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+
+2025-05-14 03:07:36,142 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\portfolio_bp.py", line 95, in portfolios_list
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\portfolios.html", line 48, in top-level template code
+    <a href="{{ url_for('index') }}" class="active"
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+
+2025-05-14 03:07:38,897 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 231, in profile
+    return render_template('profile.html', user=user, timezones=timezones_list)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\profile.html", line 34, in top-level template code
+    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+
+2025-05-14 03:08:30,101 - ERROR - app - Sunucu hatası oluştu: analizler.html
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\analysis_bp.py", line 346, in analizler
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 148, in render_template
+    ctx.app.jinja_env.get_or_select_template(template_name_or_list),
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 59, in get_source
+    return self._get_source_fast(environment, template)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 95, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: analizler.html
+
+2025-05-14 03:11:00,624 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-14 03:11:01,782 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\analysis_bp.py", line 345, in analizler
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\analysis\analizler.html", line 206, in top-level template code
+    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+
+2025-05-14 03:18:45,940 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 03:22:45,555 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 03:27:10,645 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\crm_bp.py", line 32, in crm_contacts_list
+    return render_template('contacts_list.html', contacts=contacts, title="Kişiler")
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\crm\contacts_list.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %} {% block title %}Kişiler - CRM{% endblock %}
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\crm\crm_base.html", line 32, in top-level template code
+    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+
+2025-05-14 03:41:03,441 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'portfolios.portfolios_list'. Did you mean 'portfolio.portfolios_list' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\crm_bp.py", line 32, in crm_contacts_list
+    return render_template('contacts_list.html', contacts=contacts, title="Kişiler")
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\crm\contacts_list.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %} {% block title %}Kişiler - CRM{% endblock %}
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\crm\crm_base.html", line 35, in top-level template code
+    <a href="{{ url_for('portfolios.portfolios_list') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'portfolios.portfolios_list'. Did you mean 'portfolio.portfolios_list' instead?
+
+2025-05-14 03:42:23,550 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'main.logout'. Did you mean 'auth.logout' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\crm_bp.py", line 32, in crm_contacts_list
+    return render_template('contacts_list.html', contacts=contacts, title="Kişiler")
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\crm\contacts_list.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %} {% block title %}Kişiler - CRM{% endblock %}
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\crm\crm_base.html", line 77, in top-level template code
+    <a href="{{ url_for('main.logout') }}" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 w-100">
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'main.logout'. Did you mean 'auth.logout' instead?
+
+2025-05-14 03:42:40,936 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 03:43:30,173 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 03:43:37,634 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\portfolio_bp.py", line 95, in portfolios_list
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\portfolios.html", line 69, in top-level template code
+    <a href="{{ url_for('index') }}" class="active"
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+
+2025-05-14 03:43:51,781 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\portfolio_bp.py", line 95, in portfolios_list
+    return render_template(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\portfolios.html", line 69, in top-level template code
+    <a href="{{ url_for('index') }}" class="active"
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+
+2025-05-14 03:44:33,227 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-14 03:44:33,891 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+

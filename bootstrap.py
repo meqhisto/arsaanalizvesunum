@@ -10,7 +10,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # Import models
-from app import User, ArsaAnaliz, BolgeDagilimi, YatirimPerformansi, DashboardStats, ArsaAnalizSonuc, ArsaAnalizOzet
+from app import User, ArsaAnaliz, BolgeDagilimi, YatirimPerformansi, DashboardStats
 
 if __name__ == '__main__':
     with app.app_context():
