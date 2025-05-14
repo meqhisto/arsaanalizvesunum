@@ -11,9 +11,209 @@
     <!-- Google Fonts - Inter for modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern-style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sofistike-style.css') }}">
     {% block head_extra %}{% endblock %}
+        <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --light-bg: #f8f9fa;
+            --border-radius: 0.75rem;
+            --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --sidebar-width: 250px;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7ff;
+            color: #333;
+        }
+        
+        /* Modern Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            left: 0;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar h4 {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Cards with subtle shadow and rounded corners */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        
+        /* Quick access cards */
+        .quick-access-card {
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-access-card:hover {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+        
+        .quick-access-card i {
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-access-card:hover i {
+            transform: scale(1.2);
+        }
+        
+        /* Profile card */
+        .profile-card {
+            text-align: center;
+            background: white;
+        }
+        
+        /* Stats cards */
+        .stat-card {
+            background: white;
+        }
+        
+        .stat-card .card-body {
+            padding: 1.25rem;
+        }
+        
+        .stat-card .display-5, .stat-card .display-6 {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Table styling */
+        .table {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: none;
+            font-weight: 600;
+        }
+        
+        /* Alerts */
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .card {
+                margin-bottom: 1rem;
+            }
+            
+            .offcanvas-body a {
+                padding: 12px 15px;
+                display: flex;
+                align-items: center;
+                color: #333;
+                text-decoration: none;
+                border-radius: var(--border-radius);
+                margin-bottom: 8px;
+                transition: background-color 0.3s;
+            }
+            
+            .offcanvas-body a:hover, .offcanvas-body a.active {
+                background-color: #f8f9fa;
+            }
+            
+            .offcanvas-body a i {
+                margin-right: 10px;
+                font-size: 1.2rem;
+            }
+            
+            /* Ana içerik alanı tam genişlikte göster */
+            .content-area {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+            
+            /* İstatistik kartları mobilde tek sütun */
+            .stat-card-col {
+                width: 100%;
+            }
+        }
+        
+        /* Tablet */
+        @media (min-width: 768px) and (max-width: 992px) {
+            .sidebar {
+                width: 220px;
+            }
+            
+            .content-area {
+                width: calc(100% - 220px) !important;
+            }
+            
+            /* İki sütunlu grid */
+            .stat-card-col {
+                width: 50%;
+            }
+        }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container-fluid p-0">
@@ -29,21 +229,19 @@
                     <h5 class="offcanvas-title"><i class="bi bi-building"></i> CRM Menüsü</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
                 </div>
- <h4 class="mb-4">İnveco Panel</h4>
-                    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-                    <a href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person-rolodex"></i> CRM</a>                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
-                <!-- ... diğer ana sayfa linkleri ... -->
-                <hr>
-                <h5 class="text-muted small mb-2">CRM</h5>
-                                <!-- ... -->
-                    <!-- ... -->
-                    <a href="{{ url_for('crm_companies_list') }}" class="{{ 'active' if 'crm_compan' in request.endpoint else '' }}"><i class="bi bi-building"></i> Şirketler</a>
-                    <a href="{{ url_for('crm_deals_list') }}" class="{{ 'active' if 'crm_deal' in request.endpoint else '' }}"><i class="bi bi-cash-coin"></i> Fırsatlar</a>
-                    <a href="{{ url_for('crm_tasks_list') }}" class="{{ 'active' if 'crm_task' in request.endpoint else '' }}"><i class="bi bi-check2-square"></i> Görevler</a>                    <!-- ... -->
-                <!-- ... -->
-
+                <div class="offcanvas-body d-flex flex-column gap-2">
+                    <h4 class="mb-4">İnveco Panel</h4>
+                    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+                    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+                    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
+                    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
+                    <hr>
+                    <h5 class="text-muted small mb-2">CRM</h5>
+                    <a href="{{ url_for('crm.crm_companies_list') }}" class="{{ 'active' if 'crm_companies' in request.endpoint else '' }}"><i class="bi bi-building"></i> Şirketler</a>
+                    <a href="{{ url_for('crm.crm_deals_list') }}" class="{{ 'active' if 'crm_deals' in request.endpoint else '' }}"><i class="bi bi-cash-coin"></i> Fırsatlar</a>
+                    <a href="{{ url_for('crm.crm_tasks_list') }}" class="{{ 'active' if 'crm_tasks' in request.endpoint else '' }}"><i class="bi bi-check2-square"></i> Görevler</a>
+                </div>
             </div>
 
             <!-- Ana Sidebar (Desktop) -->
@@ -53,28 +251,25 @@
                     <h4 class="mb-0">İnveco Panel</h4>
                 </div>
                 <div class="nav flex-column">
-                    <a href="{{ url_for('index') }}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-                    <a href="{{ url_for('analizler') }}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-                    <a href="{{ url_for('crm_contacts_list') }}" class="active"><i class="bi bi-person-rolodex"></i> CRM</a>
-                    <a href="{{ url_for('portfolios') }}"><i class="bi bi-graph-up"></i> Portföyler</a>
-                    <a href="{{ url_for('profile') }}"><i class="bi bi-gear"></i> Ayarlar</a>
+                    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+                    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+                    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+                    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
+                    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
                 <!-- ... diğer ana sayfa linkleri ... -->
                 <hr>
                 <h5 class="text-muted small mb-2">CRM</h5>
                                 <!-- ... -->
                     <!-- ... -->
-                    <a href="{{ url_for('crm_companies_list') }}" class="{{ 'active' if 'crm_compan' in request.endpoint else '' }}"><i class="bi bi-building"></i> Şirketler</a>
-                    <a href="{{ url_for('crm_deals_list') }}" class="{{ 'active' if 'crm_deal' in request.endpoint else '' }}"><i class="bi bi-cash-coin"></i> Fırsatlar</a>
-                    <a href="{{ url_for('crm_tasks_list') }}" class="{{ 'active' if 'crm_task' in request.endpoint else '' }}"><i class="bi bi-check2-square"></i> Görevler</a>                    <!-- ... -->
+                    <a href="{{ url_for('crm.crm_companies_list') }}" class="{{ 'active' if 'crm_companies' in request.endpoint else '' }}"><i class="bi bi-building"></i> Şirketler</a>
+                    <a href="{{ url_for('crm.crm_deals_list') }}" class="{{ 'active' if 'crm_deals' in request.endpoint else '' }}"><i class="bi bi-cash-coin"></i> Fırsatlar</a>
+                    <a href="{{ url_for('crm.crm_tasks_list') }}" class="{{ 'active' if 'crm_tasks' in request.endpoint else '' }}"><i class="bi bi-check2-square"></i> Görevler</a>                    <!-- ... -->
                 <!-- ... -->
             </div>
 
-            <!-- Ana İçerik Alanı -->
-                </div>
-                
                 <!-- Minimal User Info at bottom -->
                 <div class="mt-auto pt-3 border-top border-white border-opacity-25">
-                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 w-100">
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 w-100">
                         <i class="bi bi-box-arrow-right"></i> Çıkış Yap
                     </a>
                 </div>
@@ -93,23 +288,23 @@
                         <div class="collapse navbar-collapse" id="crmNavbar">
                             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                 <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_contact' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_contacts_list') }}"><i class="bi bi-person"></i> Kişiler</a>
+                                    <a class="nav-link {% if 'crm_contact' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_contacts_list') }}"><i class="bi bi-person"></i> Kişiler</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_company' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_companies_list') }}"><i class="bi bi-building"></i> Şirketler</a>
+                                    <a class="nav-link {% if 'crm_company' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_companies_list') }}"><i class="bi bi-building"></i> Şirketler</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_deal' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_deals_list') }}"><i class="bi bi-currency-dollar"></i> Fırsatlar</a>
+                                    <a class="nav-link {% if 'crm_deal' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_deals_list') }}"><i class="bi bi-currency-dollar"></i> Fırsatlar</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_task' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_tasks_list') }}"><i class="bi bi-check2-all"></i> Görevler</a>
+                                    <a class="nav-link {% if 'crm_task' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_tasks_list') }}"><i class="bi bi-check2-all"></i> Görevler</a>
                                 </li>
                                 {% if current_user.role == 'broker' %}
                                 <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_team_management' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_team_management') }}"><i class="bi bi-people"></i> Ekip Yönetimi</a>
+                                    <a class="nav-link {% if 'crm_team_management' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_team_management') }}"><i class="bi bi-people"></i> Ekip Yönetimi</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_team_dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('crm_team_dashboard') }}"><i class="bi bi-graph-up"></i> Ekip Performans</a>
+                                    <a class="nav-link {% if 'crm_team_dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_team_dashboard') }}"><i class="bi bi-graph-up"></i> Ekip Performans</a>
                                 </li>
                                 {% endif %}
                             </ul>

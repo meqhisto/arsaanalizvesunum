@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analiz Detayı - {{ analiz.il }}, {{ analiz.ilce }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sofistike_css.css') }}">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --light-bg: #f8f9fa;
+            --border-radius: 0.75rem;
+            --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --sidebar-width: 250px;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7ff;
+            color: #333;
+        }
+        
+        /* Modern Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar h4 {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        /* Cards with subtle shadow and rounded corners */
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        
+        /* Quick access cards */
+        .quick-access-card {
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-access-card:hover {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+        
+        .quick-access-card i {
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-access-card:hover i {
+            transform: scale(1.2);
+        }
+        
+        /* Profile card */
+        .profile-card {
+            text-align: center;
+            background: white;
+        }
+        
+        /* Stats cards */
+        .stat-card {
+            background: white;
+        }
+        
+        .stat-card .card-body {
+            padding: 1.25rem;
+        }
+        
+        .stat-card .display-5, .stat-card .display-6 {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Table styling */
+        .table {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: none;
+            font-weight: 600;
+        }
+        
+        /* Alerts */
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
+        }
+        
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .card {
+                margin-bottom: 1rem;
+            }
+            
+            .offcanvas-body a {
+                padding: 12px 15px;
+                display: flex;
+                align-items: center;
+                color: #333;
+                text-decoration: none;
+                border-radius: var(--border-radius);
+                margin-bottom: 8px;
+                transition: background-color 0.3s;
+            }
+            
+            .offcanvas-body a:hover, .offcanvas-body a.active {
+                background-color: #f8f9fa;
+            }
+            
+            .offcanvas-body a i {
+                margin-right: 10px;
+                font-size: 1.2rem;
+            }
+            
+            /* Ana içerik alanı tam genişlikte göster */
+            .content-area {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+            
+            /* İstatistik kartları mobilde tek sütun */
+            .stat-card-col {
+                width: 100%;
+            }
+        }
+        
+        /* Tablet */
+        @media (min-width: 768px) and (max-width: 992px) {
+            .sidebar {
+                width: 220px;
+            }
+            
+            .content-area {
+                width: calc(100% - 220px) !important;
+            }
+            
+            /* İki sütunlu grid */
+            .stat-card-col {
+                width: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+     <!-- Mobil Sidebar Tetikleyici -->
+<button class="btn btn-primary d-md-none m-3" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebar">
+  <i class="bi bi-list"></i> Menü
+</button>
+
+<!-- Sidebar -->
+<div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebar">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">İnveco Panel</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column gap-2">
+    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
+    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
+  </div>
+</div>
+
+<!-- Masaüstü Sidebar -->
+<div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
+  <h4 class="mb-4">İnveco Panel</h4>
+    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
+    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
+    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
+    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi.bi-graph-up"></i> Portföyler</a>
+    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
+</div>
+      <!-- Main Content Area -->
+      <div class="col-md-9 col-lg-10">
+        <div class="container mt-4">
+          <!-- Analist Bilgileri Kartı -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>Analist:</strong> {{ user.ad }} {{ user.soyad }}</p>
+                  <p><strong>Ünvan:</strong> {{ user.unvan }}</p>
+                  <p><strong>Firma:</strong> {{ user.firma }}</p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>İletişim:</strong> {{ user.telefon }}</p>
+                  <p><strong>E-posta:</strong> {{ user.email }}</p>
+                  <p><strong>Analiz Tarihi:</strong> {{ analiz.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Breadcrumb Navigation -->
+          <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Ana Sayfa</a></li>
+              <li class="breadcrumb-item"><a href="{{ url_for('analysis.analizler') }}">Analizlerim</a></li>
+              <li class="breadcrumb-item active">{{ analiz.il }}, {{ analiz.ilce }}</li>
+            </ol>
+          </nav>
+          <!-- Ana Bilgiler Kartı -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <table class="table table-hover">
+                    <tr>
+                      <th>Ada/Parsel</th>
+                      <td>{{ analiz.ada }}/{{ analiz.parsel }}</td>
+                    </tr>
+                    <tr>
+                      <th>Metrekare</th>
+                      <td>{{ "{:,.2f}".format(analiz.metrekare) }} m²</td>
+                    </tr>
+                    <tr>
+                      <th>İmar Durumu</th>
+                      <td>{{ analiz.imar_durumu }}</td>
+                    </tr>
+                    <tr>
+                      <th>TAKS/KAKS</th>
+                      <td>{{ analiz.taks }}/{{ analiz.kaks }}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <table class="table table-hover">
+                    <tr>
+                      <th>Toplam Fiyat</th>
+                      <td>{{ "{:,.2f}".format(analiz.fiyat or 0) }} ₺</td>
+                    </tr>
+                    <tr>
+                      <th>m² Fiyatı</th>
+                      <td>
+                        {% if analiz.metrekare and analiz.fiyat %}
+                          {{ "{:,.2f}".format((analiz.fiyat or 0) / (analiz.metrekare or 1)) }} ₺/m²
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Bölge m² Fiyatı</th>
+                      <td>{{ "{:,.2f}".format(analiz.bolge_fiyat or 0) }} ₺/m²</td>
+                    </tr>
+                    <tr>
+                      <th>Fiyat Farkı</th>
+                      <td>
+                        {% if analiz.bolge_fiyat and analiz.metrekare and analiz.fiyat and analiz.bolge_fiyat != 0 %}
+                          {% set fark = ((analiz.fiyat / analiz.metrekare) - analiz.bolge_fiyat) / analiz.bolge_fiyat * 100 %}
+                          <span class="badge {% if fark > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                            {{ "%+.1f"|format(fark) }}%
+                          </span>
+                        {% else %}
+                          <span class="badge bg-secondary">-</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Fiyat Tahmini Kartı -->
+          {% if tahmin %}
+          <div class="card mt-4">
+            <div class="card-body">
+              <div class="row mb-4">
+                <div class="col-md-4">
+                  <div class="stat-card bg-green">
+                    <h6 class="mb-0">Tahmini Fiyat</h6>
+                    <div>{{ "{:,.2f}".format(tahmin.tahmin_fiyat) }} TL</div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="stat-card">
+                    <h6 class="mb-0">Minimum Fiyat Aralığı</h6>
+                    <div>{{ "{:,.2f}".format(tahmin.min_fiyat) }} TL</div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="stat-card">
+                    <h6 class="mb-0">Maksimum Fiyat Aralığı</h6>
+                    <div>{{ "{:,.2f}".format(tahmin.max_fiyat) }} TL</div>
+                  </div>
+                </div>
+              </div>
+              {% if tahmin.bolge_istatistikleri %}
+              <hr>
+              <h6 class="text-muted mb-3">Bölgesel İstatistikler ({{ tahmin.bolge_istatistikleri.analiz_sayisi }} analiz)</h6>
+              <div class="row">
+                <div class="col-md-4">
+                  <small class="text-muted">Ort. Birim Fiyat:</small><br>
+                  {{ "{:,.2f} TL/m²".format(tahmin.bolge_istatistikleri.ort_birim_fiyat).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                </div>
+                <div class="col-md-4">
+                  <small class="text-muted">Min Birim Fiyat:</small><br>
+                  {{ "{:,.2f} TL/m²".format(tahmin.bolge_istatistikleri.min_birim_fiyat).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                </div>
+                <div class="col-md-4">
+                  <small class="text-muted">Max Birim Fiyat:</small><br>
+                  {{ "{:,.2f} TL/m²".format(tahmin.bolge_istatistikleri.max_birim_fiyat).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                </div>
+                <div class="progress mt-2" style="height: 5px;">
+                  <div class="progress-bar bg-info" role="progressbar" 
+                       style="width: {{ tahmin.bolge_istatistikleri['guven_skoru']|default(0) }}%;"
+                       aria-valuenow="{{ tahmin.bolge_istatistikleri['guven_skoru']|default(0) }}" 
+                       aria-valuemin="0" 
+                       aria-valuemax="100">
+                  </div>
+                </div>
+                <small class="text-muted">Veri Güven Skoru: {{ "%.1f"|format(tahmin.bolge_istatistikleri['guven_skoru']|default(0)) }}%</small>
+              </div>
+              {% endif %}
+              {% if tahmin.benzer_arsalar %}
+              <hr>
+              <h6 class="text-muted mb-2">Benzer Arsalar (Son 1 Yıl)</h6>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Mahalle</th>
+                      <th>Alan</</th>
+                      <th>İmar Durumu</th>
+                      <th>Fiyat</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for benzer_arsa in tahmin.benzer_arsalar[:3] %}
+                    <tr>
+                      <td>{{ benzer_arsa.mahalle }}</td>
+                      <td>{{ "{:,.0f} m²".format(benzer_arsa.metrekare).replace(',', '.') }}</td>
+                      <td>{{ benzer_arsa.imar_durumu }}</td>
+                      <td>{{ "{:,.0f} TL".format(benzer_arsa.fiyat).replace(',', '.') }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% elif tahmin is none %}
+          <div class="card mt-4">
+            <div class="card-body">
+              <p class="text-muted">Bu arsa için fiyat tahmini yapılamadı. Yeterli veri bulunmuyor veya bir hata oluştu.</p>
+            </div>
+          </div>
+          {% endif %}
+          <!-- SWOT Analizi -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="row">
+                <!-- Güçlü Yönler -->
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                      <h6 class="mb-0">Güçlü Yönler</h6>
+                    </div>
+                    <div class="card-body">
+                      <ul class="list-group list-group-flush">
+                        {% for item in swot.strengths %}
+                          <li class="list-group-item">{{ item }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <!-- Zayıf Yönler -->
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100">
+                    <div class="card-header bg-danger text-white">
+                      <h6 class="mb-0">Zayıf Yönler</h6>
+                    </div>
+                    <div class="card-body">
+                      <ul class="list-group list-group-flush">
+                        {% for item in swot.weaknesses %}
+                          <li class="list-group-item">{{ item }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <!-- Fırsatlar -->
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100">
+                    <div class="card-header bg-info text-white">
+                      <h6 class="mb-0">Fırsatlar</h6>
+                    </div>
+                    <div class="card-body">
+                      <ul class="list-group list-group-flush">
+                        {% for item in swot.opportunities %}
+                          <li class="list-group-item">{{ item }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <!-- Tehditler -->
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100">
+                    <div class="card-header bg-warning">
+                      <h6 class="mb-0">Tehditler</h6>
+                    </div>
+                    <div class="card-body">
+                      <ul class="list-group list-group-flush">
+                        {% for item in swot.threats %}
+                          <li class="list-group-item">{{ item }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Medya Galerisi -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <!-- Medya Yükleme Formu (sadece analiz sahibi görebilir) -->
+              {% if not read_only_mode and analiz.user_id == get_current_user().id %}
+              <form id="medyaForm" action="{{ url_for('analysis.medya_yukle', analiz_id=analiz.id) }}" method="post" enctype="multipart/form-data" class="mb-4">
+                <div class="row g-3 align-items-end">
+                  <div class="col-md-8">
+                    <input type="file" name="medya" accept="image/*,video/*" class="form-control" required>
+                  </div>
+                  <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                      <i class="bi bi-upload me-2"></i>Yükle
+                    </button>
+                  </div>
+                </div>
+              </form>
+              {% endif %}
+              <!-- Medya Galerisi -->
+              <div class="row" id="medyaGaleri">
+                {% for medya in analiz.medyalar %}
+                  <div class="col-md-4 mb-3">
+                    <div class="card">
+                      {% if medya.type == 'image' %}
+                        <img src="{{ url_for('static', filename='uploads/' + medya.filename) }}" 
+                            class="card-img-top" alt="Arsa Görseli {{ loop.index }}">
+                      {% else %}
+                        <video class="card-img-top" controls>
+                          <source src="{{ url_for('static', filename='uploads/' + medya.filename) }}" 
+                                type="video/mp4">
+                          Tarayıcınız video oynatmayı desteklemiyor.
+                        </video>
+                      {% endif %}
+                      <div class="card-body">
+                        <p class="card-text text-truncate">{{ medya.filename.split('/')[-1] }}</p> {# Sadece dosya adını göster #}
+                        <div class="d-flex justify-content-between align-items-center">
+                          <small class="text-muted">{{ medya.uploaded_at.strftime('%d.%m.%Y') }}</small>
+                          {% if not read_only_mode and analiz.user_id == get_current_user().id %}
+                          <form action="{{ url_for('analysis.medya_sil', analiz_id=analiz.id, medya_id=medya.id) }}" method="post" onsubmit="return confirm('Bu medyayı silmek istediğinizden emin misiniz?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </form>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          <!-- Analiz Özeti -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="mb-3">
+                <h6><i class="bi bi-info-circle me-2"></i>Temel Özet</h6>
+                <div class="p-3 bg-light rounded">
+                  {{ ozet.temel_ozet | nl2br }} {# nl2br filtresi eklendi #}
+                </div>
+              </div>
+              <div class="mb-3">
+                <h6><i class="bi bi-graph-up-arrow me-2"></i>Yatırım Özeti</h6>
+                <div class="p-3 bg-light rounded">
+                  {{ ozet.yatirim_ozet | nl2br }} {# nl2br filtresi eklendi #}
+                </div>
+              </div>
+              <!-- Uygunluk Puanı Özeti (YENİ EKLENEN) -->
+              <div class="mb-3">
+                <h6><i class="bi bi-check-circle me-2"></i>Uygunluk Puanı</h6>
+                <div class="p-3 bg-light rounded">
+                  {{ ozet.uygunluk_ozet | nl2br }} {# nl2br filtresi eklendi #}
+                </div>
+              </div>
+              <div>
+                <h6><i class="bi bi-lightbulb me-2"></i>Tavsiyeler</h6>
+                <div class="p-3 bg-light rounded">
+                  {{ ozet.tavsiyeler | nl2br }} {# nl2br filtresi eklendi #}
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Rapor Oluşturma Butonları (sadece analiz sahibi görebilir) -->
+          {% if not read_only_mode and analiz.user_id == get_current_user().id %}
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6>Rapor Oluştur</h6>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('analysis.generate_report', format_type='word', analiz_id_param=analiz.id) }}" class="btn btn-secondary">Word Raporu Oluştur</a>
+                <a href="{{ url_for('analysis.generate_report', format_type='pdf', analiz_id_param=analiz.id) }}" class="btn btn-secondary">PDF Raporu Oluştur</a>
+                <!-- Sunum Oluşturma Modalı -->
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#reportSettingsModal">
+                  Sunum Oluştur
+                </button>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rapor Ayarları Modalı -->
+  <div class="modal fade" id="reportSettingsModal" tabindex="-1" aria-labelledby="reportSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="reportSettingsModalLabel">Sunum Ayarları</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="reportSettingsForm">
+            {# Format seçimi artık gizli, sadece PPTX için #}
+            <input type="hidden" name="format" value="pptx">
+            
+            <div class="mb-3">
+              <label for="colorScheme" class="form-label">Renk Şeması</label>
+              <select class="form-select" id="colorScheme" name="color_scheme">
+                <option value="blue">Mavi</option>
+                <option value="green">Yeşil</option>
+                <option value="purple">Mor</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Dahil Edilecek Bölümler</label>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="profile" id="includeProfile" name="sections" checked>
+                <label class="form-check-label" for="includeProfile">
+                  Analist Bilgileri
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="property" id="includeProperty" name="sections" checked>
+                <label class="form-check-label" for="includeProperty">
+                  Arsa Bilgileri
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="infrastructure" id="includeInfrastructure" name="sections" checked>
+                <label class="form-check-label" for="includeInfrastructure">
+                  Altyapı Durumu
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="swot" id="includeSwot" name="sections" checked>
+                <label class="form-check-label" for="includeSwot">
+                  SWOT Analizi
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="photos" id="includePhotos" name="sections" checked>
+                <label class="form-check-label" for="includePhotos">
+                  Arsa Fotoğrafları
+                </label>
+              </div>
+               <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="insaat_hesaplama" id="includeInsaat" name="sections" checked>
+                <label class="form-check-label" for="includeInsaat">
+                  İnşaat Hesaplama
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="qr_code" id="includeQRCode" name="sections" checked>
+                <label class="form-check-label" for="includeQRCode">
+                  QR Kod
+                </label>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+          <button type="button" class="btn btn-primary" id="generateReportBtn">Sunum Oluştur</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  {# <script src="{{ url_for('static', filename='js/analiz_detay.js') }}"></script> #} {# Ayrı JS dosyası varsa #}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const generateReportBtn = document.getElementById('generateReportBtn');
+        if (generateReportBtn) {
+            generateReportBtn.addEventListener('click', function() {
+                const form = document.getElementById('reportSettingsForm');
+                const formData = new FormData();
+                
+                const sections = [];
+                document.querySelectorAll('input[name="sections"]:checked').forEach(checkbox => {
+                    sections.push(checkbox.value);
+                });
+                
+                formData.append('sections', JSON.stringify(sections));
+                formData.append('color_scheme', document.getElementById('colorScheme')?.value || 'blue');
+                // formData.append('format', 'pptx'); // Zaten gizli input ile gönderiliyor
+                // formData.append('analiz_id', '{{ analiz.id }}'); // Bu da URL'den alınacak
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Oluşturuluyor...';
+            
+                // Backend'e istek gönder
+                // URL'i doğru Blueprint ve rota adı ile oluşturun
+                const targetUrl = "{{ url_for('analysis.generate_pptx', analiz_id=analiz.id) }}";
+
+                fetch(targetUrl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Sunum oluşturulurken bir hata oluştu') });
+                    }
+                    // Dosya adını header'dan almaya çalışalım (isteğe bağlı)
+                    const contentDisposition = response.headers.get('content-disposition');
+                    let filename = `analiz_sunum_{{ analiz.id }}.pptx`; // Varsayılan ad
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+                        if (filenameMatch && filenameMatch.length === 2)
+                            filename = filenameMatch[1];
+                    }
+                    return response.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                    
+                    this.disabled = false;
+                    this.innerHTML = 'Sunum Oluştur';
+                    
+                    const modalElement = document.getElementById('reportSettingsModal');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) modal.hide();
+                    }
+                })
+                .catch(error => {
+                    console.error('Hata:', error);
+                    alert(error.message || 'Sunum oluşturulurken bir hata oluştu.');
+                    this.disabled = false;
+                    this.innerHTML = 'Sunum Oluştur';
+                });
+            });
+        }
+    });
+  </script>
+</body>
+</html>
