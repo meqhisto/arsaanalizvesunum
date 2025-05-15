@@ -5,10 +5,12 @@ from concurrent_log_handler import ConcurrentRotatingFileHandler
 import logging
 import os
 from datetime import timedelta, datetime as dt_module # dt_module Jinja için
-
+from flask_migrate import Migrate
+from models import db as application_db # db'yi modellerden al
 # Modelleri ve db nesnesini models paketinden import et
 from models import init_db_models # init_app fonksiyonunu yeniden adlandırdık
 from models.user_models import User # load_user için User modeline ihtiyaç var
+from blueprints.admin_bp import admin_bp # admin_bp'yi import et
 
 # Blueprint'leri import et
 from blueprints.auth_bp import auth_bp
@@ -28,15 +30,18 @@ def nl2br_filter(value):
 
 # Flask uygulamasını application olarak ayarlayın (bazı hosting platformları için)
 application = None
+migrate = Migrate() # Migrate nesnesini globalde (veya app factory dışında) oluştur
+
 
 def create_app(config_name=None): # config_name opsiyonel, farklı config'ler için
     global application
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='static', static_url_path='/static')
     app.template_folder = "templates"
     app.static_folder = "static" # Static dosyalar için
     app.static_url_path = "/static" # Static dosyaların URL yolu
     app.register_blueprint(portfolio_bp, url_prefix='/portfolio') # Kaydet
     application = app # Elastic Beanstalk vb. için
+    app.register_blueprint(admin_bp) # Eğer admin_bp.py içinde url_prefix='/admin' tanımlıysa
 
     # --- CONFIGURATION ---
     app.config["SQLALCHEMY_DATABASE_URI"] = (
@@ -59,6 +64,7 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
 
     # --- DATABASE INITIALIZATION ---
     init_db_models(app) # Modellerin bulunduğu paketteki init_app fonksiyonunu çağır
+    migrate.init_app(app, application_db) # <-- BU SATIR ÇOK ÖNEMLİ
 
     # --- LOGIN MANAGER ---
     login_manager = LoginManager()

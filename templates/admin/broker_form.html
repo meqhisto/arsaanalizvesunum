@@ -1,0 +1,101 @@
+{% extends "base_admin.html" %}
+{% block title %}{{ form_title }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-lg">
+                <div class="card-header {% if user_data %}bg-warning{% else %}bg-primary{% endif %} text-white">
+                    <h3 class="mb-0"><i class="bi bi-person-gear me-2"></i>{{ form_title }}</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                         <input type="hidden" name="user_id" value="{{ user_data.id if user_data else '' }}">
+                        <h5 class="mb-3">Kişisel Bilgiler</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
+                                <label for="ad" class="form-label">Ad <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ad" name="ad" required 
+                                       value="{{ form_data.get('ad', user_data.ad if user_data else '') }}">
+                                <div class="invalid-feedback">Lütfen ad giriniz.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="soyad" class="form-label">Soyad <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="soyad" name="soyad" required
+                                       value="{{ form_data.get('soyad', user_data.soyad if user_data else '') }}">
+                                <div class="invalid-feedback">Lütfen soyad giriniz.</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" required
+                                   value="{{ form_data.get('email', user_data.email if user_data else '') }}"
+                                   {% if user_data %}readonly{% endif %}> {# Düzenlemede e-posta değişmesin #}
+                            <div class="invalid-feedback">Lütfen geçerli bir e-posta adresi giriniz.</div>
+                            {% if user_data %}<small class="form-text text-muted">E-posta adresi düzenlenemez.</small>{% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Şifre {% if not user_data %}<span class="text-danger">*</span>{% else %}(Değiştirmek istemiyorsanız boş bırakın){% endif %}</label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   {% if not user_data %}required minlength="6"{% else %}minlength="6"{% endif %}>
+                            <div class="invalid-feedback">Şifre en az 6 karakter olmalıdır.</div>
+                        </div>
+
+                        <h5 class="mt-4 mb-3">Firma ve Pozisyon Bilgileri</h5>
+                        <div class="mb-3">
+                            <label for="firma" class="form-label">Kullanıcının Çalıştığı Firma</label>
+                            <input type="text" class="form-control" id="firma" name="firma"
+                                   value="{{ form_data.get('firma', user_data.firma if user_data else '') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="unvan" class="form-label">Ünvan</label>
+                            <input type="text" class="form-control" id="unvan" name="unvan"
+                                   value="{{ form_data.get('unvan', user_data.unvan if user_data else '') }}">
+                        </div>
+                         <div class="mb-3">
+                            <label for="role" class="form-label">Rol <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required>
+                                {% set current_role = form_data.get('role', user_data.role if user_data else 'broker') %}
+                                <option value="broker" {% if current_role == 'broker' %}selected{% endif %}>Broker</option>
+                                <option value="danisman" {% if current_role == 'danisman' %}selected{% endif %}>Danışman</option>
+                                <option value="calisan" {% if current_role == 'calisan' %}selected{% endif %}>Çalışan</option>
+                                <option value="superadmin" {% if current_role == 'superadmin' %}selected{% endif %}>Süper Admin</option>
+                            </select>
+                            <div class="invalid-feedback">Lütfen bir rol seçiniz.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="office_id" class="form-label">Atanacak Ofis <span class="text-danger">*</span></label>
+                            <select class="form-select" id="office_id" name="office_id" required>
+                                <option value="" disabled {% if not form_data.get('office_id', user_data.office_id if user_data else None) %}selected{% endif %}>Lütfen Bir Ofis Seçin...</option>
+                                {% for office_item in offices %}
+                                <option value="{{ office_item.id }}" 
+                                        {% if form_data.get('office_id')|string == office_item.id|string or (user_data and user_data.office_id == office_item.id and not form_data.get('office_id')) %}selected{% endif %}>
+                                    {{ office_item.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Lütfen bir ofis seçiniz.</div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
+                                   {% if (form_data and form_data.get('is_active') == 'on') or (user_data and user_data.is_active) or (not user_data and not form_data) %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                Kullanıcı Aktif Mi?
+                            </label>
+                        </div>
+                        <hr class="my-4">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin.list_users') if 'broker' in request.endpoint or 'user' in request.endpoint else url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-lg">İptal</a>
+                            <button type="submit" class="btn {% if user_data %}btn-warning{% else %}btn-primary{% endif %} btn-lg">
+                                <i class="bi {% if user_data %}bi-save-fill{% else %}bi-person-check-fill{% endif %} me-2"></i>
+                                {% if user_data %}Kullanıcıyı Güncelle{% else %}Broker Oluştur{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script> /* Bootstrap validation script */ (function(){'use strict';var forms=document.querySelectorAll('.needs-validation');Array.prototype.slice.call(forms).forEach(function(form){form.addEventListener('submit',function(event){if(!form.checkValidity()){event.preventDefault();event.stopPropagation();}form.classList.add('was-validated');},false);});})();</script>
+{% endblock %}

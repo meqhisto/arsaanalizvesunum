@@ -278,6 +278,17 @@
             <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if request.endpoint == 'crm.crm_contacts_list' %}active{% endif %}">CRM</a>
             <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}">Portföyler</a>
             <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}">Ayarlar</a>
+                {% if current_user.role == 'superadmin' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' else '' }}">
+            <i class="bi bi-shield-lock-fill"></i> Admin Paneli
+        </a>
+    {% endif %}
+
+        {% if current_user.role == 'broker' %}
+        <a href="{{ url_for('main.my_office') }}" class="{{ 'active' if request.endpoint == 'main.my_office' else '' }}">
+            <i class="bi bi-briefcase-fill"></i> Ofisim
+        </a>
+    {% endif %}
             <div class="mt-auto pt-2 border-top">
               <a
                 href="{{ url_for('auth.logout') }}"
@@ -321,6 +332,17 @@
               class="{% if request.endpoint == 'main.profile' %}active{% endif %}"
               ><i class="bi bi-gear"></i> Ayarlar</a
             >
+                            {% if current_user.role == 'superadmin' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint == 'admin.dashboard' else '' }}">
+            <i class="bi bi-shield-lock-fill"></i> Admin Paneli
+        </a>
+    {% endif %}
+
+        {% if current_user.role == 'broker' %}
+        <a href="{{ url_for('main.my_office') }}" class="{{ 'active' if request.endpoint == 'main.my_office' else '' }}">
+            <i class="bi bi-briefcase-fill"></i> Ofisim
+        </a>
+    {% endif %}
           </div>
 
           <!-- Minimal User Info at bottom -->

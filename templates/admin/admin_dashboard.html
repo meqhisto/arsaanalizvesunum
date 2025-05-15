@@ -1,0 +1,176 @@
+{% extends "base_admin.html" %} {# VEYA {% extends "base.html" %} #} {% block
+title %}Süper Admin Dashboard{% endblock %} {% block content %}
+<div
+  class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+>
+  <h1 class="h2">
+    <i class="bi bi-speedometer2 me-2"></i>Süper Admin Dashboard
+  </h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <a
+        href="{{ url_for('admin.create_office') }}"
+        class="btn btn-sm btn-outline-success"
+      >
+        <i class="bi bi-building-add"></i> Yeni Ofis
+      </a>
+      <a
+        href="{{ url_for('admin.create_broker') }}"
+        class="btn btn-sm btn-outline-primary"
+      >
+        <i class="bi bi-person-plus"></i> Yeni Broker
+      </a>
+      <a
+        href="{{ url_for('admin.list_offices') }}"
+        class="btn btn-outline-secondary mt-2 d-block"
+        >Tüm Ofisleri Yönet</a
+      >
+      <a
+        href="{{ url_for('admin.list_users') }}"
+        class="btn btn-outline-secondary mt-2 d-block"
+        >Tüm Kullanıcıları Yönet</a
+      >
+    </div>
+    {#
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-secondary dropdown-toggle"
+    >
+      <i class="bi bi-calendar3"></i> Bu Hafta
+    </button>
+    #}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="card text-bg-primary shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0">
+            <i class="bi bi-people-fill fs-1 opacity-50"></i>
+          </div>
+          <div class="flex-grow-1 ms-3 text-end">
+            <h5 class="card-title">Toplam Kullanıcı</h5>
+            <p class="card-text fs-2 fw-bold">{{ total_users }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card text-bg-success shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0">
+            <i class="bi bi-buildings-fill fs-1 opacity-50"></i>
+          </div>
+          <div class="flex-grow-1 ms-3 text-end">
+            <h5 class="card-title">Toplam Ofis</h5>
+            <p class="card-text fs-2 fw-bold">{{ total_offices }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card text-bg-info shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0">
+            <i class="bi bi-person-workspace fs-1 opacity-50"></i>
+          </div>
+          <div class="flex-grow-1 ms-3 text-end">
+            <h5 class="card-title">Toplam Broker</h5>
+            <p class="card-text fs-2 fw-bold">{{ total_brokers }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card text-bg-secondary shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0">
+            <i class="bi bi-person-badge-fill fs-1 opacity-50"></i>
+          </div>
+          <div class="flex-grow-1 ms-3 text-end">
+            <h5 class="card-title">Toplam Danışman</h5>
+            <p class="card-text fs-2 fw-bold">{{ total_consultants }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4 g-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5><i class="bi bi-building-check me-2"></i>Son Eklenen Ofisler</h5>
+      </div>
+      <div class="card-body">
+        {% if recent_offices %}
+        <ul class="list-group list-group-flush">
+          {% for office in recent_offices %}
+          <li
+            class="list-group-item d-flex justify-content-between align-items-center"
+          >
+            {{ office.name }}
+            <small class="text-muted"
+              >{{ office.created_at.strftime('%d.%m.%Y') }}</small
+            >
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Kayıtlı ofis bulunmuyor.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5>
+          <i class="bi bi-person-lines-fill me-2"></i>Son Eklenen Brokerlar
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if recent_brokers %}
+        <ul class="list-group list-group-flush">
+          {% for broker in recent_brokers %}
+          <li class="list-group-item">
+            <div>{{ broker.ad }} {{ broker.soyad }} ({{ broker.email }})</div>
+            <small class="text-muted"
+              >Ofis: {{ broker.office.name if broker.office else 'Atanmamış'
+              }}</small
+            >
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Kayıtlı broker bulunmuyor.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{# İleride eklenebilecek diğer admin bölümleri:
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5>Sistem Ayarları (Yakında)</h5>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">Genel uygulama ayarları burada yönetilecek.</p>
+      </div>
+    </div>
+  </div>
+</div>
+#} {% endblock %}

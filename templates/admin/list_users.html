@@ -1,0 +1,116 @@
+{% extends "base_admin.html" %}
+{% block title %}Tüm Kullanıcılar{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Tüm Kullanıcılar</h1>
+        {# Yeni kullanıcı ekleme (belki sadece broker/danışman için ayrı bir link olabilir) #}
+        <a href="{{ url_for('admin.create_broker') }}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Yeni Broker/Kullanıcı Ekle</a>
+    </div>
+
+
+    <form method="GET" class="row g-3 mb-3 align-items-end">
+        <div class="col-md-4">
+            <label for="role_filter" class="form-label">Role Göre Filtrele:</label>
+            <select name="role" id="role_filter" class="form-select">
+                <option value="">Tüm Roller</option>
+                {% for role_opt in roles %}
+                <option value="{{ role_opt }}" {% if current_role_filter == role_opt %}selected{% endif %}>{{ role_opt|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="office_filter" class="form-label">Ofise Göre Filtrele:</label>
+            <select name="office_id" id="office_filter" class="form-select">
+                <option value="">Tüm Ofisler</option>
+                {% for office in offices %}
+                <option value="{{ office.id }}" {% if current_office_filter == office.id %}selected{% endif %}>{{ office.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-info w-100">Filtrele</button>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-secondary w-100">Sıfırla</a>
+        </div>
+    </form>
+
+    {% if users_pagination.items %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Ad Soyad</th>
+                    <th>E-posta</th>
+                    <th>Rol</th>
+                    <th>Ofis</th>
+                    <th>Aktif Mi?</th>
+                    <th>Kayıt Tarihi</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user_item in users_pagination.items %} {# user -> user_item #}
+                <tr>
+                    <td>{{ user_item.id }}</td>
+                    <td>{{ user_item.ad }} {{ user_item.soyad }}</td>
+                    <td>{{ user_item.email }}</td>
+                    <td><span class="badge bg-info">{{ user_item.role|title }}</span></td>
+                    <td>{{ user_item.office.name if user_item.office else '-' }}</td>
+                    <td>
+                        {% if user_item.is_active %}
+                            <span class="badge bg-success">Aktif</span>
+                        {% else %}
+                            <span class="badge bg-danger">Pasif</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user_item.registered_on.strftime('%d.%m.%Y') if user_item.registered_on else '-' }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_user', user_id=user_item.id) }}" class="btn btn-sm btn-warning me-1" title="Düzenle"><i class="bi bi-pencil-square"></i></a>
+                        {# Aktif/Pasif Etme ve Silme formları eklenebilir #}
+                        <form action="{{ url_for('admin.toggle_user_active', user_id=user_item.id) }}" method="POST" style="display: inline-block;" class="me-1">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ 'Pasif Yap' if user_item.is_active else 'Aktif Yap' }}">
+                                <i class="bi {{ 'bi-toggle-off' if user_item.is_active else 'bi-toggle-on' }}"></i>
+                            </button>
+                        </form>
+                        {% if user_item.id != current_user.id %} {# Admin kendini silemesin #}
+                        <form action="{{ url_for('admin.delete_user', user_id=user_item.id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?');">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Sil"><i class="bi bi-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {# Sayfalama #}
+    {% if users_pagination.pages > 1 %}
+    <nav aria-label="Kullanıcılar sayfalama">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not users_pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('admin.list_users', page=users_pagination.prev_num, role=current_role_filter, office_id=current_office_filter) }}">Önceki</a>
+            </li>
+            {% for page_num in users_pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if users_pagination.page == page_num %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.list_users', page=page_num, role=current_role_filter, office_id=current_office_filter) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {% if not users_pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('admin.list_users', page=users_pagination.next_num, role=current_role_filter, office_id=current_office_filter) }}">Sonraki</a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <p class="text-muted">Filtre kriterlerinize uygun kullanıcı bulunamadı veya sistemde henüz kullanıcı yok.</p>
+    {% endif %}
+</div>
+{% endblock %}

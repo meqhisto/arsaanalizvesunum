@@ -9,6 +9,7 @@ import os
 import pytz # User.localize_datetime için
 from decimal import Decimal # Sayısal işlemler için
 from sqlalchemy import text, cast, Date # index route'undaki sorgu için
+from models.office_models import Office # Office modelini import et
 
 # Modelleri ve db nesnesini models paketinden import et
 from models import db
@@ -16,6 +17,7 @@ from models.user_models import User
 from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats
 # CRM Modelleri (index sayfasında CRM özeti için gerekli)
 from models.crm_models import Contact, Deal, Interaction, Task
+from .auth_decorators import broker_required # BU IMPORT SATIRI EKSİK OLABİLİR VEYA YANLIŞ YERDE OLABİLİR
 
 
 main_bp = Blueprint('main', __name__, template_folder='../templates')
@@ -28,6 +30,66 @@ def home(): # Eski home() fonksiyonu
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     return redirect(url_for('auth.login')) # auth Blueprint'indeki login'e yönlendir
+
+@main_bp.route('/my_office', methods=['GET', 'POST'])
+@login_required
+@broker_required
+def my_office():
+    broker = current_user
+    # Broker'ın bir ofisi olmalı, bu kayıt sırasında veya admin tarafından atanmış olmalı.
+    # Eğer office_id'si yoksa veya ofis bulunamıyorsa, bir hata mesajı gösterilmeli.
+    office = Office.query.get(broker.office_id) if broker.office_id else None
+    
+    if not office:
+        # Bu durum, broker'ın bir ofise atanmamış olması anlamına gelir.
+        # Normalde bir brokerın her zaman bir ofisi olmalı.
+        # Eğer broker kendi ofisini oluşturuyorsa, office_id'si set edilmeli.
+        # Süper admin broker oluştururken ofis atamalı.
+        # Geçici çözüm: Eğer ofis yoksa ve broker'ın User.firma alanı doluysa,
+        # o isimde bir ofis oluşturup broker'ı ona atayabiliriz (sadece bir kerelik).
+        if broker.firma:
+            existing_office = Office.query.filter_by(name=broker.firma).first()
+            if not existing_office:
+                office = Office(name=broker.firma)
+                db.session.add(office)
+                # db.session.flush() # ID almak için
+                broker.office = office # İlişki üzerinden atama
+                db.session.commit()
+                flash(f"'{office.name}' adında yeni bir ofis sizin için oluşturuldu.", "info")
+            else:
+                broker.office = existing_office
+                db.session.commit()
+                office = existing_office
+        else:
+            flash("Bir ofise atanmamışsınız. Lütfen sistem yöneticisi ile iletişime geçin.", "warning")
+            return redirect(url_for('main.index'))
+
+    team_members = User.query.filter(User.office_id == office.id, User.id != broker.id).all()
+
+    if request.method == 'POST': # Yeni danışman/çalışan ekleme
+        email = request.form.get('email')
+        password = request.form.get('password')
+        ad = request.form.get('ad')
+        soyad = request.form.get('soyad')
+        role = request.form.get('role', 'danisman')
+
+        if not all([email, password, ad, soyad]):
+            flash('E-posta, şifre, ad ve soyad zorunludur!', 'danger')
+        # ... (diğer validasyonlar: email unique mi, rol geçerli mi vs.)
+        else:
+            new_member = User(
+                email=email, ad=ad, soyad=soyad, role=role,
+                office_id=office.id,
+                reports_to_user_id=broker.id,
+                firma=office.name # Çalışanın da firma alanı ofis adı olsun
+            )
+            new_member.set_password(password)
+            db.session.add(new_member)
+            db.session.commit()
+            flash(f"Ekip üyesi '{ad} {soyad}' eklendi.", "success")
+            return redirect(url_for('main.my_office'))
+            
+    return render_template('my_office.html', office=office, team_members=team_members)
 
 @main_bp.route('/index')
 @login_required # Flask-Login'den gelen decorator
@@ -61,7 +123,7 @@ def index():
             toplam_arsa_sayisi=0, 
             ortalama_fiyat=0.0, 
             en_yuksek_fiyat=0.0, 
-            en_dusuk_fiyat=float('inf'), # İlk eklemede doğru ayarlanması için
+            en_dusuk_fiyat=None, # İlk eklemede doğru ayarlanması için
             toplam_deger=Decimal('0.00')
         )
         db.session.add(stats)

@@ -12,10 +12,18 @@ def init_db_models(app):
     from . import user_models
     from . import arsa_models
     from . import crm_models
+    from . import office_models
     # Bu importlar, user_models.py, arsa_models.py, crm_models.py dosyalarının
     # içindeki tüm model sınıflarını yükler.
+    
+
 
     with app.app_context():
         print("Veritabanı tabloları oluşturuluyor...")
         db.create_all()
         print("Veritabanı tabloları (models/__init__.py üzerinden) başarıyla oluşturuldu!")
+        
+    from .user_models import User, Portfolio # portfolio_arsalar'ı da ekleyebilirsiniz
+    from .arsa_models import ArsaAnaliz, BolgeDagilimi, YatirimPerformansi, DashboardStats, AnalizMedya
+    from .crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam, crm_team_members
+    from .office_models import Office # YENİ EKLEDİK

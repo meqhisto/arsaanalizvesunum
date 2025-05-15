@@ -47,8 +47,8 @@ class ArsaAnaliz(db.Model):
 class BolgeDagilimi(db.Model):
     __tablename__ = "bolge_dagilimi"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    il = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    il = db.Column(db.String(50), nullable=True)
     analiz_sayisi = db.Column(db.Integer, default=0)
     toplam_deger = db.Column(db.Numeric(15, 2), default=Decimal("0.00")) # Decimal ile başlat
     son_guncelleme = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

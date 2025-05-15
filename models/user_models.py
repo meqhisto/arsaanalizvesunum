@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import pytz
 import secrets # forgot password için
 from . import db # Aynı paketteki __init__.py'den db'yi al
+from .office_models import Office
 
 
 
@@ -32,6 +33,12 @@ class User(UserMixin, db.Model):
     timezone = db.Column(
         db.String(50), default="Europe/Istanbul"
     )  # Kullanıcının zaman dilimi
+    role = db.Column(db.String(20), default='danisman', nullable=False)
+    office_id = db.Column(db.Integer, db.ForeignKey('offices.id'), nullable=True)
+    reports_to_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
+    office = db.relationship('Office', backref=db.backref('members', lazy='dynamic'))
+    manager = db.relationship('User', remote_side=[id], backref=db.backref('subordinates', lazy='dynamic'))
 
     def set_password(self, password):
         try:

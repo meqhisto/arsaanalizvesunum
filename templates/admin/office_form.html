@@ -1,0 +1,64 @@
+{% extends "base_admin.html" %}
+{% block title %}{{ form_title }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-lg">
+                <div class="card-header {% if office %}bg-warning{% else %}bg-success{% endif %} text-white">
+                    <h3 class="mb-0"><i class="bi bi-building-gear me-2"></i>{{ form_title }}</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Ofis Adı <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg" id="name" name="name" required 
+                                   value="{{ form_data.name if form_data else office.name if office else '' }}">
+                            <div class="invalid-feedback">Lütfen ofis adını giriniz.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Adres</label>
+                            <textarea class="form-control" id="address" name="address" rows="3">{{ form_data.address if form_data else office.address if office else '' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Telefon</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ form_data.phone if form_data else office.phone if office else '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="logo_path" class="form-label">Ofis Logosu</label>
+                            <input class="form-control" type="file" id="logo_path" name="logo_path" accept="image/*">
+                            {% if office and office.logo_path %}
+                                <small class="form-text text-muted">Mevcut Logo: 
+                                    <img src="{{ url_for('static', filename='uploads/' + office.logo_path) }}" alt="{{ office.name }} Logosu" style="max-height: 50px; margin-top: 5px;">
+                                    (Yeni logo seçerseniz bu değiştirilecektir. Logoyu kaldırmak için boş dosya gönderin veya bu alanı boş bırakın.)
+                                </small>
+                            {% elif form_data and form_data.current_logo_path %} {# Düzenlemede GET isteği için #}
+                                 <small class="form-text text-muted">Mevcut Logo: 
+                                    <img src="{{ url_for('static', filename='uploads/' + form_data.current_logo_path) }}" alt="Logo" style="max-height: 50px; margin-top: 5px;">
+                                </small>
+                            {% endif %}
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                   {% if (form_data and form_data.get('is_active') == 'on') or (office and office.is_active) or (not office and not form_data) %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                Ofis Aktif Mi?
+                            </label>
+                        </div>
+                        <hr class="my-4">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin.list_offices') }}" class="btn btn-outline-secondary btn-lg">İptal</a>
+                            <button type="submit" class="btn {% if office %}btn-warning{% else %}btn-success{% endif %} btn-lg">
+                                <i class="bi {% if office %}bi-save-fill{% else %}bi-check-circle-fill{% endif %} me-2"></i>
+                                {% if office %}Ofisi Güncelle{% else %}Ofis Oluştur{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script> /* Bootstrap validation script */ (function(){'use strict';var forms=document.querySelectorAll('.needs-validation');Array.prototype.slice.call(forms).forEach(function(form){form.addEventListener('submit',function(event){if(!form.checkValidity()){event.preventDefault();event.stopPropagation();}form.classList.add('was-validated');},false);});})();</script>
+{% endblock %}
