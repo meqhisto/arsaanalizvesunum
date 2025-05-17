@@ -5,6 +5,10 @@ from datetime import datetime, timedelta
 import pytz
 import secrets # forgot password için
 from . import db # Aynı paketteki __init__.py'den db'yi al
+from flask_login import UserMixin
+
+
+
 
 
 
@@ -23,6 +27,7 @@ class User(UserMixin, db.Model):
     firma = db.Column(db.String(100))
     unvan = db.Column(db.String(100))
     adres = db.Column(db.Text)
+    role = db.Column(db.String(32), default='')  # veya sana uygun default bir değer
     profil_foto = db.Column(db.String(200))  # Path to profile photo
     is_active = db.Column(db.Boolean, default=True)
     son_giris = db.Column(db.DateTime)
@@ -32,6 +37,9 @@ class User(UserMixin, db.Model):
     timezone = db.Column(
         db.String(50), default="Europe/Istanbul"
     )  # Kullanıcının zaman dilimi
+
+    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    team_members = db.relationship('User', backref=db.backref('manager', remote_side=[id]), lazy='dynamic')
 
     def set_password(self, password):
         try:

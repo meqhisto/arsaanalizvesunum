@@ -61,7 +61,7 @@ def index():
             toplam_arsa_sayisi=0, 
             ortalama_fiyat=0.0, 
             en_yuksek_fiyat=0.0, 
-            en_dusuk_fiyat=float('inf'), # İlk eklemede doğru ayarlanması için
+            en_dusuk_fiyat=9999999999.0, # Sonsuz yerine çok büyük bir sayı kullanıyoruz
             toplam_deger=Decimal('0.00')
         )
         db.session.add(stats)

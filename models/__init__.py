@@ -15,6 +15,7 @@ def init_db_models(app):
     # Bu importlar, user_models.py, arsa_models.py, crm_models.py dosyalarının
     # içindeki tüm model sınıflarını yükler.
 
+    from .user_models import User
     with app.app_context():
         print("Veritabanı tabloları oluşturuluyor...")
         db.create_all()

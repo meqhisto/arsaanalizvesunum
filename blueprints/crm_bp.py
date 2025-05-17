@@ -1,4 +1,5 @@
 # blueprints/crm_bp.py
+import json # JSON işlemleri için eklendi
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 )
@@ -112,7 +113,7 @@ def crm_contact_detail(contact_id):
         # Task.priority.desc() # Priority için sıralama enum veya case when gerektirebilir
     ).all()
     # Fırsatlar da eklenebilir
-    # deals = contact.deals.order_by(Deal.created_at.desc()).all()
+    deals = contact.deals.order_by(Deal.created_at.desc()).all()
     return render_template('contact_detail.html', contact=contact, title=f"{contact.first_name} {contact.last_name}", interactions=interactions, tasks=tasks)
 
 
@@ -555,6 +556,29 @@ def crm_deal_update_stage(deal_id):
 
 
 # --- GÖREV (TASK) ROTALARI ---
+
+@crm_bp.route('/tasks/check-reminders', methods=['GET'])
+@login_required
+def check_reminders():
+    user_id = current_user.id
+    now = datetime.utcnow()
+    # 1 gün içinde bitmesi gereken, tamamlanmamış görevler
+    upcoming_tasks = Task.query.filter(
+        Task.user_id == user_id,
+        Task.status != 'Tamamlandı',
+        Task.due_date <= now + timedelta(days=1)
+    ).all()
+    tasks_data = [
+        {
+            "id": task.id,
+            "title": task.title,
+            "due_date": task.due_date.strftime("%Y-%m-%d %H:%M") if task.due_date else None,
+            "status": task.status
+        }
+        for task in upcoming_tasks
+    ]
+    return jsonify({"reminders": tasks_data})
+
 @crm_bp.route('/tasks')
 @login_required
 def crm_tasks_list():

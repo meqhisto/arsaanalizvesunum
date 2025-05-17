@@ -105,8 +105,7 @@
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-cash-coin me-2"></i>Bağlı Fırsatlar ({{ company_deals|length }})</span>
-                <a href="{{ url_for('crm_deal_new', company_id=company.id) }}" class="btn btn-sm btn-outline-success">
-                    <i class="bi bi-plus-circle-fill me-1"></i> Bu Şirkete Fırsat Ekle
+                <a href="{{ url_for('crm.crm_deal_new', company_id=company.id) }}" class="btn btn-sm btn-outline-success">                    <i class="bi bi-plus-circle-fill me-1"></i> Bu Şirkete Fırsat Ekle
                 </a>
             </div>
             <div class="card-body p-0">
