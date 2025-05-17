@@ -1,962 +1,627 @@
-2025-05-14 03:44:42,005 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-17 22:46:20,028 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 22:46:49,686 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-05-14 03:44:51,125 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-17 22:46:52,399 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
     view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
     return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
     return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-05-14 03:45:02,264 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-17 22:53:17,953 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-05-14 03:45:02,579 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-17 22:53:22,884 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
     view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
     return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
     return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-05-14 03:45:02,581 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-17 22:53:26,978 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-05-14 03:45:02,994 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-17 22:53:29,313 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
+    self.raise_routing_exception(req)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\ctx.py", line 367, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-05-14 03:45:10,614 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+2025-05-17 22:53:54,457 - ERROR - app - Sunucu hatası oluştu: name 'json' is not defined
 Traceback:
 Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 66, in crm_contact_new
+    tags_list = json.loads(tags_json) if tags_json else []
+NameError: name 'json' is not defined
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
     return current_app.ensure_sync(func)(*args, **kwargs)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 231, in profile
-    return render_template('profile.html', user=user, timezones=timezones_list)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 147, in render_template
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 68, in crm_contact_new
+    except json.JSONDecodeError:
+NameError: name 'json' is not defined
+
+2025-05-17 22:54:53,201 - ERROR - app - Sunucu hatası oluştu: name 'json' is not defined
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 66, in crm_contact_new
+    try:
+NameError: name 'json' is not defined
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 68, in crm_contact_new
+    if not isinstance(tags_list, list): tags_list = []
+NameError: name 'json' is not defined
+
+2025-05-17 23:01:57,947 - ERROR - app - Sunucu hatası oluştu: name 'json' is not defined
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 66, in crm_contact_new
+    try:
+NameError: name 'json' is not defined
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 68, in crm_contact_new
+    if not isinstance(tags_list, list): tags_list = []
+NameError: name 'json' is not defined
+
+2025-05-17 23:03:02,913 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:04:52,489 - ERROR - app - Sunucu hatası oluştu: 'User' object has no attribute 'role'
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 689, in crm_task_new
+    return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task={}, current_user=current_user, users_for_assignment=User.query.filter(User.id != current_user.id, User.firma == current_user.firma).all() if current_user.role == 'broker' else [])
+AttributeError: 'User' object has no attribute 'role'
+
+2025-05-17 23:13:41,196 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:13:43,446 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:16:04,979 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:16:08,487 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:16:24,103 - ERROR - app - Sunucu hatası oluştu: 'User' object has no attribute 'role'
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 689, in crm_task_new
+    return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task={}, current_user=current_user, users_for_assignment=User.query.filter(User.id != current_user.id, User.firma == current_user.firma).all() if current_user.role == 'broker' else [])
+AttributeError: 'User' object has no attribute 'role'
+
+2025-05-17 23:18:03,114 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:18:05,866 - ERROR - app - Sunucu hatası oluştu: 'werkzeug.local.LocalProxy object' has no attribute 'team_members'
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 689, in crm_task_new
+    return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task={}, current_user=current_user, users_for_assignment=User.query.filter(User.id != current_user.id, User.firma == current_user.firma).all() if current_user.role == 'broker' else [])
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
     return _render(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\templating.py", line 128, in _render
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
     rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
     self.environment.handle_exception()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
     raise rewrite_traceback_stack(source=source)
-  File "c:\Users\ustad\Desktop\arsaanalizvesunum\templates\profile.html", line 34, in top-level template code
-    <a href="{{ url_for('index') }}" class="active"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\task_form.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 339, in top-level template code
+    {% block crm_content %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\task_form.html", line 158, in block 'crm_content'
+    {% if current_user.role == 'broker' or current_user.team_members.count() > 0 %}
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 490, in getattr
+    return getattr(obj, attribute)
+jinja2.exceptions.UndefinedError: 'werkzeug.local.LocalProxy object' has no attribute 'team_members'
+
+2025-05-17 23:19:20,379 - ERROR - app - Sunucu hatası oluştu: 'werkzeug.local.LocalProxy object' has no attribute 'team_members'
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 689, in crm_task_new
+    return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task={}, current_user=current_user, users_for_assignment=User.query.filter(User.id != current_user.id, User.firma == current_user.firma).all() if current_user.role == 'broker' else [])
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\task_form.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 339, in top-level template code
+    {% block crm_content %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\task_form.html", line 158, in block 'crm_content'
+    {% if current_user.role == 'broker' or current_user.team_members.count() > 0 %}
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 490, in getattr
+    return getattr(obj, attribute)
+jinja2.exceptions.UndefinedError: 'werkzeug.local.LocalProxy object' has no attribute 'team_members'
+
+2025-05-17 23:19:27,407 - ERROR - app - Sunucu hatası oluştu: 'werkzeug.local.LocalProxy object' has no attribute 'team_members'
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 689, in crm_task_new
+    return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task={}, current_user=current_user, users_for_assignment=User.query.filter(User.id != current_user.id, User.firma == current_user.firma).all() if current_user.role == 'broker' else [])
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\task_form.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 339, in top-level template code
+    {% block crm_content %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\task_form.html", line 158, in block 'crm_content'
+    {% if current_user.role == 'broker' or current_user.team_members.count() > 0 %}
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 490, in getattr
+    return getattr(obj, attribute)
+jinja2.exceptions.UndefinedError: 'werkzeug.local.LocalProxy object' has no attribute 'team_members'
+
+2025-05-17 23:19:43,907 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:19:44,702 - ERROR - app - Sunucu hatası oluştu: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'manager_id'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT users.id AS users_id, users.email AS users_email, users.password_hash AS users_password_hash, users.registered_on AS users_registered_on, users.ad AS users_ad, users.soyad AS users_soyad, users.telefon AS users_telefon, users.firma AS users_firma, users.unvan AS users_unvan, users.adres AS users_adres, users.role AS users_role, users.profil_foto AS users_profil_foto, users.is_active AS users_is_active, users.son_giris AS users_son_giris, users.failed_attempts AS users_failed_attempts, users.reset_token AS users_reset_token, users.reset_token_expires AS users_reset_token_expires, users.timezone AS users_timezone, users.manager_id AS users_manager_id 
+FROM users 
+WHERE users.id = ?]
+[parameters: (4,)]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+pyodbc.ProgrammingError: ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'manager_id'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 284, in decorated_view
+    elif not current_user.is_authenticated:
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 422, in __get__
+    obj = instance._get_current_object()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 544, in _get_current_object
+    return self.__local()  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 25, in <lambda>
+    current_user = LocalProxy(lambda: _get_user())
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 370, in _get_user
+    current_app.login_manager._load_user()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\login_manager.py", line 364, in _load_user
+    user = self._user_callback(user_id)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\app.py", line 73, in load_user
+    return User.query.get(int(user_id))
+  File "<string>", line 2, in get
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\deprecations.py", line 468, in warned
+    return fn(*args, **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\query.py", line 947, in get
+    return self._get_impl(ident, loading.load_on_pk_identity)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\query.py", line 951, in _get_impl
+    return self.session._get_impl(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 2975, in _get_impl
+    return db_load_fn(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\loading.py", line 530, in load_on_pk_identity
+    session.execute(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 1717, in execute
+    result = conn._execute_20(statement, params or {}, execution_options)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
+    ret = self._execute_context(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
+    self._handle_dbapi_exception(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
+    util.raise_(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (pyodbc.ProgrammingError) ('42S22', "[42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Invalid column name 'manager_id'. (207) (SQLExecDirectW); [42S22] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Statement(s) could not be prepared. (8180)")
+[SQL: SELECT users.id AS users_id, users.email AS users_email, users.password_hash AS users_password_hash, users.registered_on AS users_registered_on, users.ad AS users_ad, users.soyad AS users_soyad, users.telefon AS users_telefon, users.firma AS users_firma, users.unvan AS users_unvan, users.adres AS users_adres, users.role AS users_role, users.profil_foto AS users_profil_foto, users.is_active AS users_is_active, users.son_giris AS users_son_giris, users.failed_attempts AS users_failed_attempts, users.reset_token AS users_reset_token, users.reset_token_expires AS users_reset_token_expires, users.timezone AS users_timezone, users.manager_id AS users_manager_id 
+FROM users 
+WHERE users.id = ?]
+[parameters: (4,)]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+
+2025-05-17 23:21:14,123 - ERROR - app - Sunucu hatası oluştu: 'Contact' object has no attribute 'tasks'
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 110, in crm_contact_detail
+    tasks = contact.tasks.order_by(
+AttributeError: 'Contact' object has no attribute 'tasks'
+
+2025-05-17 23:23:35,139 - ERROR - app - Sunucu hatası oluştu: 'Contact' object has no attribute 'tasks'
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 110, in crm_contact_detail
+    tasks = contact.tasks.order_by(
+AttributeError: 'Contact' object has no attribute 'tasks'
+
+2025-05-17 23:25:18,533 - ERROR - app - Sunucu hatası oluştu: 'Contact' object has no attribute 'tasks'
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 110, in crm_contact_detail
+    tasks = contact.tasks.order_by(
+AttributeError: 'Contact' object has no attribute 'tasks'
+
+2025-05-17 23:27:32,260 - ERROR - app - Sunucu hatası oluştu: 'Contact' object has no attribute 'tasks'
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 110, in crm_contact_detail
+    tasks = contact.tasks.order_by(
+AttributeError: 'Contact' object has no attribute 'tasks'
+
+2025-05-17 23:28:20,203 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:28:23,921 - ERROR - app - Sunucu hatası oluştu: Could not determine join condition between parent/child tables on relationship Contact.tasks - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2754, in _determine_joins
+    self.primaryjoin = join_condition(
+  File "<string>", line 2, in join_condition
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\sql\selectable.py", line 1229, in _join_condition
+    raise exc.NoForeignKeysError(
+sqlalchemy.exc.NoForeignKeysError: Can't find any foreign key relationships between 'crm_contacts' and 'crm_tasks'.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 284, in decorated_view
+    elif not current_user.is_authenticated:
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 422, in __get__
+    obj = instance._get_current_object()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 544, in _get_current_object
+    return self.__local()  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 25, in <lambda>
+    current_user = LocalProxy(lambda: _get_user())
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 370, in _get_user
+    current_app.login_manager._load_user()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\login_manager.py", line 364, in _load_user
+    user = self._user_callback(user_id)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\app.py", line 73, in load_user
+    return User.query.get(int(user_id))
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_sqlalchemy\__init__.py", line 550, in __get__
+    mapper = orm.class_mapper(type)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\base.py", line 448, in class_mapper
+    mapper = _inspect_mapped_class(class_, configure=configure)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\base.py", line 427, in _inspect_mapped_class
+    mapper._check_configure()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 1941, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 3527, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 3566, in _do_configure_registries
+    mapper._post_configure_properties()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 1958, in _post_configure_properties
+    prop.init()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\interfaces.py", line 231, in init
+    self.do_init()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2152, in do_init
+    self._setup_join_conditions()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2248, in _setup_join_conditions
+    self._join_condition = jc = JoinCondition(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2643, in __init__
+    self._determine_joins()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2776, in _determine_joins
+    util.raise_(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+sqlalchemy.exc.NoForeignKeysError: Could not determine join condition between parent/child tables on relationship Contact.tasks - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+
+2025-05-17 23:31:07,457 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:31:07,749 - ERROR - app - Sunucu hatası oluştu: Could not determine join condition between parent/child tables on relationship Contact.tasks - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2754, in _determine_joins
+    self.primaryjoin = join_condition(
+  File "<string>", line 2, in join_condition
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\sql\selectable.py", line 1229, in _join_condition
+    raise exc.NoForeignKeysError(
+sqlalchemy.exc.NoForeignKeysError: Can't find any foreign key relationships between 'crm_contacts' and 'crm_tasks'.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 284, in decorated_view
+    elif not current_user.is_authenticated:
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 422, in __get__
+    obj = instance._get_current_object()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 544, in _get_current_object
+    return self.__local()  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 25, in <lambda>
+    current_user = LocalProxy(lambda: _get_user())
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 370, in _get_user
+    current_app.login_manager._load_user()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\login_manager.py", line 364, in _load_user
+    user = self._user_callback(user_id)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\app.py", line 73, in load_user
+    return User.query.get(int(user_id))
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_sqlalchemy\__init__.py", line 550, in __get__
+    mapper = orm.class_mapper(type)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\base.py", line 448, in class_mapper
+    mapper = _inspect_mapped_class(class_, configure=configure)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\base.py", line 427, in _inspect_mapped_class
+    mapper._check_configure()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 1941, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 3527, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 3566, in _do_configure_registries
+    mapper._post_configure_properties()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 1958, in _post_configure_properties
+    prop.init()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\interfaces.py", line 231, in init
+    self.do_init()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2152, in do_init
+    self._setup_join_conditions()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2248, in _setup_join_conditions
+    self._join_condition = jc = JoinCondition(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2643, in __init__
+    self._determine_joins()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\relationships.py", line 2776, in _determine_joins
+    util.raise_(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+sqlalchemy.exc.NoForeignKeysError: Could not determine join condition between parent/child tables on relationship Contact.tasks - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+
+2025-05-17 23:33:03,976 - ERROR - app - Sunucu hatası oluştu: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'mapped class Contact->crm_contacts'. Original exception was: Could not determine join condition between parent/child tables on relationship Contact.tasks - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 284, in decorated_view
+    elif not current_user.is_authenticated:
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 422, in __get__
+    obj = instance._get_current_object()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 544, in _get_current_object
+    return self.__local()  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 25, in <lambda>
+    current_user = LocalProxy(lambda: _get_user())
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 370, in _get_user
+    current_app.login_manager._load_user()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\login_manager.py", line 364, in _load_user
+    user = self._user_callback(user_id)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\app.py", line 73, in load_user
+    return User.query.get(int(user_id))
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_sqlalchemy\__init__.py", line 550, in __get__
+    mapper = orm.class_mapper(type)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\base.py", line 448, in class_mapper
+    mapper = _inspect_mapped_class(class_, configure=configure)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\base.py", line 427, in _inspect_mapped_class
+    mapper._check_configure()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 1941, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 3527, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 3562, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'mapped class Contact->crm_contacts'. Original exception was: Could not determine join condition between parent/child tables on relationship Contact.tasks - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+
+2025-05-17 23:35:57,535 - ERROR - app - Sunucu hatası oluştu: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'mapped class Contact->crm_contacts'. Original exception was: Could not determine join condition between parent/child tables on relationship Contact.tasks - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 284, in decorated_view
+    elif not current_user.is_authenticated:
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 422, in __get__
+    obj = instance._get_current_object()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\local.py", line 544, in _get_current_object
+    return self.__local()  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 25, in <lambda>
+    current_user = LocalProxy(lambda: _get_user())
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 370, in _get_user
+    current_app.login_manager._load_user()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\login_manager.py", line 364, in _load_user
+    user = self._user_callback(user_id)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\app.py", line 73, in load_user
+    return User.query.get(int(user_id))
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_sqlalchemy\__init__.py", line 550, in __get__
+    mapper = orm.class_mapper(type)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\base.py", line 448, in class_mapper
+    mapper = _inspect_mapped_class(class_, configure=configure)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\base.py", line 427, in _inspect_mapped_class
+    mapper._check_configure()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 1941, in _check_configure
+    _configure_registries({self.registry}, cascade=True)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 3527, in _configure_registries
+    _do_configure_registries(registries, cascade)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\mapper.py", line 3562, in _do_configure_registries
+    raise e
+sqlalchemy.exc.InvalidRequestError: One or more mappers failed to initialize - can't proceed with initialization of other mappers. Triggering mapper: 'mapped class Contact->crm_contacts'. Original exception was: Could not determine join condition between parent/child tables on relationship Contact.tasks - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+
+2025-05-17 23:36:39,261 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:36:42,563 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'crm_contacts_list'. Did you mean 'crm.crm_contacts_list' instead?
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 117, in crm_contact_detail
+    return render_template('contact_detail.html', contact=contact, title=f"{contact.first_name} {contact.last_name}", interactions=interactions, tasks=tasks)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\contact_detail.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 339, in top-level template code
+    {% block crm_content %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\contact_detail.html", line 11, in block 'crm_content'
+    <a href="{{ url_for('crm_contacts_list') }}" class="btn btn-outline-secondary me-2">
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 338, in url_for
     return appctx.app.handle_url_build_error(error, endpoint, values)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 325, in url_for
     rv = url_adapter.build(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
     raise BuildError(endpoint, values, method, self)
-werkzeug.routing.BuildError: Could not build url for endpoint 'index'. Did you mean 'main.index' instead?
+werkzeug.routing.BuildError: Could not build url for endpoint 'crm_contacts_list'. Did you mean 'crm.crm_contacts_list' instead?
 
-2025-05-14 03:47:06,314 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-05-17 23:38:50,974 - ERROR - app - Sunucu hatası oluştu: 'Deal' object has no attribute 'tasks'
 Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:47:08,076 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:47:08,950 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:47:11,501 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:47:13,233 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:47:16,054 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:47:18,251 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:48:42,320 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:48:43,070 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:56:26,967 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:56:58,342 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:57:04,584 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:57:07,429 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:57:09,995 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:57:12,158 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:57:12,565 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:57:42,686 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:57:43,134 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:58:25,889 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:58:26,423 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 03:58:28,222 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:02:52,314 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:02:54,065 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:02:54,738 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:05:18,809 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:05:26,524 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:05:32,669 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:05:35,210 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:06:35,426 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:07:35,737 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:07:47,801 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:07:56,068 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:07:56,390 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:07:58,947 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:08:02,956 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:08:05,741 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:09:05,811 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:09:37,563 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:09:37,881 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:09:41,638 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 518, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
-    return send_from_directory(
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:10:12,951 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:10:31,206 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:10:40,802 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:10:43,582 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:11:43,722 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:11:52,532 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:11:54,982 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:12:55,744 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:13:54,626 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:13:55,535 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:13:57,982 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-14 04:14:07,547 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1489, in dispatch_request
-    self.raise_routing_exception(req)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\app.py", line 1471, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\flask\ctx.py", line 367, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\venv\lib\site-packages\werkzeug\routing.py", line 2032, in match
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-05-17 22:40:01,596 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-05-17 22:40:14,503 - ERROR - app - Sunucu hatası oluştu: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(pyodbc.ProgrammingError) ('42000', '[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 8 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision. (8023) (SQLExecDirectW)')
-[SQL: INSERT INTO dashboard_stats (user_id, toplam_arsa_sayisi, ortalama_fiyat, en_yuksek_fiyat, en_dusuk_fiyat, toplam_deger, ortalama_roi, son_guncelleme) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (4, 0, 0.0, 0.0, inf, Decimal('0.00'), Decimal('0.00'), datetime.datetime(2025, 5, 17, 19, 40, 14, 393683))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
-Traceback:
-Traceback (most recent call last):
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-pyodbc.ProgrammingError: ('42000', '[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 8 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision. (8023) (SQLExecDirectW)')
-
-The above exception was the direct cause of the following exception:
-
 Traceback (most recent call last):
   File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
@@ -964,77 +629,12 @@ Traceback (most recent call last):
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
   File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
     return current_app.ensure_sync(func)(*args, **kwargs)
-  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\main_bp.py", line 71, in index
-    ArsaAnaliz.query.filter_by(user_id=user_id)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
-    return self._iter().all()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
-    result = self.session.execute(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 1665, in execute
-    ) = compile_state_cls.orm_pre_session_exec(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\context.py", line 312, in orm_pre_session_exec
-    session._autoflush()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 2264, in _autoflush
-    util.raise_(e, with_traceback=sys.exc_info()[2])
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
-    raise exception
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 2253, in _autoflush
-    self.flush()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 3449, in flush
-    self._flush(objects)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 3589, in _flush
-    transaction.rollback(_capture_exception=True)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\langhelpers.py", line 70, in __exit__
-    compat.raise_(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
-    raise exception
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 3549, in _flush
-    flush_context.execute()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\unitofwork.py", line 456, in execute
-    rec.execute(self)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\unitofwork.py", line 630, in execute
-    util.preloaded.orm_persistence.save_obj(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\persistence.py", line 245, in save_obj
-    _emit_insert_statements(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\persistence.py", line 1238, in _emit_insert_statements
-    result = connection._execute_20(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
-    return meth(self, args_10style, kwargs_10style, execution_options)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
-    return connection._execute_clauseelement(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
-    ret = self._execute_context(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
-    self._handle_dbapi_exception(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
-    util.raise_(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
-    raise exception
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(pyodbc.ProgrammingError) ('42000', '[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 8 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision. (8023) (SQLExecDirectW)')
-[SQL: INSERT INTO dashboard_stats (user_id, toplam_arsa_sayisi, ortalama_fiyat, en_yuksek_fiyat, en_dusuk_fiyat, toplam_deger, ortalama_roi, son_guncelleme) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (4, 0, 0.0, 0.0, inf, Decimal('0.00'), Decimal('0.00'), datetime.datetime(2025, 5, 17, 19, 40, 14, 393683))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 454, in crm_deal_detail
+    tasks = deal.tasks.order_by(
+AttributeError: 'Deal' object has no attribute 'tasks'
 
-2025-05-17 22:42:07,168 - ERROR - app - Sunucu hatası oluştu: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(pyodbc.ProgrammingError) ('42000', '[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 8 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision. (8023) (SQLExecDirectW)')
-[SQL: INSERT INTO dashboard_stats (user_id, toplam_arsa_sayisi, ortalama_fiyat, en_yuksek_fiyat, en_dusuk_fiyat, toplam_deger, ortalama_roi, son_guncelleme) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (4, 0, 0.0, 0.0, inf, Decimal('0.00'), Decimal('0.00'), datetime.datetime(2025, 5, 17, 19, 42, 7, 129007))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
+2025-05-17 23:39:58,743 - ERROR - app - Sunucu hatası oluştu: 'Deal' object has no attribute 'tasks'
 Traceback:
-Traceback (most recent call last):
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-pyodbc.ProgrammingError: ('42000', '[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 8 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision. (8023) (SQLExecDirectW)')
-
-The above exception was the direct cause of the following exception:
-
 Traceback (most recent call last):
   File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
@@ -1042,77 +642,115 @@ Traceback (most recent call last):
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
   File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
     return current_app.ensure_sync(func)(*args, **kwargs)
-  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\main_bp.py", line 71, in index
-    ArsaAnaliz.query.filter_by(user_id=user_id)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
-    return self._iter().all()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
-    result = self.session.execute(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 1665, in execute
-    ) = compile_state_cls.orm_pre_session_exec(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\context.py", line 312, in orm_pre_session_exec
-    session._autoflush()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 2264, in _autoflush
-    util.raise_(e, with_traceback=sys.exc_info()[2])
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
-    raise exception
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 2253, in _autoflush
-    self.flush()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 3449, in flush
-    self._flush(objects)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 3589, in _flush
-    transaction.rollback(_capture_exception=True)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\langhelpers.py", line 70, in __exit__
-    compat.raise_(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
-    raise exception
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 3549, in _flush
-    flush_context.execute()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\unitofwork.py", line 456, in execute
-    rec.execute(self)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\unitofwork.py", line 630, in execute
-    util.preloaded.orm_persistence.save_obj(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\persistence.py", line 245, in save_obj
-    _emit_insert_statements(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\persistence.py", line 1238, in _emit_insert_statements
-    result = connection._execute_20(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
-    return meth(self, args_10style, kwargs_10style, execution_options)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
-    return connection._execute_clauseelement(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
-    ret = self._execute_context(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
-    self._handle_dbapi_exception(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
-    util.raise_(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
-    raise exception
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(pyodbc.ProgrammingError) ('42000', '[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 8 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision. (8023) (SQLExecDirectW)')
-[SQL: INSERT INTO dashboard_stats (user_id, toplam_arsa_sayisi, ortalama_fiyat, en_yuksek_fiyat, en_dusuk_fiyat, toplam_deger, ortalama_roi, son_guncelleme) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (4, 0, 0.0, 0.0, inf, Decimal('0.00'), Decimal('0.00'), datetime.datetime(2025, 5, 17, 19, 42, 7, 129007))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 454, in crm_deal_detail
+    tasks = deal.tasks.order_by(
+AttributeError: 'Deal' object has no attribute 'tasks'
 
-2025-05-17 22:43:24,996 - ERROR - app - Sunucu hatası oluştu: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(pyodbc.ProgrammingError) ('42000', '[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 8 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision. (8023) (SQLExecDirectW)')
-[SQL: INSERT INTO dashboard_stats (user_id, toplam_arsa_sayisi, ortalama_fiyat, en_yuksek_fiyat, en_dusuk_fiyat, toplam_deger, ortalama_roi, son_guncelleme) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (4, 0, 0.0, 0.0, inf, Decimal('0.00'), Decimal('0.00'), datetime.datetime(2025, 5, 17, 19, 43, 24, 957993))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
+2025-05-17 23:40:19,403 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-17 23:42:26,783 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-pyodbc.ProgrammingError: ('42000', '[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 8 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision. (8023) (SQLExecDirectW)')
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-The above exception was the direct cause of the following exception:
+2025-05-17 23:45:45,364 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
+2025-05-17 23:46:54,404 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-17 23:48:33,219 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-17 23:52:26,942 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-17 23:53:04,601 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-17 23:56:48,894 - ERROR - app - Sunucu hatası oluştu: Encountered unknown tag 'endblock'.
+Traceback:
 Traceback (most recent call last):
   File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
     rv = self.dispatch_request()
@@ -1120,59 +758,343 @@ Traceback (most recent call last):
     return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
   File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
     return current_app.ensure_sync(func)(*args, **kwargs)
-  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\main_bp.py", line 71, in index
-    ArsaAnaliz.query.filter_by(user_id=user_id)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\query.py", line 2773, in all
-    return self._iter().all()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\query.py", line 2916, in _iter
-    result = self.session.execute(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 1665, in execute
-    ) = compile_state_cls.orm_pre_session_exec(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\context.py", line 312, in orm_pre_session_exec
-    session._autoflush()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 2264, in _autoflush
-    util.raise_(e, with_traceback=sys.exc_info()[2])
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
-    raise exception
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 2253, in _autoflush
-    self.flush()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 3449, in flush
-    self._flush(objects)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 3589, in _flush
-    transaction.rollback(_capture_exception=True)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 33, in crm_contacts_list
+    return render_template('contacts_list.html', contacts=contacts, title="Kişiler")
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\contacts_list.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %} {% block title %}Kişiler - CRM{% endblock %}
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 6, in template
+    {% endblock %}
+jinja2.exceptions.TemplateSyntaxError: Encountered unknown tag 'endblock'.
+
+2025-05-17 23:57:26,944 - ERROR - app - Sunucu hatası oluştu: Object of type Undefined is not JSON serializable
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 33, in crm_contacts_list
+    return render_template('contacts_list.html', contacts=contacts, title="Kişiler")
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\contacts_list.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %} {% block title %}Kişiler - CRM{% endblock %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 1, in top-level template code
+    {% extends "index.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\index.html", line 1, in top-level template code
+    {% extends "base.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\base.html", line 27, in top-level template code
+    {% block scripts %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 136, in block 'scripts'
+    {{ super() }}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\index.html", line 983, in block 'scripts'
+    labels: {{ son_alti_ay | tojson }},
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\filters.py", line 1721, in do_tojson
+    return htmlsafe_json_dumps(value, dumps=dumps, **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\utils.py", line 669, in htmlsafe_json_dumps
+    dumps(obj, **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\json\__init__.py", line 129, in dumps
+    rv = _json.dumps(obj, **kwargs)
+  File "C:\Users\altanbariscomert\AppData\Local\Programs\Python\Python39\lib\json\__init__.py", line 234, in dumps
+    return cls(
+  File "C:\Users\altanbariscomert\AppData\Local\Programs\Python\Python39\lib\json\encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\altanbariscomert\AppData\Local\Programs\Python\Python39\lib\json\encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\json\__init__.py", line 56, in default
+    return super().default(o)
+  File "C:\Users\altanbariscomert\AppData\Local\Programs\Python\Python39\lib\json\encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Undefined is not JSON serializable
+
+2025-05-17 23:58:09,410 - ERROR - app - Sunucu hatası oluştu: Object of type Undefined is not JSON serializable
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 599, in crm_tasks_list
+    return render_template('tasks_list.html', tasks=tasks, title="Görevler", statuses=TASK_STATUSES, current_status=filter_status)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\tasks_list.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 1, in top-level template code
+    {% extends "index.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\index.html", line 1, in top-level template code
+    {% extends "base.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\base.html", line 27, in top-level template code
+    {% block scripts %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 136, in block 'scripts'
+    {{ super() }}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\index.html", line 983, in block 'scripts'
+    labels: {{ son_alti_ay | tojson }},
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\filters.py", line 1721, in do_tojson
+    return htmlsafe_json_dumps(value, dumps=dumps, **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\utils.py", line 669, in htmlsafe_json_dumps
+    dumps(obj, **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\json\__init__.py", line 129, in dumps
+    rv = _json.dumps(obj, **kwargs)
+  File "C:\Users\altanbariscomert\AppData\Local\Programs\Python\Python39\lib\json\__init__.py", line 234, in dumps
+    return cls(
+  File "C:\Users\altanbariscomert\AppData\Local\Programs\Python\Python39\lib\json\encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\altanbariscomert\AppData\Local\Programs\Python\Python39\lib\json\encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\json\__init__.py", line 56, in default
+    return super().default(o)
+  File "C:\Users\altanbariscomert\AppData\Local\Programs\Python\Python39\lib\json\encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Undefined is not JSON serializable
+
+2025-05-17 23:59:29,067 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-18 00:07:47,090 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'crm_deal_new' with values ['company_id']. Did you mean 'crm.crm_deal_new' instead?
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\crm_bp.py", line 249, in crm_company_detail
+    return render_template('company_detail.html', company=company, title=company.name, company_contacts=company_contacts, company_deals=company_deals)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\company_detail.html", line 1, in top-level template code
+    {% extends "crm/crm_base.html" %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\crm_base.html", line 339, in top-level template code
+    {% block crm_content %}
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\crm\company_detail.html", line 108, in block 'crm_content'
+    <a href="{{ url_for('crm_deal_new', company_id=company.id) }}" class="btn btn-sm btn-outline-success">
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'crm_deal_new' with values ['company_id']. Did you mean 'crm.crm_deal_new' instead?
+
+2025-05-18 00:11:28,566 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 518, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\scaffold.py", line 328, in send_static_file
+    return send_from_directory(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 700, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\utils.py", line 841, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-05-18 00:20:58,585 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-18 00:21:02,802 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-18 00:21:05,156 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'submit_analysis'. Did you mean 'analysis.create_analysis' instead?
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\main_bp.py", line 272, in analysis_form
+    return render_template('analysis_form.html', form_data=form_data, form_errors=form_errors)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\analysis_form.html", line 243, in top-level template code
+    <form id="arsaAnaliz" action="{{ url_for('submit_analysis') }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'submit_analysis'. Did you mean 'analysis.create_analysis' instead?
+
+2025-05-18 00:59:45,772 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-18 01:00:04,049 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-18 01:13:42,603 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-18 01:16:43,821 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-05-18 01:50:16,577 - ERROR - analysis_bp - Analiz oluşturma hatası: 'fiyat' is an invalid keyword argument for ArsaAnaliz
+Traceback (most recent call last):
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\analysis_bp.py", line 134, in create_analysis
+    yeni_analiz = ArsaAnaliz(
+  File "<string>", line 4, in __init__
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\state.py", line 482, in _initialize_instance
+    manager.dispatch.init_failure(self, args, kwargs)
   File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\langhelpers.py", line 70, in __exit__
     compat.raise_(
   File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
     raise exception
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\session.py", line 3549, in _flush
-    flush_context.execute()
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\unitofwork.py", line 456, in execute
-    rec.execute(self)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\unitofwork.py", line 630, in execute
-    util.preloaded.orm_persistence.save_obj(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\persistence.py", line 245, in save_obj
-    _emit_insert_statements(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\persistence.py", line 1238, in _emit_insert_statements
-    result = connection._execute_20(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1710, in _execute_20
-    return meth(self, args_10style, kwargs_10style, execution_options)
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\sql\elements.py", line 334, in _execute_on_connection
-    return connection._execute_clauseelement(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1577, in _execute_clauseelement
-    ret = self._execute_context(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1953, in _execute_context
-    self._handle_dbapi_exception(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 2134, in _handle_dbapi_exception
-    util.raise_(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\state.py", line 479, in _initialize_instance
+    return manager.original_init(*mixed[1:], **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\decl_base.py", line 1197, in _declarative_constructor
+    raise TypeError(
+TypeError: 'fiyat' is an invalid keyword argument for ArsaAnaliz
+2025-05-18 01:53:13,469 - ERROR - analysis_bp - Analiz oluşturma hatası: 'fiyat' is an invalid keyword argument for ArsaAnaliz
+Traceback (most recent call last):
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\analysis_bp.py", line 134, in create_analysis
+    yeni_analiz = ArsaAnaliz(
+  File "<string>", line 4, in __init__
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\state.py", line 482, in _initialize_instance
+    manager.dispatch.init_failure(self, args, kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\langhelpers.py", line 70, in __exit__
+    compat.raise_(
   File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
     raise exception
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\base.py", line 1910, in _execute_context
-    self.dialect.do_execute(
-  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\engine\default.py", line 736, in do_execute
-    cursor.execute(statement, parameters)
-sqlalchemy.exc.ProgrammingError: (raised as a result of Query-invoked autoflush; consider using a session.no_autoflush block if this flush is occurring prematurely)
-(pyodbc.ProgrammingError) ('42000', '[42000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC) protocol stream is incorrect. Parameter 8 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision. (8023) (SQLExecDirectW)')
-[SQL: INSERT INTO dashboard_stats (user_id, toplam_arsa_sayisi, ortalama_fiyat, en_yuksek_fiyat, en_dusuk_fiyat, toplam_deger, ortalama_roi, son_guncelleme) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?)]
-[parameters: (4, 0, 0.0, 0.0, inf, Decimal('0.00'), Decimal('0.00'), datetime.datetime(2025, 5, 17, 19, 43, 24, 957993))]
-(Background on this error at: https://sqlalche.me/e/14/f405)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\state.py", line 479, in _initialize_instance
+    return manager.original_init(*mixed[1:], **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\decl_base.py", line 1197, in _declarative_constructor
+    raise TypeError(
+TypeError: 'fiyat' is an invalid keyword argument for ArsaAnaliz
+2025-05-18 01:54:28,644 - ERROR - analysis_bp - Analiz oluşturma hatası: 'fiyat' is an invalid keyword argument for ArsaAnaliz
+Traceback (most recent call last):
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\analysis_bp.py", line 134, in create_analysis
+    yeni_analiz = ArsaAnaliz(
+  File "<string>", line 4, in __init__
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\state.py", line 482, in _initialize_instance
+    manager.dispatch.init_failure(self, args, kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\state.py", line 479, in _initialize_instance
+    return manager.original_init(*mixed[1:], **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\decl_base.py", line 1197, in _declarative_constructor
+    raise TypeError(
+TypeError: 'fiyat' is an invalid keyword argument for ArsaAnaliz
+2025-05-18 01:55:35,237 - ERROR - analysis_bp - Analiz oluşturma hatası: 'fiyat' is an invalid keyword argument for ArsaAnaliz
+Traceback (most recent call last):
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\analysis_bp.py", line 134, in create_analysis
+    yeni_analiz = ArsaAnaliz(
+  File "<string>", line 4, in __init__
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\state.py", line 482, in _initialize_instance
+    manager.dispatch.init_failure(self, args, kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\util\compat.py", line 211, in raise_
+    raise exception
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\state.py", line 479, in _initialize_instance
+    return manager.original_init(*mixed[1:], **kwargs)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\sqlalchemy\orm\decl_base.py", line 1197, in _declarative_constructor
+    raise TypeError(
+TypeError: 'fiyat' is an invalid keyword argument for ArsaAnaliz
+2025-05-18 01:56:12,300 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'submit_analysis'. Did you mean 'analysis.create_analysis' instead?
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\main_bp.py", line 272, in analysis_form
+    return render_template('analysis_form.html', form_data=form_data, form_errors=form_errors)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\analysis_form.html", line 243, in top-level template code
+    <form id="arsaAnaliz" action="{{ url_for('submit_analysis') }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'submit_analysis'. Did you mean 'analysis.create_analysis' instead?
+
+2025-05-18 01:56:34,171 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'submit_analysis'. Did you mean 'analysis.create_analysis' instead?
+Traceback:
+Traceback (most recent call last):
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\blueprints\main_bp.py", line 272, in analysis_form
+    return render_template('analysis_form.html', form_data=form_data, form_errors=form_errors)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+    return _render(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\templating.py", line 128, in _render
+    rv = template.render(context)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\templates\analysis_form.html", line 243, in top-level template code
+    <form id="arsaAnaliz" action="{{ url_for('submit_analysis') }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 338, in url_for
+    return appctx.app.handle_url_build_error(error, endpoint, values)
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\flask\helpers.py", line 325, in url_for
+    rv = url_adapter.build(
+  File "c:\Users\altanbariscomert\OneDrive\Masaüstü\arsaanalizvesunum\.venv\lib\site-packages\werkzeug\routing.py", line 2305, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.BuildError: Could not build url for endpoint 'submit_analysis'. Did you mean 'analysis.create_analysis' instead?
 

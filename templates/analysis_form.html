@@ -240,9 +240,8 @@
             {% endif %}
         {% endwith %}
 
-        <form id="arsaAnaliz" action="{{ url_for('submit_analysis') }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
-            <div class="row">
-                <div class="col-lg-8 mx-auto">
+        <form id="arsaAnaliz" action="{{ url_for('analysis.create_analysis') }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            <div class="col-lg-8 mx-auto">
                     <!-- Parsel Bilgileri -->
                     <div class="card mb-4 fade-in">
                         <div class="card-header bg-light">

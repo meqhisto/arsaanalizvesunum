@@ -260,13 +260,10 @@ def change_password(): # endpoint eski app.py'de 'change_password' idi, fonksiyo
     flash('Şifreniz başarıyla güncellendi.', 'success')
     return redirect(url_for('main.profile'))
 
-@main_bp.route('/analysis-form')
+# blueprints/main_bp.py
+@main_bp.route('/analysis-form') # Varsayılan olarak sadece GET
 @login_required
 def analysis_form():
-    # Eğer formda önceden doldurulmuş veri (hata durumunda) varsa, onu al
-    # Bu, ana app.py'deki submit_analysis içinde session'a kaydediliyordu.
-    # Bu mantığı buraya veya formun POST edildiği yere taşımak gerekebilir.
-    # Şimdilik sadece şablonu render edelim.
     form_data = session.pop('analysis_form_data', None)
     form_errors = session.pop('analysis_form_errors', None)
     return render_template('analysis_form.html', form_data=form_data, form_errors=form_errors)
