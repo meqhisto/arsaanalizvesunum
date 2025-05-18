@@ -4,6 +4,8 @@ from decimal import Decimal # Numeric için
 from sqlalchemy import Index # Index için
 from . import db
 from .user_models import User # User ilişkisi için
+from .office_models import Office # Office modelini import et
+
 
 # Portfolio ve portfolio_arsalar tablosunu import edelim ki ilişki kurabilelim
 from .user_models import Portfolio, portfolio_arsalar
@@ -12,6 +14,7 @@ class ArsaAnaliz(db.Model):
     __tablename__ = "arsa_analizleri"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    office_id = db.Column(db.Integer, db.ForeignKey('offices.id', ondelete='SET NULL'), nullable=True)
     il = db.Column(db.String(50), nullable=False)
     ilce = db.Column(db.String(50), nullable=False)
     mahalle = db.Column(db.String(100), nullable=False)
@@ -35,7 +38,12 @@ class ArsaAnaliz(db.Model):
         Index("ix_created_at", "created_at"),
     )
 
-    user = db.relationship("User", backref=db.backref("analizler", lazy="dynamic"))
+    user = db.relationship("User", backref=db.backref("analizler_olusturdugu", lazy="dynamic")) # backref adı değişti
+    office = db.relationship(
+        "Office",
+        backref=db.backref("arsa_analizleri", lazy="dynamic"),
+        foreign_keys=[office_id]
+    )
     # Portfolio ile çoktan çoğa ilişki (portfolio_arsalar üzerinden)
     # Bu ilişki zaten Portfolio modelinde tanımlanmış olabilir,
     # Eğer öyleyse burada tekrar tanımlamaya gerek yok.
