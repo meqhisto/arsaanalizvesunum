@@ -18,6 +18,7 @@ def init_db_models(app):
     
 
 
+    from .user_models import User
     with app.app_context():
         print("Veritabanı tabloları oluşturuluyor...")
         db.create_all()

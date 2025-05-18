@@ -1,127 +1,137 @@
 ```markdown
-# Arsa Analiz ve Sunum Sistemi - Sistem Kalıpları
+## System Patterns (systemPatterns.md)
 
-Bu belge, Arsa Analiz ve Sunum Sistemi'nde kullanılan sistem kalıplarını özetlemektedir. Mimari tasarımı, veri modellerini, API tanımlarını, bileşen yapısını, entegrasyon noktalarını ve ölçeklenebilirlik stratejisini kapsar.
+This document outlines the system patterns employed for analyzing the arsaanalizvesunum project's CRM system and providing recommendations. It covers architectural design, data models, API definitions, component structure, integration points, and scalability strategy.
 
-## 1. Mimari Tasarım: Mikroservis Mimarisi
+### 1. Architectural Design: Layered Architecture with Microservices Tendencies
 
-Mikroservis mimarisini kullanacağız. Bu yaklaşım aşağıdaki faydaları sunar:
+The architectural design follows a layered approach, promoting separation of concerns and maintainability. While not a fully-fledged microservices architecture, we aim to identify and isolate functionalities that could be extracted into independent services in the future. This allows for incremental modernization and avoids a complete system rewrite.
 
-*   **Bağımsız Dağıtım:** Her servis bağımsız olarak dağıtılabilir ve ölçeklendirilebilir.
-*   **Teknoloji Çeşitliliği:** Farklı servisler, belirli görevleri için en uygun farklı teknolojiler kullanılarak oluşturulabilir.
-*   **Hata İzolasyonu:** Bir servisteki hata, tüm sistemi çökertmez.
-*   **Geliştirilmiş Ölçeklenebilirlik:** Bireysel servisler, belirli yük gereksinimlerine göre ölçeklendirilebilir.
-*   **Daha Kolay Bakım:** Daha küçük kod tabanları daha kolay anlaşılır ve bakımı yapılır.
+*   **Presentation Layer:** This layer includes the user interface and any client-side logic. It interacts with the Application Layer through well-defined APIs.
+*   **Application Layer:** This layer contains the business logic and orchestrates interactions between the Presentation Layer and the Domain Layer. It handles user requests, authentication, authorization, and transaction management.
+*   **Domain Layer:** This layer encapsulates the core business entities and rules of the CRM system. It is independent of any specific technology or implementation details.
+*   **Data Access Layer:** This layer provides an abstraction over the underlying data storage mechanisms. It handles data persistence, retrieval, and manipulation.
 
-Çekirdek servisler şunlar olacaktır:
+**Microservices Tendencies:** We will identify potential candidates for microservices based on the following criteria:
 
-*   **Arsa Veri Servisi:** Arsa verilerinin depolanmasını ve alınmasını yönetir.
-*   **Analiz Servisi:** Arsa verileri üzerinde analitik hesaplamalar yapar (örn. uygunluk analizi, imar uyumluluğu).
-*   **Sunum Servisi:** Analiz edilmiş arsa verilerine dayalı sunumlar ve görselleştirmeler oluşturur.
-*   **Kullanıcı Yönetimi Servisi:** Kullanıcı kimlik doğrulama ve yetkilendirmeyi yönetir.
-*   **API Ağ Geçidi:** Tüm istemci istekleri için tek bir giriş noktası görevi görür ve bunları uygun servislere yönlendirir.
+*   Independent deployability
+*   Scaling requirements
+*   Technology diversity
 
-## 2. Veri Modelleri
+Examples might include:
 
-Kalıcı veri depolama için ilişkisel bir veritabanı (PostgreSQL) ve gerekirse belirli analitik veriler için potansiyel olarak bir NoSQL veritabanı (örn. MongoDB) kullanacağız. İşte temel veri modellerine basitleştirilmiş bir genel bakış:
+*   **Reporting Service:** Handles complex reporting queries and data aggregation.
+*   **Email Marketing Service:** Manages email campaigns and subscriber lists.
+*   **Customer Segmentation Service:** Performs customer segmentation based on various criteria.
 
-**2.1. Arsa Veri Modeli (İlişkisel):**
+### 2. Data Models
 
-*   `arsa_id` (UUID, Birincil Anahtar): Arsa parseli için benzersiz tanımlayıcı.
-*   `parsel_no` (VARCHAR): Parsel numarası.
-*   `ada_no` (VARCHAR): Ada numarası.
-*   `mevki` (VARCHAR): Konum.
-*   `alan` (NUMERIC): Alan (metrekare cinsinden).
-*   `koordinatlar` (GEOMETRY): Coğrafi koordinatlar (örn. PostGIS kullanarak).
-*   `imar_durumu` (VARCHAR): İmar durumu.
-*   `tapu_kaydi` (VARCHAR): Tapu kaydı.
-*   `created_at` (TIMESTAMP): Oluşturulma zaman damgası.
-*   `updated_at` (TIMESTAMP): Son güncelleme zaman damgası.
+The data models are designed to reflect the key entities and relationships within the CRM system. We will focus on analyzing the existing database schema and identifying potential areas for improvement.
 
-**2.2. Analiz Sonucu Veri Modeli (İlişkisel/NoSQL):**
+**Key Entities:**
 
-*   `analiz_id` (UUID, Birincil Anahtar): Analiz sonucu için benzersiz tanımlayıcı.
-*   `arsa_id` (UUID, Arsa'ya referans veren Yabancı Anahtar): Analizin yapıldığı arsa parseli.
-*   `analiz_tipi` (VARCHAR): Yapılan analiz türü (örn. "Uygunluk Analizi", "İmar Uyumluluğu").
-*   `sonuc` (JSONB/Belge): Analiz sonuçları, esneklik için potansiyel olarak bir JSON belgesi olarak depolanır.
-*   `created_at` (TIMESTAMP): Oluşturulma zaman damgası.
+*   **Customer:** Represents a customer or prospect. Attributes include name, contact information, address, industry, etc.
+*   **Contact:** Represents a specific contact person within a customer organization. Attributes include name, title, email, phone number, etc.
+*   **Opportunity:** Represents a potential sale or deal. Attributes include name, stage, value, close date, etc.
+*   **Account:** Represents a customer company or organization.
+*   **Lead:** Represents a potential customer who has not yet been qualified.
+*   **Activity:** Represents a task, event, or phone call related to a customer, opportunity, or contact. Attributes include type, status, due date, etc.
+*   **Case:** Represents a customer service issue or support request. Attributes include status, priority, resolution, etc.
 
-**2.3. Kullanıcı Veri Modeli (İlişkisel):**
+**Relationships:**
 
-*   `kullanici_id` (UUID, Birincil Anahtar): Kullanıcı için benzersiz tanımlayıcı.
-*   `kullanici_adi` (VARCHAR): Kullanıcı adı.
-*   `sifre` (VARCHAR): Şifre (hashlenmiş).
-*   `eposta` (VARCHAR): E-posta adresi.
-*   `rol` (VARCHAR): Kullanıcı rolü (örn. "Admin", "Analist", "Görüntüleyici").
-*   `created_at` (TIMESTAMP): Oluşturulma zaman damgası.
-*   `updated_at` (TIMESTAMP): Son güncelleme zaman damgası.
+*   One-to-many relationship between Customer and Contact.
+*   One-to-many relationship between Customer and Opportunity.
+*   One-to-many relationship between Account and Contact.
+*   One-to-many relationship between Account and Opportunity.
+*   One-to-many relationship between Customer and Activity.
+*   One-to-many relationship between Case and Activity.
+*   Many-to-many relationship between Customer and Product (if applicable).
 
-## 3. API Tanımları
+**Data Dictionary:** A detailed data dictionary will be created to document each entity, attribute, data type, and constraints. This will be crucial for understanding the existing data model and identifying potential data quality issues.
 
-Servisler arasında ve harici istemcilerle iletişim için RESTful API'ler kullanacağız. JSON standart veri formatı olacaktır.
+### 3. API Definitions
 
-**3.1. Arsa Veri Servisi API:**
+API definitions are essential for enabling communication between different components and services within the CRM system. We will analyze the existing APIs (if any) and define new APIs as needed.
 
-*   `GET /arsalar`: Tüm arsaları al (sayfalama ile).
-*   `GET /arsalar/{arsa_id}`: Kimliğe göre belirli bir arsayı al.
-*   `POST /arsalar`: Yeni bir arsa oluştur.
-*   `PUT /arsalar/{arsa_id}`: Mevcut bir arsayı güncelle.
-*   `DELETE /arsalar/{arsa_id}`: Bir arsayı sil.
+**API Style:** RESTful APIs will be favored for their simplicity and scalability.
 
-**3.2. Analiz Servisi API:**
+**API Endpoints (Examples):**
 
-*   `POST /analizler/{arsa_id}`: Belirli bir arsa üzerinde analizi tetikle. İstek gövdesinde analiz türünü kabul eder (örn. `{"analiz_tipi": "Uygunluk Analizi"}`).
-*   `GET /analizler/{analiz_id}`: Belirli bir analiz sonucunu al.
-*   `GET /analizler/arsa/{arsa_id}`: Belirli bir arsa için tüm analiz sonuçlarını al.
+*   `/customers`:
+    *   `GET`: Retrieve a list of customers.
+    *   `POST`: Create a new customer.
+*   `/customers/{customer_id}`:
+    *   `GET`: Retrieve a specific customer.
+    *   `PUT`: Update a specific customer.
+    *   `DELETE`: Delete a specific customer.
+*   `/opportunities`:
+    *   `GET`: Retrieve a list of opportunities.
+    *   `POST`: Create a new opportunity.
+*   `/contacts`:
+    *   `GET`: Retrieve a list of contacts.
+    *   `POST`: Create a new contact.
 
-**3.3. Sunum Servisi API:**
+**Data Format:** JSON will be used as the primary data format for API requests and responses.
 
-*   `GET /sunumlar/{arsa_id}`: En son analiz sonuçlarını kullanarak belirli bir arsa için sunum oluştur.
-*   `GET /sunumlar/{arsa_id}/pdf`: Belirli bir arsa için PDF sunumu oluştur.
+**Authentication and Authorization:** API authentication and authorization will be implemented using industry-standard protocols such as OAuth 2.0 or JWT.
 
-**3.4. Kullanıcı Yönetimi Servisi API:**
+**API Documentation:** OpenAPI/Swagger will be used to document the APIs, making them easily discoverable and usable by developers.
 
-*   `POST /kullanicilar/kayit`: Yeni bir kullanıcı kaydet.
-*   `POST /kullanicilar/giris`: Bir kullanıcıyı kimlik doğrula ve bir JWT belirteci al.
-*   `GET /kullanicilar/profil`: Mevcut kullanıcının profilini al (kimlik doğrulama gerektirir).
+### 4. Component Structure
 
-## 4. Bileşen Yapısı
+The component structure defines the different modules and components that make up the CRM system.
 
-Her mikroservis aşağıdaki gibi yapılandırılacaktır:
+**Core Components:**
 
-*   **API Katmanı:** Gelen istekleri yönetir, giriş doğrulamasını yapar ve iş mantığı katmanını çağırır.
-*   **İş Mantığı Katmanı:** Servisin çekirdek mantığını uygular.
-*   **Veri Erişim Katmanı:** Veritabanı veya diğer veri kaynaklarıyla etkileşim kurar.
-*   **Yardımcılar/Araçlar:** Servis boyunca kullanılan ortak fonksiyonlar ve yardımcı programlar.
+*   **User Interface (UI):** Provides the user interface for interacting with the CRM system.
+*   **Customer Management:** Manages customer data, including contacts, accounts, and leads.
+*   **Sales Management:** Manages opportunities, quotes, and orders.
+*   **Marketing Automation:** Automates marketing tasks such as email campaigns and lead nurturing.
+*   **Service Management:** Manages customer service cases and support requests.
+*   **Reporting and Analytics:** Provides reports and dashboards for tracking key metrics.
+*   **Administration:** Manages user accounts, roles, and permissions.
 
-Örnek: **Arsa Veri Servisi Bileşen Yapısı**
+**Component Interactions:** The components will interact with each other through APIs and message queues.
 
-*   `ArsaDataService/`
-    *   `api/`
-        *   `arsa_controller.py` (Arsalarla ilgili HTTP isteklerini yönetir)
-    *   `business_logic/`
-        *   `arsa_manager.py` (Arsa oluşturma, alma, güncelleme ve silme işlemlerini yönetir)
-    *   `data_access/`
-        *   `arsa_repository.py` (Arsa verileri üzerinde CRUD işlemleri yapmak için veritabanıyla etkileşim kurar)
-    *   `models/`
-        *   `arsa.py` (Arsa veri modelini tanımlar)
-    *   `utils/`
-        *   `exceptions.py` (Özel istisnalar)
+**Technology Stack:** The technology stack will be analyzed to determine the best technologies for each component.
 
-## 5. Entegrasyon Noktaları
+### 5. Integration Points
 
-*   **API Ağ Geçidi:** Tüm istemci istekleri API Ağ Geçidi üzerinden yönlendirilecektir. Bu, sistem için tek bir giriş noktası sağlar ve merkezi kimlik doğrulama, yetkilendirme ve hız sınırlama imkanı sunar. API Ağ Geçidi olarak Kong veya Tyk kullanabiliriz.
-*   **Mesaj Kuyruğu (RabbitMQ/Kafka):** Servisler arasındaki eşzamansız iletişim bir mesaj kuyruğu kullanılarak yönetilecektir. Örneğin, yeni bir arsa oluşturulduğunda, Arsa Veri Servisi kuyruğa bir mesaj yayınlayabilir ve bu mesaj Analiz Servisi tarafından alınarak ilk analizi tetikleyebilir.
-*   **Veritabanı:** Tüm servisler, kendi Veri Erişim Katmanları aracılığıyla PostgreSQL veritabanıyla etkileşim kuracaktır.
-*   **Harici API'ler:** Analiz Servisi, veri zenginleştirme için harici API'lerle entegre olabilir (örn. belirli bir konum için demografik verileri alma).
+Integration points define how the CRM system interacts with other systems.
 
-## 6. Ölçeklenebilirlik Stratejisi
+**Potential Integration Points:**
 
-*   **Yatay Ölçeklendirme:** Mikroservisler, her servisin daha fazla örneği eklenerek yatay olarak ölçeklendirilebilir. Bu, Kubernetes gibi bir konteyner düzenleme platformu kullanılarak yönetilecektir.
-*   **Yük Dengeleme:** API Ağ Geçidi ve Kubernetes, her servisin birden çok örneği arasında yük dengelemeyi yönetecektir.
-*   **Veritabanı Ölçeklendirme:** PostgreSQL veritabanını ölçeklendirmek için veritabanı replikasyonu ve parçalama kullanabiliriz.
-*   **Önbellekleme:** Veritabanı yükünü azaltmak ve sık erişilen veriler için yanıt sürelerini iyileştirmek amacıyla önbellekleme mekanizmaları (örn. Redis) uygulayın. Analiz sonuçlarını önbelleğe almayı düşünün.
-*   **Eşzamansız İşleme:** Uzun süren görevleri arka plan çalışanlarına yüklemek için mesaj kuyrukları kullanın, ana uygulama iş parçacıklarının engellenmesini önleyin.
+*   **Email Marketing Platforms (e.g., Mailchimp, SendGrid):** Integrate with email marketing platforms to send targeted email campaigns.
+*   **Social Media Platforms (e.g., Facebook, Twitter, LinkedIn):** Integrate with social media platforms to track customer engagement and generate leads.
+*   **Accounting Systems (e.g., QuickBooks, Xero):** Integrate with accounting systems to synchronize customer and financial data.
+*   **ERP Systems (e.g., SAP, Oracle):** Integrate with ERP systems to share data across the organization.
+*   **Payment Gateways (e.g., Stripe, PayPal):** Integrate with payment gateways to process online payments.
+*   **Help Desk Systems (e.g., Zendesk, Jira Service Management):** Integrate with help desk systems for seamless customer support.
 
-Oluşturulma Tarihi: 30.04.2025
+**Integration Strategies:**
+
+*   **API-based Integration:** Use APIs to exchange data between systems.
+*   **Message Queue-based Integration:** Use message queues to asynchronously communicate between systems.
+*   **Data Synchronization:** Synchronize data between systems on a regular basis.
+
+### 6. Scalability Strategy
+
+The scalability strategy ensures that the CRM system can handle increasing workloads and user traffic.
+
+**Scalability Requirements:**
+
+*   **Horizontal Scaling:** The ability to add more servers or instances to handle increased traffic.
+*   **Vertical Scaling:** The ability to increase the resources (e.g., CPU, memory) of existing servers.
+*   **Database Scalability:** The ability to scale the database to handle increasing data volumes and query loads.
+
+**Scalability Techniques:**
+
+*   **Load Balancing:** Distribute traffic across multiple servers.
+*   **Caching:** Cache frequently accessed data to reduce database load.
+*   **Database Sharding:** Divide the database into smaller, more manageable shards.
+*   **Asynchronous Processing:** Use message queues to offload long-running tasks to background processes.
+*   **Connection Pooling:** Reuse database connections to reduce the overhead of creating new connections.
+
+Created on 12.05.2025
 ```

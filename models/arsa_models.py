@@ -26,7 +26,7 @@ class ArsaAnaliz(db.Model):
     imar_durumu = db.Column(db.String(50))
     taks = db.Column(db.Numeric(4, 2))
     kaks = db.Column(db.Numeric(4, 2))
-    fiyat = db.Column(db.Numeric(15, 2), nullable=False)
+    fiyat = db.Column(db.Numeric(15, 2), nullable=False) # BU SATIRIN OLDUĞUNDAN EMİN OLUN
     bolge_fiyat = db.Column(db.Numeric(15, 2))
     altyapi = db.Column(db.JSON)
     swot_analizi = db.Column(db.JSON)
