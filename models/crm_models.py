@@ -24,11 +24,10 @@ class Contact(db.Model):
     segment = db.Column(db.String(50), default='Potansiyel') # Potansiyel, Aktif, Pasif, VIP, Kaybedilen
     value_score = db.Column(db.Integer, default=0) # 0-100 arası bir değer puanı
     tags = db.Column(db.JSON) # Etiketler için JSON alanı (["etiket1", "etiket2"])
-    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    office = db.relationship("Office", backref=db.backref("contacts_ofisin", lazy="dynamic"))
 
+    office = db.relationship("Office", backref=db.backref("contacts_ofisin", lazy="dynamic"))
     user = db.relationship("User", backref=db.backref("crm_contacts_owned", lazy="dynamic")) # backref adı güncellendi
     # company ilişkisi Company modelinde backref ile tanımlanacak
     interactions = db.relationship("Interaction", backref="contact", lazy="dynamic", cascade="all, delete-orphan")
@@ -114,7 +113,7 @@ class Task(db.Model):
     __tablename__ = "crm_tasks"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False) # Oluşturan
-    contact_id = db.Column(db.Integer, db.ForeignKey("crm_contacts.id"), nullable=True)
+    contact_id = db.Column(db.Integer, db.ForeignKey('crm_contacts.id'))
     deal_id = db.Column(db.Integer, db.ForeignKey("crm_deals.id"), nullable=True)
     assigned_to_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True) # Atanan
     office_id = db.Column(db.Integer, db.ForeignKey("offices.id"), nullable=True)
@@ -151,10 +150,9 @@ class Task(db.Model):
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_user_id], backref=db.backref("delegated_crm_tasks", lazy="dynamic"))
     previous_assignee_user = db.relationship("User", foreign_keys=[previous_assignee_id], backref=db.backref("previously_assigned_crm_tasks", lazy="dynamic"))
     reassigned_by_user = db.relationship("User", foreign_keys=[reassigned_by_id], backref=db.backref("reassigned_crm_tasks_by", lazy="dynamic"))
+    contact = db.relationship("Contact", foreign_keys=[contact_id], backref=db.backref("tasks", lazy="dynamic"))
+    deal = db.relationship("Deal", foreign_keys=[deal_id], backref=db.backref("tasks", lazy="dynamic"))
 
-    # Eğer CRM_Teams modeli varsa
-    contact = db.relationship("Contact", foreign_keys=[contact_id], backref=db.backref("contact_tasks", lazy="dynamic"))
-    deal = db.relationship("Deal", foreign_keys=[deal_id], backref=db.backref("deal_tasks", lazy="dynamic"))
 
     def __repr__(self):
         return f"<Task {self.title}>"
