@@ -27,7 +27,7 @@ class User(UserMixin, db.Model):
     adres = db.Column(db.Text)
     role = db.Column(db.String(32), default='')  # veya sana uygun default bir değer
     profil_foto = db.Column(db.String(200))  # Path to profile photo
-    is_active = db.Column(db.Boolean, default=True)
+    is_active_flag = db.Column(db.Boolean, default=True, nullable=False)
     son_giris = db.Column(db.DateTime)
     failed_attempts = db.Column(db.Integer, default=0)
     reset_token = db.Column(db.String(255))
@@ -37,13 +37,27 @@ class User(UserMixin, db.Model):
     )  # Kullanıcının zaman dilimi
     role = db.Column(db.String(20), default='danisman', nullable=False)
     office_id = db.Column(db.Integer, db.ForeignKey('offices.id'), nullable=True)
-    reports_to_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-
+    
+    # Tek bir manager ilişkisi tanımlayalım
+    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    # Manager ilişkisini açıkça tanımlayalım
+    manager = db.relationship(
+        'User',
+        remote_side=[id],
+        foreign_keys=[manager_id],
+        backref=db.backref(
+            'subordinates',
+            lazy='dynamic',
+            cascade='all, delete-orphan'
+        )
+    )
+    
+    # reports_to_user_id'yi kaldır çünkü artık manager_id kullanıyoruz
+    # reports_to_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    # Office ilişkisi
     office = db.relationship('Office', backref=db.backref('members', lazy='dynamic'))
-    manager = db.relationship('User', remote_side=[id], backref=db.backref('subordinates', lazy='dynamic'))
-
-    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    team_members = db.relationship('User', backref=db.backref('manager', remote_side=[id]), lazy='dynamic')
 
     def set_password(self, password):
         try:
@@ -87,6 +101,10 @@ class User(UserMixin, db.Model):
 
         local_dt = aware_utc_dt.astimezone(user_tz)
         return local_dt.strftime(format)
+
+    @property
+    def is_active(self):
+        return self.is_active_flag
 
 # class Portfolio(db.Model):
 #     __tablename__ = "portfolios"

@@ -69,7 +69,7 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     # --- LOGIN MANAGER ---
     login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = 'auth.login' # Blueprint adını kullan: auth.login
+    login_manager.login_view = 'auth.login'  # type: ignore[attr-defined] # Blueprint adını kullan: auth.login
     login_manager.login_message = 'Lütfen önce giriş yapın'
     login_manager.login_message_category = 'warning'
 

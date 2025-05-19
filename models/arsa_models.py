@@ -14,7 +14,7 @@ class ArsaAnaliz(db.Model):
     __tablename__ = "arsa_analizleri"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    office_id = db.Column(db.Integer, db.ForeignKey('offices.id', ondelete='SET NULL'), nullable=True)
+    office_id = db.Column(db.Integer, db.ForeignKey("offices.id"), nullable=True) # Hangi ofise ait (bireysel ise NULL)
     il = db.Column(db.String(50), nullable=False)
     ilce = db.Column(db.String(50), nullable=False)
     mahalle = db.Column(db.String(100), nullable=False)
@@ -26,7 +26,7 @@ class ArsaAnaliz(db.Model):
     imar_durumu = db.Column(db.String(50))
     taks = db.Column(db.Numeric(4, 2))
     kaks = db.Column(db.Numeric(4, 2))
-    fiyat = db.Column(db.Numeric(15, 2), nullable=False) # BU SATIRIN OLDUĞUNDAN EMİN OLUN
+    fiyat = db.Column(db.Numeric(15, 2), nullable=False)
     bolge_fiyat = db.Column(db.Numeric(15, 2))
     altyapi = db.Column(db.JSON)
     swot_analizi = db.Column(db.JSON)
@@ -39,12 +39,7 @@ class ArsaAnaliz(db.Model):
     )
 
     user = db.relationship("User", backref=db.backref("analizler_olusturdugu", lazy="dynamic")) # backref adı değişti
-    office = db.relationship(
-        "Office",
-        backref=db.backref("arsa_analizleri", lazy="dynamic"),
-        foreign_keys=[office_id]
-    )
-    # Portfolio ile çoktan çoğa ilişki (portfolio_arsalar üzerinden)
+    office = db.relationship("Office", backref=db.backref("analizler_ofisin", lazy="dynamic")) # Yeni ilişki    # Portfolio ile çoktan çoğa ilişki (portfolio_arsalar üzerinden)
     # Bu ilişki zaten Portfolio modelinde tanımlanmış olabilir,
     # Eğer öyleyse burada tekrar tanımlamaya gerek yok.
     # Eğer Portfolio modelinde `analizler = db.relationship("ArsaAnaliz", secondary=portfolio_arsalar, ...)`
