@@ -56,7 +56,7 @@ def create_office(): # Fonksiyon adı aynı kalabilir
             is_valid = False
         
         logo_filename = None
-        if logo_file and logo_file.filename != '':
+        if logo_file and logo_file.filename and logo_file.filename != '':
             if allowed_file(logo_file.filename): # allowed_file fonksiyonunu tanımlamanız/import etmeniz gerek
                 from werkzeug.utils import secure_filename
                 filename = secure_filename(logo_file.filename)
@@ -74,7 +74,12 @@ def create_office(): # Fonksiyon adı aynı kalabilir
             return render_template('office_form.html', form_title="Yeni Ofis Oluştur", form_data=request.form, office=None)
 
         try:
-            new_office = Office(name=name, address=address, phone=phone, logo_path=logo_filename, is_active=is_active)
+            new_office = Office()
+            new_office.name = name
+            new_office.address = address
+            new_office.phone = phone
+            new_office.logo_path = logo_filename
+            new_office.is_active = is_active
             db.session.add(new_office)
             db.session.commit()
             flash(f"'{new_office.name}' adlı ofis başarıyla oluşturuldu.", "success")
@@ -109,7 +114,7 @@ def edit_office(office_id):
             is_valid = False
 
         logo_filename = office.logo_path # Mevcut logoyu koru
-        if logo_file and logo_file.filename != '':
+        if logo_file and logo_file.filename and logo_file.filename != '':
             if allowed_file(logo_file.filename):
                 from werkzeug.utils import secure_filename
                 filename = secure_filename(logo_file.filename)
@@ -233,10 +238,15 @@ def create_broker(): # Fonksiyon adı aynı
             return render_template('broker_form.html', form_title="Yeni Broker Oluştur", offices=offices, form_data=form_data_to_repopulate, user_data=None)
 
         try:
-            new_broker = User(
-                email=email, ad=ad, soyad=soyad, firma=firma, unvan=unvan,
-                role='broker', office_id=selected_office_id, is_active=is_active_broker
-            )
+            new_broker = User()
+            new_broker.email = email
+            new_broker.ad = ad
+            new_broker.soyad = soyad
+            new_broker.firma = firma
+            new_broker.unvan = unvan
+            new_broker.role = 'broker'
+            new_broker.office_id = selected_office_id
+            new_broker.is_active = is_active_broker
             new_broker.set_password(password)
             db.session.add(new_broker)
             db.session.commit()
@@ -352,8 +362,8 @@ def delete_user(user_id):
         flash("Kendi hesabınızı silemezsiniz.", "danger")
         return redirect(url_for('admin.list_users'))
     
-    # Opsiyonel: Bu kullanıcıya rapor veren diğer kullanıcıların reports_to_user_id'sini NULL yap
-    User.query.filter_by(reports_to_user_id=user_id).update({'reports_to_user_id': None})
+    # Opsiyonel: Bu kullanıcıya rapor veren diğer kullanıcıların manager_id'sini NULL yap
+    User.query.filter_by(manager_id=user_id).update({'manager_id': None})
     
     # Opsiyonel: Bu kullanıcının ofis sahibi olduğu ofislerin owner_id'sini NULL yap (eğer Office modelinde owner ilişkisi varsa)
     # Office.query.filter_by(owner_id=user_id).update({'owner_id': None})
@@ -364,7 +374,7 @@ def delete_user(user_id):
 
     try:
         username = f"{user_to_delete.ad} {user_to_delete.soyad}"
-        User.query.filter_by(reports_to_user_id=user_id).update({'reports_to_user_id': None})
+        User.query.filter_by(manager_id=user_id).update({'manager_id': None})
 
         db.session.delete(user_to_delete)
         db.session.commit()

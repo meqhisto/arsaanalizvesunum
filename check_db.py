@@ -1,6 +1,8 @@
-from app import app, db
+from app import create_app
+from models import db
 
-# Önemli: db'yi app.py'den doğrudan import ediyoruz, böylece aynı SQLAlchemy örneğini kullanıyoruz
+# Önemli: db'yi models'den import ediyoruz, böylece aynı SQLAlchemy örneğini kullanıyoruz
+app = create_app()
 with app.app_context():
     print("Veritabanı Tabloları:")
     try:

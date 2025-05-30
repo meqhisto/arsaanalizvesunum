@@ -425,7 +425,7 @@ def medya_yukle(analiz_id):
         flash('Dosya seçilmedi.', 'warning')
         return redirect(url_for('analysis.analiz_detay', analiz_id=analiz_id))
 
-    if file and allowed_file(file.filename): # allowed_file bu BP içinde tanımlı
+    if file and file.filename and allowed_file(file.filename): # allowed_file bu BP içinde tanımlı
         filename = secure_filename(file.filename)
         ext = filename.rsplit('.', 1)[1].lower()
         medya_type = 'image' if ext in {'jpg', 'jpeg', 'png', 'gif'} else 'video'

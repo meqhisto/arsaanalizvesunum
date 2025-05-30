@@ -38,32 +38,45 @@ def login():
         remember = 'remember' in request.form
         user = User.query.filter_by(email=email).first()
 
-        if user and user.is_active and user.check_password(password):
-            login_user(user, remember=remember)
-            user.failed_attempts = 0
-            user.son_giris = datetime.utcnow()
-            db.session.commit()
-            flash('Başarıyla giriş yaptınız!', 'success')
-
-            if user.role == 'superadmin':
-                return redirect(url_for('admin.dashboard'))
-            elif user.role == 'broker':
-                return redirect(url_for('main.my_office'))
+        # Debug logging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Login attempt for email: {email}")
+        
+        if user:
+            logger.info(f"User found: {user.email}, is_active: {user.is_active}, role: {user.role}")
+            password_check = user.check_password(password)
+            logger.info(f"Password check result: {password_check}")
             
-            next_page = request.args.get('next')
-            if next_page:
-                # Güvenlik: next_page admin veya broker sayfasına gitmeye çalışıyorsa ve kullanıcı yetkili değilse engelle
-                if (('/admin' in next_page or next_page.startswith('admin.')) and user.role != 'superadmin') or \
-                   (('/my_office' in next_page or next_page.startswith('main.my_office')) and user.role != 'broker'):
-                    flash('Bu sayfaya erişim yetkiniz yok.', 'warning')
-                    return redirect(url_for('main.index'))
-            return redirect(next_page or url_for('main.index'))
+            if user.is_active and password_check:
+                login_user(user, remember=remember)
+                user.failed_attempts = 0
+                user.son_giris = datetime.utcnow()
+                db.session.commit()
+                flash('Başarıyla giriş yaptınız!', 'success')
+                logger.info(f"Successful login for user: {user.email}")
+
+                if user.role == 'superadmin':
+                    return redirect(url_for('admin.dashboard'))
+                elif user.role == 'broker':
+                    return redirect(url_for('main.my_office'))
+                
+                next_page = request.args.get('next')
+                if next_page:
+                    # Güvenlik: next_page admin veya broker sayfasına gitmeye çalışıyorsa ve kullanıcı yetkili değilse engelle
+                    if (('/admin' in next_page or next_page.startswith('admin.')) and user.role != 'superadmin') or \
+                       (('/my_office' in next_page or next_page.startswith('main.my_office')) and user.role != 'broker'):
+                        flash('Bu sayfaya erişim yetkiniz yok.', 'warning')
+                        return redirect(url_for('main.index'))
+                return redirect(next_page or url_for('main.index'))
+            else:
+                logger.warning(f"Login failed for user {user.email}: is_active={user.is_active}, password_check={password_check}")
+                flash('Geçersiz e-posta veya şifre ya da hesap aktif değil.', 'danger')
+                user.failed_attempts = (user.failed_attempts or 0) + 1
+                db.session.commit()
         else:
-            # ... (hatalı giriş ve failed_attempts mantığı) ...
+            logger.warning(f"Login failed: User not found for email {email}")
             flash('Geçersiz e-posta veya şifre ya da hesap aktif değil.', 'danger')
-            if user:
-                 user.failed_attempts = (user.failed_attempts or 0) + 1
-                 db.session.commit()
 
     return render_template('login.html') # veya templates/auth/login.html
 # @auth_bp.route('/register', methods=['GET', 'POST'])

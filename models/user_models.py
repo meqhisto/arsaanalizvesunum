@@ -25,9 +25,9 @@ class User(UserMixin, db.Model):
     firma = db.Column(db.String(100))
     unvan = db.Column(db.String(100))
     adres = db.Column(db.Text)
-    role = db.Column(db.String(32), default='')  # veya sana uygun default bir değer
+    role = db.Column(db.String(20), default='danisman', nullable=False)
     profil_foto = db.Column(db.String(200))  # Path to profile photo
-    is_active_flag = db.Column(db.Boolean, default=True, nullable=False)
+    _is_active = db.Column('is_active', db.Boolean, default=True, nullable=False)
     son_giris = db.Column(db.DateTime)
     failed_attempts = db.Column(db.Integer, default=0)
     reset_token = db.Column(db.String(255))
@@ -35,7 +35,6 @@ class User(UserMixin, db.Model):
     timezone = db.Column(
         db.String(50), default="Europe/Istanbul"
     )  # Kullanıcının zaman dilimi
-    role = db.Column(db.String(20), default='danisman', nullable=False)
     office_id = db.Column(db.Integer, db.ForeignKey('offices.id'), nullable=True)
     
     # Tek bir manager ilişkisi tanımlayalım
@@ -62,7 +61,7 @@ class User(UserMixin, db.Model):
     def set_password(self, password):
         try:
             # print(f"Setting password for user {self.email}")  # Debug log
-            self.password_hash = generate_password_hash(password, method="sha256")
+            self.password_hash = generate_password_hash(password) # Use Werkzeug's default method
             # print("Password hash generated successfully")  # Debug log
         except Exception as e:
             # print(f"Error setting password: {str(e)}")  # Debug log
@@ -102,10 +101,16 @@ class User(UserMixin, db.Model):
         local_dt = aware_utc_dt.astimezone(user_tz)
         return local_dt.strftime(format)
 
+    # Flask-Login'in UserMixin'indeki is_active property'sini override et
+    # Böylece veritabanındaki is_active kolonunu kullanabiliriz
     @property
     def is_active(self):
-        return self.is_active_flag
-
+        return self._is_active
+    
+    @is_active.setter
+    def is_active(self, value):
+        self._is_active = value
+    
 # class Portfolio(db.Model):
 #     __tablename__ = "portfolios"
 #     id = db.Column(db.Integer, primary_key=True)
