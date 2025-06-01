@@ -149,5 +149,32 @@
     <script src="{{ url_for('static', filename='js/task_form.js') }}"></script>
     <script src="{{ url_for('static', filename='js/reminders.js') }}"></script>
     {% block extra_js %}{% endblock %}
+
+    <!-- Toast Bildirimleri -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+        <!-- Başarı Bildirimi -->
+        <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <strong class="me-auto">Başarılı</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Kapat"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                İşlem başarıyla tamamlandı.
+            </div>
+        </div>
+        
+        <!-- Hata Bildirimi -->
+        <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-danger text-white">
+                <strong class="me-auto">Hata</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Kapat"></button>
+            </div>
+            <div class="toast-body" id="errorToastMessage">
+                Bir hata oluştu. Lütfen tekrar deneyin.
+            </div>
+        </div>
+    </div>
+    
+    {% block scripts_extra %}{% endblock %}
 </body>
 </html>

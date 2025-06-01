@@ -16,6 +16,17 @@ from models.crm_models import Contact, Company, Interaction, Deal, Task
 # Flask uygulamasının yapılandırmasına erişmek için current_app
 from flask import current_app
 
+# Fırsat aşamaları
+DEAL_STAGES = [
+    'İlk İletişim',
+    'Teklif Sunuldu',
+    'Görüşme Aşamasında',
+    'Değerlendirmede',
+    'Sözleşme Aşamasında',
+    'Kazanıldı',
+    'Kaybedildi'
+]
+
 crm_bp = Blueprint('crm', __name__, template_folder='../templates/crm')
 # template_folder='../templates/crm' ayarı, şablonların ana 'templates/crm' klasöründe olduğunu varsayar.
 
@@ -377,7 +388,76 @@ def crm_interaction_delete(interaction_id):
     return redirect(url_for('crm.crm_contacts_list'))
 
 
-# --- FIRSAT (DEAL) ROTALARI ---
+# --- Fırsat (DEAL) ROTALARI ---
+@crm_bp.route('/deal/<int:deal_id>/update_stage', methods=['POST'])
+@login_required
+def crm_deal_update_stage(deal_id):
+    """Fırsatın aşamasını güncellemek için API endpoint'i"""
+    user_id = current_user.id
+    
+    try:
+        data = request.get_json()
+        if not data or 'stage' not in data:
+            return jsonify({
+                'success': False,
+                'message': 'Geçersiz istek: Aşama bilgisi eksik.'
+            }), 400
+        
+        new_stage = data['stage']
+        
+        # Geçerli aşamalar kontrolü
+        if new_stage not in DEAL_STAGES:
+            return jsonify({
+                'success': False,
+                'message': f'Geçersiz aşama. İzin verilen aşamalar: {DEAL_STAGES}'
+            }), 400
+        
+        # Fırsatı bul
+        deal = Deal.query.filter_by(id=deal_id, user_id=user_id).first()
+        
+        if not deal:
+            return jsonify({
+                'success': False,
+                'message': 'Fırsat bulunamadı veya erişim izniniz yok.'
+            }), 404
+        
+        # Eğer aşama değişmemişse işlem yapma
+        if deal.stage == new_stage:
+            return jsonify({
+                'success': True,
+                'message': 'Aşama zaten güncel.'
+            })
+        
+        # Aşama değişikliğini kaydet
+        old_stage = deal.stage
+        deal.stage = new_stage
+        deal.updated_at = datetime.utcnow()
+        
+        # Eğer kazanıldı veya kaybedildi ise kapanış tarihini güncelle
+        if new_stage in ['Kazanıldı', 'Kaybedildi'] and not deal.actual_close_date:
+            deal.actual_close_date = datetime.utcnow().date()
+        # Eğer kazanıldı/kaybedildi'den başka bir aşamaya geçildiyse kapanış tarihini sıfırla
+        elif old_stage in ['Kazanıldı', 'Kaybedildi'] and new_stage not in ['Kazanıldı', 'Kaybedildi']:
+            deal.actual_close_date = None
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Fırsat aşaması "{old_stage}" → "{new_stage}" olarak güncellendi.',
+            'deal_id': deal.id,
+            'new_stage': new_stage,
+            'actual_close_date': deal.actual_close_date.isoformat() if deal.actual_close_date else None
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f'Fırsat aşaması güncellenirken hata: {str(e)}', exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'Fırsat aşaması güncellenirken bir hata oluştu: {str(e)}'
+        }), 500
+
 @crm_bp.route('/deals')
 @login_required
 def crm_deals_list():
@@ -527,32 +607,6 @@ def crm_deal_delete(deal_id):
         current_app.logger.error(f"CRM Deal Delete Error: {e}", exc_info=True)
         flash(f'Fırsat silinirken bir hata oluştu: {str(e)}', 'danger')
     return redirect(url_for('crm.crm_deals_list'))
-
-
-@crm_bp.route('/deal/<int:deal_id>/update_stage', methods=['POST'])
-@login_required
-def crm_deal_update_stage(deal_id):
-    user_id = current_user.id
-    deal_to_update = Deal.query.filter_by(id=deal_id, user_id=user_id).first_or_404()
-    data = request.get_json()
-    new_stage = data.get('stage')
-
-    if not new_stage or new_stage not in DEAL_STAGES:
-        return jsonify({'success': False, 'message': 'Geçersiz aşama.'}), 400
-
-    try:
-        old_stage = deal_to_update.stage
-        deal_to_update.stage = new_stage
-        if new_stage in ['Kazanıldı', 'Kaybedildi'] and not deal_to_update.actual_close_date:
-            deal_to_update.actual_close_date = datetime.utcnow().date()
-        elif old_stage in ['Kazanıldı', 'Kaybedildi'] and new_stage not in ['Kazanıldı', 'Kaybedildi']:
-            deal_to_update.actual_close_date = None
-        db.session.commit()
-        return jsonify({'success': True, 'message': 'Fırsat aşaması güncellendi.'})
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"CRM Deal Update Stage Error: {e}", exc_info=True)
-        return jsonify({'success': False, 'message': f'Sunucu hatası: {str(e)}'}), 500
 
 
 # --- GÖREV (TASK) ROTALARI ---
