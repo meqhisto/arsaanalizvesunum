@@ -36,7 +36,6 @@ class User(UserMixin, db.Model):
         db.String(50), default="Europe/Istanbul"
     )  # Kullanıcının zaman dilimi
     office_id = db.Column(db.Integer, db.ForeignKey('offices.id'), nullable=True)
-    
     # Tek bir manager ilişkisi tanımlayalım
     manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
@@ -52,11 +51,8 @@ class User(UserMixin, db.Model):
         )
     )
     
-    # reports_to_user_id'yi kaldır çünkü artık manager_id kullanıyoruz
-    # reports_to_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    
     # Office ilişkisi
-    office = db.relationship('Office', backref=db.backref('members', lazy='dynamic'))
+    office = db.relationship('Office', backref=db.backref('users', lazy='dynamic'))
 
     def set_password(self, password):
         try:
