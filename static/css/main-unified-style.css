@@ -1,0 +1,419 @@
+/* Modern Stil Dosyası - Inveco Proje */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --accent-color: #4895ef;
+    --success-color: #4cc9f0;
+    --light-bg: #f8f9fa;
+    --border-radius: 0.75rem;
+    --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --sidebar-width: 250px;
+    --font-main: 'Calibri', sans-serif;
+    --font-title: 'Helvetica', sans-serif;
+    --metal-bg: linear-gradient(135deg, #232526 0%, #414345 100%);
+    --metal-surface: linear-gradient(120deg, #d7d7d7 0%, #b0b0b0 100%);
+    --metal-dark: #232526;
+    --metal-light: #e0e0e0;
+    --metal-accent: #00c3ff;
+    --metal-accent2: #ffef00;
+    --metal-accent3: #ff3c3c;
+    --metal-shadow: 0 4px 24px rgba(40,40,40,0.18);
+    --metal-border: 1px solid #b0b0b0;
+    --metal-radius: 18px;
+    --metal-gloss: linear-gradient(90deg,rgba(255,255,255,0.25) 0%,rgba(255,255,255,0.05) 100%);
+}
+
+/* Genel Ayarlar */
+body {
+    font-family: var(--font-main);
+    background-color: #f5f7ff;
+    color: #333;
+}
+
+/* Modern Sidebar */
+.sidebar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    left: 0;
+    box-shadow: var(--box-shadow);
+    z-index: 1000;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar h4 {
+    font-family: var(--font-title);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.sidebar a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar a:hover, .sidebar a.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: translateX(5px);
+}
+
+.sidebar a i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+/* Cards with subtle shadow and rounded corners */
+.card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+}
+
+.card::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 18px;
+    background: var(--metal-gloss);
+    z-index: 1;
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    font-family: var(--font-title);
+    letter-spacing: 1px;
+}
+
+.card-body {
+    position: relative;
+    z-index: 2;
+    padding: 1.25rem;
+}
+
+/* Quick access cards */
+.quick-access-card {
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.quick-access-card:hover {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.quick-access-card i {
+    transition: transform 0.3s ease;
+}
+
+.quick-access-card:hover i {
+    transform: scale(1.2);
+}
+
+/* Profile card */
+.profile-card {
+    text-align: center;
+    background: white;
+}
+
+/* Stats cards */
+.stat-card {
+    background: white;
+}
+
+.stat-card .card-body {
+    padding: 1.25rem;
+}
+
+.stat-card .display-5, .stat-card .display-6 {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Ana içerik alanı */
+.content-area {
+    background-color: #f5f7ff; 
+    min-height: 100vh; 
+    overflow-y: auto; 
+    width: calc(100% - var(--sidebar-width));
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* Table styling */
+.table {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: none;
+    font-weight: 600;
+}
+
+/* Alerts */
+.alert {
+    border-radius: var(--border-radius);
+    border: none;
+}
+
+/* Navigation Bar */
+.navbar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+    box-shadow: var(--box-shadow);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Form elements */
+.form-control, .form-select {
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+}
+
+/* Login/Register Forms */
+.auth-container {
+    max-width: 400px;
+    margin: 2rem auto;
+}
+
+.auth-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-card {
+    border-radius: var(--border-radius);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+/* Pagination */
+.pagination .page-link {
+    border-radius: var(--border-radius);
+    margin: 0 0.2rem;
+    color: var(--primary-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .offcanvas-body a {
+        padding: 12px 15px;
+        display: flex;
+        align-items: center;
+        color: #333;
+        text-decoration: none;
+        border-radius: var(--border-radius);
+        margin-bottom: 8px;
+        transition: background-color 0.3s;
+    }
+    
+    .offcanvas-body a:hover, .offcanvas-body a.active {
+        background-color: #f8f9fa;
+    }
+    
+    .offcanvas-body a i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+    
+    /* Ana içerik alanı tam genişlikte göster */
+    .content-area {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+    
+    /* İstatistik kartları mobilde tek sütun */
+    .stat-card-col {
+        width: 100%;
+    }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 992px) {
+    .sidebar {
+        width: 80px;
+    }
+    
+    .content-area {
+        width: calc(100% - 80px);
+    }
+    
+    .stat-card-col {
+        width: 50%;
+    }
+}
+
+/* metallic-style.css'ten entegre edilen scrollbar stilleri */
+::-webkit-scrollbar {
+    width: 10px;
+    background: #232526;
+}
+::-webkit-scrollbar-thumb {
+    background: #b0b0b0;
+    border-radius: 8px;
+}
+
+/* style.css'ten entegre edilen SWOT listeleri */
+#strengthList .list-group-item,
+#weaknessList .list-group-item,
+#opportunityList .list-group-item,
+#threatList .list-group-item {
+    background: #fff;
+    border-left: 4px solid #007bff;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+/* style.css'ten entegre edilen Favoriler kutusu */
+.favorites-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    min-height: 40px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* style.css'ten entegre edilen Yükleniyor Ekranı */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* analysis_form.css'ten entegre edilen SWOT Analizi ve Required field indicator */
+.swot-item {
+    background-color: white;
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.swot-item.strength {
+    border-left: 4px solid var(--success-color);
+}
+
+.swot-item.weakness {
+    border-left: 4px solid var(--danger-color);
+}
+
+.swot-item.opportunity {
+    border-left: 4px solid var(--info-color);
+}
+
+.swot-item.threat {
+    border-left: 4px solid var(--warning-color);
+}
+
+.required-field::after {
+    content: "*";
+    color: var(--danger-color);
+    margin-left: 5px;
+}
+
+/* sofistike-style.css'ten entegre edilen aktivite çizelgesi */
+.activity-timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.activity-timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: #e2e8f0;
+}
+
+.activity-item::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #6366f1;
+    border-radius: 50%;
+    position: absolute;
+    left: 0;
+    top: 6px;
+} 

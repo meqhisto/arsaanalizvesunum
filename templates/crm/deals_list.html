@@ -110,68 +110,79 @@
 
 
 {% block scripts_extra %} {# Şimdi crm_content DIŞINDA doğru yerde #}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="{{ url_for('static', filename='js/Sortable.min.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM fully loaded and parsed.');
+            // Sortable kütüphanesinin yüklenip yüklenmediğini kontrol et
+            if (typeof Sortable === 'undefined') {
+                console.error('HATA: Sortable.js kütüphanesi yüklenmedi!');
+                return;
+            }
+            console.log('Sortable nesnesi mevcut.', Sortable);
+
             const columns = document.querySelectorAll('.kanban-column .card-body');
+            console.log('Bulunan kanban sütunları:', columns.length);
             
-            columns.forEach(column => {
-                new Sortable(column, {
-                    group: 'deals',
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    chosenClass: 'sortable-chosen',
-                    draggable: '.kanban-deal-card',
+            if (columns.length === 0) {
+                console.warn('Uyarı: Sürükleme için hiçbir kanban sütunu bulunamadı.');
+                return;
+            }
 
-                    onEnd: function (evt) {
-                        const dealId = evt.item.dataset.dealId;
-                        const newStageId = evt.to.id; 
-                        let newStageName = newStageId.replace('stage-', '');
-                        newStageName = newStageName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                        
-                        console.log("Fırsat ID:", dealId, "yeni aşamaya taşındı:", newStageName, "Hedef Sütun ID:", newStageId);
+            columns.forEach((column, index) => {
+                try {
+                    new Sortable(column, {
+                        group: 'deals',
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        chosenClass: 'sortable-chosen',
+                        draggable: '.kanban-deal-card',
 
-                        fetch(`/crm/deal/${dealId}/update_stage`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ 
-                                stage: newStageName,
-                                new_index: evt.newIndex
+                        onEnd: function (evt) {
+                            console.log('Sürükleme işlemi tamamlandı! (onEnd tetiklendi)');
+                            const dealId = evt.item.dataset.dealId;
+                            const newStageId = evt.to.id; 
+                            let newStageName = newStageId.replace('stage-', '');
+                            newStageName = newStageName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                            
+                            console.log("Fırsat ID:", dealId, "yeni aşamaya taşındı:", newStageName, "Hedef Sütun ID:", newStageId);
+
+                            fetch(`/crm/deal/${dealId}/update_stage`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ 
+                                    stage: newStageName,
+                                    new_index: evt.newIndex
+                                })
                             })
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                console.error('Aşama güncelleme hatası:', response.statusText);
-                                alert('Fırsat aşaması güncellenirken bir hata oluştu.');
-                                window.location.reload();
-                                return Promise.reject(new Error(response.statusText)); // Hata zincirini kır
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                console.log('Aşama başarıyla güncellendi:', data.message);
-                                // Burada Kanban kartının sayısını veya diğer UI elementlerini güncelleyebilirsiniz.
-                                // Şimdilik konsol logu yeterli.
-                            } else {
-                                console.error('Aşama güncelleme başarısız:', data.message);
-                                alert('Fırsat aşaması güncellenemedi: ' + data.message);
-                                window.location.reload();
-                            }
-                        })
-                        .catch(error => {
-                            // fetch'in kendisinde bir hata olursa (örn: ağ hatası) burası çalışır.
-                            // response.ok false ise catch'e düşmez, then bloğunda ele alınır.
-                            if (error.message !== 'Failed to fetch' && !error.message.includes("JSON.parse")) { // Reload'dan kaynaklı hataları tekrar gösterme
+                            .then(response => {
+                                if (!response.ok) {
+                                    console.error('Aşama güncelleme hatası:', response.statusText);
+                                    alert('Fırsat aşaması güncellenirken bir hata oluştu.');
+                                    return Promise.reject(new Error(response.statusText)); 
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.success) {
+                                    console.log('Aşama başarıyla güncellendi:', data.message);
+                                } else {
+                                    console.error('Aşama güncelleme başarısız:', data.message);
+                                    alert('Fırsat aşaması güncellenemedi: ' + data.message);
+                                }
+                            })
+                            .catch(error => {
                                 console.error('Fetch/Network hatası:', error);
                                 alert('Bir ağ hatası oluştu veya sunucu yanıt vermedi. Lütfen tekrar deneyin.');
-                                // window.location.reload(); // Hata durumunda sürekli reload olmaması için dikkatli kullanın
-                            }
-                        });
-                    }
-                });
+                            });
+                        }
+                    });
+                    console.log(`Sortable instance sütun ${index} için oluşturuldu.`);
+                } catch (e) {
+                    console.error(`Sütun ${index} için Sortable oluşturulurken hata:`, e);
+                }
             });
         });
     </script>

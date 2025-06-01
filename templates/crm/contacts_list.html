@@ -2,13 +2,13 @@
 {% block crm_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h2><i class="bi bi-people-fill me-2"></i> Kişiler</h2>
-  <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary">
+  <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary shadow-sm">
     <i class="bi bi-plus-circle me-1"></i> Yeni Kişi Ekle
   </a>
 </div>
 
 {% if contacts %}
-<div class="card">
+<div class="card shadow-sm">
   <div class="card-body">
     <div class="table-responsive">
       <table class="table table-hover">
@@ -39,21 +39,21 @@
               {% if contact.company %} {{ contact.company.name }} {% else %} -
               {% endif %}
             </td>
-            <td><span class="badge bg-info">{{ contact.status }}</span></td>
+            <td><span class="badge bg-info text-white">{{ contact.status }}</span></td>
             <td>{{ contact.created_at.strftime('%d.%m.%Y') }}</td>
             <!-- ... -->
             <!-- ... -->
             <td>
               <a
                 href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}"
-                class="btn btn-sm btn-outline-primary"
+                class="btn btn-sm btn-outline-primary shadow-sm"
                 title="Görüntüle"
               >
                 <i class="bi bi-eye"></i>
               </a>
               <a
                 href="{{ url_for('crm.crm_contact_edit', contact_id=contact.id) }}"
-                class="btn btn-sm btn-outline-secondary"
+                class="btn btn-sm btn-outline-secondary shadow-sm"
                 title="Düzenle"
               >
                 <i class="bi bi-pencil-square"></i>
@@ -78,7 +78,7 @@
                 #}
                 <button
                   type="submit"
-                  class="btn btn-sm btn-outline-danger"
+                  class="btn btn-sm btn-outline-danger shadow-sm"
                   title="Sil"
                 >
                   {# Artık aktif #}
@@ -96,7 +96,7 @@
   </div>
 </div>
 {% else %}
-<div class="alert alert-light text-center" role="alert">
+<div class="alert alert-light text-center shadow-sm" role="alert">
   <i class="bi bi-info-circle me-2"></i> Henüz hiç kişi eklenmemiş.
   <a href="{{ url_for('crm.crm_contact_new') }}" class="alert-link"
     >Hemen bir kişi ekleyin!</a
