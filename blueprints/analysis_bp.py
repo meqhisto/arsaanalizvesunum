@@ -12,6 +12,7 @@ from decimal import Decimal # Sayısal dönüşümler için
 from werkzeug.utils import secure_filename # Dosya yükleme için
 import os
 import logging # logging için
+from typing import Any # For type hinting
 
 # Modelleri ve db nesnesini models paketinden import et
 from models import db
@@ -125,39 +126,43 @@ def create_analysis(): # Fonksiyon adı değişti
         if errors:
             for error in errors:
                 flash(error, "danger")
-            session['analysis_form_data'] = form_data_dict
-            session['analysis_form_data']['altyapi[]'] = altyapi_list # Checkbox'ları da ekle
+            # Ensure the dictionary stored in session can hold mixed types for Pylance
+            form_data_for_session: dict[str, Any] = form_data_dict.copy()
+            form_data_for_session['altyapi[]'] = altyapi_list
+            session['analysis_form_data'] = form_data_for_session
             session['analysis_form_errors'] = errors
             return redirect(url_for("main.analysis_form")) # main blueprint'indeki forma yönlendir
         # --- Validasyon Sonu ---
 
-        yeni_analiz = ArsaAnaliz(
-            user_id=user_id,
-            il=form_data_dict.get("il"),
-            ilce=form_data_dict.get("ilce"),
-            mahalle=form_data_dict.get("mahalle"),
-            ada=form_data_dict.get("ada"),
-            parsel=form_data_dict.get("parsel"),
-            koordinatlar=form_data_dict.get("koordinatlar"),
-            pafta=form_data_dict.get("pafta"),
-            metrekare=Decimal(str(converted_data.get("metrekare", 0))),
-            imar_durumu=form_data_dict.get("imar_durumu"),
-            taks=Decimal(str(converted_data.get("taks", 0.3))),
-            kaks=Decimal(str(converted_data.get("kaks", 1.5))),
-            fiyat=Decimal(str(converted_data.get("maliyet", 0))), # Formda 'maliyet', modelde 'fiyat'
-            bolge_fiyat=Decimal(str(converted_data.get("guncel_deger", 0))), # Formda 'guncel_deger', modelde 'bolge_fiyat'
-            altyapi=json.dumps(altyapi_list),
-            swot_analizi=json.dumps(swot_data_from_form),
-            notlar=form_data_dict.get("notlar")
-            # alim_tarihi=datetime.strptime(tarih_str, "%Y-%m-%d").date() if tarih_str else None,
-            # deger_artis_orani=Decimal(str(converted_data.get("deger_artis_orani", 15))),
-        )
+        yeni_analiz = ArsaAnaliz()
+        yeni_analiz.user_id = user_id
+        yeni_analiz.il = form_data_dict.get("il")
+        yeni_analiz.ilce = form_data_dict.get("ilce")
+        yeni_analiz.mahalle = form_data_dict.get("mahalle")
+        yeni_analiz.ada = form_data_dict.get("ada")
+        yeni_analiz.parsel = form_data_dict.get("parsel")
+        yeni_analiz.koordinatlar = form_data_dict.get("koordinatlar")
+        yeni_analiz.pafta = form_data_dict.get("pafta")
+        yeni_analiz.metrekare = Decimal(str(converted_data.get("metrekare", 0)))
+        yeni_analiz.imar_durumu = form_data_dict.get("imar_durumu")
+        yeni_analiz.taks = Decimal(str(converted_data.get("taks", 0.3)))
+        yeni_analiz.kaks = Decimal(str(converted_data.get("kaks", 1.5)))
+        yeni_analiz.fiyat = Decimal(str(converted_data.get("maliyet", 0)))
+        yeni_analiz.bolge_fiyat = Decimal(str(converted_data.get("guncel_deger", 0)))
+        yeni_analiz.altyapi = json.dumps(altyapi_list)
+        yeni_analiz.swot_analizi = json.dumps(swot_data_from_form)
+        yeni_analiz.notlar = form_data_dict.get("notlar")
+        # yeni_analiz.alim_tarihi = ... (varsa)
+        # yeni_analiz.deger_artis_orani = ... (varsa)
+
         db.session.add(yeni_analiz)
         
         # Dashboard İstatistiklerini Güncelleme
         stats = DashboardStats.query.filter_by(user_id=user_id).first()
-        if not stats:
-            stats = DashboardStats(user_id=user_id, en_dusuk_fiyat=float('inf')) # en_dusuk_fiyat için başlangıç
+        if not stats: # Eğer kullanıcı için istatistik yoksa oluştur
+            stats = DashboardStats()
+            stats.user_id = user_id
+            stats.en_dusuk_fiyat = float('inf') # en_dusuk_fiyat için başlangıç
             db.session.add(stats)
         
         # İstatistikleri initialize et (None ise)
@@ -180,7 +185,11 @@ def create_analysis(): # Fonksiyon adı değişti
         # Bölge istatistiklerini güncelle
         bolge = BolgeDagilimi.query.filter_by(user_id=user_id, il=yeni_analiz.il).first()
         if not bolge:
-            bolge = BolgeDagilimi(user_id=user_id, il=yeni_analiz.il, analiz_sayisi=0, toplam_deger=Decimal('0.00'))
+            bolge = BolgeDagilimi()
+            bolge.user_id = user_id
+            bolge.il = yeni_analiz.il
+            bolge.analiz_sayisi = 0
+            bolge.toplam_deger = Decimal('0.00')
             db.session.add(bolge)
         bolge.analiz_sayisi = (bolge.analiz_sayisi or 0) + 1
         bolge.toplam_deger = (bolge.toplam_deger or Decimal(0)) + yeni_analiz.fiyat
@@ -194,8 +203,10 @@ def create_analysis(): # Fonksiyon adı değişti
         db.session.rollback()
         current_app.logger.error(f"Analiz oluşturma hatası: {str(e)}", exc_info=True)
         # Hata durumunda form verilerini session'a kaydet ve formu tekrar göster
-        session['analysis_form_data'] = request.form.to_dict() # Orijinal form verisi
-        session['analysis_form_data']['altyapi[]'] = request.form.getlist("altyapi[]")
+        # Ensure the dictionary stored in session can hold mixed types for Pylance
+        form_data_for_session_on_error: dict[str, Any] = request.form.to_dict()
+        form_data_for_session_on_error['altyapi[]'] = request.form.getlist("altyapi[]")
+        session['analysis_form_data'] = form_data_for_session_on_error
         session['analysis_form_errors'] = [f"Beklenmedik bir hata oluştu: {str(e)}"]
         flash(f"Arsa analizi kaydedilirken bir hata oluştu. Lütfen alanları kontrol edin.", "danger")
         return redirect(url_for("main.analysis_form"))
@@ -444,7 +455,10 @@ def medya_yukle(analiz_id):
             file.save(filepath)
             # Veritabanına göreceli yolu kaydet (örn: "123/resim.jpg")
             db_filename = os.path.join(str(analiz_id), unique_filename).replace(os.sep, '/')
-            medya_kaydi = AnalizMedya(analiz_id=analiz_id, filename=db_filename, type=medya_type)
+            medya_kaydi = AnalizMedya()
+            medya_kaydi.analiz_id = analiz_id
+            medya_kaydi.filename = db_filename
+            medya_kaydi.type = medya_type
             db.session.add(medya_kaydi)
             db.session.commit()
             flash('Medya başarıyla yüklendi.', 'success')
@@ -549,8 +563,8 @@ def generate_report(format_type, analiz_id_param):
         color_scheme = request.args.get("color_scheme", "blue")
         sections_str = request.args.get("sections")
         sections_list = [s.strip() for s in sections_str.split(',') if s.strip()] if sections_str else None
-        
-        doc_gen_settings = {"theme": theme, "color_scheme": color_scheme}
+
+        doc_gen_settings: dict[str, Any] = {"theme": theme, "color_scheme": color_scheme}
         if sections_list is not None:
             doc_gen_settings["sections"] = sections_list
 
