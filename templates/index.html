@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>İnveco Proje - Ana Sayfa</title>
-    <!-- Bootstrap 5 CSS -->
+    <!-- Bootstrap 5 CSS (Sürüm tutarlılığı için 5.3.3'e güncellendi) -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <!-- Bootstrap Icons -->
@@ -18,120 +18,99 @@
     <link href="{{ url_for('static', filename='css/main-unified-style.css') }}" rel="stylesheet">
     <!-- Chart.js for dashboards -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-
   </head>
 
   <body class="bg-light">
     <div class="container-fluid p-0">
       <div class="row g-0">
         <!-- Row yapısı -->
-        <!-- Mobil Menü Butonu -->
+        <!-- Birleşik Kenar Çubuğu Tetikleyici (Sadece <md ekranlarda görünür) -->
         <button
-          class="btn btn-primary d-md-none m-3 rounded-pill shadow-sm"
+          class="btn btn-primary d-lg-none m-3 rounded-pill shadow-sm sidebar-toggler"
+          type="button"
           data-bs-toggle="offcanvas"
-          data-bs-target="#mobilSidebar"
+          data-bs-target="#unifiedSidebar"
+          aria-controls="unifiedSidebar"
         >
           <i class="bi bi-list"></i> Menü
         </button>
 
-        <!-- Mobil Sidebar -->
+        <!-- Birleşik Kenar Çubuğu (Offcanvas <md, Sabit >=md) -->
         <div
-          class="offcanvas offcanvas-start d-md-none"
+          class="offcanvas offcanvas-start offcanvas-lg sidebar flex-column col-lg-2 p-0"
           tabindex="-1"
-          id="mobilSidebar"
+          id="unifiedSidebar"
+          aria-labelledby="unifiedSidebarLabel"
         >
           <div
             class="offcanvas-header"
             style="
               background: linear-gradient(
                 135deg,
-                var(--primary-color),
-                var(--secondary-color)
+                var(--primary-color, #0d6efd), /* CSS değişkenleri tanımlı değilse varsayılan renkler */
+                var(--secondary-color, #6c757d)
               );
               color: white;
             "
           >
-            <h5 class="offcanvas-title">
-              <i class="bi bi-building"></i> İnveco Panel
+            <h5 class="offcanvas-title" id="unifiedSidebarLabel">
+              <i class="bi bi-building me-2"></i>İnveco Panel
             </h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close btn-close-white d-md-none" /* Sadece offcanvas modunda görünür */
               data-bs-dismiss="offcanvas"
+              data-bs-target="#unifiedSidebar"
+              aria-label="Kapat"
             ></button>
           </div>
-          <div class="offcanvas-body d-flex flex-column gap-2 p-3">
-            <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}">Ana Sayfa</a>
-            <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' %}active{% endif %}">Analizlerim</a>
-            <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if request.endpoint == 'crm.crm_contacts_list' %}active{% endif %}">CRM</a>
-            <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}">Portföyler</a>
-            <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}">Ayarlar</a>
-            <div class="mt-auto pt-2 border-top">
+          <div class="offcanvas-body d-flex flex-column">
+            <ul class="nav nav-pills flex-column mb-auto">
+              <li class="nav-item">
+                <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+                  <i class="bi bi-house-door me-2"></i><span class="sidebar-item-text">Ana Sayfa</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('analysis.analizler') }}" class="nav-link {% if request.endpoint == 'analysis.analizler' %}active{% endif %}">
+                  <i class="bi bi-file-earmark-text me-2"></i><span class="sidebar-item-text">Analizlerim</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('crm.crm_contacts_list') }}" class="nav-link {% if request.endpoint == 'crm.crm_contacts_list' %}active{% endif %}">
+                  <i class="bi bi-person-rolodex me-2"></i><span class="sidebar-item-text">CRM</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('portfolio.portfolios_list') }}" class="nav-link {% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}">
+                  <i class="bi bi-graph-up me-2"></i><span class="sidebar-item-text">Portföyler</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{{ url_for('main.profile') }}" class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+                  <i class="bi bi-gear me-2"></i><span class="sidebar-item-text">Ayarlar</span>
+                </a>
+              </li>
+            </ul>
+            <div class="mt-auto logout-button-container p-3"> {/* Çıkış butonu için padding eklendi */}
               <a
                 href="{{ url_for('auth.logout') }}"
-                class="btn btn-outline-danger btn-sm w-100 mt-2"
+                class="btn btn-sm d-flex align-items-center justify-content-center gap-2 w-100" /* justify-content-center eklendi */
+                style="color: #adb5bd; border: 1px solid rgba(255,255,255,0.2); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: rgba(255,255,255,0.1); --bs-btn-hover-border-color: rgba(255,255,255,0.3);"
               >
-                <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                <i class="bi bi-box-arrow-right"></i><span class="sidebar-item-text">Çıkış Yap</span>
               </a>
             </div>
           </div>
         </div>
 
-        <!-- Desktop Sidebar -->
-        <div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
-          <div class="d-flex align-items-center gap-2 mb-4">
-            <i class="bi bi-building fs-3"></i>
-            <h4 class="mb-0">İnveco Panel</h4>
-          </div>
-          <div class="nav flex-column">
-            <a
-              href="{{ url_for('main.index') }}"
-              class="{% if request.endpoint == 'main.index' %}active{% endif %}"
-              ><i class="bi bi-house-door"></i> Ana Sayfa</a
-            >
-            <a
-              href="{{ url_for('analysis.analizler') }}"
-              class="{% if request.endpoint == 'analysis.analizler' %}active{% endif %}"
-              ><i class="bi bi-file-earmark-text"></i> Analizlerim</a
-            >
-            <a
-              href="{{ url_for('crm.crm_contacts_list') }}"
-              class="{% if request.endpoint == 'crm.crm_contacts_list' %}active{% endif %}"
-              ><i class="bi bi-person-rolodex"></i> CRM</a
-            >
-            <a
-              href="{{ url_for('portfolio.portfolios_list') }}"
-              class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"
-              ><i class="bi bi-graph-up"></i> Portföyler</a
-            >
-            <a
-              href="{{ url_for('main.profile') }}"
-              class="{% if request.endpoint == 'main.profile' %}active{% endif %}"
-              ><i class="bi bi-gear"></i> Ayarlar</a
-            >
-          </div>
-
-          <!-- Minimal User Info at bottom -->
-          <div class="mt-auto pt-3 border-top border-white border-opacity-25">
-            <a
-              href="{{ url_for('auth.logout') }}"
-              class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 w-100"
-            >
-              <i class="bi bi-box-arrow-right"></i> Çıkış Yap
-            </a>
-          </div>
-        </div>
-
         <!-- Ana İçerik Alanı -->
         <div
-          class="col-md-9 col-lg-10 p-4 ms-auto content-area"
+          class="col-lg-10 p-4 content-area" /* ms-auto kaldırıldı, width stili kaldırıldı, col-md-9 kaldırıldı */
           style="
             background-color: #f5f7ff;
             min-height: 100vh;
             overflow-y: auto;
-            width: calc(100% - var(--sidebar-width));
           "
         >
           <!-- Başlık ve Kullanıcı Bilgileri -->
@@ -776,8 +755,8 @@
     </div>
     <!-- Ana Container Fluid Sonu -->
 
-    <!-- JavaScript Kodları -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JavaScript Kodları (Sürüm tutarlılığı için 5.3.3'e güncellendi) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <!-- Add smooth scrolling -->
