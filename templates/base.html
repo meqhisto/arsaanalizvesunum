@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}Arsa Analiz ve Sunum Platformu - Gayrimenkul analizi ve değerlendirme sistemi{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}arsa analizi, gayrimenkul, emlak, değerlendirme, SWOT analizi{% endblock %}">
+    <meta name="author" content="Inveco Proje">
+
+    <title>{% block title %}Arsa Analiz Platformu{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="{{ url_for('static', filename='dist/main.5b3e3b545b86eca5f310.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='dist/vendors.ab1f81aacc13adc14ddb.js') }}" as="script">
+
+    <!-- CSS -->
+    <link href="{{ url_for('static', filename='dist/main.5b3e3b545b86eca5f310.css') }}" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Additional CSS -->
+    {% block extra_css %}{% endblock %}
+
+    <!-- Theme detection script (inline for performance) -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <!-- Loading overlay -->
+    <div id="globalLoading" class="loading-overlay global-overlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Yükleniyor...</span>
+            </div>
+            <div class="loading-text mt-2">Yükleniyor...</div>
+        </div>
+    </div>
+
+    <!-- Skip to main content (accessibility) -->
+    <a href="#main-content" class="visually-hidden-focusable btn btn-primary position-absolute top-0 start-0 m-2" style="z-index: 10000;">
+        Ana içeriğe geç
+    </a>
+
+    <!-- Navigation -->
+    {% block navigation %}
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" height="32" class="me-2">
+                <span class="fw-bold">Arsa Analiz</span>
+            </a>
+
+            <!-- Mobile menu toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Desktop navigation -->
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">
+                            <i class="fas fa-home me-1"></i>Ana Sayfa
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-chart-line me-1"></i>Analiz
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.analizler') }}">Analizler</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.analiz_form') }}">Yeni Analiz</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('crm.crm_contacts_list') }}">
+                            <i class="fas fa-users me-1"></i>CRM
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('portfolio.portfolios') }}">
+                            <i class="fas fa-briefcase me-1"></i>Portföy
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <!-- User menu -->
+                <ul class="navbar-nav">
+                    <!-- Theme toggle -->
+                    <li class="nav-item">
+                        <button id="theme-toggle" class="btn btn-link nav-link border-0" title="Tema değiştir">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </li>
+
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">
+                                <i class="fas fa-user me-2"></i>Profil
+                            </a></li>
+                            {% if current_user.role == 'admin' %}
+                            <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">
+                                <i class="fas fa-cog me-2"></i>Yönetim
+                            </a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Çıkış
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Giriş
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">
+                            <i class="fas fa-user-plus me-1"></i>Kayıt
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endblock %}
+
+    <!-- Mobile menu offcanvas -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menü</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <!-- Mobile navigation items will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <main id="main-content" class="{% block main_class %}container-fluid{% endblock %}">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages mt-3">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Page content -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% block footer %}
+    <footer class="bg-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Arsa Analiz Platformu</h6>
+                    <p class="text-muted small">Gayrimenkul analizi ve değerlendirme sistemi</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted small">
+                        © {{ moment().year }} Inveco Proje. Tüm hakları saklıdır.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <!-- JavaScript -->
+    <!-- Core vendors bundle -->
+    <script src="{{ url_for('static', filename='dist/vendors.ab1f81aacc13adc14ddb.js') }}"></script>
+
+    <!-- Shared components -->
+    <script src="{{ url_for('static', filename='dist/536.86901b2d1f6f297f3457.js') }}"></script>
+
+    <!-- Main application -->
+    <script src="{{ url_for('static', filename='dist/main.c186d74636ee17ce040f.js') }}"></script>
+
+    <!-- Page-specific JavaScript -->
+    {% block page_js %}
+        {% if request.endpoint and 'analysis' in request.endpoint %}
+            <script src="{{ url_for('static', filename='dist/analysis.59b80300872121b98a6d.js') }}"></script>
+        {% elif request.endpoint and 'crm' in request.endpoint %}
+            <script src="{{ url_for('static', filename='dist/crm.c11aa255548413083e49.js') }}"></script>
+        {% elif request.endpoint and 'admin' in request.endpoint %}
+            <script src="{{ url_for('static', filename='dist/admin.d77eb85dbcf23e09a010.js') }}"></script>
+        {% endif %}
+    {% endblock %}
+
+    <!-- Additional JavaScript -->
+    {% block extra_js %}{% endblock %}
+
+    <!-- Analytics and tracking -->
+    {% block analytics %}
+    <!-- Google Analytics or other tracking code can be added here -->
+    {% endblock %}
+
+    <!-- Service Worker Registration -->
+    <script>
+        // Register service worker for PWA functionality (future enhancement)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
+</body>
+</html>
