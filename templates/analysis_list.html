@@ -11,12 +11,18 @@
         <i class="fas fa-plus me-1"></i>Yeni Analiz
     </a>
     <div class="dropdown">
-        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" id="exportBtn">
             <i class="fas fa-download me-1"></i>Dışa Aktar
         </button>
         <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
-            <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+            <li><a class="dropdown-item export-item" href="#" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2 text-success"></i>Excel Olarak İndir
+                <small class="d-block text-muted">Tablo formatında detaylı rapor</small>
+            </a></li>
+            <li><a class="dropdown-item export-item" href="#" onclick="exportToPDF()">
+                <i class="fas fa-file-pdf me-2 text-danger"></i>PDF Olarak İndir
+                <small class="d-block text-muted">Yazdırılabilir özet rapor</small>
+            </a></li>
         </ul>
     </div>
 </div>
@@ -411,6 +417,55 @@
     transform: translateX(5px);
     transition: all 0.2s ease;
 }
+
+/* Export Button Enhancements */
+.export-item {
+    padding: 0.75rem 1rem;
+}
+
+.export-item:hover {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);
+}
+
+.export-item small {
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
+}
+
+#exportBtn {
+    position: relative;
+    overflow: hidden;
+}
+
+#exportBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+#exportBtn:hover::before {
+    left: 100%;
+}
+
+/* Loading state for export buttons */
+.export-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.export-loading .fas {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 </style>
 {% endblock %}
 
@@ -522,11 +577,84 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
 });
 
+// Export functions
+function exportToExcel() {
+    const currentUrl = new URL(window.location);
+    const params = currentUrl.searchParams;
+
+    // Build export URL with current filters
+    const exportUrl = new URL('/analysis/export/excel', window.location.origin);
+    params.forEach((value, key) => {
+        exportUrl.searchParams.append(key, value);
+    });
+
+    // Add loading state
+    const exportBtn = document.getElementById('exportBtn');
+    const originalText = exportBtn.innerHTML;
+    exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Excel Hazırlanıyor...';
+    exportBtn.classList.add('export-loading');
+
+    // Show loading toast
+    if (typeof showToast === 'function') {
+        showToast('Excel dosyası hazırlanıyor... 📊', 'info', 3000);
+    }
+
+    // Trigger download
+    window.location.href = exportUrl.toString();
+
+    // Reset button after delay
+    setTimeout(() => {
+        exportBtn.innerHTML = originalText;
+        exportBtn.classList.remove('export-loading');
+        if (typeof showToast === 'function') {
+            showToast('Excel dosyası indirildi! ✅', 'success', 2000);
+        }
+    }, 2000);
+}
+
+function exportToPDF() {
+    const currentUrl = new URL(window.location);
+    const params = currentUrl.searchParams;
+
+    // Build export URL with current filters
+    const exportUrl = new URL('/analysis/export/pdf', window.location.origin);
+    params.forEach((value, key) => {
+        exportUrl.searchParams.append(key, value);
+    });
+
+    // Add loading state
+    const exportBtn = document.getElementById('exportBtn');
+    const originalText = exportBtn.innerHTML;
+    exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>PDF Hazırlanıyor...';
+    exportBtn.classList.add('export-loading');
+
+    // Show loading toast
+    if (typeof showToast === 'function') {
+        showToast('PDF dosyası hazırlanıyor... 📄', 'info', 3000);
+    }
+
+    // Trigger download
+    window.location.href = exportUrl.toString();
+
+    // Reset button after delay
+    setTimeout(() => {
+        exportBtn.innerHTML = originalText;
+        exportBtn.classList.remove('export-loading');
+        if (typeof showToast === 'function') {
+            showToast('PDF dosyası indirildi! ✅', 'success', 2000);
+        }
+    }, 2000);
+}
+
 // Delete analysis function
 function deleteAnalysis(analysisId) {
     if (confirm('Bu analizi silmek istediğinizden emin misiniz?')) {
         // Here you would typically make an AJAX request to delete the analysis
-        alert('Analiz silme özelliği yakında eklenecek!');
+        if (typeof showToast === 'function') {
+            showToast('Analiz silme özelliği yakında eklenecek!', 'info');
+        } else {
+            alert('Analiz silme özelliği yakında eklenecek!');
+        }
     }
 }
 </script>

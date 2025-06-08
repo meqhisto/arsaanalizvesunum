@@ -96,6 +96,274 @@ def list_analyses():
 
     return render_template('analysis_list.html', analyses=analyses, title="Analizlerim")
 
+@analysis_bp.route('/export/excel', methods=['GET'])
+# @login_required # Geçici olarak kaldırıldı
+def export_excel():
+    """Analizleri Excel formatında dışa aktar"""
+    try:
+        import pandas as pd
+        from io import BytesIO
+        from flask import make_response
+
+        user_id = 1  # Geçici olarak test için
+
+        # Apply same filters as list view
+        query = ArsaAnaliz.query.filter_by(user_id=user_id)
+
+        # Search filter
+        search = request.args.get('search', '').strip()
+        if search:
+            search_filter = db.or_(
+                ArsaAnaliz.il.ilike(f'%{search}%'),
+                ArsaAnaliz.ilce.ilike(f'%{search}%'),
+                ArsaAnaliz.mahalle.ilike(f'%{search}%')
+            )
+            query = query.filter(search_filter)
+
+        # Location filter
+        il_filter = request.args.get('il', '').strip()
+        if il_filter:
+            query = query.filter(ArsaAnaliz.il == il_filter)
+
+        # Date filter
+        date_filter = request.args.get('date_filter', '').strip()
+        if date_filter:
+            from datetime import datetime, timedelta
+            today = datetime.now().date()
+
+            if date_filter == 'today':
+                start_of_day = datetime.combine(today, datetime.min.time())
+                end_of_day = datetime.combine(today, datetime.max.time())
+                query = query.filter(ArsaAnaliz.created_at.between(start_of_day, end_of_day))
+            elif date_filter == 'week':
+                week_ago = today - timedelta(days=7)
+                start_of_week = datetime.combine(week_ago, datetime.min.time())
+                query = query.filter(ArsaAnaliz.created_at >= start_of_week)
+            elif date_filter == 'month':
+                month_ago = today - timedelta(days=30)
+                start_of_month = datetime.combine(month_ago, datetime.min.time())
+                query = query.filter(ArsaAnaliz.created_at >= start_of_month)
+
+        analyses = query.order_by(ArsaAnaliz.created_at.desc()).all()
+
+        # Prepare data for Excel
+        data = []
+        for analysis in analyses:
+            data.append({
+                'ID': analysis.id,
+                'İl': analysis.il,
+                'İlçe': analysis.ilce,
+                'Mahalle': analysis.mahalle or '',
+                'Ada': analysis.ada or '',
+                'Parsel': analysis.parsel or '',
+                'Koordinatlar': analysis.koordinatlar or '',
+                'Metrekare': float(analysis.metrekare or 0),
+                'İmar Durumu': analysis.imar_durumu or '',
+                'TAKS': float(analysis.taks or 0),
+                'KAKS': float(analysis.kaks or 0),
+                'Fiyat (TL)': float(analysis.fiyat or 0),
+                'Bölge Fiyatı (TL)': float(analysis.bolge_fiyat or 0),
+                'Birim Fiyat (TL/m²)': float(analysis.fiyat / analysis.metrekare) if analysis.metrekare and analysis.fiyat else 0,
+                'Oluşturma Tarihi': analysis.created_at.strftime('%d.%m.%Y %H:%M'),
+                'Notlar': analysis.notlar or ''
+            })
+
+        # Create DataFrame
+        df = pd.DataFrame(data)
+
+        # Create Excel file in memory
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='Analizler', index=False)
+
+            # Get workbook and worksheet
+            workbook = writer.book
+            worksheet = writer.sheets['Analizler']
+
+            # Auto-adjust column widths
+            for column in worksheet.columns:
+                max_length = 0
+                column_letter = column[0].column_letter
+                for cell in column:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                    except:
+                        pass
+                adjusted_width = min(max_length + 2, 50)
+                worksheet.column_dimensions[column_letter].width = adjusted_width
+
+        output.seek(0)
+
+        # Create response
+        response = make_response(output.getvalue())
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response.headers['Content-Disposition'] = f'attachment; filename=analizler_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+
+        return response
+
+    except ImportError:
+        flash('Excel dışa aktarma için pandas kütüphanesi gerekli. Lütfen sistem yöneticisine başvurun.', 'error')
+        return redirect(url_for('analysis.list_analyses'))
+    except Exception as e:
+        current_app.logger.error(f"Excel export error: {str(e)}", exc_info=True)
+        flash('Excel dosyası oluşturulurken bir hata oluştu.', 'error')
+        return redirect(url_for('analysis.list_analyses'))
+
+@analysis_bp.route('/export/pdf', methods=['GET'])
+# @login_required # Geçici olarak kaldırıldı
+def export_pdf():
+    """Analizleri PDF formatında dışa aktar"""
+    try:
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from io import BytesIO
+        from flask import make_response
+
+        user_id = 1  # Geçici olarak test için
+
+        # Apply same filters as list view
+        query = ArsaAnaliz.query.filter_by(user_id=user_id)
+
+        # Search filter
+        search = request.args.get('search', '').strip()
+        if search:
+            search_filter = db.or_(
+                ArsaAnaliz.il.ilike(f'%{search}%'),
+                ArsaAnaliz.ilce.ilike(f'%{search}%'),
+                ArsaAnaliz.mahalle.ilike(f'%{search}%')
+            )
+            query = query.filter(search_filter)
+
+        # Location filter
+        il_filter = request.args.get('il', '').strip()
+        if il_filter:
+            query = query.filter(ArsaAnaliz.il == il_filter)
+
+        # Date filter
+        date_filter = request.args.get('date_filter', '').strip()
+        if date_filter:
+            from datetime import datetime, timedelta
+            today = datetime.now().date()
+
+            if date_filter == 'today':
+                start_of_day = datetime.combine(today, datetime.min.time())
+                end_of_day = datetime.combine(today, datetime.max.time())
+                query = query.filter(ArsaAnaliz.created_at.between(start_of_day, end_of_day))
+            elif date_filter == 'week':
+                week_ago = today - timedelta(days=7)
+                start_of_week = datetime.combine(week_ago, datetime.min.time())
+                query = query.filter(ArsaAnaliz.created_at >= start_of_week)
+            elif date_filter == 'month':
+                month_ago = today - timedelta(days=30)
+                start_of_month = datetime.combine(month_ago, datetime.min.time())
+                query = query.filter(ArsaAnaliz.created_at >= start_of_month)
+
+        analyses = query.order_by(ArsaAnaliz.created_at.desc()).all()
+
+        # Create PDF in memory
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+
+        # Container for the 'Flowable' objects
+        elements = []
+
+        # Define styles
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            spaceAfter=30,
+            alignment=1  # Center alignment
+        )
+
+        # Add title
+        title = Paragraph("Arsa Analiz Raporu", title_style)
+        elements.append(title)
+        elements.append(Spacer(1, 12))
+
+        # Add summary info
+        summary_data = [
+            ['Toplam Analiz:', str(len(analyses))],
+            ['Rapor Tarihi:', datetime.now().strftime('%d.%m.%Y %H:%M')],
+            ['Toplam Değer:', f"₺{sum(float(a.fiyat or 0) for a in analyses):,.0f}"],
+            ['Toplam Alan:', f"{sum(float(a.metrekare or 0) for a in analyses):,.0f} m²"]
+        ]
+
+        summary_table = Table(summary_data, colWidths=[2*inch, 3*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+
+        elements.append(summary_table)
+        elements.append(Spacer(1, 20))
+
+        # Prepare table data
+        data = [['ID', 'Lokasyon', 'Alan (m²)', 'Fiyat (₺)', 'İmar Durumu', 'Tarih']]
+
+        for analysis in analyses:
+            data.append([
+                str(analysis.id),
+                f"{analysis.il}, {analysis.ilce}",
+                f"{float(analysis.metrekare or 0):,.0f}",
+                f"₺{float(analysis.fiyat or 0):,.0f}",
+                analysis.imar_durumu or '-',
+                analysis.created_at.strftime('%d.%m.%Y')
+            ])
+
+        # Create table
+        table = Table(data, colWidths=[0.5*inch, 2*inch, 1*inch, 1.5*inch, 1.5*inch, 1*inch])
+        table.setStyle(TableStyle([
+            # Header row
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+
+            # Data rows
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+
+        elements.append(table)
+
+        # Build PDF
+        doc.build(elements)
+
+        # Get PDF data
+        pdf_data = buffer.getvalue()
+        buffer.close()
+
+        # Create response
+        response = make_response(pdf_data)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=analizler_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+
+        return response
+
+    except ImportError:
+        flash('PDF dışa aktarma için reportlab kütüphanesi gerekli. Lütfen sistem yöneticisine başvurun.', 'error')
+        return redirect(url_for('analysis.list_analyses'))
+    except Exception as e:
+        current_app.logger.error(f"PDF export error: {str(e)}", exc_info=True)
+        flash('PDF dosyası oluşturulurken bir hata oluştu.', 'error')
+        return redirect(url_for('analysis.list_analyses'))
+
 @analysis_bp.route('/<int:analysis_id>', methods=['GET'])
 # @login_required # Geçici olarak kaldırıldı
 def view_analysis(analysis_id):
