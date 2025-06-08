@@ -4,6 +4,8 @@ from decimal import Decimal # Numeric için
 from sqlalchemy import Index # Index için
 from . import db
 from .user_models import User # User ilişkisi için
+from .office_models import Office # Office modelini import et
+
 
 # Portfolio ve portfolio_arsalar tablosunu import edelim ki ilişki kurabilelim
 from .user_models import Portfolio, portfolio_arsalar
@@ -12,6 +14,7 @@ class ArsaAnaliz(db.Model):
     __tablename__ = "arsa_analizleri"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    office_id = db.Column(db.Integer, db.ForeignKey("offices.id"), nullable=True) # Hangi ofise ait (bireysel ise NULL)
     il = db.Column(db.String(50), nullable=False)
     ilce = db.Column(db.String(50), nullable=False)
     mahalle = db.Column(db.String(100), nullable=False)
@@ -35,8 +38,8 @@ class ArsaAnaliz(db.Model):
         Index("ix_created_at", "created_at"),
     )
 
-    user = db.relationship("User", backref=db.backref("analizler", lazy="dynamic"))
-    # Portfolio ile çoktan çoğa ilişki (portfolio_arsalar üzerinden)
+    user = db.relationship("User", backref=db.backref("analizler_olusturdugu", lazy="dynamic")) # backref adı değişti
+    office = db.relationship("Office", backref=db.backref("analizler_ofisin", lazy="dynamic")) # Yeni ilişki    # Portfolio ile çoktan çoğa ilişki (portfolio_arsalar üzerinden)
     # Bu ilişki zaten Portfolio modelinde tanımlanmış olabilir,
     # Eğer öyleyse burada tekrar tanımlamaya gerek yok.
     # Eğer Portfolio modelinde `analizler = db.relationship("ArsaAnaliz", secondary=portfolio_arsalar, ...)`
@@ -47,8 +50,8 @@ class ArsaAnaliz(db.Model):
 class BolgeDagilimi(db.Model):
     __tablename__ = "bolge_dagilimi"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    il = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    il = db.Column(db.String(50), nullable=True)
     analiz_sayisi = db.Column(db.Integer, default=0)
     toplam_deger = db.Column(db.Numeric(15, 2), default=Decimal("0.00")) # Decimal ile başlat
     son_guncelleme = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -1,14 +1,16 @@
 # blueprints/main_bp.py
 from flask import (
-    Blueprint, render_template, request, redirect, url_for, flash, session, send_from_directory
+    Blueprint, render_template, request, redirect, url_for, flash, 
+    session, send_from_directory, current_app
 )
 from flask_login import login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+# from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import os
 import pytz # User.localize_datetime için
 from decimal import Decimal # Sayısal işlemler için
 from sqlalchemy import text, cast, Date # index route'undaki sorgu için
+from models.office_models import Office # Office modelini import et
 
 # Modelleri ve db nesnesini models paketinden import et
 from models import db
@@ -16,6 +18,7 @@ from models.user_models import User
 from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats
 # CRM Modelleri (index sayfasında CRM özeti için gerekli)
 from models.crm_models import Contact, Deal, Interaction, Task
+from .auth_decorators import broker_required # BU IMPORT SATIRI EKSİK OLABİLİR VEYA YANLIŞ YERDE OLABİLİR
 
 
 main_bp = Blueprint('main', __name__, template_folder='../templates')
@@ -28,6 +31,91 @@ def home(): # Eski home() fonksiyonu
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     return redirect(url_for('auth.login')) # auth Blueprint'indeki login'e yönlendir
+
+@main_bp.route('/my_office', methods=['GET', 'POST'])
+@login_required
+@broker_required
+def my_office():
+    broker = current_user
+    office = Office.query.get(broker.office_id) if broker.office_id else None
+    
+    if not office:
+        if broker.firma:
+            # First check if office exists with this name
+            existing_office = Office.query.filter_by(name=broker.firma).first()
+            if not existing_office:
+                # Create new office with required fields
+                office = Office()
+                office.name = broker.firma
+                office.created_at = datetime.utcnow()
+                office.updated_at = datetime.utcnow()
+                db.session.add(office)
+                broker.office = office
+                db.session.commit()
+                flash(f"'{office.name}' adında yeni bir ofis sizin için oluşturuldu.", "info")
+            else:
+                broker.office = existing_office
+                db.session.commit()
+                office = existing_office
+        else:
+            flash("Bir ofise atanmamışsınız. Lütfen sistem yöneticisi ile iletişime geçin.", "warning")
+            return redirect(url_for('main.index'))
+
+    team_members = User.query.filter(User.office_id == office.id, User.id != broker.id).all()
+
+    if request.method == 'POST': # Yeni danışman/çalışan ekleme
+        # Get form data first
+        form_data = {
+            'email': request.form.get('email'),
+            'password': request.form.get('password'),
+            'ad': request.form.get('ad'),
+            'soyad': request.form.get('soyad'),
+            'role': request.form.get('role', 'danisman')
+        }
+
+        # Validate required fields
+        if not all([form_data['email'], form_data['password'], 
+                   form_data['ad'], form_data['soyad']]):
+            flash('E-posta, şifre, ad ve soyad zorunludur!', 'danger')
+            return render_template('my_office.html', 
+                                office=office, 
+                                team_members=team_members,
+                                form_data=form_data)
+
+        # Check if email is unique
+        if User.query.filter_by(email=form_data['email']).first():
+            flash('Bu e-posta adresi zaten kullanımda!', 'danger')
+            return render_template('my_office.html', 
+                                office=office, 
+                                team_members=team_members,
+                                form_data=form_data)
+
+        # Create new user
+        new_member = User()
+        new_member.email = form_data['email']
+        new_member.ad = form_data['ad']
+        new_member.soyad = form_data['soyad']
+        new_member.role = form_data['role']
+        new_member.office_id = office.id
+        new_member.manager_id = broker.id
+        new_member.firma = office.name
+        new_member.set_password(form_data['password'])
+        
+        try:
+            db.session.add(new_member)
+            db.session.commit()
+            flash(f"Ekip üyesi '{form_data['ad']} {form_data['soyad']}' eklendi.", 'success')
+            return redirect(url_for('main.my_office'))
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error adding new member: {str(e)}")
+            flash('Ekip üyesi eklenirken bir hata oluştu!', 'danger')
+            return render_template('my_office.html', 
+                                office=office, 
+                                team_members=team_members,
+                                form_data=form_data)
+            
+    return render_template('my_office.html', office=office, team_members=team_members)
 
 @main_bp.route('/index')
 @login_required # Flask-Login'den gelen decorator
@@ -54,16 +142,23 @@ def index():
     grafik_bolge_labels = [b.il for b in arsa_bolge_dagilimi]
     grafik_bolge_data_sayi = [b.analiz_sayisi for b in arsa_bolge_dagilimi]
     
+    # Önce toplam değerleri hesaplayalım
+    toplam_arsa_degeri = (
+        db.session.query(db.func.sum(ArsaAnaliz.fiyat))
+        .filter_by(user_id=user_id)
+        .scalar() or Decimal(0)
+    )
+    toplam_arsa_sayisi = ArsaAnaliz.query.filter_by(user_id=user_id).count()
+    
     stats = DashboardStats.query.filter_by(user_id=user_id).first()
     if not stats: # Eğer kullanıcı için istatistik yoksa oluştur
-        stats = DashboardStats(
-            user_id=user_id, 
-            toplam_arsa_sayisi=0, 
-            ortalama_fiyat=0.0, 
-            en_yuksek_fiyat=0.0, 
-            en_dusuk_fiyat=float('inf'), # İlk eklemede doğru ayarlanması için
-            toplam_deger=Decimal('0.00')
-        )
+        stats = DashboardStats()
+        stats.user_id = user_id
+        stats.toplam_arsa_sayisi = toplam_arsa_sayisi
+        stats.ortalama_fiyat = float(toplam_arsa_degeri/toplam_arsa_sayisi) if toplam_arsa_sayisi > 0 else 0
+        stats.en_yuksek_fiyat = db.session.query(db.func.max(ArsaAnaliz.fiyat)).filter_by(user_id=user_id).scalar() or 0
+        stats.en_dusuk_fiyat = db.session.query(db.func.min(ArsaAnaliz.fiyat)).filter_by(user_id=user_id).scalar() or 0
+        stats.toplam_deger = toplam_arsa_degeri
         db.session.add(stats)
         # db.session.commit() # Commit'i toplu yapmak daha iyi olabilir, ama burada da yapılabilir.
 
@@ -105,13 +200,6 @@ def index():
         ay_isimleri = {1: "Oca", 2: "Şub", 3: "Mar", 4: "Nis", 5: "May", 6: "Haz", 7: "Tem", 8: "Ağu", 9: "Eyl", 10: "Eki", 11: "Kas", 12: "Ara"}
         son_alti_ay_analiz.insert(0, f"{ay_isimleri[target_month]} {str(target_year)[-2:]}")
         aylik_analiz_sayilari_arsa.insert(0, ay_analiz_sayisi)
-
-    toplam_arsa_degeri = (
-        db.session.query(db.func.sum(ArsaAnaliz.fiyat))
-        .filter_by(user_id=user_id)
-        .scalar() or Decimal(0)
-    )
-    toplam_arsa_sayisi = ArsaAnaliz.query.filter_by(user_id=user_id).count()
 
     # --- YENİ: CRM Özet Verileri ---
     today_utc_date = datetime.utcnow().date()
@@ -208,7 +296,7 @@ def profile():
                     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"} # Ana app'den alınabilir
                     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-                if file and allowed_file(file.filename):
+                if file and file.filename and allowed_file(file.filename):
                     from werkzeug.utils import secure_filename # Fonksiyon içinde import
                     filename = secure_filename(file.filename)
                     user_upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "profiles", str(user.id))
@@ -250,7 +338,7 @@ def change_password(): # endpoint eski app.py'de 'change_password' idi, fonksiyo
         flash('Yeni şifreler eşleşmiyor!', 'danger')
         return redirect(url_for('main.profile'))
     
-    if len(new_password) < 6: # Şifre uzunluk kontrolü
+    if not new_password or len(new_password) < 6: # Şifre uzunluk kontrolü
         flash('Yeni şifre en az 6 karakter olmalıdır!', 'danger')
         return redirect(url_for('main.profile'))
 
@@ -260,16 +348,23 @@ def change_password(): # endpoint eski app.py'de 'change_password' idi, fonksiyo
     flash('Şifreniz başarıyla güncellendi.', 'success')
     return redirect(url_for('main.profile'))
 
-@main_bp.route('/analysis-form')
+# blueprints/main_bp.py
+@main_bp.route('/analysis-form') # Varsayılan olarak sadece GET
 @login_required
 def analysis_form():
-    # Eğer formda önceden doldurulmuş veri (hata durumunda) varsa, onu al
-    # Bu, ana app.py'deki submit_analysis içinde session'a kaydediliyordu.
-    # Bu mantığı buraya veya formun POST edildiği yere taşımak gerekebilir.
-    # Şimdilik sadece şablonu render edelim.
     form_data = session.pop('analysis_form_data', None)
     form_errors = session.pop('analysis_form_errors', None)
     return render_template('analysis_form.html', form_data=form_data, form_errors=form_errors)
+
+@main_bp.route('/login')
+def login_redirect():
+    """Redirect /login to /auth/login for backward compatibility"""
+    return redirect(url_for('auth.login'))
+
+@main_bp.route('/logout')
+def logout_redirect():
+    """Redirect /logout to /auth/logout for backward compatibility"""
+    return redirect(url_for('auth.logout'))
 
 @main_bp.route('/favicon.ico')
 def favicon():

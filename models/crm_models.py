@@ -1,15 +1,17 @@
-# models/crm_models.py
 from datetime import datetime
-from sqlalchemy import UniqueConstraint # UniqueConstraint için
-from . import db
-from .user_models import User # User ilişkisi için
+from sqlalchemy import UniqueConstraint
+from flask_sqlalchemy import SQLAlchemy
+from models import db  # göreceli import yerine mutlak import
+from models.user_models import User  # göreceli import yerine mutlak import
+from models.office_models import Office  # göreceli import yerine mutlak import
+
 
 class Contact(db.Model):
     __tablename__ = "crm_contacts"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     company_id = db.Column(db.Integer, db.ForeignKey("crm_companies.id"), nullable=True)
-
+    office_id = db.Column(db.Integer, db.ForeignKey("offices.id"), nullable=True) # Hangi ofise ait (bireysel ise NULL)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120))
@@ -22,10 +24,10 @@ class Contact(db.Model):
     segment = db.Column(db.String(50), default='Potansiyel') # Potansiyel, Aktif, Pasif, VIP, Kaybedilen
     value_score = db.Column(db.Integer, default=0) # 0-100 arası bir değer puanı
     tags = db.Column(db.JSON) # Etiketler için JSON alanı (["etiket1", "etiket2"])
-    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    office = db.relationship("Office", backref=db.backref("contacts_ofisin", lazy="dynamic"))
     user = db.relationship("User", backref=db.backref("crm_contacts_owned", lazy="dynamic")) # backref adı güncellendi
     # company ilişkisi Company modelinde backref ile tanımlanacak
     interactions = db.relationship("Interaction", backref="contact", lazy="dynamic", cascade="all, delete-orphan")
@@ -85,7 +87,8 @@ class Deal(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     contact_id = db.Column(db.Integer, db.ForeignKey("crm_contacts.id"), nullable=False)
     company_id = db.Column(db.Integer, db.ForeignKey("crm_companies.id"), nullable=True)
-
+    office_id = db.Column(db.Integer, db.ForeignKey('offices.id', ondelete='SET NULL'), nullable=True)
+    office = db.relationship('Office', backref=db.backref('deals', lazy='dynamic'))
     title = db.Column(db.String(200), nullable=False)
     value = db.Column(db.Numeric(15, 2), default=0.00)
     currency = db.Column(db.String(10), default="TRY")
@@ -96,7 +99,8 @@ class Deal(db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
+    office = db.relationship("Office", backref=db.backref("deals_ofisin", lazy="dynamic"))
+    # CRM v2 için eklenen alanlar
     user = db.relationship("User", backref=db.backref("crm_deals_owned", lazy="dynamic")) # backref
     # contact ve company ilişkileri ilgili modellerde backref ile tanımlı
     interactions = db.relationship("Interaction", backref="deal", lazy="dynamic", cascade="all, delete-orphan")
@@ -109,9 +113,10 @@ class Task(db.Model):
     __tablename__ = "crm_tasks"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False) # Oluşturan
-    contact_id = db.Column(db.Integer, db.ForeignKey("crm_contacts.id"), nullable=True)
+    contact_id = db.Column(db.Integer, db.ForeignKey('crm_contacts.id'))
     deal_id = db.Column(db.Integer, db.ForeignKey("crm_deals.id"), nullable=True)
     assigned_to_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True) # Atanan
+    office_id = db.Column(db.Integer, db.ForeignKey("offices.id"), nullable=True)
 
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
@@ -135,7 +140,8 @@ class Task(db.Model):
     reassigned_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # Yeniden atayan kişi
     reassignment_reason = db.Column(db.Text, nullable=True) # Yeniden atama sebebi
     task_type = db.Column(db.String(50), default='personal') # personal, team, supervised
-
+    office_id = db.Column(db.Integer, db.ForeignKey('offices.id', ondelete='SET NULL'), nullable=True)
+    office = db.relationship('Office', backref=db.backref('tasks', lazy='dynamic'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -144,10 +150,9 @@ class Task(db.Model):
     assigned_by = db.relationship("User", foreign_keys=[assigned_by_user_id], backref=db.backref("delegated_crm_tasks", lazy="dynamic"))
     previous_assignee_user = db.relationship("User", foreign_keys=[previous_assignee_id], backref=db.backref("previously_assigned_crm_tasks", lazy="dynamic"))
     reassigned_by_user = db.relationship("User", foreign_keys=[reassigned_by_id], backref=db.backref("reassigned_crm_tasks_by", lazy="dynamic"))
+    contact = db.relationship("Contact", foreign_keys=[contact_id], backref=db.backref("tasks", lazy="dynamic"))
+    deal = db.relationship("Deal", foreign_keys=[deal_id], backref=db.backref("tasks", lazy="dynamic"))
 
-
-    contact = db.relationship("Contact", foreign_keys=[contact_id], backref=db.backref("contact_tasks", lazy="dynamic"))
-    deal = db.relationship("Deal", foreign_keys=[deal_id], backref=db.backref("deal_tasks", lazy="dynamic"))
 
     def __repr__(self):
         return f"<Task {self.title}>"

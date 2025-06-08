@@ -11,8 +11,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function checkReminders() {
         fetch('/crm/tasks/check-reminders')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                if (data.error) {
+                    console.error('Sunucu hatası:', data.error);
+                    return;
+                }
+                
                 if (data.reminders && data.reminders.length > 0) {
                     updateReminderBadge(data.reminders.length);
                     updateReminderDropdown(data.reminders);
@@ -33,7 +43,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             })
-            .catch(error => console.error('Hatırlatıcılar kontrol edilirken hata:', error));
+            .catch(error => {
+                console.error('Hatırlatıcılar kontrol edilirken hata:', error);
+                // Hata durumunda badge'i gizle
+                if (reminderBadge) {
+                    reminderBadge.style.display = 'none';
+                }
+                // Hata mesajını göster
+                if (reminderList) {
+                    reminderList.innerHTML = '<li><span class="dropdown-item text-center text-danger">Hatırlatıcılar yüklenirken bir hata oluştu</span></li>';
+                }
+            });
     }
     
     function updateReminderBadge(count) {

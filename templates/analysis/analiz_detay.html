@@ -1,250 +1,16 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analiz Detayı - {{ analiz.il }}, {{ analiz.ilce }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+{% extends "base.html" %}
+
+{% block title %}Analiz Detayı - {{ analiz.il }}, {{ analiz.ilce }}{% endblock %}
+
+{% block extra_css %}
+    {# Bootstrap and main.css are already included in base.html #}
+    {# Add any page-specific CSS links here if needed #}
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/sofistike_css.css') }}">
-    <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --accent-color: #4895ef;
-            --success-color: #4cc9f0;
-            --light-bg: #f8f9fa;
-            --border-radius: 0.75rem;
-            --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            --sidebar-width: 250px;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f5f7ff;
-            color: #333;
-        }
-        
-        /* Modern Sidebar */
-        .sidebar {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            min-height: 100vh;
-            position: sticky;
-            top: 0;
-            left: 0;
-            width: var(--sidebar-width);
-            box-shadow: var(--box-shadow);
-            z-index: 1000;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .sidebar h4 {
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        
-        .sidebar a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            padding: 12px 15px;
-            border-radius: var(--border-radius);
-            margin-bottom: 8px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-        
-        .sidebar a:hover, .sidebar a.active {
-            background-color: rgba(255, 255, 255, 0.15);
-            color: white;
-            transform: translateX(5px);
-        }
-        
-        .sidebar a i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-        
-        /* Cards with subtle shadow and rounded corners */
-        .card {
-            border: none;
-            border-radius: var(--border-radius);
-            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-        }
-        
-        .card-header {
-            background-color: white;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            font-weight: 600;
-        }
-        
-        /* Quick access cards */
-        .quick-access-card {
-            background-color: white;
-            transition: all 0.3s ease;
-        }
-        
-        .quick-access-card:hover {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        }
-        
-        .quick-access-card i {
-            transition: transform 0.3s ease;
-        }
-        
-        .quick-access-card:hover i {
-            transform: scale(1.2);
-        }
-        
-        /* Profile card */
-        .profile-card {
-            text-align: center;
-            background: white;
-        }
-        
-        /* Stats cards */
-        .stat-card {
-            background: white;
-        }
-        
-        .stat-card .card-body {
-            padding: 1.25rem;
-        }
-        
-        .stat-card .display-5, .stat-card .display-6 {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-        
-        /* Buttons */
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-        }
-        
-        /* Table styling */
-        .table {
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
-        
-        .table thead th {
-            background-color: #f8f9fa;
-            border-bottom: none;
-            font-weight: 600;
-        }
-        
-        /* Alerts */
-        .alert {
-            border-radius: var(--border-radius);
-            border: none;
-        }
-        
-        /* Mobile styles */
-        @media (max-width: 768px) {
-            .card {
-                margin-bottom: 1rem;
-            }
-            
-            .offcanvas-body a {
-                padding: 12px 15px;
-                display: flex;
-                align-items: center;
-                color: #333;
-                text-decoration: none;
-                border-radius: var(--border-radius);
-                margin-bottom: 8px;
-                transition: background-color 0.3s;
-            }
-            
-            .offcanvas-body a:hover, .offcanvas-body a.active {
-                background-color: #f8f9fa;
-            }
-            
-            .offcanvas-body a i {
-                margin-right: 10px;
-                font-size: 1.2rem;
-            }
-            
-            /* Ana içerik alanı tam genişlikte göster */
-            .content-area {
-                width: 100% !important;
-                margin-left: 0 !important;
-            }
-            
-            /* İstatistik kartları mobilde tek sütun */
-            .stat-card-col {
-                width: 100%;
-            }
-        }
-        
-        /* Tablet */
-        @media (min-width: 768px) and (max-width: 992px) {
-            .sidebar {
-                width: 220px;
-            }
-            
-            .content-area {
-                width: calc(100% - 220px) !important;
-            }
-            
-            /* İki sütunlu grid */
-            .stat-card-col {
-                width: 50%;
-            }
-        }
-    </style>
-</head>
-<body>
-  <div class="container-fluid">
-    <div class="row">
-     <!-- Mobil Sidebar Tetikleyici -->
-<button class="btn btn-primary d-md-none m-3" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebar">
-  <i class="bi bi-list"></i> Menü
-</button>
+{% endblock %}
 
-<!-- Sidebar -->
-<div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebar">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title">İnveco Panel</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-  </div>
-  <div class="offcanvas-body d-flex flex-column gap-2">
-    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
-    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
-    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
-  </div>
-</div>
-
-<!-- Masaüstü Sidebar -->
-<div class="col-md-3 col-lg-2 d-none d-md-flex sidebar flex-column p-4">
-  <h4 class="mb-4">İnveco Panel</h4>
-    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
-    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi.bi-graph-up"></i> Portföyler</a>
-    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
-</div>
-      <!-- Main Content Area -->
-      <div class="col-md-9 col-lg-10">
+{% block content %}
+    {# The mobile sidebar and desktop sidebar are now handled by base.html #}
+    {# Main content for analiz_detay starts here #}
         <div class="container mt-4">
           <!-- Analist Bilgileri Kartı -->
           <div class="card mb-4">
@@ -513,12 +279,13 @@
                 {% for medya in analiz.medyalar %}
                   <div class="col-md-4 mb-3">
                     <div class="card">
+                      {% set medya_path = ['uploads', medya.filename.strip().lstrip('/')] | join('/') %}
                       {% if medya.type == 'image' %}
-                        <img src="{{ url_for('static', filename='uploads/' + medya.filename) }}" 
+                        <img src="{{ url_for('static', filename=medya_path) }}"
                             class="card-img-top" alt="Arsa Görseli {{ loop.index }}">
                       {% else %}
                         <video class="card-img-top" controls>
-                          <source src="{{ url_for('static', filename='uploads/' + medya.filename) }}" 
+                          <source src="{{ url_for('static', filename=medya_path) }}"
                                 type="video/mp4">
                           Tarayıcınız video oynatmayı desteklemiyor.
                         </video>
@@ -591,13 +358,12 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Rapor Ayarları Modalı -->
-  <div class="modal fade" id="reportSettingsModal" tabindex="-1" aria-labelledby="reportSettingsModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
+    <!-- Rapor Ayarları Modalı (Sunum Oluşturma) -->
+    {# This modal can remain as it is, or be included via {% include %} if it's used elsewhere #}
+    <div class="modal fade" id="reportSettingsModal" tabindex="-1" aria-labelledby="reportSettingsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
           <h5 class="modal-title" id="reportSettingsModalLabel">Sunum Ayarları</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -667,10 +433,10 @@
         </div>
       </div>
     </div>
-  </div>
+{% endblock %}
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  {# <script src="{{ url_for('static', filename='js/analiz_detay.js') }}"></script> #} {# Ayrı JS dosyası varsa #}
+{% block page_js %}
+  {# Bootstrap JS is already included in base.html #}
   <script>
     document.addEventListener('DOMContentLoaded', function() {
         const generateReportBtn = document.getElementById('generateReportBtn');
@@ -744,5 +510,4 @@
         }
     });
   </script>
-</body>
-</html>
+{% endblock %}

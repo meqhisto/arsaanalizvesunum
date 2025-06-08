@@ -1,14 +1,18 @@
 # app.py
 from flask import Flask, render_template # render_template error.html için
 from flask_login import LoginManager, current_user # current_user Jinja'ya eklenebilir
+from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 from concurrent_log_handler import ConcurrentRotatingFileHandler
 import logging
 import os
 from datetime import timedelta, datetime as dt_module # dt_module Jinja için
-
+from flask_migrate import Migrate
+from models import db as application_db # db'yi modellerden al
 # Modelleri ve db nesnesini models paketinden import et
 from models import init_db_models # init_app fonksiyonunu yeniden adlandırdık
 from models.user_models import User # load_user için User modeline ihtiyaç var
+from blueprints.admin_bp import admin_bp # admin_bp'yi import et
 
 # Blueprint'leri import et
 from blueprints.auth_bp import auth_bp
@@ -16,6 +20,9 @@ from blueprints.main_bp import main_bp
 from blueprints.analysis_bp import analysis_bp
 from blueprints.crm_bp import crm_bp
 from blueprints.portfolio_bp import portfolio_bp # Import et
+
+# API Blueprint'ini import et
+from blueprints.api.api_bp import api_bp, init_swagger
 
 
 # Jinja filtreleri ve global'leri için
@@ -28,23 +35,34 @@ def nl2br_filter(value):
 
 # Flask uygulamasını application olarak ayarlayın (bazı hosting platformları için)
 application = None
+migrate = Migrate() # Migrate nesnesini globalde (veya app factory dışında) oluştur
+
 
 def create_app(config_name=None): # config_name opsiyonel, farklı config'ler için
     global application
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='static', static_url_path='/static')
     app.template_folder = "templates"
     app.static_folder = "static" # Static dosyalar için
     app.static_url_path = "/static" # Static dosyaların URL yolu
     app.register_blueprint(portfolio_bp, url_prefix='/portfolio') # Kaydet
     application = app # Elastic Beanstalk vb. için
+    app.register_blueprint(admin_bp) # Eğer admin_bp.py içinde url_prefix='/admin' tanımlıysa
 
     # --- CONFIGURATION ---
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         os.environ.get("DATABASE_URL", "mssql+pyodbc://altan:Yxrkt2bb7q8.@46.221.49.106/arsa_db?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes")
     )
+    print(f"DATABASE_URL: {os.environ.get('DATABASE_URL')}")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     # SECRET_KEY'i daha güvenli bir yerden alın veya çok güçlü bir varsayılan kullanın
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "COK_GUCLU_VE_TAHMIN_EDILEMEZ_BIR_ANAHTAR_OLMALI_BURASI_dev_icin_degil!")
+
+    # JWT Configuration
+    app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", app.config["SECRET_KEY"])
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+    app.config["JWT_CSRF_PROTECT"] = False  # CSRF korumasını devre dışı bırak
+    app.config["JWT_IDENTITY_CLAIM"] = "sub"  # Subject claim'ini belirt
     
     # Medya yükleme ayarları
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -59,11 +77,38 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
 
     # --- DATABASE INITIALIZATION ---
     init_db_models(app) # Modellerin bulunduğu paketteki init_app fonksiyonunu çağır
+    migrate.init_app(app, application_db) # <-- BU SATIR ÇOK ÖNEMLİ
+
+    # --- JWT MANAGER ---
+    jwt = JWTManager(app)
+
+    # JWT callbacks
+    @jwt.user_identity_loader
+    def user_identity_lookup(user):
+        return str(user)
+
+    @jwt.user_lookup_loader
+    def user_lookup_callback(_jwt_header, jwt_data):
+        identity = jwt_data["sub"]
+        if isinstance(identity, str):
+            return User.query.get(int(identity))
+        else:
+            return User.query.get(identity)
+
+    # --- CORS CONFIGURATION ---
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": ["http://localhost:3000", "http://localhost:5000"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "supports_credentials": True
+        }
+    })
 
     # --- LOGIN MANAGER ---
     login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = 'auth.login' # Blueprint adını kullan: auth.login
+    login_manager.login_view = 'auth.login'  # type: ignore[attr-defined] # Blueprint adını kullan: auth.login
     login_manager.login_message = 'Lütfen önce giriş yapın'
     login_manager.login_message_category = 'warning'
 
@@ -117,6 +162,12 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.register_blueprint(analysis_bp, url_prefix='/analysis') # url_for('analysis.analizler')
     app.register_blueprint(crm_bp, url_prefix='/crm') # url_for('crm.crm_contacts_list')
     # portfolio_bp için de benzer bir kayıt yapabilirsiniz.
+
+    # --- API BLUEPRINT REGISTRATION ---
+    app.register_blueprint(api_bp) # API blueprint'ini kaydet (/api prefix'i ile)
+
+    # --- SWAGGER DOCUMENTATION ---
+    init_swagger(app) # Swagger dokümantasyonunu başlat
 
     # --- SESSION CONFIGURATION ---
     # app.permanent_session_lifetime = timedelta(days=30) # "Beni Hatırla" için

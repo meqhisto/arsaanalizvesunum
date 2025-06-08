@@ -1,0 +1,405 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from datetime import datetime, timedelta
+from sqlalchemy import func, desc, text
+
+# Ekip modülü için blueprint tanımlama
+team_bp = Blueprint('team', __name__, url_prefix='/team')
+
+# Gerekli modülleri import ediyoruz
+from models.db import db
+from app import login_required, User
+from models.team import UserRole, Team, TeamMember, PerformanceMetric, TeamTask
+
+# Ekip listesi görüntüleme
+@team_bp.route('/teams')
+@login_required
+def teams_list():
+    user_id = session["user_id"]
+    user = User.query.get(user_id)
+    
+    # Geçici olarak tüm kullanıcıları yönetici olarak kabul ediyoruz
+    # Not: User modelinde is_manager alanı şu an devre dışı olduğu için
+    is_manager = True  # Geçici çözüm
+    
+    # Yönetici ise tüm ekipleri göster
+    if is_manager:
+        teams = Team.query.filter_by(leader_id=user_id).all()
+        all_teams = Team.query.all()
+        return render_template('team/teams_list.html', teams=teams, all_teams=all_teams, is_manager=True)
+    
+    # Çalışan ise üye olduğu ekipleri göster
+    member_teams = Team.query.join(TeamMember).filter(TeamMember.user_id == user_id).all()
+    return render_template('team/teams_list.html', teams=member_teams, is_manager=False)
+
+# Yeni ekip oluşturma
+@team_bp.route('/teams/new', methods=['GET', 'POST'])
+@login_required
+def team_new():
+    user_id = session["user_id"]
+    user = User.query.get(user_id)
+    
+    # Geçici olarak tüm kullanıcıları yönetici olarak kabul ediyoruz
+    # Not: User modelinde is_manager alanı şu an devre dışı olduğu için
+    is_manager = True  # Geçici çözüm
+    
+    # Sadece yöneticiler ekip oluşturabilir
+    if not is_manager:
+        flash("Ekip oluşturma yetkiniz bulunmamaktadır.", "danger")
+        return redirect(url_for('team.teams_list'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        
+        if not name:
+            flash("Ekip adı zorunludur.", "danger")
+            return redirect(url_for('team.team_new'))
+        
+        team = Team(
+            name=name,
+            description=description,
+            leader_id=user_id
+        )
+        
+        db.session.add(team)
+        db.session.commit()
+        
+        flash("Ekip başarıyla oluşturuldu.", "success")
+        return redirect(url_for('team.teams_list'))
+    
+    return render_template('team/team_form.html', title="Yeni Ekip")
+
+# Ekip detayı görüntüleme
+@team_bp.route('/teams/<int:team_id>')
+@login_required
+def team_detail(team_id):
+    user_id = session["user_id"]
+    user = User.query.get(user_id)
+    team = Team.query.get_or_404(team_id)
+    
+    # Ekip lideri veya ekip üyesi değilse erişimi engelle
+    is_member = TeamMember.query.filter_by(team_id=team_id, user_id=user_id).first()
+    if team.leader_id != user_id and not is_member:
+        flash("Bu ekibe erişim yetkiniz bulunmamaktadır.", "danger")
+        return redirect(url_for('team.teams_list'))
+    
+    # Ekip üyeleri
+    members = User.query.join(TeamMember).filter(
+        TeamMember.team_id == team_id,
+        TeamMember.is_active == True
+    ).all()
+    
+    # Ekip görevleri
+    tasks = TeamTask.query.filter_by(team_id=team_id).order_by(
+        TeamTask.due_date.asc() if TeamTask.due_date else TeamTask.created_at.desc()
+    ).all()
+    
+    return render_template(
+        'team/team_detail.html', 
+        team=team, 
+        members=members, 
+        tasks=tasks,
+        is_leader=(team.leader_id == user_id)
+    )
+
+# Ekibe üye ekleme
+@team_bp.route('/teams/<int:team_id>/add_member', methods=['GET', 'POST'])
+@login_required
+def team_add_member(team_id):
+    user_id = session["user_id"]
+    team = Team.query.get_or_404(team_id)
+    
+    # Sadece ekip lideri üye ekleyebilir
+    if team.leader_id != user_id:
+        flash("Ekibe üye ekleme yetkiniz bulunmamaktadır.", "danger")
+        return redirect(url_for('team.team_detail', team_id=team_id))
+    
+    if request.method == 'POST':
+        member_id = request.form.get('member_id')
+        position = request.form.get('position')
+        
+        if not member_id:
+            flash("Üye seçimi zorunludur.", "danger")
+            return redirect(url_for('team.team_add_member', team_id=team_id))
+        
+        # Kullanıcı zaten ekip üyesi mi kontrol et
+        existing_member = TeamMember.query.filter_by(team_id=team_id, user_id=member_id).first()
+        if existing_member:
+            if existing_member.is_active:
+                flash("Bu kullanıcı zaten ekip üyesi.", "warning")
+            else:
+                existing_member.is_active = True
+                existing_member.position = position
+                db.session.commit()
+                flash("Kullanıcı ekibe yeniden eklendi.", "success")
+            return redirect(url_for('team.team_detail', team_id=team_id))
+        
+        # Yeni ekip üyesi ekle
+        team_member = TeamMember(
+            team_id=team_id,
+            user_id=member_id,
+            position=position,
+            is_active=True
+        )
+        
+        db.session.add(team_member)
+        db.session.commit()
+        
+        flash("Üye ekibe başarıyla eklendi.", "success")
+        return redirect(url_for('team.team_detail', team_id=team_id))
+    
+    # Ekibe eklenebilecek kullanıcıları getir (ekip üyesi olmayanlar)
+    existing_member_ids = db.session.query(TeamMember.user_id).filter_by(team_id=team_id, is_active=True).all()
+    existing_member_ids = [m[0] for m in existing_member_ids]
+    
+    available_users = User.query.filter(User.id != user_id, ~User.id.in_(existing_member_ids if existing_member_ids else [0])).all()
+    
+    return render_template(
+        'team/team_add_member.html',
+        team=team,
+        available_users=available_users
+    )
+
+# Ekip üyesi çıkarma
+@team_bp.route('/teams/<int:team_id>/remove_member/<int:member_id>', methods=['POST'])
+@login_required
+def team_remove_member(team_id, member_id):
+    user_id = session["user_id"]
+    team = Team.query.get_or_404(team_id)
+    
+    # Sadece ekip lideri üye çıkarabilir
+    if team.leader_id != user_id:
+        flash("Ekipten üye çıkarma yetkiniz bulunmamaktadır.", "danger")
+        return redirect(url_for('team.team_detail', team_id=team_id))
+    
+    team_member = TeamMember.query.filter_by(team_id=team_id, user_id=member_id).first_or_404()
+    team_member.is_active = False
+    db.session.commit()
+    
+    flash("Üye ekipten çıkarıldı.", "success")
+    return redirect(url_for('team.team_detail', team_id=team_id))
+
+# Ekip görevi oluşturma
+@team_bp.route('/teams/<int:team_id>/tasks/new', methods=['GET', 'POST'])
+@login_required
+def team_task_new(team_id):
+    user_id = session["user_id"]
+    team = Team.query.get_or_404(team_id)
+    
+    # Ekip lideri veya ekip üyesi değilse erişimi engelle
+    is_member = TeamMember.query.filter_by(team_id=team_id, user_id=user_id, is_active=True).first()
+    if team.leader_id != user_id and not is_member:
+        flash("Bu ekibe görev ekleme yetkiniz bulunmamaktadır.", "danger")
+        return redirect(url_for('team.team_detail', team_id=team_id))
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        assigned_to_id = request.form.get('assigned_to_id')
+        due_date_str = request.form.get('due_date')
+        priority = request.form.get('priority')
+        
+        if not title or not assigned_to_id:
+            flash("Görev başlığı ve atanacak kişi zorunludur.", "danger")
+            return redirect(url_for('team.team_task_new', team_id=team_id))
+        
+        # Due date'i datetime'a çevir
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d')
+            except ValueError:
+                flash("Geçersiz tarih formatı.", "danger")
+                return redirect(url_for('team.team_task_new', team_id=team_id))
+        
+        task = TeamTask(
+            team_id=team_id,
+            assigned_by_id=user_id,
+            assigned_to_id=assigned_to_id,
+            title=title,
+            description=description,
+            due_date=due_date,
+            priority=priority,
+            status="pending"
+        )
+        
+        db.session.add(task)
+        db.session.commit()
+        
+        flash("Görev başarıyla oluşturuldu.", "success")
+        return redirect(url_for('team.team_detail', team_id=team_id))
+    
+    # Ekip üyeleri
+    members = User.query.join(TeamMember).filter(
+        TeamMember.team_id == team_id,
+        TeamMember.is_active == True
+    ).all()
+    
+    return render_template(
+        'team/team_task_form.html',
+        team=team,
+        members=members,
+        title="Yeni Görev"
+    )
+
+# Görev durumu güncelleme
+@team_bp.route('/teams/tasks/<int:task_id>/update_status', methods=['POST'])
+@login_required
+def team_task_update_status(task_id):
+    user_id = session["user_id"]
+    task = TeamTask.query.get_or_404(task_id)
+    
+    # Sadece görevi oluşturan, atanan kişi veya ekip lideri güncelleyebilir
+    if task.assigned_by_id != user_id and task.assigned_to_id != user_id and task.team.leader_id != user_id:
+        flash("Bu görevi güncelleme yetkiniz bulunmamaktadır.", "danger")
+        return redirect(url_for('team.team_detail', team_id=task.team_id))
+    
+    new_status = request.form.get('status')
+    if not new_status:
+        flash("Durum bilgisi zorunludur.", "danger")
+        return redirect(url_for('team.team_detail', team_id=task.team_id))
+    
+    task.status = new_status
+    if new_status == "completed":
+        task.completion_date = datetime.utcnow()
+    else:
+        task.completion_date = None
+    
+    db.session.commit()
+    
+    flash("Görev durumu güncellendi.", "success")
+    return redirect(url_for('team.team_detail', team_id=task.team_id))
+
+# Performans metrikleri görüntüleme
+@team_bp.route('/performance')
+@login_required
+def performance_metrics():
+    user_id = session["user_id"]
+    user = User.query.get(user_id)
+    
+    # Kullanıcının kendi performans metrikleri
+    current_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    next_month = (current_month + timedelta(days=32)).replace(day=1)
+    
+    metrics = PerformanceMetric.query.filter_by(
+        user_id=user_id,
+        period="monthly",
+        period_start=current_month
+    ).first()
+    
+    # Yönetici ise ekip üyelerinin performanslarını da göster
+    team_metrics = None
+    if user.is_manager:
+        team_members = User.query.filter_by(manager_id=user_id).all()
+        team_member_ids = [member.id for member in team_members]
+        
+        if team_member_ids:
+            team_metrics = PerformanceMetric.query.filter(
+                PerformanceMetric.user_id.in_(team_member_ids),
+                PerformanceMetric.period == "monthly",
+                PerformanceMetric.period_start == current_month
+            ).all()
+    
+    return render_template(
+        'team/performance.html',
+        metrics=metrics,
+        team_metrics=team_metrics,
+        user=user,
+        is_manager=user.is_manager
+    )
+
+# Kullanıcı rolleri yönetimi (sadece yöneticiler için)
+@team_bp.route('/roles')
+@login_required
+def roles_list():
+    user_id = session["user_id"]
+    user = User.query.get(user_id)
+    
+    # Sadece yöneticiler rolleri görebilir
+    if not user.is_manager:
+        flash("Rol yönetimi sayfasına erişim yetkiniz bulunmamaktadır.", "danger")
+        return redirect(url_for('index'))
+    
+    roles = UserRole.query.all()
+    return render_template('team/roles_list.html', roles=roles)
+
+# Yeni rol oluşturma
+@team_bp.route('/roles/new', methods=['GET', 'POST'])
+@login_required
+def role_new():
+    user_id = session["user_id"]
+    user = User.query.get(user_id)
+    
+    # Sadece yöneticiler rol oluşturabilir
+    if not user.is_manager:
+        flash("Rol oluşturma yetkiniz bulunmamaktadır.", "danger")
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        permissions = {}
+        
+        # Formdan gelen izinleri al
+        for key in request.form:
+            if key.startswith('perm_'):
+                perm_name = key[5:]  # "perm_" önekini kaldır
+                permissions[perm_name] = True
+        
+        if not name:
+            flash("Rol adı zorunludur.", "danger")
+            return redirect(url_for('team.role_new'))
+        
+        role = UserRole(
+            name=name,
+            description=description,
+            permissions=permissions
+        )
+        
+        db.session.add(role)
+        db.session.commit()
+        
+        flash("Rol başarıyla oluşturuldu.", "success")
+        return redirect(url_for('team.roles_list'))
+    
+    return render_template('team/role_form.html', title="Yeni Rol")
+
+# Rol düzenleme
+@team_bp.route('/roles/<int:role_id>/edit', methods=['GET', 'POST'])
+@login_required
+def role_edit(role_id):
+    user_id = session["user_id"]
+    user = User.query.get(user_id)
+    
+    # Sadece yöneticiler rol düzenleyebilir
+    if not user.is_manager:
+        flash("Rol düzenleme yetkiniz bulunmamaktadır.", "danger")
+        return redirect(url_for('index'))
+    
+    role = UserRole.query.get_or_404(role_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        permissions = {}
+        
+        # Formdan gelen izinleri al
+        for key in request.form:
+            if key.startswith('perm_'):
+                perm_name = key[5:]  # "perm_" önekini kaldır
+                permissions[perm_name] = True
+        
+        if not name:
+            flash("Rol adı zorunludur.", "danger")
+            return redirect(url_for('team.role_edit', role_id=role_id))
+        
+        role.name = name
+        role.description = description
+        role.permissions = permissions
+        
+        db.session.commit()
+        
+        flash("Rol başarıyla güncellendi.", "success")
+        return redirect(url_for('team.roles_list'))
+    
+    return render_template('team/role_form.html', role=role, title="Rol Düzenle")

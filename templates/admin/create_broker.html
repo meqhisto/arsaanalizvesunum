@@ -1,0 +1,169 @@
+{% extends "base_admin.html" %} {% block title %}Yeni Broker Oluştur - Admin
+Paneli{% endblock %} {% block content %}
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">
+            <i class="bi bi-person-plus-fill me-2"></i>Yeni Broker Oluştur
+          </h3>
+        </div>
+        <div class="card-body p-4">
+          <form
+            method="POST"
+            action="{{ url_for('admin.create_broker') }}"
+            class="needs-validation"
+            novalidate
+          >
+            <h5 class="mb-3">Kişisel Bilgiler</h5>
+            <div class="row g-3">
+              <div class="col-md-6 mb-3">
+                <label for="ad" class="form-label"
+                  >Ad <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="ad"
+                  name="ad"
+                  required
+                  value="{{ request.form.ad if request.form.ad }}"
+                />
+                <div class="invalid-feedback">Lütfen broker adını giriniz.</div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="soyad" class="form-label"
+                  >Soyad <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="soyad"
+                  name="soyad"
+                  required
+                  value="{{ request.form.soyad if request.form.soyad }}"
+                />
+                <div class="invalid-feedback">
+                  Lütfen broker soyadını giriniz.
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label"
+                >E-posta <span class="text-danger">*</span></label
+              >
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                required
+                value="{{ request.form.email if request.form.email }}"
+              />
+              <div class="invalid-feedback">
+                Lütfen geçerli bir e-posta adresi giriniz.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label"
+                >Şifre <span class="text-danger">*</span></label
+              >
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                required
+                minlength="6"
+              />
+              <div class="invalid-feedback">
+                Şifre en az 6 karakter olmalıdır.
+              </div>
+            </div>
+
+            <h5 class="mt-4 mb-3">Firma ve Pozisyon Bilgileri</h5>
+            <div class="mb-3">
+              <label for="firma" class="form-label"
+                >Kullanıcının Çalıştığı Firma (Opsiyonel)</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="firma"
+                name="firma"
+                value="{{ request.form.firma if request.form.firma }}"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="unvan" class="form-label">Ünvan (Opsiyonel)</label>
+              <input
+                type="text"
+                class="form-control"
+                id="unvan"
+                name="unvan"
+                value="{{ request.form.unvan if request.form.unvan }}"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="office_id" class="form-label"
+                >Atanacak Ofis <span class="text-danger">*</span></label
+              >
+              <select
+                class="form-select"
+                id="office_id"
+                name="office_id"
+                required
+              >
+                <option value="" disabled selected>
+                  Lütfen Bir Ofis Seçin...
+                </option>
+                {% for office_item in offices %} {# Döngü değişkeni adını
+                'office' yerine 'office_item' yaptım #}
+                <option value="{{ office_item.id }}">
+                  {{ office_item.name }}
+                </option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">
+                Lütfen broker için bir ofis seçiniz.
+              </div>
+            </div>
+            <hr class="my-4" />
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="btn btn-outline-secondary btn-lg"
+                >İptal</a
+              >
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-person-check-fill me-2"></i>Broker Oluştur
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // Bootstrap 5 form validation
+  (function () {
+    "use strict";
+    var forms = document.querySelectorAll(".needs-validation");
+    Array.prototype.slice.call(forms).forEach(function (form) {
+      form.addEventListener(
+        "submit",
+        function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add("was-validated");
+        },
+        false
+      );
+    });
+  })();
+</script>
+{% endblock %}

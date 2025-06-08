@@ -1,0 +1,93 @@
+{% extends "base_admin.html" %} {% block title %}Yeni Ofis Oluştur - Admin
+Paneli{% endblock %} {% block content %}
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card shadow-lg">
+        <div class="card-header bg-success text-white">
+          <h3 class="mb-0">
+            <i class="bi bi-building-add me-2"></i>Yeni Ofis Oluştur
+          </h3>
+        </div>
+        <div class="card-body p-4">
+          <form
+            method="POST"
+            action="{{ url_for('admin.create_office') }}"
+            class="needs-validation"
+            novalidate
+          >
+            <div class="mb-3">
+              <label for="name" class="form-label"
+                >Ofis Adı <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control form-control-lg"
+                id="name"
+                name="name"
+                required
+                value="{{ form_data.name if form_data else '' }}"
+              />
+              <div class="invalid-feedback">Lütfen ofis adını giriniz.</div>
+            </div>
+            <div class="mb-3">
+              <label for="address" class="form-label">Adres (Opsiyonel)</label>
+              <textarea
+                class="form-control"
+                id="address"
+                name="address"
+                rows="3"
+              >
+{{ form_data.address if form_data else '' }}</textarea
+              >
+            </div>
+            <div class="mb-3">
+              <label for="phone" class="form-label">Telefon (Opsiyonel)</label>
+              <input
+                type="tel"
+                class="form-control"
+                id="phone"
+                name="phone"
+                value="{{ form_data.phone if form_data else '' }}"
+                placeholder="Örn: 05xxxxxxxxx"
+              />
+            </div>
+            <hr class="my-4" />
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="btn btn-outline-secondary btn-lg"
+                >İptal</a
+              >
+              <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-check-circle-fill me-2"></i>Ofis Oluştur
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Bootstrap 5 form validation
+  (function () {
+    "use strict";
+    var forms = document.querySelectorAll(".needs-validation");
+    Array.prototype.slice.call(forms).forEach(function (form) {
+      form.addEventListener(
+        "submit",
+        function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add("was-validated");
+        },
+        false
+      );
+    });
+  })();
+</script>
+{% endblock %}

@@ -30,8 +30,10 @@ ENV/
 *.swp
 *.swo
 
-# Logs
+# Log dosyaları
 *.log
+*.log.*
+app.log*
 logs/
 
 # Database
