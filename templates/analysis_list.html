@@ -1,0 +1,335 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}{{ title }} - Arsa Analiz Platformu{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_description %}Tüm analizlerinizi görüntüleyin ve yönetin{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="/analysis/new" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Yeni Analiz
+    </a>
+    <div class="dropdown">
+        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-download me-1"></i>Dışa Aktar
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i class="fas fa-chart-line fa-2x text-primary"></i>
+                </div>
+                <h4 class="mb-1">{{ analyses|length }}</h4>
+                <p class="text-muted small mb-0">Toplam Analiz</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="bg-success bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i class="fas fa-calculator fa-2x text-success"></i>
+                </div>
+                <h4 class="mb-1">₺{{ "{:,.0f}".format(analyses|sum(attribute='fiyat') or 0) }}</h4>
+                <p class="text-muted small mb-0">Toplam Değer</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="bg-warning bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i class="fas fa-ruler-combined fa-2x text-warning"></i>
+                </div>
+                <h4 class="mb-1">{{ "{:,.0f}".format(analyses|sum(attribute='metrekare') or 0) }}</h4>
+                <p class="text-muted small mb-0">Toplam Alan (m²)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="bg-info bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i class="fas fa-map-marker-alt fa-2x text-info"></i>
+                </div>
+                <h4 class="mb-1">{{ analyses|map(attribute='il')|unique|list|length }}</h4>
+                <p class="text-muted small mb-0">Farklı İl</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">
+                    <i class="fas fa-search me-1"></i>Arama
+                </label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="İl, İlçe, Mahalle..." 
+                       value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    <i class="fas fa-map-marker-alt me-1"></i>İl
+                </label>
+                <select name="il" class="form-select">
+                    <option value="">Tüm İller</option>
+                    {% for il in analyses|map(attribute='il')|unique %}
+                    <option value="{{ il }}" {{ 'selected' if request.args.get('il') == il }}>{{ il }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    <i class="fas fa-calendar me-1"></i>Tarih
+                </label>
+                <select name="date_filter" class="form-select">
+                    <option value="">Tüm Zamanlar</option>
+                    <option value="today" {{ 'selected' if request.args.get('date_filter') == 'today' }}>Bugün</option>
+                    <option value="week" {{ 'selected' if request.args.get('date_filter') == 'week' }}>Bu Hafta</option>
+                    <option value="month" {{ 'selected' if request.args.get('date_filter') == 'month' }}>Bu Ay</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>Ara
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Analysis List -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent border-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>Analizler
+            </h5>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted small">
+                    {{ analyses|length }} analiz gösteriliyor
+                </span>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="view" id="gridView" checked>
+                    <label class="btn btn-outline-secondary btn-sm" for="gridView">
+                        <i class="fas fa-th"></i>
+                    </label>
+                    <input type="radio" class="btn-check" name="view" id="listView">
+                    <label class="btn btn-outline-secondary btn-sm" for="listView">
+                        <i class="fas fa-list"></i>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if analyses %}
+            <!-- Grid View -->
+            <div id="analysisGrid" class="row">
+                {% for analysis in analyses %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card border h-100 analysis-card">
+                        <div class="card-header bg-light border-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ analysis.il }} {{ analysis.ilce }}</h6>
+                                    <small class="text-muted">{{ analysis.mahalle or 'Mahalle belirtilmemiş' }}</small>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}">
+                                            <i class="fas fa-eye me-2"></i>Görüntüle
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}/edit">
+                                            <i class="fas fa-edit me-2"></i>Düzenle
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteAnalysis({{ analysis.id }})">
+                                            <i class="fas fa-trash me-2"></i>Sil
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h6 class="text-primary mb-0">{{ analysis.metrekare or 0 }}</h6>
+                                        <small class="text-muted">m²</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-success mb-0">₺{{ "{:,.0f}".format(analysis.fiyat or 0) }}</h6>
+                                    <small class="text-muted">Değer</small>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-calendar text-muted me-2"></i>
+                                <span class="text-muted small">{{ analysis.created_at.strftime('%d.%m.%Y') }}</span>
+                            </div>
+                            
+                            {% if analysis.imar_durumu %}
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-building text-muted me-2"></i>
+                                <span class="badge bg-light text-dark">{{ analysis.imar_durumu }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-success">Tamamlandı</span>
+                                <a href="/analysis/{{ analysis.id }}" class="btn btn-sm btn-primary">
+                                    Detaylar <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- List View (Hidden by default) -->
+            <div id="analysisList" class="d-none">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Lokasyon</th>
+                                <th>Alan</th>
+                                <th>Değer</th>
+                                <th>İmar Durumu</th>
+                                <th>Tarih</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for analysis in analyses %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <h6 class="mb-1">{{ analysis.il }}, {{ analysis.ilce }}</h6>
+                                        <small class="text-muted">{{ analysis.mahalle or 'Mahalle belirtilmemiş' }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ analysis.metrekare or 0 }} m²</td>
+                                <td>₺{{ "{:,.0f}".format(analysis.fiyat or 0) }}</td>
+                                <td>
+                                    {% if analysis.imar_durumu %}
+                                        <span class="badge bg-light text-dark">{{ analysis.imar_durumu }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ analysis.created_at.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="/analysis/{{ analysis.id }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/analysis/{{ analysis.id }}/edit" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">Henüz analiz bulunmuyor</h5>
+                <p class="text-muted">İlk analizinizi oluşturmak için başlayın</p>
+                <a href="/analysis/new" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>İlk Analizi Oluştur
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.analysis-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.analysis-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.analysis-card .card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View toggle functionality
+    const gridView = document.getElementById('gridView');
+    const listView = document.getElementById('listView');
+    const analysisGrid = document.getElementById('analysisGrid');
+    const analysisList = document.getElementById('analysisList');
+    
+    gridView.addEventListener('change', function() {
+        if (this.checked) {
+            analysisGrid.classList.remove('d-none');
+            analysisList.classList.add('d-none');
+        }
+    });
+    
+    listView.addEventListener('change', function() {
+        if (this.checked) {
+            analysisGrid.classList.add('d-none');
+            analysisList.classList.remove('d-none');
+        }
+    });
+    
+    // Auto-submit form on filter change
+    const filterSelects = document.querySelectorAll('select[name="il"], select[name="date_filter"]');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.closest('form').submit();
+        });
+    });
+});
+
+// Delete analysis function
+function deleteAnalysis(analysisId) {
+    if (confirm('Bu analizi silmek istediğinizden emin misiniz?')) {
+        // Here you would typically make an AJAX request to delete the analysis
+        alert('Analiz silme özelliği yakında eklenecek!');
+    }
+}
+</script>
+{% endblock %}

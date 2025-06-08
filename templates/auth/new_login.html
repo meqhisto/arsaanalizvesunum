@@ -1,0 +1,187 @@
+{% extends "auth_base.html" %}
+
+{% block title %}Giriş Yap - Arsa Analiz Platformu{% endblock %}
+
+{% block auth_title %}Giriş Yap{% endblock %}
+{% block auth_subtitle %}Hesabınıza giriş yapın{% endblock %}
+
+{% block auth_content %}
+<form method="POST" class="needs-validation" novalidate>
+    <!-- Email Field -->
+    <div class="mb-3">
+        <label for="email" class="form-label">
+            <i class="fas fa-envelope me-1"></i>E-posta Adresi
+        </label>
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="fas fa-at"></i>
+            </span>
+            <input type="email" name="email" id="email" class="form-control" placeholder="ornek@email.com" required>
+        </div>
+    </div>
+
+    <!-- Password Field -->
+    <div class="mb-3">
+        <label for="password" class="form-label">
+            <i class="fas fa-lock me-1"></i>Şifre
+        </label>
+        <div class="input-group">
+            <span class="input-group-text">
+                <i class="fas fa-key"></i>
+            </span>
+            <input type="password" name="password" id="password" class="form-control" placeholder="Şifrenizi girin" required>
+            <button type="button" class="btn btn-outline-secondary" data-toggle="password" data-target="#password">
+                <i class="fas fa-eye"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Remember Me & Forgot Password -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-check">
+            <input type="checkbox" name="remember" id="remember_me" class="form-check-input">
+            <label class="form-check-label" for="remember_me">
+                Beni hatırla
+            </label>
+        </div>
+        <a href="#" class="btn btn-link p-0">
+            Şifremi unuttum
+        </a>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-sign-in-alt me-1"></i>Giriş Yap
+        </button>
+    </div>
+    
+    <!-- Divider -->
+    <div class="auth-divider">
+        <span>veya</span>
+    </div>
+    
+    <!-- Social Login Buttons -->
+    <div class="d-grid gap-2 mb-4">
+        <button type="button" class="btn btn-social btn-google">
+            <i class="fab fa-google me-2"></i>Google ile Giriş Yap
+        </button>
+        <button type="button" class="btn btn-social btn-facebook">
+            <i class="fab fa-facebook me-2"></i>Facebook ile Giriş Yap
+        </button>
+    </div>
+    
+    <!-- Register Link -->
+    <div class="text-center">
+        <p class="text-muted small mb-0">
+            Hesabınız yok mu? 
+            <a href="#" class="btn btn-link p-0">
+                Kayıt olun
+            </a>
+        </p>
+    </div>
+</form>
+{% endblock %}
+
+{% block auth_footer %}
+<div class="text-center">
+    <p class="text-muted small mb-2">
+        Giriş yaparak <a href="#" class="text-decoration-none">Kullanım Şartları</a> ve 
+        <a href="#" class="text-decoration-none">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.
+    </p>
+    <p class="text-muted small mb-0">
+        &copy; 2025 Inveco Proje. Tüm hakları saklıdır.
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Demo credentials button (for testing)
+    const emailField = document.getElementById('email');
+    const passwordField = document.getElementById('password');
+    
+    // Add demo button for testing
+    const demoButton = document.createElement('button');
+    demoButton.type = 'button';
+    demoButton.className = 'btn btn-outline-secondary btn-sm mt-2';
+    demoButton.innerHTML = '<i class="fas fa-flask me-1"></i>Demo Hesap';
+    demoButton.onclick = function() {
+        emailField.value = 'demo@arsaanaliz.com';
+        passwordField.value = 'demo123';
+    };
+    
+    // Insert demo button after the form
+    const form = document.querySelector('form');
+    form.appendChild(demoButton);
+    
+    // Social login handlers (placeholder)
+    document.querySelector('.btn-google').addEventListener('click', function() {
+        alert('Google ile giriş özelliği yakında eklenecek!');
+    });
+    
+    document.querySelector('.btn-facebook').addEventListener('click', function() {
+        alert('Facebook ile giriş özelliği yakında eklenecek!');
+    });
+    
+    // Auto-focus on email field
+    emailField.focus();
+    
+    // Enhanced form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        const email = emailField.value.trim();
+        const password = passwordField.value.trim();
+        
+        // Custom validation
+        let isValid = true;
+        
+        // Email validation
+        if (!email || !email.includes('@')) {
+            emailField.setCustomValidity('Geçerli bir e-posta adresi girin');
+            isValid = false;
+        } else {
+            emailField.setCustomValidity('');
+        }
+        
+        // Password validation
+        if (!password || password.length < 6) {
+            passwordField.setCustomValidity('Şifre en az 6 karakter olmalıdır');
+            isValid = false;
+        } else {
+            passwordField.setCustomValidity('');
+        }
+        
+        if (!isValid || !form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        form.classList.add('was-validated');
+    });
+    
+    // Real-time validation feedback
+    emailField.addEventListener('input', function() {
+        if (this.value.includes('@')) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    });
+    
+    passwordField.addEventListener('input', function() {
+        if (this.value.length >= 6) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    });
+});
+</script>
+{% endblock %}

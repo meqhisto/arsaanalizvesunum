@@ -1,0 +1,345 @@
+{% extends "new_base.html" %}
+
+{% block navbar_items %}
+<!-- Minimal navbar for auth pages -->
+<ul class="navbar-nav me-auto">
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('main.index') }}">
+            <i class="fas fa-home me-1"></i>Ana Sayfa
+        </a>
+    </li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="auth-layout">
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Auth header -->
+            <div class="auth-header text-center mb-4">
+                <div class="auth-logo mb-3">
+                    <i class="fas fa-map-marked-alt fa-3x text-primary"></i>
+                </div>
+                <h2 class="auth-title">{% block auth_title %}Arsa Analiz Platformu{% endblock %}</h2>
+                <p class="auth-subtitle text-muted">{% block auth_subtitle %}Gayrimenkul analizi ve değerlendirme sistemi{% endblock %}</p>
+            </div>
+            
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages mb-4">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Auth content -->
+            <div class="auth-content">
+                {% block auth_content %}
+                <!-- Auth form content goes here -->
+                {% endblock %}
+            </div>
+            
+            <!-- Auth footer -->
+            <div class="auth-footer text-center mt-4">
+                {% block auth_footer %}
+                <p class="text-muted small">
+                    &copy; 2025 Inveco Proje. Tüm hakları saklıdır.
+                </p>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<!-- No footer for auth pages -->
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Auth Layout */
+.auth-layout {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    padding-top: calc(56px + 2rem); /* Account for fixed navbar */
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 2.5rem;
+    backdrop-filter: blur(10px);
+}
+
+.auth-header .auth-logo {
+    margin-bottom: 1rem;
+}
+
+.auth-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+/* Form Styles */
+.auth-content .form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.auth-content .form-control {
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.auth-content .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.auth-content .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.auth-content .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.auth-content .btn-link {
+    color: #6366f1;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.auth-content .btn-link:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+/* Input Groups */
+.auth-content .input-group .input-group-text {
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-right: none;
+    color: #6b7280;
+}
+
+.auth-content .input-group .form-control {
+    border-left: none;
+}
+
+.auth-content .input-group .form-control:focus {
+    border-left: none;
+}
+
+/* Checkbox Styles */
+.auth-content .form-check-input {
+    border: 2px solid #e5e7eb;
+    border-radius: 0.25rem;
+}
+
+.auth-content .form-check-input:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.auth-content .form-check-label {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+/* Divider */
+.auth-divider {
+    position: relative;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e5e7eb;
+}
+
+.auth-divider span {
+    background: white;
+    padding: 0 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* Social Buttons */
+.btn-social {
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.btn-social:hover {
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+}
+
+.btn-google {
+    color: #dc2626;
+}
+
+.btn-facebook {
+    color: #1877f2;
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+    .auth-layout {
+        padding: 1rem;
+        padding-top: calc(56px + 1rem);
+    }
+    
+    .auth-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .auth-title {
+        font-size: 1.25rem;
+    }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .auth-card {
+    background: #1f2937;
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .auth-title {
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .auth-content .form-label {
+    color: #e5e7eb;
+}
+
+[data-theme="dark"] .auth-content .form-control {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .auth-content .form-control:focus {
+    border-color: #60a5fa;
+    background: #374151;
+}
+
+[data-theme="dark"] .auth-divider::before {
+    background: #4b5563;
+}
+
+[data-theme="dark"] .auth-divider span {
+    background: #1f2937;
+    color: #9ca3af;
+}
+
+[data-theme="dark"] .btn-social {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+[data-theme="dark"] .btn-social:hover {
+    border-color: #6b7280;
+    background: #4b5563;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    });
+    
+    // Password visibility toggle
+    const passwordToggles = document.querySelectorAll('[data-toggle="password"]');
+    
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const target = document.querySelector(this.getAttribute('data-target'));
+            const icon = this.querySelector('i');
+            
+            if (target.type === 'password') {
+                target.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                target.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+    
+    // Auto-dismiss alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

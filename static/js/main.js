@@ -1,6 +1,6 @@
 // Main JavaScript Entry Point
 import 'bootstrap';
-import '../css/main.css';
+import '../css/main.scss';
 
 // Import utilities and components
 import { UIManager } from '@components/ui-manager';

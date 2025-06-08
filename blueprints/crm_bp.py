@@ -51,16 +51,86 @@ TASK_PRIORITIES = ["Düşük", "Normal", "Yüksek", "Acil"]
 
 # --- KİŞİ (CONTACT) ROTALARI ---
 @crm_bp.route('/contacts')
-@login_required
+# @login_required # Geçici olarak kaldırıldı
 def crm_contacts_list():
-    user_id = current_user.id
+    user_id = 1 # Geçici olarak test için
     contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
-    return render_template('contacts_list.html', contacts=contacts, title="Kişiler")
+    return render_template('crm/new_contacts_list.html', contacts=contacts, title="Kişiler")
+
+@crm_bp.route('/contact/add', methods=['GET', 'POST'])
+@login_required
+def crm_contact_add():
+    """Yeni kişi ekleme sayfası - crm_contact_add endpoint'i"""
+    user_id = current_user.id
+    companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+
+    if request.method == 'POST':
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        company_id_str = request.form.get('company_id')
+        role = request.form.get('role', '').strip()
+        status = request.form.get('status', 'Lead')
+        source = request.form.get('source', '').strip()
+        notes = request.form.get('notes', '').strip()
+        # CRM V2 alanları
+        segment = request.form.get('segment', 'Potansiyel')
+        value_score_str = request.form.get('value_score', '0')
+        tags_json = request.form.get('tags', '[]') # Formdan JSON string olarak gelecek
+
+        if not first_name or not last_name:
+            flash('Ad ve Soyad alanları zorunludur.', 'danger')
+            return render_template('contact_form.html', title="Yeni Kişi Ekle", contact=request.form, companies=companies)
+
+        if email:
+            existing_contact = Contact.query.filter_by(user_id=user_id, email=email).first()
+            if existing_contact:
+                flash(f"'{email}' e-posta adresi ile kayıtlı başka bir kişi zaten mevcut.", 'warning')
+                return render_template('contact_form.html', title="Yeni Kişi Ekle", contact=request.form, companies=companies)
+
+        try:
+            tags_list = json.loads(tags_json) if tags_json else []
+            if not isinstance(tags_list, list): tags_list = []
+        except json.JSONDecodeError:
+            tags_list = []
+            flash("Etiket verisi geçersiz formatta, etiketler kaydedilemedi.", "warning")
+
+
+        try:
+            new_contact = Contact(
+                user_id=user_id,
+                first_name=first_name,
+                last_name=last_name,
+                email=email if email else None,
+                phone=phone if phone else None,
+                company_id=int(company_id_str) if company_id_str else None,
+                role=role if role else None,
+                status=status,
+                source=source if source else None,
+                notes=notes if notes else None,
+                segment=segment,
+                value_score=int(value_score_str) if value_score_str.isdigit() else 0,
+                tags=tags_list
+            )
+            db.session.add(new_contact)
+            db.session.commit()
+            flash(f"'{new_contact.first_name} {new_contact.last_name}' adlı kişi başarıyla eklendi.", 'success')
+            return redirect(url_for('crm.crm_contacts_list'))
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"CRM Contact Add Error: {e}", exc_info=True)
+            flash(f'Kişi eklenirken bir hata oluştu: {str(e)}', 'danger')
+            # Hata durumunda form verilerini şablona geri gönder
+            return render_template('contact_form.html', title="Yeni Kişi Ekle", contact=request.form, companies=companies)
+
+    return render_template('contact_form.html', title="Yeni Kişi Ekle", companies=companies, contact={})
+
 
 @crm_bp.route('/contact/new', methods=['GET', 'POST'])
-@login_required
+# @login_required # Geçici olarak kaldırıldı
 def crm_contact_new():
-    user_id = current_user.id
+    user_id = 1 # Geçici olarak test için
     companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
 
     if request.method == 'POST':

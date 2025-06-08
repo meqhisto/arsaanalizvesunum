@@ -1,0 +1,283 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Ana Sayfa - Arsa Analiz Platformu{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_description %}Hoş geldiniz!{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="/analysis/new" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Yeni Analiz
+    </a>
+    <a href="/crm/contact/new" class="btn btn-outline-primary">
+        <i class="fas fa-user-plus me-1"></i>Yeni Kişi
+    </a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-chart-line fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Toplam Analiz</h6>
+                        <h3 class="mb-0">{{ stats.total_analyses or 0 }}</h3>
+                        <small class="text-success">
+                            <i class="fas fa-arrow-up me-1"></i>Bu ay +{{ stats.monthly_analyses or 0 }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-users fa-2x text-success"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">CRM Kişiler</h6>
+                        <h3 class="mb-0">{{ stats.total_contacts or 0 }}</h3>
+                        <small class="text-success">
+                            <i class="fas fa-arrow-up me-1"></i>Bu ay +{{ stats.monthly_contacts or 0 }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-briefcase fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Portföyler</h6>
+                        <h3 class="mb-0">{{ stats.total_portfolios or 0 }}</h3>
+                        <small class="text-info">
+                            <i class="fas fa-info-circle me-1"></i>Aktif
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                            <i class="fas fa-chart-pie fa-2x text-info"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Toplam Değer</h6>
+                        <h3 class="mb-0">₺{{ "{:,.0f}".format(stats.total_value or 0) }}</h3>
+                        <small class="text-muted">
+                            <i class="fas fa-calculator me-1"></i>Tahmini
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 pb-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Son Analizler</h5>
+                    <a href="/analysis/list" class="btn btn-sm btn-outline-primary">
+                        Tümünü Gör <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_analyses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Başlık</th>
+                                    <th>Konum</th>
+                                    <th>Tarih</th>
+                                    <th>Durum</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for analysis in recent_analyses %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">{{ analysis.il }} {{ analysis.ilce }}</div>
+                                        <small class="text-muted">{{ analysis.mahalle or 'Mahalle belirtilmemiş' }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            {{ analysis.il }}, {{ analysis.ilce }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ analysis.created_at.strftime('%d.%m.%Y') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">Tamamlandı</span>
+                                    </td>
+                                    <td>
+                                        <a href="/analysis/{{ analysis.id }}"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">Henüz analiz bulunmuyor</h6>
+                        <p class="text-muted small">İlk analizinizi oluşturmak için başlayın</p>
+                        <a href="/analysis/new" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Yeni Analiz Oluştur
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent border-0 pb-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Hızlı İşlemler</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="/analysis/new" class="btn btn-outline-primary text-start">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-plus-circle fa-2x me-3 text-primary"></i>
+                            <div>
+                                <div class="fw-semibold">Yeni Analiz</div>
+                                <small class="text-muted">Arsa analizi oluştur</small>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="/crm/contact/new" class="btn btn-outline-success text-start">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-plus fa-2x me-3 text-success"></i>
+                            <div>
+                                <div class="fw-semibold">Yeni Kişi</div>
+                                <small class="text-muted">CRM'e kişi ekle</small>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="/portfolio/portfolios" class="btn btn-outline-warning text-start">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-briefcase fa-2x me-3 text-warning"></i>
+                            <div>
+                                <div class="fw-semibold">Portföy Görüntüle</div>
+                                <small class="text-muted">Mevcut portföyleri incele</small>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="/profile" class="btn btn-outline-info text-start">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-cog fa-2x me-3 text-info"></i>
+                            <div>
+                                <div class="fw-semibold">Ayarlar</div>
+                                <small class="text-muted">Profil ve tercihler</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent CRM Activities -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 pb-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Son CRM Aktiviteleri</h5>
+                    <a href="/crm/contacts" class="btn btn-sm btn-outline-primary">
+                        CRM'e Git <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_contacts %}
+                    <div class="row">
+                        {% for contact in recent_contacts %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="bg-primary bg-opacity-10 rounded-circle p-2">
+                                                <i class="fas fa-user text-primary"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-1">{{ contact.first_name }} {{ contact.last_name }}</h6>
+                                            <p class="text-muted small mb-1">{{ contact.email }}</p>
+                                            <span class="badge bg-{{ 'success' if contact.status == 'Müşteri' else 'warning' }}">
+                                                {{ contact.status }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">Henüz kişi bulunmuyor</h6>
+                        <p class="text-muted small">CRM sisteminize ilk kişiyi ekleyin</p>
+                        <a href="/crm/contact/new" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-1"></i>İlk Kişiyi Ekle
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

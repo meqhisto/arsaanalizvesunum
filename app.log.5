@@ -1,761 +1,804 @@
-2025-06-08 02:46:13,113 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 02:46:43,953 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 14:50:37,749 - ERROR - api_bp - Health check failed: Textual SQL expression 'SELECT 1' should be explicitly declared as text('SELECT 1')
+2025-06-08 14:53:20,226 - ERROR - api_bp - Health check failed: Textual SQL expression 'SELECT 1' should be explicitly declared as text('SELECT 1')
+2025-06-08 14:53:49,227 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 14:53:55,960 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 14:54:07,012 - ERROR - api_bp - Health check failed: Textual SQL expression 'SELECT 1' should be explicitly declared as text('SELECT 1')
+2025-06-08 14:55:14,233 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 14:55:20,963 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 14:56:01,807 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 14:56:01,810 - ERROR - decorators - Database error in register: UserRegistrationSchema.validate_email_unique() got an unexpected keyword argument 'data_key'
+2025-06-08 14:56:03,852 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 14:56:04,381 - INFO - auth - User logged in: apitest@example.com
+2025-06-08 14:56:06,507 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 9 - IP: 127.0.0.1
+2025-06-08 14:56:08,733 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 14:56:10,877 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 14:56:13,010 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 14:56:15,142 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 14:56:17,276 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 14:56:19,898 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 14:56:22,036 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 14:56:24,196 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 14:56:26,475 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 9 - IP: 127.0.0.1
+2025-06-08 14:56:26,491 - INFO - auth - User logged out: 9
+2025-06-08 14:57:16,828 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 14:57:16,830 - ERROR - decorators - Database error in register: UserRegistrationSchema.validate_email_unique() got an unexpected keyword argument 'data_key'
+2025-06-08 14:58:05,382 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 14:58:25,408 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 14:58:32,274 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 14:58:44,587 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 14:58:45,073 - INFO - auth - New user registered: test123@example.com
+2025-06-08 14:59:09,769 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 14:59:22,616 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 14:59:35,050 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:00:26,202 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:00:28,359 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:00:28,766 - INFO - auth - User logged in: apitest@example.com
+2025-06-08 15:00:30,897 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 9 - IP: 127.0.0.1
+2025-06-08 15:00:33,048 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:00:35,178 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:00:37,310 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:00:39,438 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:00:41,569 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:00:43,728 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:00:45,873 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:00:48,003 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 15:00:50,197 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 9 - IP: 127.0.0.1
+2025-06-08 15:00:50,200 - INFO - auth - User logged out: 9
+2025-06-08 15:01:47,837 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:01:52,602 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:01:53,077 - INFO - auth - New user registered: apitest1@example.com
+2025-06-08 15:01:55,145 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:01:55,581 - INFO - auth - User logged in: apitest1@example.com
+2025-06-08 15:01:57,719 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 11 - IP: 127.0.0.1
+2025-06-08 15:01:59,873 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:02:02,013 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:02:04,152 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:02:06,542 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:02:08,712 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:02:10,875 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:02:13,022 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:02:15,171 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 15:02:17,411 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 11 - IP: 127.0.0.1
+2025-06-08 15:02:17,413 - INFO - auth - User logged out: 11
+2025-06-08 15:06:17,571 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:06:24,610 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:06:45,819 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:07:04,217 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:07:04,688 - INFO - auth - New user registered: testanalysis@example.com
+2025-06-08 15:07:06,839 - INFO - decorators - API Call: POST /api/v1/analysis - User: 12 - IP: 127.0.0.1
+2025-06-08 15:07:07,225 - ERROR - analysis - Dashboard stats update failed: 'ArsaAnaliz' object has no attribute 'yaklasik_deger'
+2025-06-08 15:07:07,397 - INFO - analysis - Analysis created: İstanbul/Kadıköy by user 12
+2025-06-08 15:07:25,000 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:07:25,431 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:07:27,567 - INFO - decorators - API Call: GET /api/v1/analysis - User: 12 - IP: 127.0.0.1
+2025-06-08 15:07:27,784 - ERROR - api_bp - Unexpected error: 'ArsaAnaliz' object has no attribute 'tahmini_deger_m2'
+2025-06-08 15:07:27,863 - ERROR - api_bp - Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 502, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\scaffold.py", line 317, in send_static_file
-    return send_from_directory(
-        t.cast(str, self.static_folder), filename, max_age=max_age
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\helpers.py", line 557, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore[return-value]
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        directory, path, **_prepare_send_file_kwargs(**kwargs)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\utils.py", line 575, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 02:55:04,493 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 02:55:19,292 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 02:55:24,734 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'analysis.analiz_form'. Did you mean 'analysis.analizler' instead?
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 241, in index
-    return render_template(
-        "index.html",
-    ...<21 lines>...
-        son_etkilesimler=son_etkilesimler
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
-    self.environment.handle_exception()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 1, in top-level template code
-    {% extends "base.html" %}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 58, in top-level template code
-    {% block navigation %}
-    ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 86, in block 'navigation'
-    <li><a class="dropdown-item" href="{{ url_for('analysis.analiz_form') }}">Yeni Analiz</a></li>
-    
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1697, in url_for
-    return self.handle_url_build_error(error, endpoint, values)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1686, in url_for
-    rv = url_adapter.build(  # type: ignore[union-attr]
-        endpoint,
-    ...<3 lines>...
-        force_external=_external,
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 924, in build
-    raise BuildError(endpoint, values, method, self)
-werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'analysis.analiz_form'. Did you mean 'analysis.analizler' instead?
-
-2025-06-08 02:56:48,465 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 241, in index
-    return render_template(
-        "index.html",
-    ...<21 lines>...
-        son_etkilesimler=son_etkilesimler
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
-    self.environment.handle_exception()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 1, in top-level template code
-    {% extends "base.html" %}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 58, in top-level template code
-    {% block navigation %}
-    ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 95, in block 'navigation'
-    <a class="nav-link" href="{{ url_for('portfolio.portfolios') }}">
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1697, in url_for
-    return self.handle_url_build_error(error, endpoint, values)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1686, in url_for
-    rv = url_adapter.build(  # type: ignore[union-attr]
-        endpoint,
-    ...<3 lines>...
-        force_external=_external,
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 924, in build
-    raise BuildError(endpoint, values, method, self)
-werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
-
-2025-06-08 02:56:49,314 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 241, in index
-    return render_template(
-        "index.html",
-    ...<21 lines>...
-        son_etkilesimler=son_etkilesimler
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
-    self.environment.handle_exception()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 1, in top-level template code
-    {% extends "base.html" %}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 58, in top-level template code
-    {% block navigation %}
-    ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 95, in block 'navigation'
-    <a class="nav-link" href="{{ url_for('portfolio.portfolios') }}">
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1697, in url_for
-    return self.handle_url_build_error(error, endpoint, values)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1686, in url_for
-    rv = url_adapter.build(  # type: ignore[union-attr]
-        endpoint,
-    ...<3 lines>...
-        force_external=_external,
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 924, in build
-    raise BuildError(endpoint, values, method, self)
-werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
-
-2025-06-08 02:56:55,288 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 241, in index
-    return render_template(
-        "index.html",
-    ...<21 lines>...
-        son_etkilesimler=son_etkilesimler
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
-    self.environment.handle_exception()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 1, in top-level template code
-    {% extends "base.html" %}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 58, in top-level template code
-    {% block navigation %}
-    ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 95, in block 'navigation'
-    <a class="nav-link" href="{{ url_for('portfolio.portfolios') }}">
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1697, in url_for
-    return self.handle_url_build_error(error, endpoint, values)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1686, in url_for
-    rv = url_adapter.build(  # type: ignore[union-attr]
-        endpoint,
-    ...<3 lines>...
-        force_external=_external,
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 924, in build
-    raise BuildError(endpoint, values, method, self)
-werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
-
-2025-06-08 02:57:41,334 - ERROR - app - Sunucu hatası oluştu: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 241, in index
-    return render_template(
-        "index.html",
-    ...<21 lines>...
-        son_etkilesimler=son_etkilesimler
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
-    self.environment.handle_exception()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 1, in top-level template code
-    {% extends "base.html" %}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 58, in top-level template code
-    {% block navigation %}
-    ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 95, in block 'navigation'
-    <a class="nav-link" href="{{ url_for('portfolio.portfolios') }}">
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1697, in url_for
-    return self.handle_url_build_error(error, endpoint, values)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1686, in url_for
-    rv = url_adapter.build(  # type: ignore[union-attr]
-        endpoint,
-    ...<3 lines>...
-        force_external=_external,
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 924, in build
-    raise BuildError(endpoint, values, method, self)
-werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'portfolio.portfolios'. Did you mean 'portfolio.portfolios_list' instead?
-
-2025-06-08 02:57:56,875 - ERROR - app - Sunucu hatası oluştu: 'moment' is undefined
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 241, in index
-    return render_template(
-        "index.html",
-    ...<21 lines>...
-        son_etkilesimler=son_etkilesimler
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
-    self.environment.handle_exception()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 1, in top-level template code
-    {% extends "base.html" %}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 229, in top-level template code
-    {% block footer %}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 239, in block 'footer'
-    © {{ moment().year }} Inveco Proje. Tüm hakları saklıdır.
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\utils.py", line 92, in from_obj
-    if hasattr(obj, "jinja_pass_arg"):
-       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-jinja2.exceptions.UndefinedError: 'moment' is undefined
-
-2025-06-08 02:58:19,492 - ERROR - app - Sunucu hatası oluştu: 'moment' is undefined
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\main_bp.py", line 241, in index
-    return render_template(
-        "index.html",
-    ...<21 lines>...
-        son_etkilesimler=son_etkilesimler
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
-    self.environment.handle_exception()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\index.html", line 1, in top-level template code
-    {% extends "base.html" %}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 229, in top-level template code
-    {% block footer %}
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\base.html", line 239, in block 'footer'
-    © {{ moment().year }} Inveco Proje. Tüm hakları saklıdır.
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\utils.py", line 92, in from_obj
-    if hasattr(obj, "jinja_pass_arg"):
-       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-jinja2.exceptions.UndefinedError: 'moment' is undefined
-
-2025-06-08 03:03:29,722 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:04:09,574 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:04:19,837 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:04:20,086 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:04:53,984 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 502, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\scaffold.py", line 317, in send_static_file
-    return send_from_directory(
-        t.cast(str, self.static_folder), filename, max_age=max_age
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\helpers.py", line 557, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore[return-value]
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        directory, path, **_prepare_send_file_kwargs(**kwargs)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\utils.py", line 575, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:05:07,513 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:05:33,883 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:05:38,907 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:05:39,916 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:05:41,142 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:05:42,016 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:05:49,953 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:06:24,008 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:06:53,893 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:06:57,057 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:09:45,898 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:10:06,015 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:10:11,626 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:11:40,282 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:11:44,074 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 502, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\scaffold.py", line 317, in send_static_file
-    return send_from_directory(
-        t.cast(str, self.static_folder), filename, max_age=max_age
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\helpers.py", line 557, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore[return-value]
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        directory, path, **_prepare_send_file_kwargs(**kwargs)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\utils.py", line 575, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:23:13,498 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:23:15,285 - ERROR - app - Sunucu hatası oluştu: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\auth_decorators.py", line 15, in decorated_function
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_jwt_extended\view_decorators.py", line 170, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\api\utils\decorators.py", line 134, in decorated_function
     return f(*args, **kwargs)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\admin_bp.py", line 27, in dashboard
-    return render_template('admin_dashboard.html', total_users=total_users, total_offices=total_offices,
-                           total_brokers=total_brokers, total_consultants=total_consultants,
-                           recent_offices=recent_offices, recent_brokers=recent_brokers)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
-    self.environment.handle_exception()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\admin\admin_dashboard.html", line 1, in top-level template code
-    {% extends "base_admin.html" %} {# VEYA {% extends "base.html" %} #} {% block
-    ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\admin\base_admin.html", line 72, in template
-    {% block scripts_extra %}{% endblock %}
-    ^^^^^^^^^^^^^^^^^^^^^
-jinja2.exceptions.TemplateSyntaxError: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\api\utils\decorators.py", line 113, in decorated_function
+    return f(page=page, per_page=per_page, *args, **kwargs)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\api\v1\analysis.py", line 154, in list_analyses
+    analyses_data = analysis_schema.dump(pagination.items)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\schema.py", line 567, in dump
+    result = self._serialize(processed_obj, many=many)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\schema.py", line 533, in _serialize
+    return [self._serialize(d, many=False) for d in obj]
+            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\schema.py", line 536, in _serialize
+    value = field_obj.serialize(attr_name, obj, accessor=self.get_attribute)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\fields.py", line 328, in serialize
+    return self._serialize(value, attr, obj, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\fields.py", line 1987, in _serialize
+    return self._serialize_method(obj)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\api\schemas\analysis_schemas.py", line 26, in get_total_value
+    if obj.metrekare and obj.tahmini_deger_m2:
+                         ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ArsaAnaliz' object has no attribute 'tahmini_deger_m2'
 
-2025-06-08 03:26:12,675 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:26:19,007 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:26:24,172 - ERROR - app - Sunucu hatası oluştu: block 'content' defined twice
+2025-06-08 15:07:52,480 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:07:52,903 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:07:55,015 - INFO - decorators - API Call: POST /api/v1/analysis - User: 12 - IP: 127.0.0.1
+2025-06-08 15:08:11,079 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:08:11,516 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:08:13,632 - INFO - decorators - API Call: POST /api/v1/analysis - User: 12 - IP: 127.0.0.1
+2025-06-08 15:08:40,206 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:08:40,630 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:08:42,743 - INFO - decorators - API Call: POST /api/v1/analysis - User: 12 - IP: 127.0.0.1
+2025-06-08 15:08:43,090 - ERROR - analysis - Dashboard stats update failed: 'ArsaAnaliz' object has no attribute 'yaklasik_deger'
+2025-06-08 15:08:43,258 - INFO - analysis - Analysis created: Ankara/Çankaya by user 12
+2025-06-08 15:09:28,268 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:09:30,403 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:09:30,819 - INFO - auth - User logged in: apitest1@example.com
+2025-06-08 15:09:32,963 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 11 - IP: 127.0.0.1
+2025-06-08 15:09:35,157 - INFO - decorators - API Call: POST /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:09:37,359 - INFO - decorators - API Call: GET /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:09:39,752 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:09:41,868 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:09:43,984 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:09:46,134 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:09:48,264 - INFO - decorators - API Call: GET /api/v1/analysis/stats - User: 11 - IP: 127.0.0.1
+2025-06-08 15:09:50,398 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 15:09:52,621 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 11 - IP: 127.0.0.1
+2025-06-08 15:09:52,622 - INFO - auth - User logged out: 11
+2025-06-08 15:15:49,736 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:15:56,272 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:16:15,877 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:16:16,343 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:16:18,482 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 12 - IP: 127.0.0.1
+2025-06-08 15:16:18,858 - INFO - crm_minimal - Contact created: Ahmet Yılmaz by user 12
+2025-06-08 15:16:37,009 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:16:37,423 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:16:39,542 - INFO - decorators - API Call: GET /api/v1/crm/contacts - User: 12 - IP: 127.0.0.1
+2025-06-08 15:16:55,273 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:16:55,699 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:16:57,957 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 12 - IP: 127.0.0.1
+2025-06-08 15:17:13,336 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:17:13,754 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:17:15,907 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 12 - IP: 127.0.0.1
+2025-06-08 15:17:42,269 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:17:42,678 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:17:44,803 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 12 - IP: 127.0.0.1
+2025-06-08 15:17:45,149 - INFO - crm_minimal - Contact created: Zeynep Demir by user 12
+2025-06-08 15:18:02,686 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:18:03,187 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:18:05,319 - INFO - decorators - API Call: GET /api/v1/crm/contacts - User: 12 - IP: 127.0.0.1
+2025-06-08 15:18:44,495 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:18:46,630 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:18:47,066 - INFO - auth - User logged in: apitest1@example.com
+2025-06-08 15:18:49,204 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 11 - IP: 127.0.0.1
+2025-06-08 15:18:51,323 - INFO - decorators - API Call: POST /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:18:53,519 - INFO - decorators - API Call: GET /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:18:55,885 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:18:56,226 - INFO - crm_minimal - Contact created: Ahmet Yılmaz by user 11
+2025-06-08 15:18:58,362 - INFO - decorators - API Call: GET /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:19:00,715 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:19:02,941 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:19:05,085 - INFO - decorators - API Call: GET /api/v1/analysis/stats - User: 11 - IP: 127.0.0.1
+2025-06-08 15:19:07,241 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 15:19:09,540 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 11 - IP: 127.0.0.1
+2025-06-08 15:19:09,542 - INFO - auth - User logged out: 11
+2025-06-08 15:22:31,410 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:22:37,981 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:23:08,996 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:23:09,446 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:23:11,691 - INFO - decorators - API Call: POST /api/v1/portfolio - User: 12 - IP: 127.0.0.1
+2025-06-08 15:23:12,071 - INFO - portfolio_minimal - Portfolio created: İstanbul Arsa Portföyü by user 12
+2025-06-08 15:23:33,561 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:23:33,969 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:23:36,128 - INFO - decorators - API Call: GET /api/v1/portfolio - User: 12 - IP: 127.0.0.1
+2025-06-08 15:23:53,693 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:23:54,142 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:23:56,276 - INFO - decorators - API Call: POST /api/v1/portfolio - User: 12 - IP: 127.0.0.1
+2025-06-08 15:24:13,356 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:24:13,806 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:24:15,943 - INFO - decorators - API Call: POST /api/v1/portfolio - User: 12 - IP: 127.0.0.1
+2025-06-08 15:24:36,036 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:24:36,440 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:24:38,591 - INFO - decorators - API Call: POST /api/v1/portfolio - User: 12 - IP: 127.0.0.1
+2025-06-08 15:24:38,898 - INFO - portfolio_minimal - Portfolio created: Özel Yatırım Portföyü by user 12
+2025-06-08 15:25:02,938 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:25:03,363 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:25:05,520 - INFO - decorators - API Call: GET /api/v1/portfolio/1 - User: 12 - IP: 127.0.0.1
+2025-06-08 15:25:22,453 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:25:22,885 - INFO - auth - User logged in: testanalysis@example.com
+2025-06-08 15:25:25,028 - INFO - decorators - API Call: GET /api/v1/portfolio - User: 12 - IP: 127.0.0.1
+2025-06-08 15:26:06,048 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:26:08,184 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:26:08,610 - INFO - auth - User logged in: apitest1@example.com
+2025-06-08 15:26:10,738 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 11 - IP: 127.0.0.1
+2025-06-08 15:26:12,897 - INFO - decorators - API Call: POST /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:26:15,101 - INFO - decorators - API Call: GET /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:26:17,438 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:26:17,676 - ERROR - crm_minimal - Contact creation error: (pyodbc.IntegrityError) ('23000', "[23000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Violation of UNIQUE KEY constraint 'uq_user_contact_email'. Cannot insert duplicate key in object 'dbo.crm_contacts'. The duplicate key value is (11, ahmet@example.com). (2627) (SQLExecDirectW); [23000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The statement has been terminated. (3621)")
+[SQL: INSERT INTO crm_contacts (user_id, company_id, office_id, first_name, last_name, email, phone, role, status, source, notes, segment, value_score, created_at, updated_at) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (11, None, None, 'Ahmet', 'Yılmaz', 'ahmet@example.com', '05551234567', None, 'Lead', None, 'Test kişisi', 'Potansiyel', 0, datetime.datetime(2025, 6, 8, 12, 26, 17, 506730), datetime.datetime(2025, 6, 8, 12, 26, 17, 506734))]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-06-08 15:26:19,769 - INFO - decorators - API Call: GET /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:26:22,130 - INFO - decorators - API Call: POST /api/v1/portfolio - User: 11 - IP: 127.0.0.1
+2025-06-08 15:26:22,444 - INFO - portfolio_minimal - Portfolio created: Test Portfolio by user 11
+2025-06-08 15:26:24,599 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:26:26,748 - INFO - decorators - API Call: GET /api/v1/analysis/stats - User: 11 - IP: 127.0.0.1
+2025-06-08 15:26:28,992 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 15:26:31,582 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 11 - IP: 127.0.0.1
+2025-06-08 15:26:31,583 - INFO - auth - User logged out: 11
+2025-06-08 15:28:25,973 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:28:28,394 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:28:28,880 - INFO - auth - User logged in: apitest1@example.com
+2025-06-08 15:28:32,160 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 11 - IP: 127.0.0.1
+2025-06-08 15:28:34,375 - INFO - decorators - API Call: POST /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:28:36,776 - INFO - decorators - API Call: GET /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:28:39,525 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:28:39,725 - ERROR - crm_minimal - Contact creation error: (pyodbc.IntegrityError) ('23000', "[23000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Violation of UNIQUE KEY constraint 'uq_user_contact_email'. Cannot insert duplicate key in object 'dbo.crm_contacts'. The duplicate key value is (11, ahmet@example.com). (2627) (SQLExecDirectW); [23000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The statement has been terminated. (3621)")
+[SQL: INSERT INTO crm_contacts (user_id, company_id, office_id, first_name, last_name, email, phone, role, status, source, notes, segment, value_score, created_at, updated_at) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (11, None, None, 'Ahmet', 'Yılmaz', 'ahmet@example.com', '05551234567', None, 'Lead', None, 'Test kişisi', 'Potansiyel', 0, datetime.datetime(2025, 6, 8, 12, 28, 39, 594312), datetime.datetime(2025, 6, 8, 12, 28, 39, 594317))]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-06-08 15:28:42,056 - INFO - decorators - API Call: GET /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:28:44,409 - INFO - decorators - API Call: POST /api/v1/portfolio - User: 11 - IP: 127.0.0.1
+2025-06-08 15:28:44,719 - INFO - portfolio_minimal - Portfolio created: Test Portfolio by user 11
+2025-06-08 15:28:46,888 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
+    self.raise_routing_exception(req)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
+    raise request.routing_exception  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
+    result = self.url_adapter.match(return_rule=True)  # type: ignore
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
+    raise NotFound() from None
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 15:28:49,020 - INFO - decorators - API Call: GET /api/v1/analysis/stats - User: 11 - IP: 127.0.0.1
+2025-06-08 15:28:51,170 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 15:28:53,353 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 11 - IP: 127.0.0.1
+2025-06-08 15:28:53,357 - INFO - auth - User logged out: 11
+2025-06-08 15:29:28,288 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:30:12,887 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:31:16,071 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:31:42,008 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:31:44,157 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:31:44,576 - INFO - auth - User logged in: apitest1@example.com
+2025-06-08 15:31:46,726 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 11 - IP: 127.0.0.1
+2025-06-08 15:31:48,861 - INFO - decorators - API Call: POST /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:31:49,220 - ERROR - analysis - Dashboard stats update failed: 'ArsaAnaliz' object has no attribute 'yaklasik_deger'
+2025-06-08 15:31:49,393 - INFO - analysis - Analysis created: İstanbul/Kadıköy by user 11
+2025-06-08 15:31:51,541 - INFO - decorators - API Call: GET /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:31:51,753 - ERROR - api_bp - Unexpected error: 'ArsaAnaliz' object has no attribute 'tahmini_deger_m2'
+2025-06-08 15:31:51,760 - ERROR - api_bp - Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
     rv = self.dispatch_request()
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
-    return current_app.ensure_sync(func)(*args, **kwargs)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\auth_decorators.py", line 15, in decorated_function
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask_jwt_extended\view_decorators.py", line 170, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\api\utils\decorators.py", line 134, in decorated_function
     return f(*args, **kwargs)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\admin_bp.py", line 27, in dashboard
-    return render_template('admin_dashboard.html', total_users=total_users, total_offices=total_offices,
-                           total_brokers=total_brokers, total_consultants=total_consultants,
-                           recent_offices=recent_offices, recent_brokers=recent_brokers)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
-    return _render(app, template, context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\templating.py", line 132, in _render
-    rv = template.render(context)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
-    self.environment.handle_exception()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\admin\admin_dashboard.html", line 1, in top-level template code
-    {% extends "base_admin.html" %} {# VEYA {% extends "base.html" %} #} {% block
-    ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
-    raise rewrite_traceback_stack(source=source)
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\templates\admin\base_admin.html", line 66, in template
-    {% block content %}{% endblock %}
-    ^^^^^^^^^
-jinja2.exceptions.TemplateAssertionError: block 'content' defined twice
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\api\utils\decorators.py", line 113, in decorated_function
+    return f(page=page, per_page=per_page, *args, **kwargs)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\api\v1\analysis.py", line 154, in list_analyses
+    analyses_data = analysis_schema.dump(pagination.items)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\schema.py", line 567, in dump
+    result = self._serialize(processed_obj, many=many)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\schema.py", line 533, in _serialize
+    return [self._serialize(d, many=False) for d in obj]
+            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\schema.py", line 536, in _serialize
+    value = field_obj.serialize(attr_name, obj, accessor=self.get_attribute)
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\fields.py", line 328, in serialize
+    return self._serialize(value, attr, obj, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\marshmallow\fields.py", line 1987, in _serialize
+    return self._serialize_method(obj)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\blueprints\api\schemas\analysis_schemas.py", line 26, in get_total_value
+    if obj.metrekare and obj.tahmini_deger_m2:
+                         ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ArsaAnaliz' object has no attribute 'tahmini_deger_m2'
 
-2025-06-08 03:28:42,275 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:28:53,948 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:29:25,989 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:30:38,638 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:31:31,908 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:31:41,462 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 502, in <lambda>
-    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
-                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\scaffold.py", line 317, in send_static_file
-    return send_from_directory(
-        t.cast(str, self.static_folder), filename, max_age=max_age
-    )
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\helpers.py", line 557, in send_from_directory
-    return werkzeug.utils.send_from_directory(  # type: ignore[return-value]
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        directory, path, **_prepare_send_file_kwargs(**kwargs)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\utils.py", line 575, in send_from_directory
-    raise NotFound()
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:31:41,944 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:31:49,590 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 15:31:53,912 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:31:54,134 - ERROR - crm_minimal - Contact creation error: (pyodbc.IntegrityError) ('23000', "[23000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Violation of UNIQUE KEY constraint 'uq_user_contact_email'. Cannot insert duplicate key in object 'dbo.crm_contacts'. The duplicate key value is (11, ahmet@example.com). (2627) (SQLExecDirectW); [23000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The statement has been terminated. (3621)")
+[SQL: INSERT INTO crm_contacts (user_id, company_id, office_id, first_name, last_name, email, phone, role, status, source, notes, segment, value_score, created_at, updated_at) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (11, None, None, 'Ahmet', 'Yılmaz', 'ahmet@example.com', '05551234567', None, 'Lead', None, 'Test kişisi', 'Potansiyel', 0, datetime.datetime(2025, 6, 8, 12, 31, 54, 2094), datetime.datetime(2025, 6, 8, 12, 31, 54, 2104))]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-06-08 15:31:56,226 - INFO - decorators - API Call: GET /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:31:58,594 - INFO - decorators - API Call: POST /api/v1/portfolio - User: 11 - IP: 127.0.0.1
+2025-06-08 15:31:58,902 - INFO - portfolio_minimal - Portfolio created: Test Portfolio by user 11
+2025-06-08 15:32:01,041 - INFO - decorators - API Call: GET /api/v1/crm/stats - User: 11 - IP: 127.0.0.1
+2025-06-08 15:32:03,458 - INFO - decorators - API Call: GET /api/v1/analysis/stats - User: 11 - IP: 127.0.0.1
+2025-06-08 15:32:05,974 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 15:32:08,190 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 11 - IP: 127.0.0.1
+2025-06-08 15:32:08,192 - INFO - auth - User logged out: 11
+2025-06-08 15:33:09,903 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:33:48,456 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:34:11,782 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:34:14,286 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:34:14,698 - INFO - auth - User logged in: apitest1@example.com
+2025-06-08 15:34:16,832 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 11 - IP: 127.0.0.1
+2025-06-08 15:34:18,964 - INFO - decorators - API Call: POST /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:34:19,306 - ERROR - analysis - Dashboard stats update failed: 'ArsaAnaliz' object has no attribute 'yaklasik_deger'
+2025-06-08 15:34:19,472 - INFO - analysis - Analysis created: İstanbul/Kadıköy by user 11
+2025-06-08 15:34:21,614 - INFO - decorators - API Call: GET /api/v1/analysis - User: 11 - IP: 127.0.0.1
+2025-06-08 15:34:24,016 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:34:24,225 - ERROR - crm_minimal - Contact creation error: (pyodbc.IntegrityError) ('23000', "[23000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]Violation of UNIQUE KEY constraint 'uq_user_contact_email'. Cannot insert duplicate key in object 'dbo.crm_contacts'. The duplicate key value is (11, ahmet@example.com). (2627) (SQLExecDirectW); [23000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The statement has been terminated. (3621)")
+[SQL: INSERT INTO crm_contacts (user_id, company_id, office_id, first_name, last_name, email, phone, role, status, source, notes, segment, value_score, created_at, updated_at) OUTPUT inserted.id VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: (11, None, None, 'Ahmet', 'Yılmaz', 'ahmet@example.com', '05551234567', None, 'Lead', None, 'Test kişisi', 'Potansiyel', 0, datetime.datetime(2025, 6, 8, 12, 34, 24, 93364), datetime.datetime(2025, 6, 8, 12, 34, 24, 93373))]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-06-08 15:34:26,330 - INFO - decorators - API Call: GET /api/v1/crm/contacts - User: 11 - IP: 127.0.0.1
+2025-06-08 15:34:28,647 - INFO - decorators - API Call: POST /api/v1/portfolio - User: 11 - IP: 127.0.0.1
+2025-06-08 15:34:28,951 - INFO - portfolio_minimal - Portfolio created: Test Portfolio by user 11
+2025-06-08 15:34:31,080 - INFO - decorators - API Call: GET /api/v1/crm/stats - User: 11 - IP: 127.0.0.1
+2025-06-08 15:34:33,462 - INFO - decorators - API Call: GET /api/v1/analysis/stats - User: 11 - IP: 127.0.0.1
+2025-06-08 15:34:35,913 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 15:34:38,496 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 11 - IP: 127.0.0.1
+2025-06-08 15:34:38,497 - INFO - auth - User logged out: 11
+2025-06-08 15:35:25,471 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:36:34,355 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 15:37:00,585 - INFO - decorators - API Call: POST /api/v1/auth/register - User: None - IP: 127.0.0.1
+2025-06-08 15:37:01,103 - INFO - auth - New user registered: apitest1749386214@example.com
+2025-06-08 15:37:03,167 - INFO - decorators - API Call: POST /api/v1/auth/login - User: None - IP: 127.0.0.1
+2025-06-08 15:37:03,557 - INFO - auth - User logged in: apitest1749386214@example.com
+2025-06-08 15:37:05,723 - INFO - decorators - API Call: GET /api/v1/users/profile - User: 13 - IP: 127.0.0.1
+2025-06-08 15:37:07,859 - INFO - decorators - API Call: POST /api/v1/analysis - User: 13 - IP: 127.0.0.1
+2025-06-08 15:37:08,205 - ERROR - analysis - Dashboard stats update failed: 'ArsaAnaliz' object has no attribute 'yaklasik_deger'
+2025-06-08 15:37:08,373 - INFO - analysis - Analysis created: İstanbul/Kadıköy by user 13
+2025-06-08 15:37:10,534 - INFO - decorators - API Call: GET /api/v1/analysis - User: 13 - IP: 127.0.0.1
+2025-06-08 15:37:13,287 - INFO - decorators - API Call: POST /api/v1/crm/contacts - User: 13 - IP: 127.0.0.1
+2025-06-08 15:37:13,657 - INFO - crm_minimal - Contact created: Ahmet Yılmaz by user 13
+2025-06-08 15:37:15,818 - INFO - decorators - API Call: GET /api/v1/crm/contacts - User: 13 - IP: 127.0.0.1
+2025-06-08 15:37:18,149 - INFO - decorators - API Call: POST /api/v1/portfolio - User: 13 - IP: 127.0.0.1
+2025-06-08 15:37:18,459 - INFO - portfolio_minimal - Portfolio created: Test Portfolio by user 13
+2025-06-08 15:37:20,601 - INFO - decorators - API Call: GET /api/v1/crm/stats - User: 13 - IP: 127.0.0.1
+2025-06-08 15:37:23,284 - INFO - decorators - API Call: GET /api/v1/analysis/stats - User: 13 - IP: 127.0.0.1
+2025-06-08 15:37:25,768 - INFO - decorators - API Call: POST /api/v1/auth/refresh - User: None - IP: 127.0.0.1
+2025-06-08 15:37:27,949 - INFO - decorators - API Call: POST /api/v1/auth/logout - User: 13 - IP: 127.0.0.1
+2025-06-08 15:37:27,950 - INFO - auth - User logged out: 13
+2025-06-08 16:22:37,861 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:22:50,667 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:23:02,060 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -781,7 +824,7 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:36:25,017 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:23:12,254 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -807,264 +850,7 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:36:25,409 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:36:31,103 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:36:33,922 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:36:36,744 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:37:12,987 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:37:25,467 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:37:33,156 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:37:54,260 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:37:58,208 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:38:01,585 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:38:15,183 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:38:30,316 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:38:35,997 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:38:38,142 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:38:48,251 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:38:49,093 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:38:51,160 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-Traceback:
-Traceback (most recent call last):
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1458, in dispatch_request
-    self.raise_routing_exception(req)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1440, in raise_routing_exception
-    raise request.routing_exception  # type: ignore
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\ctx.py", line 353, in match_request
-    result = self.url_adapter.match(return_rule=True)  # type: ignore
-  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\routing\map.py", line 629, in match
-    raise NotFound() from None
-werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-
-2025-06-08 03:39:15,695 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:23:15,191 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -1090,10 +876,7 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:42:44,192 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:43:56,395 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:44:03,398 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:44:51,333 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:23:17,788 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -1119,7 +902,7 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:45:34,177 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:23:20,591 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -1145,10 +928,7 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:45:59,570 - ERROR - analysis_bp - PPTX sunum dosyası oluşturulamadı: None
-2025-06-08 03:50:01,748 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:50:07,358 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
-2025-06-08 03:50:08,222 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:23:24,005 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -1174,7 +954,9 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:50:25,638 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:24:35,932 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:24:48,600 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:24:51,592 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -1200,7 +982,7 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:50:27,785 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:24:58,011 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -1226,7 +1008,9 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:50:29,873 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:25:37,053 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:25:47,596 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:25:50,764 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -1252,7 +1036,7 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:50:31,488 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:25:52,931 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -1278,7 +1062,8 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:50:33,017 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:26:10,259 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:27:03,966 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
@@ -1304,7 +1089,62 @@ Traceback (most recent call last):
     raise NotFound()
 werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
-2025-06-08 03:51:07,889 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+2025-06-08 16:27:34,361 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:28:23,125 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:28:30,115 - INFO - app - Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.
+2025-06-08 16:29:10,304 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 502, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\scaffold.py", line 317, in send_static_file
+    return send_from_directory(
+        t.cast(str, self.static_folder), filename, max_age=max_age
+    )
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\helpers.py", line 557, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        directory, path, **_prepare_send_file_kwargs(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\utils.py", line 575, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 16:29:44,388 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 502, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\scaffold.py", line 317, in send_static_file
+    return send_from_directory(
+        t.cast(str, self.static_folder), filename, max_age=max_age
+    )
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\helpers.py", line 557, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        directory, path, **_prepare_send_file_kwargs(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\werkzeug\utils.py", line 575, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+2025-06-08 16:29:47,222 - ERROR - app - Sunucu hatası oluştu: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 Traceback:
 Traceback (most recent call last):
   File "C:\Users\ustad\Desktop\arsaanalizvesunum\backend\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request

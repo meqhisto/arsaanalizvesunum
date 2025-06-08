@@ -1,0 +1,317 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Kişiler - CRM - Arsa Analiz Platformu{% endblock %}
+
+{% block page_title %}CRM Sistemi{% endblock %}
+{% block page_description %}Müşteri ilişkileri yönetim sistemi{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="#" class="btn btn-primary">
+        <i class="fas fa-user-plus me-1"></i>Yeni Kişi
+    </a>
+    <a href="#" class="btn btn-outline-primary">
+        <i class="fas fa-upload me-1"></i>İçe Aktar
+    </a>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-download me-1"></i>Dışa Aktar
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- CRM Stats -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i class="fas fa-users fa-2x text-primary"></i>
+                </div>
+                <h4 class="mb-1">{{ contacts|length }}</h4>
+                <p class="text-muted small mb-0">Toplam Kişi</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="bg-success bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i class="fas fa-user-check fa-2x text-success"></i>
+                </div>
+                <h4 class="mb-1">{{ contacts|selectattr('status', 'equalto', 'Müşteri')|list|length }}</h4>
+                <p class="text-muted small mb-0">Müşteri</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="bg-warning bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i class="fas fa-user-clock fa-2x text-warning"></i>
+                </div>
+                <h4 class="mb-1">{{ contacts|selectattr('status', 'equalto', 'Potansiyel (Lead)')|list|length }}</h4>
+                <p class="text-muted small mb-0">Potansiyel</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="bg-info bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
+                    <i class="fas fa-handshake fa-2x text-info"></i>
+                </div>
+                <h4 class="mb-1">{{ contacts|selectattr('status', 'equalto', 'Partner')|list|length }}</h4>
+                <p class="text-muted small mb-0">Partner</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">
+                    <i class="fas fa-search me-1"></i>Arama
+                </label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Ad, soyad, e-posta veya telefon..." 
+                       value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    <i class="fas fa-filter me-1"></i>Durum
+                </label>
+                <select name="status" class="form-select">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="Potansiyel (Lead)" {{ 'selected' if request.args.get('status') == 'Potansiyel (Lead)' }}>Potansiyel (Lead)</option>
+                    <option value="Müşteri" {{ 'selected' if request.args.get('status') == 'Müşteri' }}>Müşteri</option>
+                    <option value="Partner" {{ 'selected' if request.args.get('status') == 'Partner' }}>Partner</option>
+                    <option value="Eski Müşteri" {{ 'selected' if request.args.get('status') == 'Eski Müşteri' }}>Eski Müşteri</option>
+                    <option value="Diğer" {{ 'selected' if request.args.get('status') == 'Diğer' }}>Diğer</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    <i class="fas fa-building me-1"></i>Şirket
+                </label>
+                <select name="company" class="form-select">
+                    <option value="">Tüm Şirketler</option>
+                    <option value="Inveco Proje">Inveco Proje</option>
+                    <option value="Diğer Şirket">Diğer Şirket</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>Filtrele
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Contacts List -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent border-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-users me-2"></i>Kişiler
+            </h5>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted small">
+                    {{ contacts|length }} kişi gösteriliyor
+                </span>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label small mb-0">Sayfa başına:</label>
+                    <select class="form-select form-select-sm" style="width: auto;">
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if contacts %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll">
+                                </div>
+                            </th>
+                            <th class="border-0">Kişi</th>
+                            <th class="border-0">İletişim</th>
+                            <th class="border-0">Şirket</th>
+                            <th class="border-0">Durum</th>
+                            <th class="border-0">Son Aktivite</th>
+                            <th class="border-0">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contact in contacts %}
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ contact.id }}">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="bg-primary bg-opacity-10 rounded-circle p-2">
+                                            <i class="fas fa-user text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">{{ contact.first_name }} {{ contact.last_name }}</h6>
+                                        <p class="text-muted small mb-0">{{ contact.title or 'Pozisyon belirtilmemiş' }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    {% if contact.email %}
+                                    <div class="mb-1">
+                                        <i class="fas fa-envelope text-muted me-1"></i>
+                                        <a href="mailto:{{ contact.email }}" class="text-decoration-none">{{ contact.email }}</a>
+                                    </div>
+                                    {% endif %}
+                                    {% if contact.phone %}
+                                    <div>
+                                        <i class="fas fa-phone text-muted me-1"></i>
+                                        <a href="tel:{{ contact.phone }}" class="text-decoration-none">{{ contact.phone }}</a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if contact.company %}
+                                    <span class="badge bg-light text-dark">{{ contact.company }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if contact.status == 'Müşteri' else 'warning' if contact.status == 'Potansiyel (Lead)' else 'info' if contact.status == 'Partner' else 'secondary' }}">
+                                    {{ contact.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-muted small">
+                                    {{ contact.updated_at.strftime('%d.%m.%Y') if contact.updated_at else contact.created_at.strftime('%d.%m.%Y') }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">
+                                            <i class="fas fa-eye me-2"></i>Görüntüle
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#">
+                                            <i class="fas fa-edit me-2"></i>Düzenle
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteContact({{ contact.id }})">
+                                            <i class="fas fa-trash me-2"></i>Sil
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">Kişi bulunamadı</h5>
+                <p class="text-muted">Henüz hiç kişi eklenmemiş veya arama kriterlerinize uygun kişi bulunamadı.</p>
+                <a href="#" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-1"></i>İlk Kişiyi Ekle
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all checkbox functionality
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const contactCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+    
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            contactCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+    
+    // Update select all when individual checkboxes change
+    contactCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const checkedCount = document.querySelectorAll('tbody input[type="checkbox"]:checked').length;
+            selectAllCheckbox.checked = checkedCount === contactCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < contactCheckboxes.length;
+        });
+    });
+    
+    // Auto-submit form on filter change
+    const filterSelects = document.querySelectorAll('select[name="status"], select[name="company"]');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            this.closest('form').submit();
+        });
+    });
+});
+
+// Delete contact function
+function deleteContact(contactId) {
+    if (confirm('Bu kişiyi silmek istediğinizden emin misiniz?')) {
+        // Here you would typically make an AJAX request to delete the contact
+        fetch(`/crm/contact/${contactId}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Kişi silinirken bir hata oluştu.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Kişi silinirken bir hata oluştu.');
+        });
+    }
+}
+</script>
+{% endblock %}

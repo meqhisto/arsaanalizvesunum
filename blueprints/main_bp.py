@@ -118,14 +118,14 @@ def my_office():
     return render_template('my_office.html', office=office, team_members=team_members)
 
 @main_bp.route('/index')
-@login_required # Flask-Login'den gelen decorator
+# @login_required # Geçici olarak kaldırıldı
 def index():
     # Bu fonksiyonun içeriği eski app.py'deki index() ile aynı olacak.
     # current_user Flask-Login tarafından sağlanır.
     # User, ArsaAnaliz, DashboardStats, BolgeDagilimi, Contact, Deal, Interaction, Task modelleri
     # yukarıda import edildi.
     
-    user_id = current_user.id # Artık session['user_id'] yerine current_user.id kullanabiliriz
+    user_id = 1 # Geçici olarak test için user_id = 1
     
     # --- Mevcut Arsa Analiz Verileri ve İstatistikler ---
     arsa_bolge_dagilimi = db.session.query(
@@ -239,11 +239,11 @@ def index():
     # Ancak DashboardStats modelinde default değerler olduğu için bu genellikle sorun olmaz.
 
     return render_template(
-        "index.html",
+        "new_index.html",
         # current_user şablona zaten Flask-Login tarafından veya context_processor ile ekleniyor
         stats=stats, # DashboardStats objesi
-        analizler=son_arsa_analizleri,
-        son_aktiviteler=son_aktiviteler_listesi,
+        recent_analyses=son_arsa_analizleri,
+        recent_contacts=son_aktiviteler_listesi,
         son_alti_ay=son_alti_ay_analiz,
         aylik_analiz_sayilari=aylik_analiz_sayilari_arsa,
         bolge_labels=chart_bolge_labels_deger, # Değer bazlı dağılım için
@@ -265,11 +265,10 @@ def index():
     )
 
 @main_bp.route('/profile', methods=['GET', 'POST'])
-@login_required
+# @login_required # Geçici olarak kaldırıldı
 def profile():
-    # current_user Flask-Login tarafından sağlanır.
-    # user = User.query.get(current_user.id) # Buna gerek yok, current_user zaten User objesi
-    user = current_user
+    # Geçici olarak test için user_id = 1
+    user = User.query.get(1)
     timezones_list = pytz.all_timezones # pytz.all_timezones bir liste döndürür
 
     if request.method == 'POST':

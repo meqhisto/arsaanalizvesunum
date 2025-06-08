@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arsa Analiz Platformu - Design System Preview</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Unified CSS -->
+    <link href="static/css/unified-bootstrap-tailwind.css" rel="stylesheet">
+    
+    <style>
+        .preview-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-color);
+        }
+        
+        .color-swatch {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-lg);
+            display: inline-block;
+            margin: 0.5rem;
+            border: 2px solid var(--border-color);
+        }
+        
+        .demo-navbar {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Navigation -->
+    <nav class="demo-navbar">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center me-3" style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold" style="color: var(--text-primary);">Arsa Analiz Platformu</h5>
+                        <small style="color: var(--text-secondary);">Modern Design System</small>
+                    </div>
+                </div>
+                <button id="theme-toggle" class="btn btn-outline-secondary">
+                    <i class="fas fa-moon me-2"></i>Dark Mode
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold mb-3" style="color: var(--text-primary);">Design System Preview</h1>
+            <p class="lead" style="color: var(--text-secondary);">Modern, unified Bootstrap 5 + Tailwind CSS integration</p>
+        </div>
+
+        <!-- Color System -->
+        <div class="preview-section">
+            <h2 class="h3 mb-4" style="color: var(--text-primary);">🎨 Color System</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Primary Colors</h5>
+                    <div class="color-swatch" style="background-color: var(--primary-color);" title="Primary"></div>
+                    <div class="color-swatch" style="background-color: var(--primary-light);" title="Primary Light"></div>
+                    <div class="color-swatch" style="background-color: var(--primary-dark);" title="Primary Dark"></div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Status Colors</h5>
+                    <div class="color-swatch" style="background-color: var(--success-color);" title="Success"></div>
+                    <div class="color-swatch" style="background-color: var(--warning-color);" title="Warning"></div>
+                    <div class="color-swatch" style="background-color: var(--error-color);" title="Error"></div>
+                    <div class="color-swatch" style="background-color: var(--info-color);" title="Info"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="preview-section">
+            <h2 class="h3 mb-4" style="color: var(--text-primary);">🔘 Buttons</h2>
+            <div class="d-flex flex-wrap gap-3 mb-3">
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Primary Button
+                </button>
+                <button class="btn btn-secondary">
+                    <i class="fas fa-edit me-2"></i>Secondary Button
+                </button>
+                <button class="btn btn-outline-primary">
+                    <i class="fas fa-download me-2"></i>Outline Button
+                </button>
+                <button class="btn btn-success">
+                    <i class="fas fa-check me-2"></i>Success Button
+                </button>
+            </div>
+            <div class="d-flex flex-wrap gap-3">
+                <button class="btn btn-primary btn-sm">Small</button>
+                <button class="btn btn-primary">Default</button>
+                <button class="btn btn-primary btn-lg">Large</button>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="preview-section">
+            <h2 class="h3 mb-4" style="color: var(--text-primary);">📋 Cards</h2>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Basic Card</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">This is a basic card with header, body, and footer.</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-sm">Action</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon me-3" style="background-color: var(--primary-color); color: white;">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-1">Total Analyses</h6>
+                                    <h3 class="mb-0 fw-bold">1,234</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="#" class="quick-access-card text-decoration-none">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-plus-circle mb-3" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                            <h6 class="fw-medium" style="color: var(--text-primary);">Quick Access</h6>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forms -->
+        <div class="preview-section">
+            <h2 class="h3 mb-4" style="color: var(--text-primary);">📝 Forms</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope me-2"></i>Email Address
+                        </label>
+                        <input type="email" class="form-control" id="email" placeholder="Enter email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" placeholder="Enter password">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="select" class="form-label">Select Option</label>
+                        <select class="form-select" id="select">
+                            <option>Choose...</option>
+                            <option>Option 1</option>
+                            <option>Option 2</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="check">
+                        <label class="form-check-label" for="check">
+                            Remember me
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="preview-section">
+            <h2 class="h3 mb-4" style="color: var(--text-primary);">🚨 Alerts</h2>
+            <div class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Success!</strong> Your action was completed successfully.
+            </div>
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Warning!</strong> Please check your input.
+            </div>
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-times-circle me-2"></i>
+                <strong>Error!</strong> Something went wrong.
+            </div>
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Info!</strong> Here's some helpful information.
+            </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="preview-section">
+            <h2 class="h3 mb-4" style="color: var(--text-primary);">🏷️ Badges</h2>
+            <span class="badge bg-primary me-2">Primary</span>
+            <span class="badge bg-secondary me-2">Secondary</span>
+            <span class="badge bg-success me-2">Success</span>
+            <span class="badge bg-warning me-2">Warning</span>
+            <span class="badge bg-danger me-2">Danger</span>
+            <span class="badge bg-info me-2">Info</span>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            
+            const icon = this.querySelector('i');
+            const text = this.querySelector('span') || this.childNodes[this.childNodes.length - 1];
+            
+            if (newTheme === 'dark') {
+                icon.className = 'fas fa-sun me-2';
+                this.innerHTML = '<i class="fas fa-sun me-2"></i>Light Mode';
+            } else {
+                icon.className = 'fas fa-moon me-2';
+                this.innerHTML = '<i class="fas fa-moon me-2"></i>Dark Mode';
+            }
+        });
+    </script>
+</body>
+</html>

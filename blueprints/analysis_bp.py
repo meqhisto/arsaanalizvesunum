@@ -41,6 +41,20 @@ def allowed_file(filename):
 
 # --- ROTALAR ---
 
+@analysis_bp.route('/new', methods=['GET'])
+# @login_required # Geçici olarak kaldırıldı
+def new_analysis():
+    """Yeni analiz formu sayfası"""
+    return render_template('analysis_form.html', title="Yeni Analiz")
+
+@analysis_bp.route('/list', methods=['GET'])
+# @login_required # Geçici olarak kaldırıldı
+def list_analyses():
+    """Kullanıcının analizlerini listele"""
+    user_id = 1  # Geçici olarak test için
+    analyses = ArsaAnaliz.query.filter_by(user_id=user_id).order_by(ArsaAnaliz.created_at.desc()).all()
+    return render_template('analysis_list.html', analyses=analyses, title="Analizlerim")
+
 # ÖNEMLİ NOT: Eski app.py'de iki adet analiz submit rotası vardı: /submit ve /submit_analysis.
 # /submit_analysis daha yeni ve daha detaylı validasyon içeriyor gibi duruyor.
 # İkisini birleştirip tek bir ana analiz oluşturma rotası yapmak en iyisi.
