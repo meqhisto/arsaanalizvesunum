@@ -50,10 +50,81 @@ def new_analysis():
 @analysis_bp.route('/list', methods=['GET'])
 # @login_required # Geçici olarak kaldırıldı
 def list_analyses():
-    """Kullanıcının analizlerini listele"""
+    """Kullanıcının analizlerini listele ve filtrele"""
     user_id = 1  # Geçici olarak test için
-    analyses = ArsaAnaliz.query.filter_by(user_id=user_id).order_by(ArsaAnaliz.created_at.desc()).all()
+
+    # Base query
+    query = ArsaAnaliz.query.filter_by(user_id=user_id)
+
+    # Search filter
+    search = request.args.get('search', '').strip()
+    if search:
+        search_filter = db.or_(
+            ArsaAnaliz.il.ilike(f'%{search}%'),
+            ArsaAnaliz.ilce.ilike(f'%{search}%'),
+            ArsaAnaliz.mahalle.ilike(f'%{search}%')
+        )
+        query = query.filter(search_filter)
+
+    # Location filter
+    il_filter = request.args.get('il', '').strip()
+    if il_filter:
+        query = query.filter(ArsaAnaliz.il == il_filter)
+
+    # Date filter
+    date_filter = request.args.get('date_filter', '').strip()
+    if date_filter:
+        from datetime import datetime, timedelta
+        today = datetime.now().date()
+
+        if date_filter == 'today':
+            query = query.filter(db.func.date(ArsaAnaliz.created_at) == today)
+        elif date_filter == 'week':
+            week_ago = today - timedelta(days=7)
+            query = query.filter(db.func.date(ArsaAnaliz.created_at) >= week_ago)
+        elif date_filter == 'month':
+            month_ago = today - timedelta(days=30)
+            query = query.filter(db.func.date(ArsaAnaliz.created_at) >= month_ago)
+
+    # Execute query with ordering
+    analyses = query.order_by(ArsaAnaliz.created_at.desc()).all()
+
     return render_template('analysis_list.html', analyses=analyses, title="Analizlerim")
+
+@analysis_bp.route('/<int:analysis_id>', methods=['GET'])
+# @login_required # Geçici olarak kaldırıldı
+def view_analysis(analysis_id):
+    """Analiz detayını görüntüle"""
+    user_id = 1  # Geçici olarak test için
+
+    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+
+    # Parse JSON fields
+    altyapi_parsed = []
+    if analysis.altyapi:
+        try:
+            altyapi_data = json.loads(analysis.altyapi)
+            if isinstance(altyapi_data, list):
+                altyapi_parsed = altyapi_data
+            elif isinstance(altyapi_data, dict):
+                altyapi_parsed = [key for key, value in altyapi_data.items() if value]
+        except json.JSONDecodeError:
+            pass
+
+    swot_parsed = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
+    if analysis.swot_analizi:
+        try:
+            swot_data = json.loads(analysis.swot_analizi)
+            if isinstance(swot_data, dict):
+                swot_parsed = swot_data
+        except json.JSONDecodeError:
+            pass
+
+    return render_template('analysis_detail.html',
+                         analysis=analysis,
+                         altyapi=altyapi_parsed,
+                         swot=swot_parsed,
+                         title=f"Analiz Detayı - {analysis.il} {analysis.ilce}")
 
 # ÖNEMLİ NOT: Eski app.py'de iki adet analiz submit rotası vardı: /submit ve /submit_analysis.
 # /submit_analysis daha yeni ve daha detaylı validasyon içeriyor gibi duruyor.

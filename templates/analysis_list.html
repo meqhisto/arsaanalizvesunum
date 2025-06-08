@@ -26,7 +26,7 @@
 <!-- Stats Cards -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm stats-card">
             <div class="card-body text-center">
                 <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
                     <i class="fas fa-chart-line fa-2x text-primary"></i>
@@ -37,29 +37,29 @@
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm stats-card">
             <div class="card-body text-center">
                 <div class="bg-success bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
                     <i class="fas fa-calculator fa-2x text-success"></i>
                 </div>
-                <h4 class="mb-1">₺{{ "{:,.0f}".format(analyses|sum(attribute='fiyat') or 0) }}</h4>
+                <h4 class="mb-1">{{ analyses|sum(attribute='fiyat')|format_currency }}</h4>
                 <p class="text-muted small mb-0">Toplam Değer</p>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm stats-card">
             <div class="card-body text-center">
                 <div class="bg-warning bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
                     <i class="fas fa-ruler-combined fa-2x text-warning"></i>
                 </div>
-                <h4 class="mb-1">{{ "{:,.0f}".format(analyses|sum(attribute='metrekare') or 0) }}</h4>
+                <h4 class="mb-1">{{ analyses|sum(attribute='metrekare')|format_number }}</h4>
                 <p class="text-muted small mb-0">Toplam Alan (m²)</p>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm stats-card">
             <div class="card-body text-center">
                 <div class="bg-info bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
                     <i class="fas fa-map-marker-alt fa-2x text-info"></i>
@@ -72,7 +72,7 @@
 </div>
 
 <!-- Search and Filter -->
-<div class="card border-0 shadow-sm mb-4">
+<div class="card border-0 shadow-sm mb-4 filter-card">
     <div class="card-body">
         <form method="GET" class="row g-3">
             <div class="col-md-4">
@@ -177,12 +177,12 @@
                             <div class="row text-center mb-3">
                                 <div class="col-6">
                                     <div class="border-end">
-                                        <h6 class="text-primary mb-0">{{ analysis.metrekare or 0 }}</h6>
+                                        <h6 class="text-primary mb-0">{{ analysis.metrekare|format_number }}</h6>
                                         <small class="text-muted">m²</small>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <h6 class="text-success mb-0">₺{{ "{:,.0f}".format(analysis.fiyat or 0) }}</h6>
+                                    <h6 class="text-success mb-0">{{ analysis.fiyat|format_currency }}</h6>
                                     <small class="text-muted">Değer</small>
                                 </div>
                             </div>
@@ -235,8 +235,8 @@
                                         <small class="text-muted">{{ analysis.mahalle or 'Mahalle belirtilmemiş' }}</small>
                                     </div>
                                 </td>
-                                <td>{{ analysis.metrekare or 0 }} m²</td>
-                                <td>₺{{ "{:,.0f}".format(analysis.fiyat or 0) }}</td>
+                                <td>{{ analysis.metrekare|format_number }} m²</td>
+                                <td>{{ analysis.fiyat|format_currency }}</td>
                                 <td>
                                     {% if analysis.imar_durumu %}
                                         <span class="badge bg-light text-dark">{{ analysis.imar_durumu }}</span>
@@ -277,17 +277,139 @@
 
 {% block extra_css %}
 <style>
+/* Enhanced Analysis Cards */
 .analysis-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
 .analysis-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .analysis-card .card-header {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Stats Cards */
+.stats-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.stats-card .bg-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+.stats-card .bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+}
+
+.stats-card .bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+}
+
+.stats-card .bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%) !important;
+}
+
+/* Search and Filter Card */
+.filter-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* View Toggle Buttons */
+.btn-check:checked + .btn-outline-secondary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+/* Table Enhancements */
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+    .analysis-card .card-body {
+        padding: 1rem;
+    }
+
+    .stats-card h4 {
+        font-size: 1.2rem;
+    }
+
+    .stats-card .rounded-circle {
+        padding: 0.5rem;
+    }
+
+    .stats-card .fa-2x {
+        font-size: 1.5em;
+    }
+}
+
+/* Loading Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.fade-in-card:nth-child(1) { animation-delay: 0.1s; }
+.fade-in-card:nth-child(2) { animation-delay: 0.2s; }
+.fade-in-card:nth-child(3) { animation-delay: 0.3s; }
+.fade-in-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Badge Enhancements */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+}
+
+/* Button Enhancements */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Dropdown Enhancements */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    transform: translateX(5px);
+    transition: all 0.2s ease;
 }
 </style>
 {% endblock %}
@@ -295,33 +417,109 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // View toggle functionality
+    // Add fade-in animation to cards
+    const cards = document.querySelectorAll('.stats-card, .analysis-card');
+    cards.forEach((card, index) => {
+        card.classList.add('fade-in-card');
+        card.style.animationDelay = (index * 0.1) + 's';
+    });
+
+    // View toggle functionality with smooth transitions
     const gridView = document.getElementById('gridView');
     const listView = document.getElementById('listView');
     const analysisGrid = document.getElementById('analysisGrid');
     const analysisList = document.getElementById('analysisList');
-    
+
     gridView.addEventListener('change', function() {
         if (this.checked) {
-            analysisGrid.classList.remove('d-none');
-            analysisList.classList.add('d-none');
+            analysisList.style.opacity = '0';
+            setTimeout(() => {
+                analysisGrid.classList.remove('d-none');
+                analysisList.classList.add('d-none');
+                analysisGrid.style.opacity = '1';
+            }, 150);
         }
     });
-    
+
     listView.addEventListener('change', function() {
         if (this.checked) {
-            analysisGrid.classList.add('d-none');
-            analysisList.classList.remove('d-none');
+            analysisGrid.style.opacity = '0';
+            setTimeout(() => {
+                analysisGrid.classList.add('d-none');
+                analysisList.classList.remove('d-none');
+                analysisList.style.opacity = '1';
+            }, 150);
         }
     });
-    
-    // Auto-submit form on filter change
+
+    // Auto-submit form on filter change with loading state
     const filterSelects = document.querySelectorAll('select[name="il"], select[name="date_filter"]');
     filterSelects.forEach(select => {
         select.addEventListener('change', function() {
-            this.closest('form').submit();
+            // Add loading state
+            const form = this.closest('form');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Yükleniyor...';
+                submitBtn.disabled = true;
+            }
+            form.submit();
         });
     });
+
+    // Enhanced button interactions
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-1px)';
+        });
+
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Stats counter animation
+    const statsNumbers = document.querySelectorAll('.stats-card h4');
+    statsNumbers.forEach(stat => {
+        const text = stat.textContent;
+        const number = parseInt(text.replace(/[^\d]/g, ''));
+
+        if (number && number > 0) {
+            let currentNumber = 0;
+            const increment = number / 50;
+            const timer = setInterval(() => {
+                currentNumber += increment;
+                if (currentNumber >= number) {
+                    stat.textContent = text;
+                    clearInterval(timer);
+                } else {
+                    const formattedNumber = Math.floor(currentNumber);
+                    stat.textContent = text.replace(/[\d,]+/, formattedNumber.toLocaleString());
+                }
+            }, 30);
+        }
+    });
+
+    // Search input enhancements
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) {
+        searchInput.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+            this.parentElement.style.transition = 'transform 0.2s ease';
+        });
+
+        searchInput.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    }
+
+    // Show welcome toast
+    setTimeout(() => {
+        if (typeof showToast === 'function') {
+            showToast('Analizler başarıyla yüklendi! 📊', 'success', 3000);
+        }
+    }, 500);
 });
 
 // Delete analysis function
