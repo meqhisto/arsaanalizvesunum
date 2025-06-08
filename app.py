@@ -33,6 +33,46 @@ def nl2br_filter(value):
     escaped_value = escape(value)
     return Markup(escaped_value.replace('\n', '<br>\n'))
 
+def format_currency_filter(value):
+    """Format large currency values with K, M, B, T suffixes"""
+    if value is None or value == 0:
+        return '₺0'
+
+    try:
+        value = float(value)
+        if value >= 1000000000000:
+            return f'₺{value/1000000000000:.1f}T'
+        elif value >= 1000000000:
+            return f'₺{value/1000000000:.1f}B'
+        elif value >= 1000000:
+            return f'₺{value/1000000:.1f}M'
+        elif value >= 1000:
+            return f'₺{value/1000:.1f}K'
+        else:
+            return f'₺{value:,.0f}'
+    except (ValueError, TypeError):
+        return '₺0'
+
+def format_number_filter(value):
+    """Format large numbers with K, M, B, T suffixes"""
+    if value is None or value == 0:
+        return '0'
+
+    try:
+        value = float(value)
+        if value >= 1000000000000:
+            return f'{value/1000000000000:.1f}T'
+        elif value >= 1000000000:
+            return f'{value/1000000000:.1f}B'
+        elif value >= 1000000:
+            return f'{value/1000000:.1f}M'
+        elif value >= 1000:
+            return f'{value/1000:.1f}K'
+        else:
+            return f'{value:,.0f}'
+    except (ValueError, TypeError):
+        return '0'
+
 # Flask uygulamasını application olarak ayarlayın (bazı hosting platformları için)
 application = None
 migrate = Migrate() # Migrate nesnesini globalde (veya app factory dışında) oluştur
@@ -121,6 +161,8 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.jinja_env.globals.update(datetime=dt_module)
     app.jinja_env.globals.update(zip=zip)
     app.jinja_env.filters['nl2br'] = nl2br_filter
+    app.jinja_env.filters['format_currency'] = format_currency_filter
+    app.jinja_env.filters['format_number'] = format_number_filter
     # current_user'ı tüm şablonlara global olarak eklemek için (Flask-Login bunu zaten yapar ama explicit olabilir)
     @app.context_processor
     def inject_current_user():

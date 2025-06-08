@@ -20,7 +20,7 @@
 <!-- Stats Cards -->
 <div class="row mb-4">
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-0 shadow-sm h-100">
+        <div class="card border-0 shadow-sm h-100 stats-card">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
@@ -30,7 +30,9 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="text-muted mb-1">Toplam Analiz</h6>
-                        <h3 class="mb-0 stats-number">{{ stats.toplam_arsa_sayisi or 0 }}</h3>
+                        <h3 class="mb-0 stats-number" title="{{ stats.toplam_arsa_sayisi or 0 }}">
+                            {{ stats.toplam_arsa_sayisi|format_number }}
+                        </h3>
                         <small class="text-success">
                             <i class="fas fa-arrow-up me-1"></i>Bu ay +{{ recent_analyses|length or 0 }}
                         </small>
@@ -41,7 +43,7 @@
     </div>
     
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-0 shadow-sm h-100">
+        <div class="card border-0 shadow-sm h-100 stats-card">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
@@ -51,7 +53,9 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="text-muted mb-1">CRM Kişiler</h6>
-                        <h3 class="mb-0 stats-number">{{ toplam_contact_sayisi or 0 }}</h3>
+                        <h3 class="mb-0 stats-number" title="{{ toplam_contact_sayisi or 0 }}">
+                            {{ toplam_contact_sayisi|format_number }}
+                        </h3>
                         <small class="text-success">
                             <i class="fas fa-arrow-up me-1"></i>Toplam kişi
                         </small>
@@ -62,7 +66,7 @@
     </div>
     
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-0 shadow-sm h-100">
+        <div class="card border-0 shadow-sm h-100 stats-card">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
@@ -72,7 +76,9 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="text-muted mb-1">Portföyler</h6>
-                        <h3 class="mb-0 stats-number">{{ toplam_portfoy or 0 }}</h3>
+                        <h3 class="mb-0 stats-number" title="{{ toplam_portfoy or 0 }}">
+                            {{ toplam_portfoy|format_number }}
+                        </h3>
                         <small class="text-info">
                             <i class="fas fa-info-circle me-1"></i>Aktif
                         </small>
@@ -83,7 +89,7 @@
     </div>
     
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-0 shadow-sm h-100">
+        <div class="card border-0 shadow-sm h-100 stats-card">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-shrink-0">
@@ -93,7 +99,9 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="text-muted mb-1">Toplam Değer</h6>
-                        <h3 class="mb-0">₺{{ "{:,.0f}".format(stats.toplam_deger or 0) }}</h3>
+                        <h3 class="mb-0 text-truncate-responsive" title="₺{{ "{:,.0f}".format(stats.toplam_deger or 0) }}">
+                            {{ stats.toplam_deger|format_currency }}
+                        </h3>
                         <small class="text-muted">
                             <i class="fas fa-calculator me-1"></i>Tahmini
                         </small>
@@ -384,6 +392,110 @@
 .fade-in-card:nth-child(2) { animation-delay: 0.1s; }
 .fade-in-card:nth-child(3) { animation-delay: 0.2s; }
 .fade-in-card:nth-child(4) { animation-delay: 0.3s; }
+
+/* Responsive stats cards */
+.stats-card h3 {
+    font-size: clamp(1.1rem, 3.5vw, 1.75rem);
+    line-height: 1.2;
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+.stats-card h6 {
+    font-size: clamp(0.75rem, 2vw, 0.875rem);
+    font-weight: 500;
+}
+
+.stats-card small {
+    font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+}
+
+/* Better spacing for stats cards */
+.stats-card .card-body {
+    padding: 1.25rem 1rem;
+}
+
+.stats-card .flex-grow-1 {
+    min-width: 0; /* Allow text to shrink */
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) {
+    .stats-card h3 {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .stats-card h3 {
+        font-size: 1.3rem;
+    }
+
+    .stats-card .card-body {
+        padding: 1rem 0.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-card h3 {
+        font-size: 1.2rem;
+    }
+
+    .stats-card .card-body {
+        padding: 0.875rem 0.75rem;
+    }
+
+    .stats-card .flex-shrink-0 {
+        margin-right: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stats-card h3 {
+        font-size: 1.1rem;
+    }
+
+    .stats-card .card-body {
+        padding: 0.75rem;
+    }
+
+    .stats-card .bg-opacity-10 {
+        padding: 0.5rem;
+    }
+
+    .stats-card .fa-2x {
+        font-size: 1.5em;
+    }
+}
+
+/* Text truncation with tooltip */
+.text-truncate-responsive {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: help;
+    display: block;
+}
+
+/* Custom tooltip styling */
+.custom-tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    z-index: 1000;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
 {% endblock %}
 
@@ -471,6 +583,69 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast('Dashboard\'a hoş geldiniz! 🎉', 'success', 3000);
         }
     }, 1000);
+
+    // Initialize tooltips for truncated values
+    const truncatedElements = document.querySelectorAll('[title]');
+    truncatedElements.forEach(element => {
+        element.addEventListener('mouseenter', function() {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'custom-tooltip';
+            tooltip.textContent = this.getAttribute('title');
+            tooltip.style.cssText = `
+                position: absolute;
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                z-index: 1000;
+                pointer-events: none;
+                white-space: nowrap;
+                transform: translateX(-50%);
+            `;
+
+            document.body.appendChild(tooltip);
+
+            const rect = this.getBoundingClientRect();
+            tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+            tooltip.style.top = (rect.top - tooltip.offsetHeight - 5) + 'px';
+
+            this._tooltip = tooltip;
+        });
+
+        element.addEventListener('mouseleave', function() {
+            if (this._tooltip) {
+                this._tooltip.remove();
+                this._tooltip = null;
+            }
+        });
+    });
+
+    // Format large numbers with better readability
+    function formatLargeNumber(value) {
+        if (value >= 1000000000000) {
+            return (value / 1000000000000).toFixed(1) + 'T';
+        } else if (value >= 1000000000) {
+            return (value / 1000000000).toFixed(1) + 'B';
+        } else if (value >= 1000000) {
+            return (value / 1000000).toFixed(1) + 'M';
+        } else if (value >= 1000) {
+            return (value / 1000).toFixed(1) + 'K';
+        } else {
+            return value.toLocaleString();
+        }
+    }
+
+    // Update stats with formatted numbers
+    const statsElements = document.querySelectorAll('.stats-number');
+    statsElements.forEach(element => {
+        const originalValue = parseInt(element.textContent.replace(/[^\d]/g, ''));
+        if (originalValue && originalValue > 999) {
+            const formattedValue = formatLargeNumber(originalValue);
+            element.setAttribute('title', '₺' + originalValue.toLocaleString());
+            element.style.cursor = 'help';
+        }
+    });
 });
 </script>
 {% endblock %}
