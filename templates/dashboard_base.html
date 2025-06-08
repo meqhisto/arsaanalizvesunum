@@ -205,6 +205,208 @@
         background-color: #4a5568;
         color: #63b3ed;
     }
+
+    /* Enhanced UI Animations */
+    .card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .btn {
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+    /* Loading spinner animation */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .fa-spin {
+        animation: spin 1s linear infinite;
+    }
+
+    /* Smooth page transitions */
+    .page-content {
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Alert animations */
+    .alert {
+        animation: slideInDown 0.3s ease-out;
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Form focus effects */
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        transform: scale(1.02);
+        transition: all 0.2s ease;
+    }
+
+    /* Navbar toggle animation */
+    .navbar-toggler {
+        transition: all 0.3s ease;
+    }
+
+    .navbar-toggler:hover {
+        background-color: rgba(255,255,255,0.1);
+        transform: scale(1.1);
+    }
+
+    /* Sidebar navigation improvements */
+    .sidebar-nav .nav-link {
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        margin: 2px 0;
+    }
+
+    .sidebar-nav .nav-link:hover {
+        background-color: rgba(13, 110, 253, 0.1);
+        transform: translateX(5px);
+    }
+
+    .sidebar-nav .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+        transform: translateX(5px);
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 991.98px) {
+        .btn {
+            min-height: 44px; /* Touch-friendly size */
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 44px;
+        }
+
+        .card {
+            margin-bottom: 1rem;
+        }
+    }
+
+    /* Accessibility improvements */
+    .btn:focus,
+    .nav-link:focus {
+        outline: 2px solid #0d6efd;
+        outline-offset: 2px;
+    }
+
+    /* Reduced motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1055;
+        max-width: 350px;
+    }
+
+    .toast {
+        margin-bottom: 10px;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideInRight 0.3s ease-out;
+    }
+
+    .toast.hide {
+        animation: slideOutRight 0.3s ease-in;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideOutRight {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+
+    .toast-success {
+        background-color: #d1e7dd;
+        border-left: 4px solid #198754;
+    }
+
+    .toast-error {
+        background-color: #f8d7da;
+        border-left: 4px solid #dc3545;
+    }
+
+    .toast-warning {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+    }
+
+    .toast-info {
+        background-color: #d1ecf1;
+        border-left: 4px solid #0dcaf0;
+    }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -348,6 +550,9 @@
 
 <!-- Sidebar overlay for mobile -->
 <div id="sidebar-overlay" class="sidebar-overlay d-lg-none"></div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container"></div>
 {% endblock %}
 
 {% block extra_js %}
@@ -359,18 +564,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarOverlay = document.getElementById('sidebar-overlay');
 
     function toggleSidebar() {
-        sidebar.classList.toggle('show');
-        sidebarOverlay.classList.toggle('show');
+        const isOpen = sidebar.classList.contains('show');
+
+        if (isOpen) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    }
+
+    function openSidebar() {
+        sidebar.classList.add('show');
+        sidebarOverlay.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+        // Add smooth animation
+        sidebar.style.transition = 'transform 0.3s ease-in-out';
+        sidebarOverlay.style.transition = 'opacity 0.3s ease-in-out';
+
+        // Focus management for accessibility
+        const firstFocusableElement = sidebar.querySelector('a, button, input, [tabindex]:not([tabindex="-1"])');
+        if (firstFocusableElement) {
+            setTimeout(() => firstFocusableElement.focus(), 300);
+        }
     }
 
     function closeSidebar() {
         sidebar.classList.remove('show');
         sidebarOverlay.classList.remove('show');
+        document.body.style.overflow = ''; // Restore scrolling
+
+        // Return focus to toggle button
+        if (mobileSidebarToggle) {
+            mobileSidebarToggle.focus();
+        }
     }
 
     // Mobile sidebar toggle
     if (mobileSidebarToggle) {
-        mobileSidebarToggle.addEventListener('click', toggleSidebar);
+        mobileSidebarToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleSidebar();
+        });
     }
 
     // Close sidebar when clicking overlay
@@ -384,15 +620,156 @@ document.addEventListener('DOMContentLoaded', function() {
             closeSidebar();
         }
     });
-    
+
+    // Close sidebar when pressing Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+            closeSidebar();
+        }
+    });
+
     // Active menu highlighting
     const currentPath = window.location.pathname;
     const sidebarLinks = document.querySelectorAll('.sidebar-nav .nav-link');
-    
+
     sidebarLinks.forEach(link => {
         if (link.getAttribute('href') === currentPath) {
             link.classList.add('active');
         }
+    });
+
+    // Enhanced card hover effects
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.transition = 'all 0.3s ease';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Loading state for buttons
+    const submitButtons = document.querySelectorAll('button[type="submit"], .btn-primary');
+    submitButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.form && !this.form.checkValidity()) {
+                return; // Don't show loading if form is invalid
+            }
+
+            const originalText = this.innerHTML;
+            const originalDisabled = this.disabled;
+
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Yükleniyor...';
+            this.disabled = true;
+
+            // Restore button after 3 seconds or when page changes
+            const restoreButton = () => {
+                this.innerHTML = originalText;
+                this.disabled = originalDisabled;
+            };
+
+            setTimeout(restoreButton, 3000);
+
+            // Also restore on page unload
+            window.addEventListener('beforeunload', restoreButton, { once: true });
+        });
+    });
+
+    // Toast Notification System
+    window.showToast = function(message, type = 'info', duration = 5000) {
+        const toastContainer = document.getElementById('toast-container');
+        const toastId = 'toast-' + Date.now();
+
+        const toastHTML = `
+            <div id="${toastId}" class="toast toast-${type}" role="alert">
+                <div class="toast-header">
+                    <i class="fas fa-${getToastIcon(type)} me-2"></i>
+                    <strong class="me-auto">${getToastTitle(type)}</strong>
+                    <button type="button" class="btn-close" onclick="hideToast('${toastId}')"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+        // Auto-hide after duration
+        setTimeout(() => {
+            hideToast(toastId);
+        }, duration);
+    };
+
+    window.hideToast = function(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.classList.add('hide');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+    };
+
+    function getToastIcon(type) {
+        const icons = {
+            'success': 'check-circle',
+            'error': 'exclamation-circle',
+            'warning': 'exclamation-triangle',
+            'info': 'info-circle'
+        };
+        return icons[type] || 'info-circle';
+    }
+
+    function getToastTitle(type) {
+        const titles = {
+            'success': 'Başarılı',
+            'error': 'Hata',
+            'warning': 'Uyarı',
+            'info': 'Bilgi'
+        };
+        return titles[type] || 'Bilgi';
+    }
+
+    // Auto-show toasts for flash messages
+    const flashMessages = document.querySelectorAll('.alert');
+    flashMessages.forEach(alert => {
+        const type = alert.classList.contains('alert-success') ? 'success' :
+                    alert.classList.contains('alert-danger') ? 'error' :
+                    alert.classList.contains('alert-warning') ? 'warning' : 'info';
+
+        const message = alert.textContent.trim();
+        if (message) {
+            showToast(message, type);
+        }
+    });
+
+    // Enhanced form validation
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                showToast('Lütfen tüm zorunlu alanları doldurun.', 'error');
+            }
+        });
     });
 });
 </script>

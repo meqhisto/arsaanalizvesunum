@@ -443,19 +443,78 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Form doğrulama
-            const forms = document.querySelectorAll('.needs-validation');
+            // Enhanced form validation
+            const forms = document.querySelectorAll('.needs-validation, form');
             Array.from(forms).forEach(form => {
                 form.addEventListener('submit', event => {
                     // SWOT verilerini hazırla
-                    updateAllSwotInputs();
-                    
-                    if (!form.checkValidity()) {
+                    if (typeof updateAllSwotInputs === 'function') {
+                        updateAllSwotInputs();
+                    }
+
+                    // Custom validation
+                    let isValid = true;
+                    const requiredFields = form.querySelectorAll('[required]');
+
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            field.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            field.classList.remove('is-invalid');
+                            field.classList.add('is-valid');
+                        }
+                    });
+
+                    if (!form.checkValidity() || !isValid) {
                         event.preventDefault();
                         event.stopPropagation();
+
+                        // Show toast notification if available
+                        if (typeof showToast === 'function') {
+                            showToast('Lütfen tüm zorunlu alanları doldurun.', 'error');
+                        } else {
+                            alert('Lütfen tüm zorunlu alanları doldurun.');
+                        }
+
+                        // Focus first invalid field
+                        const firstInvalid = form.querySelector('.is-invalid');
+                        if (firstInvalid) {
+                            firstInvalid.focus();
+                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    } else {
+                        // Show success message
+                        if (typeof showToast === 'function') {
+                            showToast('Form gönderiliyor...', 'info');
+                        }
                     }
+
                     form.classList.add('was-validated');
                 }, false);
+
+                // Real-time validation
+                const inputs = form.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('blur', function() {
+                        if (this.hasAttribute('required') && !this.value.trim()) {
+                            this.classList.add('is-invalid');
+                            this.classList.remove('is-valid');
+                        } else if (this.checkValidity()) {
+                            this.classList.remove('is-invalid');
+                            this.classList.add('is-valid');
+                        }
+                    });
+
+                    input.addEventListener('input', function() {
+                        if (this.classList.contains('is-invalid') && this.value.trim()) {
+                            this.classList.remove('is-invalid');
+                            if (this.checkValidity()) {
+                                this.classList.add('is-valid');
+                            }
+                        }
+                    });
+                });
             });
 
             // SWOT analizi için madde ekleme
@@ -508,7 +567,7 @@
 
             function calculateBirimFiyat() {
                 const metrekare = parseFloat(metrekareInput.value.replace(',', '.')) || 0;
-                
+
                 if (maliyetInput && birimMaliyetInput) {
                     const maliyet = parseFloat(maliyetInput.value.replace(',', '.')) || 0;
                     if (metrekare > 0) {
@@ -517,7 +576,7 @@
                         birimMaliyetInput.value = '';
                     }
                 }
-                
+
                 if (guncelDegerInput && birimDegerInput) {
                     const guncelDeger = parseFloat(guncelDegerInput.value.replace(',', '.')) || 0;
                      if (metrekare > 0) {
@@ -525,6 +584,30 @@
                     } else {
                         birimDegerInput.value = '';
                     }
+                }
+
+                // Update summary if elements exist
+                updateSummary();
+            }
+
+            function updateSummary() {
+                const metrekare = parseFloat(metrekareInput.value) || 0;
+                const maliyet = parseFloat(maliyetInput?.value) || 0;
+                const guncelDeger = parseFloat(guncelDegerInput?.value) || 0;
+
+                // Update summary elements if they exist
+                const summaryAlan = document.getElementById('summary-alan');
+                const summaryMaliyet = document.getElementById('summary-maliyet');
+                const summaryDeger = document.getElementById('summary-deger');
+
+                if (summaryAlan) {
+                    summaryAlan.textContent = metrekare > 0 ? metrekare.toLocaleString() + ' m²' : '- m²';
+                }
+                if (summaryMaliyet) {
+                    summaryMaliyet.textContent = maliyet > 0 ? '₺' + maliyet.toLocaleString() : '- ₺';
+                }
+                if (summaryDeger) {
+                    summaryDeger.textContent = guncelDeger > 0 ? '₺' + guncelDeger.toLocaleString() : '- ₺';
                 }
             }
 
