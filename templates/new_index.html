@@ -30,9 +30,9 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="text-muted mb-1">Toplam Analiz</h6>
-                        <h3 class="mb-0">{{ stats.total_analyses or 0 }}</h3>
+                        <h3 class="mb-0 stats-number">{{ stats.toplam_arsa_sayisi or 0 }}</h3>
                         <small class="text-success">
-                            <i class="fas fa-arrow-up me-1"></i>Bu ay +{{ stats.monthly_analyses or 0 }}
+                            <i class="fas fa-arrow-up me-1"></i>Bu ay +{{ recent_analyses|length or 0 }}
                         </small>
                     </div>
                 </div>
@@ -51,9 +51,9 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="text-muted mb-1">CRM Kişiler</h6>
-                        <h3 class="mb-0">{{ stats.total_contacts or 0 }}</h3>
+                        <h3 class="mb-0 stats-number">{{ toplam_contact_sayisi or 0 }}</h3>
                         <small class="text-success">
-                            <i class="fas fa-arrow-up me-1"></i>Bu ay +{{ stats.monthly_contacts or 0 }}
+                            <i class="fas fa-arrow-up me-1"></i>Toplam kişi
                         </small>
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="text-muted mb-1">Portföyler</h6>
-                        <h3 class="mb-0">{{ stats.total_portfolios or 0 }}</h3>
+                        <h3 class="mb-0 stats-number">{{ toplam_portfoy or 0 }}</h3>
                         <small class="text-info">
                             <i class="fas fa-info-circle me-1"></i>Aktif
                         </small>
@@ -93,7 +93,7 @@
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <h6 class="text-muted mb-1">Toplam Değer</h6>
-                        <h3 class="mb-0">₺{{ "{:,.0f}".format(stats.total_value or 0) }}</h3>
+                        <h3 class="mb-0">₺{{ "{:,.0f}".format(stats.toplam_deger or 0) }}</h3>
                         <small class="text-muted">
                             <i class="fas fa-calculator me-1"></i>Tahmini
                         </small>
@@ -241,9 +241,9 @@
                 </div>
             </div>
             <div class="card-body">
-                {% if recent_contacts %}
+                {% if son_kisiler %}
                     <div class="row">
-                        {% for contact in recent_contacts %}
+                        {% for contact in son_kisiler %}
                         <div class="col-md-6 col-lg-4 mb-3">
                             <div class="card border contact-card">
                                 <div class="card-body p-3">

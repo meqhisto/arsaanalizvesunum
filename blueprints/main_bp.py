@@ -214,6 +214,7 @@ def index():
     ).order_by(Task.due_date.asc()).limit(5).all()
 
     son_kisiler = Contact.query.filter_by(user_id=user_id).order_by(Contact.created_at.desc()).limit(5).all()
+    toplam_contact_sayisi = Contact.query.filter_by(user_id=user_id).count()
     
     acik_firsatlar = Deal.query.filter(
         Deal.user_id == user_id,
@@ -258,6 +259,7 @@ def index():
         # CRM Özet Verileri
         yaklasan_gorevler=yaklasan_gorevler,
         son_kisiler=son_kisiler,
+        toplam_contact_sayisi=toplam_contact_sayisi,
         acik_firsatlar=acik_firsatlar,
         toplam_acik_firsat_sayisi=toplam_acik_firsat_sayisi,
         toplam_acik_firsat_degeri_try=toplam_acik_firsat_degeri_try,
