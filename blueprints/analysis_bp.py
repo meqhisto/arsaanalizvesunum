@@ -370,34 +370,70 @@ def view_analysis(analysis_id):
     """Analiz detayını görüntüle"""
     user_id = 1  # Geçici olarak test için
 
-    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+    try:
+        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
 
-    # Parse JSON fields
-    altyapi_parsed = []
-    if analysis.altyapi:
-        try:
-            altyapi_data = json.loads(analysis.altyapi)
-            if isinstance(altyapi_data, list):
-                altyapi_parsed = altyapi_data
-            elif isinstance(altyapi_data, dict):
-                altyapi_parsed = [key for key, value in altyapi_data.items() if value]
-        except json.JSONDecodeError:
-            pass
+        # Parse JSON fields
+        altyapi_parsed = []
+        if analysis.altyapi:
+            try:
+                altyapi_data = json.loads(analysis.altyapi)
+                if isinstance(altyapi_data, list):
+                    altyapi_parsed = altyapi_data
+                elif isinstance(altyapi_data, dict):
+                    altyapi_parsed = [key for key, value in altyapi_data.items() if value]
+            except json.JSONDecodeError:
+                current_app.logger.warning(f"Invalid altyapi JSON for analysis {analysis_id}")
 
-    swot_parsed = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
-    if analysis.swot_analizi:
-        try:
-            swot_data = json.loads(analysis.swot_analizi)
-            if isinstance(swot_data, dict):
-                swot_parsed = swot_data
-        except json.JSONDecodeError:
-            pass
+        swot_parsed = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
+        if analysis.swot_analizi:
+            try:
+                swot_data = json.loads(analysis.swot_analizi)
+                if isinstance(swot_data, dict):
+                    swot_parsed.update(swot_data)
+            except json.JSONDecodeError:
+                current_app.logger.warning(f"Invalid SWOT JSON for analysis {analysis_id}")
 
-    return render_template('analysis_detail.html',
-                         analysis=analysis,
-                         altyapi=altyapi_parsed,
-                         swot=swot_parsed,
-                         title=f"Analiz Detayı - {analysis.il} {analysis.ilce}")
+        # Calculate additional metrics
+        calculations = {}
+        if analysis.metrekare and analysis.fiyat:
+            calculations['unit_price'] = float(analysis.fiyat) / float(analysis.metrekare)
+        if analysis.metrekare and analysis.bolge_fiyat:
+            calculations['unit_market_price'] = float(analysis.bolge_fiyat) / float(analysis.metrekare)
+        if analysis.fiyat and analysis.bolge_fiyat:
+            calculations['price_difference'] = float(analysis.bolge_fiyat) - float(analysis.fiyat)
+            calculations['price_difference_percent'] = (calculations['price_difference'] / float(analysis.fiyat)) * 100
+        if analysis.taks and analysis.metrekare:
+            calculations['buildable_area'] = float(analysis.taks) * float(analysis.metrekare)
+        if analysis.kaks and analysis.metrekare:
+            calculations['total_construction_area'] = float(analysis.kaks) * float(analysis.metrekare)
+
+        # Get related analyses in same location
+        related_analyses = ArsaAnaliz.query.filter(
+            ArsaAnaliz.user_id == user_id,
+            ArsaAnaliz.id != analysis_id,
+            db.or_(
+                db.and_(ArsaAnaliz.il == analysis.il, ArsaAnaliz.ilce == analysis.ilce),
+                ArsaAnaliz.il == analysis.il
+            )
+        ).order_by(ArsaAnaliz.created_at.desc()).limit(5).all()
+
+        # Get analysis media files
+        media_files = AnalizMedya.query.filter_by(analiz_id=analysis_id).order_by(AnalizMedya.uploaded_at.desc()).all()
+
+        return render_template('analysis_detail.html',
+                             analysis=analysis,
+                             altyapi=altyapi_parsed,
+                             swot=swot_parsed,
+                             calculations=calculations,
+                             related_analyses=related_analyses,
+                             media_files=media_files,
+                             title=f"Analiz Detayı - {analysis.il} {analysis.ilce}")
+
+    except Exception as e:
+        current_app.logger.error(f"Analysis detail error: {str(e)}", exc_info=True)
+        flash('Analiz detayları yüklenirken bir hata oluştu.', 'error')
+        return redirect(url_for('analysis.list_analyses'))
 
 # ÖNEMLİ NOT: Eski app.py'de iki adet analiz submit rotası vardı: /submit ve /submit_analysis.
 # /submit_analysis daha yeni ve daha detaylı validasyon içeriyor gibi duruyor.

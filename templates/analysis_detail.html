@@ -129,8 +129,8 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted">Birim Maliyet</label>
                         <p class="fw-semibold">
-                            {% if analysis.metrekare and analysis.fiyat %}
-                                {{ (analysis.fiyat / analysis.metrekare)|format_currency }}/m²
+                            {% if calculations.unit_price %}
+                                {{ calculations.unit_price|format_currency }}/m²
                             {% else %}
                                 <span class="text-muted">Hesaplanamadı</span>
                             {% endif %}
@@ -139,13 +139,36 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted">Birim Bölge Fiyatı</label>
                         <p class="fw-semibold">
-                            {% if analysis.metrekare and analysis.bolge_fiyat %}
-                                {{ (analysis.bolge_fiyat / analysis.metrekare)|format_currency }}/m²
+                            {% if calculations.unit_market_price %}
+                                {{ calculations.unit_market_price|format_currency }}/m²
                             {% else %}
                                 <span class="text-muted">Hesaplanamadı</span>
                             {% endif %}
                         </p>
                     </div>
+                    {% if calculations.price_difference %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Fiyat Farkı</label>
+                        <p class="fw-semibold {{ 'text-success' if calculations.price_difference > 0 else 'text-danger' }}">
+                            {{ calculations.price_difference|format_currency }}
+                            <small class="text-muted">
+                                ({{ "%.1f"|format(calculations.price_difference_percent) }}%)
+                            </small>
+                        </p>
+                    </div>
+                    {% endif %}
+                    {% if calculations.buildable_area %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">İnşaat Alanı (TAKS)</label>
+                        <p class="fw-semibold">{{ calculations.buildable_area|format_number }} m²</p>
+                    </div>
+                    {% endif %}
+                    {% if calculations.total_construction_area %}
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label text-muted">Toplam İnşaat Alanı (KAKS)</label>
+                        <p class="fw-semibold">{{ calculations.total_construction_area|format_number }} m²</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -259,10 +282,133 @@
             </div>
         </div>
         {% endif %}
+
+        <!-- Medya Dosyaları -->
+        {% if media_files %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-images me-2"></i>Medya Dosyaları
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for media in media_files %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card border">
+                            <div class="card-body p-2 text-center">
+                                {% if media.type == 'image' %}
+                                    <i class="fas fa-image fa-2x text-primary mb-2"></i>
+                                {% else %}
+                                    <i class="fas fa-video fa-2x text-danger mb-2"></i>
+                                {% endif %}
+                                <p class="small mb-1">{{ media.filename.split('/')[-1] }}</p>
+                                <small class="text-muted">{{ media.uploaded_at.strftime('%d.%m.%Y') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- İlgili Analizler -->
+        {% if related_analyses %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-map me-2"></i>İlgili Analizler
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for related in related_analyses %}
+                <div class="d-flex align-items-center mb-3 p-2 border rounded">
+                    <div class="flex-shrink-0">
+                        <div class="bg-secondary bg-opacity-10 rounded-circle p-2">
+                            <i class="fas fa-chart-line text-secondary"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1">{{ related.il }}, {{ related.ilce }}</h6>
+                        <small class="text-muted">{{ related.mahalle or 'Mahalle belirtilmemiş' }}</small>
+                        <div class="mt-1">
+                            <span class="badge bg-light text-dark">{{ related.fiyat|format_currency }}</span>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <a href="/analysis/{{ related.id }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Yan Panel -->
     <div class="col-lg-4">
+        <!-- Performans Metrikleri -->
+        {% if calculations %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Performans Metrikleri
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if calculations.price_difference %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted small">Piyasa Farkı</span>
+                        <span class="fw-semibold {{ 'text-success' if calculations.price_difference > 0 else 'text-danger' }}">
+                            {{ "%.1f"|format(calculations.price_difference_percent) }}%
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar {{ 'bg-success' if calculations.price_difference > 0 else 'bg-danger' }}"
+                             style="width: {{ (calculations.price_difference_percent|abs / 100 * 100)|min(100) }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if calculations.buildable_area %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted small">İnşaat Potansiyeli</span>
+                        <span class="fw-semibold">{{ (calculations.buildable_area / analysis.metrekare * 100)|round(1) }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info"
+                             style="width: {{ (calculations.buildable_area / analysis.metrekare * 100)|min(100) }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row text-center">
+                    {% if calculations.unit_price %}
+                    <div class="col-6 mb-2">
+                        <div class="bg-primary bg-opacity-10 rounded p-2">
+                            <small class="text-muted d-block">Birim Maliyet</small>
+                            <strong class="text-primary">{{ calculations.unit_price|format_currency }}/m²</strong>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if calculations.unit_market_price %}
+                    <div class="col-6 mb-2">
+                        <div class="bg-success bg-opacity-10 rounded p-2">
+                            <small class="text-muted d-block">Piyasa Fiyatı</small>
+                            <strong class="text-success">{{ calculations.unit_market_price|format_currency }}/m²</strong>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Özet Bilgiler -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-transparent border-0">
@@ -326,33 +472,316 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* Analysis Detail Enhancements */
+.analysis-detail-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.analysis-detail-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+/* Performance Metrics */
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 1s ease-in-out;
+}
+
+/* SWOT Analysis Styling */
+.swot-item {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.swot-item:hover {
+    transform: translateX(5px);
+}
+
+.swot-strengths .swot-item {
+    background: rgba(40, 167, 69, 0.1);
+    border-left: 3px solid #28a745;
+}
+
+.swot-weaknesses .swot-item {
+    background: rgba(220, 53, 69, 0.1);
+    border-left: 3px solid #dc3545;
+}
+
+.swot-opportunities .swot-item {
+    background: rgba(13, 110, 253, 0.1);
+    border-left: 3px solid #0d6efd;
+}
+
+.swot-threats .swot-item {
+    background: rgba(255, 193, 7, 0.1);
+    border-left: 3px solid #ffc107;
+}
+
+/* Media Files */
+.media-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.media-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Related Analyses */
+.related-analysis-item {
+    transition: all 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+}
+
+.related-analysis-item:hover {
+    background: rgba(13, 110, 253, 0.05);
+    border-color: rgba(13, 110, 253, 0.2) !important;
+    transform: translateX(5px);
+}
+
+/* Quick Actions */
+.quick-action-btn {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .analysis-detail-card .card-body {
+        padding: 1rem;
+    }
+
+    .performance-metric {
+        margin-bottom: 1rem;
+    }
+
+    .swot-item {
+        padding: 0.75rem;
+    }
+}
+
+/* Loading Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.fade-in-card:nth-child(1) { animation-delay: 0.1s; }
+.fade-in-card:nth-child(2) { animation-delay: 0.2s; }
+.fade-in-card:nth-child(3) { animation-delay: 0.3s; }
+.fade-in-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Badge Enhancements */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+    border-radius: 6px;
+}
+
+/* Button Enhancements */
+.btn {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add fade-in animation to cards
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.classList.add('fade-in-card');
+        card.style.animationDelay = (index * 0.1) + 's';
+    });
+
+    // Animate progress bars
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
+
+    // Enhanced SWOT items animation
+    const swotItems = document.querySelectorAll('.swot-item');
+    swotItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(-20px)';
+        setTimeout(() => {
+            item.style.transition = 'all 0.3s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateX(0)';
+        }, 100 * index);
+    });
+
+    // Media file click handlers
+    const mediaCards = document.querySelectorAll('.media-card');
+    mediaCards.forEach(card => {
+        card.addEventListener('click', function() {
+            if (typeof showToast === 'function') {
+                showToast('Medya görüntüleme özelliği yakında eklenecek!', 'info');
+            }
+        });
+    });
+
+    // Related analysis hover effects
+    const relatedItems = document.querySelectorAll('.related-analysis-item');
+    relatedItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(5px)';
+        });
+
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+
+    // Show welcome toast
+    setTimeout(() => {
+        if (typeof showToast === 'function') {
+            showToast('Analiz detayları yüklendi! 📊', 'success', 3000);
+        }
+    }, 1000);
+});
+
 function deleteAnalysis(analysisId) {
     if (confirm('Bu analizi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
-        // AJAX request to delete analysis
-        if (typeof showToast === 'function') {
-            showToast('Analiz silme özelliği yakında eklenecek!', 'info');
-        } else {
-            alert('Analiz silme özelliği yakında eklenecek!');
-        }
+        // Show loading state
+        const deleteBtn = event.target.closest('button');
+        const originalText = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Siliniyor...';
+        deleteBtn.disabled = true;
+
+        // Simulate AJAX request
+        setTimeout(() => {
+            if (typeof showToast === 'function') {
+                showToast('Analiz silme özelliği yakında eklenecek!', 'info');
+            } else {
+                alert('Analiz silme özelliği yakında eklenecek!');
+            }
+
+            // Reset button
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
+        }, 1500);
     }
 }
 
 function duplicateAnalysis(analysisId) {
-    if (typeof showToast === 'function') {
-        showToast('Analiz kopyalama özelliği yakında eklenecek!', 'info');
-    } else {
-        alert('Analiz kopyalama özelliği yakında eklenecek!');
-    }
+    const duplicateBtn = event.target.closest('button');
+    const originalText = duplicateBtn.innerHTML;
+    duplicateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Kopyalanıyor...';
+    duplicateBtn.disabled = true;
+
+    setTimeout(() => {
+        if (typeof showToast === 'function') {
+            showToast('Analiz kopyalama özelliği yakında eklenecek!', 'info');
+        } else {
+            alert('Analiz kopyalama özelliği yakında eklenecek!');
+        }
+
+        // Reset button
+        duplicateBtn.innerHTML = originalText;
+        duplicateBtn.disabled = false;
+    }, 1500);
 }
 
 function shareAnalysis(analysisId) {
-    if (typeof showToast === 'function') {
-        showToast('Analiz paylaşma özelliği yakında eklenecek!', 'info');
+    // Try to use Web Share API if available
+    if (navigator.share) {
+        navigator.share({
+            title: 'Arsa Analizi',
+            text: 'Bu arsa analizini inceleyin',
+            url: window.location.href
+        }).then(() => {
+            if (typeof showToast === 'function') {
+                showToast('Analiz başarıyla paylaşıldı! 📤', 'success');
+            }
+        }).catch(() => {
+            fallbackShare(analysisId);
+        });
     } else {
-        alert('Analiz paylaşma özelliği yakında eklenecek!');
+        fallbackShare(analysisId);
     }
+}
+
+function fallbackShare(analysisId) {
+    // Copy URL to clipboard
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        if (typeof showToast === 'function') {
+            showToast('Analiz linki panoya kopyalandı! 📋', 'success');
+        } else {
+            alert('Analiz linki panoya kopyalandı!');
+        }
+    }).catch(() => {
+        if (typeof showToast === 'function') {
+            showToast('Paylaşma özelliği yakında eklenecek!', 'info');
+        } else {
+            alert('Paylaşma özelliği yakında eklenecek!');
+        }
+    });
+}
+
+// Export functions for detail page
+function exportAnalysisToWord(analysisId) {
+    if (typeof showToast === 'function') {
+        showToast('Word raporu hazırlanıyor... 📄', 'info', 3000);
+    }
+
+    // Simulate export
+    setTimeout(() => {
+        if (typeof showToast === 'function') {
+            showToast('Word raporu özelliği yakında eklenecek!', 'info');
+        }
+    }, 2000);
+}
+
+function exportAnalysisToPDF(analysisId) {
+    if (typeof showToast === 'function') {
+        showToast('PDF raporu hazırlanıyor... 📄', 'info', 3000);
+    }
+
+    // Simulate export
+    setTimeout(() => {
+        if (typeof showToast === 'function') {
+            showToast('PDF raporu özelliği yakında eklenecek!', 'info');
+        }
+    }, 2000);
 }
 </script>
 {% endblock %}
