@@ -356,6 +356,16 @@ def analysis_form():
     form_errors = session.pop('analysis_form_errors', None)
     return render_template('analysis_form.html', form_data=form_data, form_errors=form_errors)
 
+@main_bp.route('/login')
+def login_redirect():
+    """Redirect /login to /auth/login for backward compatibility"""
+    return redirect(url_for('auth.login'))
+
+@main_bp.route('/logout')
+def logout_redirect():
+    """Redirect /logout to /auth/logout for backward compatibility"""
+    return redirect(url_for('auth.logout'))
+
 @main_bp.route('/favicon.ico')
 def favicon():
     # send_from_directory için current_app.root_path kullanılabilir.

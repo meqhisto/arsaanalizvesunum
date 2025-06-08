@@ -613,3 +613,265 @@ body {
   outline: 2px solid var(--primary-500);
   outline-offset: 2px;
 }
+
+/* Stat Cards */
+.stat-card {
+  border: none;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
+  background: var(--white);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.bg-primary-light {
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+.bg-success-light {
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
+.bg-warning-light {
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+.bg-info-light {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.bg-purple-light {
+  background-color: rgba(147, 51, 234, 0.1);
+}
+
+.text-purple {
+  color: var(--purple-600);
+}
+
+/* Quick Access Cards */
+.quick-access-card {
+  border: none;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
+  background: var(--white);
+}
+
+.quick-access-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  text-decoration: none;
+}
+
+.quick-access-card .card-body {
+  padding: var(--space-4);
+}
+
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .quick-access-card {
+  background: var(--gray-800);
+  border-color: var(--gray-700);
+}
+
+[data-theme="dark"] .bg-primary-light {
+  background-color: rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="dark"] .bg-success-light {
+  background-color: rgba(34, 197, 94, 0.2);
+}
+
+[data-theme="dark"] .bg-warning-light {
+  background-color: rgba(245, 158, 11, 0.2);
+}
+
+[data-theme="dark"] .bg-info-light {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="dark"] .bg-purple-light {
+  background-color: rgba(147, 51, 234, 0.2);
+}
+
+/* Layout System */
+.layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar styles are already defined above, removing duplicate */
+
+.sidebar-header {
+  padding: var(--space-6) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: var(--space-4) 0;
+}
+
+.sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.8);
+  padding: var(--space-3) var(--space-4);
+  margin: 0 var(--space-2);
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.sidebar .nav-link.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+}
+
+.sidebar-footer {
+  padding: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-content {
+  flex: 1;
+  padding: var(--space-6);
+  background: var(--gray-50);
+  min-height: 100vh;
+}
+
+.main-content.with-sidebar {
+  margin-left: var(--sidebar-width);
+}
+
+/* Responsive Sidebar */
+@media (max-width: 992px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+  }
+
+  .sidebar.show {
+    transform: translateX(0);
+  }
+
+  .main-content.with-sidebar {
+    margin-left: 0;
+  }
+}
+
+[data-theme="dark"] .main-content {
+  background: var(--gray-900);
+}
+
+[data-theme="dark"] .sidebar {
+  background: linear-gradient(135deg, var(--gray-800), var(--gray-900));
+}
+
+/* Fix for Bootstrap conflicts */
+.sidebar .nav {
+  --bs-nav-link-padding-x: 0;
+  --bs-nav-link-padding-y: 0;
+}
+
+.sidebar .nav-item {
+  margin-bottom: 0;
+}
+
+.sidebar .nav-link:hover {
+  text-decoration: none;
+}
+
+.sidebar-title {
+  color: white;
+}
+
+/* Ensure proper spacing */
+.container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Add missing overflow for sidebar */
+.sidebar {
+  overflow-y: auto;
+}
+
+/* Additional fixes for dashboard layout */
+.dashboard-page .main-content {
+  background: var(--gray-50);
+}
+
+/* Ensure proper card styling */
+.card {
+  border: none;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Fix for text colors */
+.text-gray-900 {
+  color: var(--gray-900) !important;
+}
+
+/* Ensure proper spacing for dashboard */
+.dashboard-page .container-fluid {
+  padding: 0;
+}
+
+/* Fix for alert styling */
+.alert {
+  border: none;
+  border-radius: var(--border-radius);
+}
+
+/* Ensure proper button styling */
+.btn {
+  border-radius: var(--border-radius);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Fix for responsive grid */
+@media (max-width: 768px) {
+  .main-content.with-sidebar {
+    padding: var(--space-4);
+  }
+
+  .quick-access-card .card-body {
+    padding: var(--space-2);
+  }
+
+  .stat-card .card-body {
+    padding: var(--space-3);
+  }
+}

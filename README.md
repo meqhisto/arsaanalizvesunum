@@ -1,105 +1,198 @@
-# Arsa Analiz ve Sunum Platformu
+# 🏗️ Arsa Analiz ve Sunum Platformu
 
-Bu proje, gayrimenkul sektörü için kapsamlı bir **arsa analizi ve sunum platformu**dur. Flask tabanlı web uygulaması olarak geliştirilmiş olup, arsa değerlendirmesi, CRM yönetimi, portföy takibi ve profesyonel rapor üretimi gibi işlevleri bir arada sunmaktadır.
+**Gayrimenkul sektörü için kapsamlı bir arsa analizi ve sunum platformu**
 
-## 🚀 Özellikler
+Bu proje, emlak profesyonelleri için geliştirilmiş modern bir Flask web uygulamasıdır. Arsa değerlendirmesi, CRM yönetimi, portföy takibi ve profesyonel rapor üretimi gibi işlevleri tek bir platformda birleştirerek, emlak uzmanlarının iş süreçlerini optimize etmelerini sağlar.
 
-### 🏠 Arsa Analizi Modülü
-- **SWOT Analizi:** Güçlü yönler, zayıf yönler, fırsatlar ve tehditler analizi
-- **Fiyat Tahmini:** Machine Learning tabanlı akıllı fiyat tahmini
-- **İnşaat Alanı Hesaplaması:** TAKS/KAKS bazlı hesaplamalar
-- **Bölgesel Karşılaştırma:** Piyasa analizi ve karşılaştırma
-- **Uygunluk Puanı:** Çok kriterli değerlendirme sistemi
-- **Medya Yönetimi:** Fotoğraf ve video yükleme/yönetimi
+[![Version](https://img.shields.io/badge/version-1.1.3-blue.svg)](https://github.com/meqhisto/arsaanalizvesunum)
+[![Python](https://img.shields.io/badge/python-3.9+-green.svg)](https://python.org)
+[![Flask](https://img.shields.io/badge/flask-2.3.3-red.svg)](https://flask.palletsprojects.com)
+[![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-### 👥 CRM Modülü
-- **Kişi Yönetimi:** Müşteri ve iletişim bilgileri
-- **Şirket Yönetimi:** Kurumsal müşteri takibi
-- **Fırsat Takibi:** Satış fırsatları ve pipeline yönetimi
-- **Görev Yönetimi:** Takım görevleri ve hatırlatıcılar
-- **Etkileşim Geçmişi:** Müşteri iletişim kayıtları
-- **Ekip Yönetimi:** Broker/Agent rol yönetimi
+## ✨ Temel Özellikler
 
-### 📊 Rapor ve Sunum Modülü
-- **Word Raporu:** Profesyonel analiz raporları
-- **PDF Raporu:** Yazdırılabilir dokümantasyon
-- **PowerPoint Sunumu:** Müşteri sunumları
-- **QR Kod Entegrasyonu:** Dijital erişim kolaylığı
-- **Çoklu Tema Desteği:** Özelleştirilebilir tasarımlar
+### 🏠 Gelişmiş Arsa Analizi
+- **🎯 SWOT Analizi:** Kapsamlı güçlü/zayıf yön değerlendirmesi
+- **🤖 ML Fiyat Tahmini:** XGBoost tabanlı akıllı değerleme sistemi
+- **📐 İnşaat Hesaplamaları:** TAKS/KAKS bazlı alan hesaplamaları
+- **📊 Bölgesel Karşılaştırma:** Piyasa analizi ve benchmark
+- **⭐ Uygunluk Skorlama:** Çok kriterli değerlendirme algoritması
+- **📸 Medya Yönetimi:** Fotoğraf/video yükleme ve organizasyon
+- **🗺️ Konum Entegrasyonu:** Koordinat bazlı harita entegrasyonu
+
+### 👥 Profesyonel CRM Sistemi
+- **👤 Gelişmiş Kişi Yönetimi:** Detaylı müşteri profilleri
+- **🏢 Şirket Takibi:** Kurumsal müşteri yönetimi
+- **💰 Fırsat Pipeline'ı:** Kanban board ile satış takibi
+- **✅ Görev Yönetimi:** Takım koordinasyonu ve hatırlatıcılar
+- **📞 Etkileşim Geçmişi:** Tüm müşteri iletişim kayıtları
+- **👨‍💼 Rol Yönetimi:** Broker/Agent/Danışman hiyerarşisi
+- **🏢 Ofis Yönetimi:** Multi-office destek
+
+### 📊 Kapsamlı Raporlama
+- **📄 Word Raporları:** Profesyonel analiz dokümantasyonu
+- **📋 PDF Çıktıları:** Yazdırılabilir sunum materyalleri
+- **🎨 PowerPoint Sunumları:** Müşteri prezentasyonları
+- **📱 QR Kod Entegrasyonu:** Dijital erişim kolaylığı
+- **🎨 Çoklu Tema Desteği:** Özelleştirilebilir tasarım şablonları
+- **📈 İnteraktif Grafikler:** Chart.js ile dinamik görselleştirme
 
 ### 💼 Portföy Yönetimi
-- **Portföy Oluşturma:** Arsa gruplandırma
-- **Performans Takibi:** Yatırım analizi
-- **Karşılaştırmalı Analiz:** Portföy değerlendirme
+- **📁 Portföy Oluşturma:** Arsa gruplandırma ve kategorilendirme
+- **📈 Performans Analizi:** Yatırım getiri hesaplamaları
+- **⚖️ Karşılaştırmalı Analiz:** Portföy benchmark'ları
+- **🔄 Dinamik Güncelleme:** Real-time değer takibi
 
 ## 🏗️ Teknoloji Stack'i
 
-### Backend
-- **Framework:** Flask 2.0.1
-- **Database:** Microsoft SQL Server
-- **ORM:** SQLAlchemy 1.4.49
-- **Authentication:** Flask-Login
-- **Migration:** Flask-Migrate (Alembic)
+### 🔧 Backend Infrastructure
 
-### Frontend
-- **UI Framework:** Bootstrap
-- **Template Engine:** Jinja2
-- **JavaScript:** Vanilla JS + jQuery
-- **CSS:** Custom + Bootstrap
+- **🌐 Framework:** Flask 2.3.3 - Modern Python web framework
+- **🗄️ Database:** Microsoft SQL Server - Enterprise-grade RDBMS
+- **🔗 ORM:** SQLAlchemy 2.0.41 - Advanced Python SQL toolkit
+- **🔐 Authentication:** Flask-Login + JWT Extended - Secure session management
+- **📦 Migration:** Flask-Migrate (Alembic) - Database version control
+- **🚀 API:** RESTful API with Swagger/OpenAPI 3.0 documentation
+- **🛡️ Security:** CORS, Rate Limiting, Input Validation, CSRF Protection
+- **📊 Serialization:** Marshmallow 4.0.0 - Object serialization/validation
 
-### Machine Learning
-- **ML Framework:** XGBoost 2.1.4, scikit-learn 1.6.1
-- **Data Processing:** pandas 2.2.3, numpy 2.0.2
+### 🎨 Frontend Technologies
 
-### Document Generation
-- **Word:** python-docx 0.8.11
-- **PDF:** reportlab 3.6.1
-- **PowerPoint:** python-pptx 0.6.21
-- **QR Code:** qrcode 8.1
+- **🎯 UI Framework:** Bootstrap 5.3.6 - Responsive component library
+- **📝 Template Engine:** Jinja2 3.1.6 - Server-side rendering
+- **⚡ Build System:** Webpack 5.89.0 - Module bundling and optimization
+- **📱 JavaScript:** ES6+ with Babel transpilation
+- **🎨 CSS:** SCSS/Sass with PostCSS processing
+- **📈 Charts:** Chart.js 4.4.0 - Interactive data visualization
+- **🔄 HTTP Client:** Axios 1.6.0 - Promise-based HTTP requests
 
-## 🛠️ Kurulum
+### 🤖 Machine Learning & Analytics
 
-### Gereksinimler
-- Python 3.9+
-- Microsoft SQL Server
-- pip
+- **🧠 ML Framework:** XGBoost 3.0.2, scikit-learn 1.7.0
+- **📊 Data Processing:** pandas 2.3.0, numpy 2.3.0
+- **🔢 Scientific Computing:** scipy 1.15.3
+- **⚡ Performance:** Threading and multiprocessing optimization
 
-### Adım Adım Kurulum
+### 📄 Document Generation & Media
 
-1. **Projeyi klonlayın:**
+- **📝 Word Documents:** python-docx 1.1.2 - Professional report generation
+- **📋 PDF Reports:** reportlab 4.4.1 - High-quality PDF creation
+- **🎨 Presentations:** python-pptx 1.0.2 - PowerPoint automation
+- **📱 QR Codes:** qrcode 8.2 - Digital access integration
+- **🖼️ Image Processing:** Pillow 11.2.1 - Image manipulation
+- **📊 Excel Export:** XlsxWriter 3.2.3 - Spreadsheet generation
+
+### 🔧 Development & DevOps
+
+- **🧪 Testing:** pytest with coverage reporting
+- **📝 Code Quality:** Black, flake8, ESLint, Prettier
+- **🔄 Version Control:** Git with conventional commits
+- **📦 Package Management:** pip, npm/yarn
+- **🐳 Containerization:** Docker support (planned)
+- **☁️ Deployment:** Cloud-ready configuration
+
+## 🛠️ Kurulum ve Yapılandırma
+
+### 📋 Sistem Gereksinimleri
+
+- **Python:** 3.9+ (3.11 önerilir)
+- **Database:** Microsoft SQL Server 2019+ veya Azure SQL Database
+- **Memory:** Minimum 4GB RAM (8GB önerilir)
+- **Storage:** 2GB+ boş disk alanı
+- **OS:** Windows 10+, macOS 10.15+, Ubuntu 20.04+
+
+### 🚀 Hızlı Başlangıç
+
+1. **Repository'yi klonlayın:**
    ```bash
-   git clone [repository-url]
+   git clone https://github.com/meqhisto/arsaanalizvesunum.git
    cd arsaanalizvesunum
    ```
 
 2. **Virtual environment oluşturun:**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   # veya
-   venv\Scripts\activate     # Windows
+
+   # Linux/Mac
+   source venv/bin/activate
+
+   # Windows
+   venv\Scripts\activate
    ```
 
 3. **Bağımlılıkları yükleyin:**
    ```bash
    pip install -r requirements.txt
+   npm install  # Frontend dependencies
    ```
 
-4. **Veritabanı yapılandırması:**
-   - `instance/config.py` dosyasında veritabanı bağlantı bilgilerini güncelleyin
-   - Veritabanı tablolarını oluşturun:
+4. **Ortam değişkenlerini yapılandırın:**
    ```bash
-   python create_tables.py
-   # veya
-   python db_update.py
+   # .env dosyası oluşturun
+   cp .env.example .env
+
+   # Veritabanı bağlantı bilgilerini düzenleyin
+   nano .env
    ```
 
-5. **Uygulamayı başlatın:**
+5. **Veritabanını hazırlayın:**
+   ```bash
+   # Migration'ları çalıştırın
+   flask db upgrade
+
+   # Test verisi oluşturun (opsiyonel)
+   python create_test_user.py
+   ```
+
+6. **Frontend'i derleyin:**
+   ```bash
+   npm run build
+   ```
+
+7. **Uygulamayı başlatın:**
    ```bash
    python app.py
    ```
 
-Uygulama varsayılan olarak `http://127.0.0.1:5000` adresinde çalışır.
+🎉 **Uygulama hazır!** → `http://localhost:5000`
+
+### 🔧 Geliştirme Ortamı
+
+```bash
+# Development mode
+export FLASK_ENV=development
+python app.py
+
+# Frontend watch mode
+npm run watch
+
+# API test
+python test_api.py
+```
+
+### 🌐 API Erişimi
+
+| Endpoint | Açıklama | URL |
+|----------|----------|-----|
+| **API Base** | Ana API endpoint | `http://localhost:5000/api/v1` |
+| **Swagger Docs** | İnteraktif API dokümantasyonu | `http://localhost:5000/api/docs/` |
+| **Health Check** | Sistem durumu | `http://localhost:5000/api/health` |
+| **API Info** | API bilgileri | `http://localhost:5000/api/` |
+
+### 🧪 Test ve Doğrulama
+
+```bash
+# API endpoint testleri
+python test_api.py
+
+# Unit testler
+python -m pytest tests/
+
+# Coverage raporu
+python -m pytest --cov=. tests/
+```
+
+📖 **Detaylı API dokümantasyonu:** [`API_DOCUMENTATION.md`](API_DOCUMENTATION.md)
 
 ## 📁 Proje Yapısı
 
@@ -116,7 +209,24 @@ arsaanalizvesunum/
 │   ├── main_bp.py        # Ana sayfa rotaları
 │   ├── analysis_bp.py    # Analiz modülü
 │   ├── crm_bp.py         # CRM modülü
-│   └── portfolio_bp.py   # Portföy modülü
+│   ├── portfolio_bp.py   # Portföy modülü
+│   └── api/              # REST API modülü
+│       ├── api_bp.py     # Ana API blueprint
+│       ├── v1/           # API v1 endpoints
+│       │   ├── auth.py   # Authentication endpoints
+│       │   ├── users.py  # User management endpoints
+│       │   ├── crm.py    # CRM endpoints
+│       │   ├── analysis.py # Analysis endpoints
+│       │   ├── portfolio.py # Portfolio endpoints
+│       │   └── media.py  # Media/file endpoints
+│       ├── schemas/      # Marshmallow schemas
+│       │   ├── user_schemas.py
+│       │   ├── crm_schemas.py
+│       │   └── analysis_schemas.py
+│       └── utils/        # API utilities
+│           ├── decorators.py
+│           ├── validators.py
+│           └── responses.py
 ├── modules/              # İş mantığı modülleri
 │   ├── analiz.py         # Analiz algoritmaları
 │   ├── fiyat_tahmini.py  # ML fiyat tahmini
@@ -130,7 +240,9 @@ arsaanalizvesunum/
 │   └── uploads/
 ├── migrations/           # Veritabanı migration dosyaları
 ├── instance/             # Konfigürasyon dosyaları
-└── tests/                # Test dosyaları
+├── tests/                # Test dosyaları
+├── test_api.py           # API test scripti
+└── API_DOCUMENTATION.md  # API dokümantasyonu
 ```
 
 ## 🎯 Yol Haritası
@@ -197,11 +309,13 @@ arsaanalizvesunum/
 ### 🚀 Orta Vadeli Hedefler (3-6 Ay)
 
 #### API Geliştirme
-- [ ] **RESTful API**
-  - Tüm modüller için API endpoints
-  - API dokümantasyonu (Swagger/OpenAPI)
-  - Authentication (JWT)
-  - Rate limiting
+- [x] **RESTful API** ✅ TAMAMLANDI
+  - [x] Tüm modüller için API endpoints
+  - [x] API dokümantasyonu (Swagger/OpenAPI)
+  - [x] Authentication (JWT)
+  - [x] Rate limiting
+  - [x] CORS support
+  - [x] Input validation ve sanitization
 
 #### Mobile Support
 - [ ] **Progressive Web App (PWA)**

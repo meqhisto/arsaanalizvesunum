@@ -1,455 +1,220 @@
-<!DOCTYPE html>
-<html lang="tr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>İnveco Proje - Ana Sayfa</title>
-    <!-- Bootstrap 5 CSS (Sürüm tutarlılığı için 5.3.3'e güncellendi) -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Bootstrap Icons -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='css/main-unified-style.css') }}" rel="stylesheet">
-    <!-- Chart.js for dashboards -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
+{% extends "base.html" %}
 
-  <body class="bg-light">
-    <div class="container-fluid p-0">
-      <div class="row g-0">
-        <!-- Row yapısı -->
-        <!-- Birleşik Kenar Çubuğu Tetikleyici (Sadece <md ekranlarda görünür) -->
-        <button
-          class="btn btn-primary d-lg-none m-3 rounded-pill shadow-sm sidebar-toggler"
-          type="button"
-          data-bs-toggle="offcanvas"
-          data-bs-target="#unifiedSidebar"
-          aria-controls="unifiedSidebar"
-        >
-          <i class="bi bi-list"></i> Menü
-        </button>
+{% block title %}Ana Sayfa - Arsa Analiz Platformu{% endblock %}
 
-        <!-- Birleşik Kenar Çubuğu (Offcanvas <md, Sabit >=md) -->
-        <div
-          class="offcanvas offcanvas-start offcanvas-lg sidebar flex-column col-lg-2 p-0"
-          tabindex="-1"
-          id="unifiedSidebar"
-          aria-labelledby="unifiedSidebarLabel"
-        >
-          <div
-            class="offcanvas-header"
-            style="
-              background: linear-gradient(
-                135deg,
-                var(--primary-color, #0d6efd), /* CSS değişkenleri tanımlı değilse varsayılan renkler */
-                var(--secondary-color, #6c757d)
-              );
-              color: white;
-            "
-          >
-            <h5 class="offcanvas-title" id="unifiedSidebarLabel">
-              <i class="bi bi-building me-2"></i>İnveco Panel
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white d-md-none" /* Sadece offcanvas modunda görünür */
-              data-bs-dismiss="offcanvas"
-              data-bs-target="#unifiedSidebar"
-              aria-label="Kapat"
-            ></button>
-          </div>
-          <div class="offcanvas-body d-flex flex-column">
-            <ul class="nav nav-pills flex-column mb-auto">
-              <li class="nav-item">
-                <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
-                  <i class="bi bi-house-door me-2"></i><span class="sidebar-item-text">Ana Sayfa</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('analysis.analizler') }}" class="nav-link {% if request.endpoint == 'analysis.analizler' %}active{% endif %}">
-                  <i class="bi bi-file-earmark-text me-2"></i><span class="sidebar-item-text">Analizlerim</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('crm.crm_contacts_list') }}" class="nav-link {% if request.endpoint == 'crm.crm_contacts_list' %}active{% endif %}">
-                  <i class="bi bi-person-rolodex me-2"></i><span class="sidebar-item-text">CRM</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('portfolio.portfolios_list') }}" class="nav-link {% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}">
-                  <i class="bi bi-graph-up me-2"></i><span class="sidebar-item-text">Portföyler</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="{{ url_for('main.profile') }}" class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
-                  <i class="bi bi-gear me-2"></i><span class="sidebar-item-text">Ayarlar</span>
-                </a>
-              </li>
+{% block meta_description %}Arsa analizi ve gayrimenkul değerlendirme platformu ana sayfası{% endblock %}
+
+{% block body_class %}dashboard-page{% endblock %}
+
+{% block extra_css %}
+<!-- Chart.js for dashboards -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Content -->
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h2 fw-bold text-gray-900">Ana Sayfa</h1>
+          <p class="text-muted mb-0">
+            Hoşgeldiniz, <span class="fw-medium">{{ current_user.ad }} {{ current_user.soyad }}</span>!
+          </p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <!-- Theme Toggle -->
+          <button id="theme-toggle" class="btn btn-outline-secondary btn-sm" title="Tema değiştir">
+            <i class="fas fa-moon"></i>
+          </button>
+
+          <!-- Notifications -->
+          {% if bildirimler and bildirimler|length > 0 %}
+          <div class="dropdown">
+            <button class="btn btn-outline-primary position-relative" type="button" data-bs-toggle="dropdown">
+              <i class="fas fa-bell"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ bildirimler|length }}
+              </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><h6 class="dropdown-header">Bildirimler</h6></li>
+              {% for bildirim in bildirimler %}
+              <li><a class="dropdown-item" href="#">{{ bildirim.mesaj }}</a></li>
+              {% endfor %}
             </ul>
-            <div class="mt-auto logout-button-container p-3"> {/* Çıkış butonu için padding eklendi */}
-              <a
-                href="{{ url_for('auth.logout') }}"
-                class="btn btn-sm d-flex align-items-center justify-content-center gap-2 w-100" /* justify-content-center eklendi */
-                style="color: #adb5bd; border: 1px solid rgba(255,255,255,0.2); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: rgba(255,255,255,0.1); --bs-btn-hover-border-color: rgba(255,255,255,0.3);"
-              >
-                <i class="bi bi-box-arrow-right"></i><span class="sidebar-item-text">Çıkış Yap</span>
-              </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Welcome Alert -->
+      <div class="alert alert-info border-0 shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-info-circle me-3 fs-4"></i>
+          <div>
+            <strong>Yenilikler Geliyor!</strong> Modern arayüz güncellemesi tamamlandı.
+            Analiz raporlarına detaylı harita entegrasyonu çok yakında!
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Access Cards -->
+      <div class="row g-4 mb-5">
+        <div class="col-12">
+          <h4 class="fw-bold mb-3">
+            <i class="fas fa-bolt text-warning me-2"></i>Hızlı Erişim
+          </h4>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+          <a href="{{ url_for('main.analysis_form') }}" class="card quick-access-card text-decoration-none h-100">
+            <div class="card-body text-center p-3">
+              <i class="fas fa-plus-circle text-primary mb-2" style="font-size: 2.5rem;"></i>
+              <h6 class="card-title mb-0">Yeni Analiz</h6>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+          <a href="{{ url_for('analysis.analizler') }}" class="card quick-access-card text-decoration-none h-100">
+            <div class="card-body text-center p-3">
+              <i class="fas fa-file-alt text-success mb-2" style="font-size: 2.5rem;"></i>
+              <h6 class="card-title mb-0">Analizlerim</h6>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+          <a href="{{ url_for('crm.crm_contacts_list') }}" class="card quick-access-card text-decoration-none h-100">
+            <div class="card-body text-center p-3">
+              <i class="fas fa-users text-info mb-2" style="font-size: 2.5rem;"></i>
+              <h6 class="card-title mb-0">CRM</h6>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+          <a href="{{ url_for('crm.crm_deals_list') }}" class="card quick-access-card text-decoration-none h-100">
+            <div class="card-body text-center p-3">
+              <i class="fas fa-handshake text-purple mb-2" style="font-size: 2.5rem; color: #6f42c1;"></i>
+              <h6 class="card-title mb-0">Fırsatlar</h6>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+          <a href="{{ url_for('crm.crm_tasks_list') }}" class="card quick-access-card text-decoration-none h-100">
+            <div class="card-body text-center p-3">
+              <i class="fas fa-tasks text-warning mb-2" style="font-size: 2.5rem;"></i>
+              <h6 class="card-title mb-0">Görevler</h6>
+            </div>
+          </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-2">
+          <a href="{{ url_for('portfolio.portfolios_list') }}" class="card quick-access-card text-decoration-none h-100">
+            <div class="card-body text-center p-3">
+              <i class="fas fa-chart-line text-secondary mb-2" style="font-size: 2.5rem;"></i>
+              <h6 class="card-title mb-0">Portföyler</h6>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="row g-4 mb-5">
+        <div class="col-12">
+          <h4 class="fw-bold mb-3">
+            <i class="fas fa-chart-bar text-primary me-2"></i>Genel İstatistikler
+          </h4>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+          <div class="card stat-card h-100">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="stat-icon bg-primary-light text-primary me-3">
+                  <i class="fas fa-map-marked-alt"></i>
+                </div>
+                <div>
+                  <h6 class="text-muted mb-1">Toplam Arsa Analizi</h6>
+                  <h3 class="mb-0 fw-bold">{{ stats.toplam_arsa_sayisi if stats else '0' }}</h3>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Ana İçerik Alanı -->
-        <div
-          class="col-lg-10 p-4 content-area" /* ms-auto kaldırıldı, width stili kaldırıldı, col-md-9 kaldırıldı */
-          style="
-            background-color: #f5f7ff;
-            min-height: 100vh;
-            overflow-y: auto;
-          "
-        >
-          <!-- Başlık ve Kullanıcı Bilgileri -->
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h2 class="fw-bold">Ana Sayfa</h2>
-              <p class="text-muted mb-0">
-                Hoşgeldiniz,
-                <span class="fw-medium"
-                  >{{ current_user.ad }} {{ current_user.soyad }}</span
-                >!
-              </p>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-              <!-- Bildirimler Dropdown -->
-              <div class="dropdown">
-                <button
-                  class="btn btn-light position-relative rounded-circle shadow-sm p-2"
-                  type="button"
-                  id="bildirimDropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <i class="bi bi-bell fs-5"></i>
-                  {% if bildirimler|length > 0 %}
-                  <span
-                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                  >
-                    {{ bildirimler|length }}
-                    <span class="visually-hidden">unread messages</span>
-                  </span>
-                  {% endif %}
-                </button>
-                <ul
-                  class="dropdown-menu dropdown-menu-end shadow"
-                  style="
-                    width: 320px;
-                    border-radius: var(--border-radius);
-                    border: none;
-                  "
-                  aria-labelledby="bildirimDropdown"
-                >
-                  <li>
-                    <div class="dropdown-header fw-medium">Bildirimler</div>
-                  </li>
-                  {% if bildirimler|length > 0 %} {% for bildirim in bildirimler
-                  %}
-                  <li>
-                    <a
-                      class="dropdown-item d-flex align-items-center py-2"
-                      href="#"
-                    >
-                      <div class="flex-shrink-0">
-                        <div
-                          class="bg-primary bg-opacity-10 text-primary p-2 rounded-circle"
-                        >
-                          <i class="bi bi-info-circle"></i>
-                        </div>
-                      </div>
-                      <div class="flex-grow-1 ms-3">
-                        <p class="mb-0">{{ bildirim.mesaj }}</p>
-                        <small class="text-muted"
-                          >{{ bildirim.tarih.strftime('%H:%M') }}</small
-                        >
-                      </div>
-                    </a>
-                  </li>
-                  {% endfor %}
-                  <li><hr class="dropdown-divider" /></li>
-                  <li>
-                    <a
-                      class="dropdown-item text-center text-primary fw-medium"
-                      href="#"
-                      >Tüm Bildirimleri Gör</a
-                    >
-                  </li>
-                  {% else %}
-                  <li class="p-3 text-center">
-                    <div class="py-4">
-                      <i class="bi bi-bell-slash text-muted fs-1"></i>
-                      <p class="mt-2 mb-0 text-muted">
-                        Yeni bildiriminiz bulunmuyor.
-                      </p>
-                    </div>
-                  </li>
-                  {% endif %}
-                </ul>
-              </div>
-              <!-- Kullanıcı Profili Dropdown -->
-              <div class="dropdown">
-                <button
-                  class="btn btn-light shadow-sm dropdown-toggle d-flex align-items-center gap-2"
-                  data-bs-toggle="dropdown"
-                >
-                  {% if current_user.profil_foto %}
-                  <img
-                    src="{{ url_for('static', filename='uploads/' ~ current_user.profil_foto) }}"
-                    alt="Profil"
-                    class="rounded-circle"
-                    width="30"
-                    height="30"
-                    style="object-fit: cover"
-                  />
-                  {% else %}
-                  <i class="bi bi-person-circle"></i>
-                  {% endif %}
-                  <span class="d-none d-md-inline"
-                    >{{ current_user.email }}</span
-                  >
-                </button>
-                <ul
-                  class="dropdown-menu dropdown-menu-end shadow"
-                  style="border-radius: var(--border-radius); border: none"
-                >
-                  <li class="dropdown-header">
-                    <div class="fw-medium">
-                      {{ current_user.ad }} {{ current_user.soyad }}
-                    </div>
-                    <small class="text-muted">{{ current_user.unvan }}</small>
-                  </li>
-                  <li><hr class="dropdown-divider" /></li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="{{ url_for('main.profile') }}"
-                      ><i class="bi bi-person me-2"></i> Profilim</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="{{ url_for('portfolio.portfolios_list') }}"
-                      ><i class="bi bi-graph-up me-2"></i> Portföylerim</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="{{ url_for('main.profile') }}"
-                      ><i class="bi bi-gear me-2"></i> Ayarlar</a
-                    >
-                  </li>
-                  <li><hr class="dropdown-divider" /></li>
-                  <li>
-                    <a
-                      class="dropdown-item text-danger"
-                      href="{{ url_for('auth.logout') }}"
-                      ><i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap</a
-                    >
-                  </li>
-                </ul>
+        <div class="col-md-6 col-xl-4">
+          <div class="card stat-card h-100">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="stat-icon bg-success-light text-success me-3">
+                  <i class="fas fa-lira-sign"></i>
+                </div>
+                <div>
+                  <h6 class="text-muted mb-1">Ort. Arsa Fiyatı</h6>
+                  <h3 class="mb-0 fw-bold" id="ortalamaFiyat">
+                    {{ "%.0f"|format(stats.ortalama_fiyat if stats else 0) }} TL
+                  </h3>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Bilgilendirme Mesajı -->
-          <div
-            class="alert alert-info alert-dismissible fade show border-0 shadow-sm"
-            role="alert"
-          >
-            <div class="d-flex">
-              <div class="flex-shrink-0">
-                <i class="bi bi-info-circle-fill fs-4"></i>
-              </div>
-              <div class="flex-grow-1 ms-3">
-                <strong>Yenilikler Geliyor!</strong> Analiz raporlarına detaylı
-                harita entegrasyonu çok yakında!
+        <div class="col-md-6 col-xl-4">
+          <div class="card stat-card h-100">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="stat-icon bg-warning-light text-warning me-3">
+                  <i class="fas fa-crown"></i>
+                </div>
+                <div>
+                  <h6 class="text-muted mb-1">En Yüksek Fiyat</h6>
+                  <h3 class="mb-0 fw-bold" id="enYuksekFiyat">
+                    {{ "%.0f"|format(stats.en_yuksek_fiyat if stats else 0) }} TL
+                  </h3>
+                </div>
               </div>
             </div>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="alert"
-              aria-label="Close"
-            ></button>
           </div>
+        </div>
 
-          <!-- Hızlı Erişim Kartları -->
-          <h4 class="mb-3 fw-bold">
-            <i class="bi bi-lightning-charge me-2 text-warning"></i>Hızlı Erişim
-          </h4>
-          <div class="row mb-4 g-3">
-            <div class="col-6 col-md-4 col-lg-2">
-              <a
-                href="{{ url_for('main.analysis_form') }}"
-                class="card quick-access-card text-decoration-none h-100"
-              >
-                <div
-                  class="card-body text-center d-flex flex-column justify-content-center align-items-center p-2 p-md-3"
-                >
-                  <i class="bi bi-plus-circle-fill display-5 text-primary"></i>
-                  <h6 class="card-title mt-2 mb-0 small">Yeni Analiz</h6>
+        <div class="col-md-6 col-xl-4">
+          <div class="card stat-card h-100">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="stat-icon bg-info-light text-info me-3">
+                  <i class="fas fa-bullseye"></i>
                 </div>
-              </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-              <a
-                href="{{ url_for('analysis.analizler') }}"
-                class="card quick-access-card text-decoration-none h-100"
-              >
-                <div
-                  class="card-body text-center d-flex flex-column justify-content-center align-items-center p-2 p-md-3"
-                >
-                  <i
-                    class="bi bi-file-earmark-text-fill display-5 text-success"
-                  ></i>
-                  <h6 class="card-title mt-2 mb-0 small">Analizlerim</h6>
+                <div>
+                  <h6 class="text-muted mb-1">Açık Fırsat Sayısı</h6>
+                  <h3 class="mb-0 fw-bold">{{ toplam_acik_firsat_sayisi }}</h3>
                 </div>
-              </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-              <a
-                href="{{ url_for('crm.crm_contacts_list') }}"
-                class="card quick-access-card text-decoration-none h-100"
-              >
-                <div
-                  class="card-body text-center d-flex flex-column justify-content-center align-items-center p-2 p-md-3"
-                >
-                  <i class="bi bi-people-fill display-5 text-info"></i>
-                  <h6 class="card-title mt-2 mb-0 small">Kişiler (CRM)</h6>
-                </div>
-              </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-              <a
-                href="{{ url_for('crm.crm_deals_list') }}"
-                class="card quick-access-card text-decoration-none h-100"
-              >
-                <div
-                  class="card-body text-center d-flex flex-column justify-content-center align-items-center p-2 p-md-3"
-                >
-                  <i
-                    class="bi bi-kanban-fill display-5"
-                    style="color: #6f42c1"
-                  ></i>
-                  <!-- Mor renk için inline style -->
-                  <h6 class="card-title mt-2 mb-0 small">Fırsatlar (CRM)</h6>
-                </div>
-              </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-              <a
-                href="{{ url_for('crm.crm_tasks_list') }}"
-                class="card quick-access-card text-decoration-none h-100"
-              >
-                <div
-                  class="card-body text-center d-flex flex-column justify-content-center align-items-center p-2 p-md-3"
-                >
-                  <i class="bi bi-check2-square display-5 text-warning"></i>
-                  <h6 class="card-title mt-2 mb-0 small">Görevler (CRM)</h6>
-                </div>
-              </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-              <a
-                href="{{ url_for('portfolio.portfolios_list') }}"
-                class="card quick-access-card text-decoration-none h-100"
-              >
-                <div
-                  class="card-body text-center d-flex flex-column justify-content-center align-items-center p-2 p-md-3"
-                >
-                  <i class="bi bi-graph-up display-5 text-secondary"></i>
-                  <h6 class="card-title mt-2 mb-0 small">Portföylerim</h6>
-                </div>
-              </a>
-            </div>
-          </div>
-
-          <!-- Genel İstatistikler -->
-          <div class="row mb-4">
-            <!-- İstatistik Kartları -->
-            <div class="col-12">
-              <div class="row g-3">
-                <div class="col-md-6 col-xl-4 stat-card-col">
-                  <div class="stat-card card h-100">
-                    <div class="card-body">
-                      <h6 class="card-title text-muted small">
-                        Toplam Arsa Analizi
-                      </h6>
-                      <div class="display-5">
-                        {{ stats.toplam_arsa_sayisi if stats else '0' }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 col-xl-4 stat-card-col">
-                  <div class="stat-card card h-100">
-                    <div class="card-body">
-                      <h6 class="card-title text-muted small">
-                        Ort. Arsa Fiyatı
-                      </h6>
-                      <div class="display-6" id="ortalamaFiyat">
-                        {{ "%.0f"|format(stats.ortalama_fiyat if stats else 0)
-                        }} TL
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 col-xl-4 stat-card-col">
-                  <div class="stat-card card h-100">
-                    <div class="card-body">
-                      <h6 class="card-title text-muted small">
-                        En Yüksek Arsa Fiyatı
-                      </h6>
-                      <div class="display-6" id="enYuksekFiyat">
-                        {{ "%.0f"|format(stats.en_yuksek_fiyat if stats else 0)
-                        }} TL
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 col-xl-4 stat-card-col">
-                  <div class="stat-card card h-100">
-                    <div class="card-body">
-                      <h6 class="card-title text-muted small">
-                        Açık Fırsat Sayısı
-                      </h6>
-                      <div class="display-5">
-                        {{ toplam_acik_firsat_sayisi }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 col-xl-4 stat-card-col">
-                  <div class="stat-card card h-100">
-                    <div class="card-body">
-                      <h6 class="card-title text-muted small">
-                        Açık Fırsat Değeri
-                      </h6>
-                      <div class="display-6">
-                        {{ "%.0f"|format(toplam_acik_firsat_degeri_try) }} TL
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- İsteğe bağlı diğer istatistik kartları buraya eklenebilir -->
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+          <div class="card stat-card h-100">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="stat-icon bg-purple-light text-purple me-3">
+                  <i class="fas fa-gem"></i>
+                </div>
+                <div>
+                  <h6 class="text-muted mb-1">Açık Fırsat Değeri</h6>
+                  <h3 class="mb-0 fw-bold">
+                    {{ "%.0f"|format(toplam_acik_firsat_degeri_try) }} TL
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
           <!-- Grafikler ve Aktiviteler -->
           <div class="row mb-4">
@@ -748,168 +513,96 @@
                         </div>
                     </div> -->
           </div>
-        </div>
-        <!-- Ana İçerik Alanı Sonu -->
-      </div>
-      <!-- Ana Row Sonu -->
-    </div>
-    <!-- Ana Container Fluid Sonu -->
+{% endblock %}
 
-    <!-- JavaScript Kodları (Sürüm tutarlılığı için 5.3.3'e güncellendi) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.0/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <!-- Add smooth scrolling -->
-    <script>
-      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-        anchor.addEventListener("click", function (e) {
-          e.preventDefault();
-          document.querySelector(this.getAttribute("href")).scrollIntoView({
-            behavior: "smooth",
-          });
+{% block extra_js %}
+<!-- Dashboard JavaScript -->
+<script>
+// Initialize dashboard components
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize modern components
+    if (window.ArsaApp) {
+        window.ArsaApp.init();
+    }
+
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Update icon
+            const icon = this.querySelector('i');
+            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
         });
-      });
-    </script>
-    <script>
-      // Chart.js initialization for analysis statistics
-      const analysisCtx = document.getElementById('analysisChart');
-      if (analysisCtx) { // Grafik elementi varsa başlat
-          const chartData = {
-              type: 'line',
-              data: {
-                  labels: {{ son_alti_ay | tojson }},
-                  datasets: [{
-                      label: 'Aylık Analizler',
-                      data: {{ aylik_analiz_sayilari | tojson }},
-                      borderColor: '#4f46e5',
-                      backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                      tension: 0.3,
-                      fill: true
-                  }]
-              },
-              options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                      legend: {
-                          display: false
-                      }
-                  },
-                  scales: {
-                      y: {
-                          beginAtZero: true,
-                          ticks: {
-                              precision: 0
-                          }
-                      }
-                  }
-              }
-          };
-          new Chart(analysisCtx.getContext('2d'), chartData);
-      }
+    }
 
-      // Chart.js initialization for region distribution
-      const regionCtx = document.getElementById('regionDistributionChart');
-      if (regionCtx) { // Grafik elementi varsa başlat
-          const pieChartData = {
-              type: 'pie',
-              data: {
-                  labels: {{ bolge_labels | tojson }},
-                  datasets: [{
-                      label: 'Bölge Dağılımı',
-                      data: {{ bolge_data | tojson }},
-                      backgroundColor: ['rgba(255, 99, 132, 0.8)','rgba(54, 162, 235, 0.8)','rgba(255, 206, 86, 0.8)','rgba(75, 192, 192, 0.8)','rgba(153, 102, 255, 0.8)','rgba(255, 159, 64, 0.8)'],
-                      borderWidth: 1
-                  }]
-              },
-              options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                      legend: {
-                          position: 'top',
-                          labels: {
-                              padding: 10,
-                              font: {
-                                  size: 11
-                              }
-                          }
-                      },
-                      tooltip: {
-                          callbacks: {
-                              label: function(context) {
-                                  return `${context.label || ''}: ${context.raw || 0} (Değer Bazlı)`;
-                              }
-                          }
-                      }
-                  }
-              }
-          };
-          new Chart(regionCtx.getContext('2d'), pieChartData);
-      }
+    // Chart initialization (if Chart.js is available)
+    if (typeof Chart !== 'undefined') {
+        // Analysis Chart
+        const analysisCtx = document.getElementById('analysisChart');
+        if (analysisCtx) {
+            new Chart(analysisCtx, {
+                type: 'line',
+                data: {
+                    labels: {{ son_alti_ay | tojson | safe }},
+                    datasets: [{
+                        label: 'Aylık Analizler',
+                        data: {{ aylik_analiz_sayilari | tojson | safe }},
+                        borderColor: 'var(--primary-600)',
+                        backgroundColor: 'var(--primary-100)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        }
 
-      // JavaScript for table search filtering
-      const analizAramaInput = document.getElementById('analizArama');
-      if(analizAramaInput) {
-          analizAramaInput.addEventListener('keyup', function () {
-              const value = this.value.toLowerCase();
-              // Bu arama fonksiyonunun hangi tabloya etki edeceğini belirtmeniz gerekebilir.
-              // Örneğin: document.querySelectorAll('#sonAnalizlerTablosu tbody tr').forEach(row => { ... });
-              // Şimdilik genel bir seçici varsayıyorum, bunu kendi tablonuza göre ayarlayın.
-              document.querySelectorAll('.table tbody tr').forEach(row => {
-                  const text = row.textContent.toLowerCase();
-                  row.style.display = text.includes(value) ? '' : 'none';
-              });
-          });
-      }
-
-
-      // Function to format currency in Turkish locale
-      function formatTurkishCurrency(number, decimalPlaces = 2) {
-          const num = parseFloat(number);
-          if (isNaN(num)) return number;
-          return new Intl.NumberFormat('tr-TR', {
-              minimumFractionDigits: decimalPlaces,
-              maximumFractionDigits: decimalPlaces
-          }).format(num);
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-          const ortalamaFiyatElement = document.getElementById('ortalamaFiyat');
-          if (ortalamaFiyatElement) {
-              const rawValueText = ortalamaFiyatElement.textContent.replace(/\s*TL\s*$/i, '').replace(/\./g, '').replace(',', '.');
-              const rawValue = parseFloat(rawValueText);
-              if (!isNaN(rawValue)) {
-                  ortalamaFiyatElement.textContent = formatTurkishCurrency(rawValue, 0) + ' TL';
-              }
-          }
-
-          const enYuksekFiyatElement = document.getElementById('enYuksekFiyat');
-          if (enYuksekFiyatElement) {
-              const rawValueText = enYuksekFiyatElement.textContent.replace(/\s*TL\s*$/i, '').replace(/\./g, '').replace(',', '.');
-              const rawValue = parseFloat(rawValueText);
-              if (!isNaN(rawValue)) {
-                  enYuksekFiyatElement.textContent = formatTurkishCurrency(rawValue, 0) + ' TL';
-              }
-          }
-
-          // Açık Fırsat Değeri için de formatlama eklenebilir (eğer ID'si varsa)
-          // const acikFirsatDegeriElement = document.querySelector('.display-6'); // Daha spesifik bir seçici kullanın
-          // if(acikFirsatDegeriElement && acikFirsatDegeriElement.textContent.includes('TL')) {
-          //    ... benzer formatlama ...
-          // }
-
-
-          const themeToggleBtn = document.getElementById('themeToggleBtn');
-          if (themeToggleBtn) {
-              themeToggleBtn.addEventListener('click', () => {
-                  document.body.classList.toggle('dark-mode');
-                  const currentTheme = document.body.classList.contains('dark-mode') ? 'Koyu' : 'Açık';
-                  themeToggleBtn.textContent = `Temayı Değiştir (${currentTheme})`;
-                  // Koyu tema tercihini localStorage'a kaydedebilirsiniz.
-              });
-          }
-      });
-    </script>
-  </body>
-</html>
+        // Region Distribution Chart
+        const regionCtx = document.getElementById('regionDistributionChart');
+        if (regionCtx) {
+            new Chart(regionCtx, {
+                type: 'pie',
+                data: {
+                    labels: {{ bolge_labels | tojson | safe }},
+                    datasets: [{
+                        data: {{ bolge_data | tojson | safe }},
+                        backgroundColor: [
+                            'var(--red-500)', 'var(--blue-500)', 'var(--yellow-500)',
+                            'var(--green-500)', 'var(--purple-500)', 'var(--orange-500)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 20 }
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %}
