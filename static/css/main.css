@@ -1,0 +1,463 @@
+/* Arsa Analiz Platform - Main Stylesheet with Tailwind CSS */
+
+/* Import Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Modern system fonts - no external imports needed */
+
+/* Base Layer - Custom base styles */
+@layer base {
+  html {
+    font-family: 'Helvetica Neue', Helvetica, Calibri, Arial, system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 leading-relaxed;
+    font-family: 'Helvetica Neue', Helvetica, Calibri, Arial, system-ui, sans-serif;
+  }
+  
+  /* Dark theme styles */
+  [data-theme="dark"] body {
+    @apply bg-gray-900 text-gray-100;
+  }
+  
+  /* Headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Helvetica Neue', Helvetica, Calibri, Arial, system-ui, sans-serif;
+    @apply font-semibold leading-tight;
+  }
+  
+  /* Focus styles for accessibility */
+  *:focus {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+  
+  [data-theme="dark"] *:focus {
+    @apply ring-offset-gray-900;
+  }
+}
+
+/* Components Layer - Custom component styles */
+@layer components {
+  /* Sidebar Navigation */
+  .sidebar {
+    @apply bg-gradient-to-br from-primary-600 to-primary-700 text-white min-h-screen w-64 fixed left-0 top-0 z-40 shadow-xl;
+    @apply flex flex-col overflow-y-auto transition-transform duration-300 ease-in-out;
+  }
+  
+  .sidebar-header {
+    @apply p-6 border-b border-white/10;
+  }
+  
+  .sidebar-title {
+    @apply text-lg font-bold text-white flex items-center;
+    font-family: 'Helvetica Neue', Helvetica, Calibri, Arial, system-ui, sans-serif;
+  }
+  
+  .sidebar-nav {
+    @apply flex-1 p-4;
+  }
+  
+  .sidebar .nav-link {
+    @apply flex items-center px-4 py-3 text-white/80 rounded-lg transition-all duration-200;
+    @apply hover:bg-white/10 hover:text-white hover:translate-x-1;
+  }
+  
+  .sidebar .nav-link.active {
+    @apply bg-white/20 text-white font-medium border-l-4 border-white;
+  }
+  
+  .sidebar .nav-link i {
+    @apply mr-3 text-lg w-6 text-center;
+  }
+  
+  .sidebar-footer {
+    @apply p-4 border-t border-white/10;
+  }
+  
+  /* Main Content Area */
+  .main-content {
+    @apply min-h-screen bg-gray-50 transition-all duration-300;
+  }
+  
+  .main-content.with-sidebar {
+    @apply ml-64;
+  }
+  
+  [data-theme="dark"] .main-content {
+    @apply bg-gray-900;
+  }
+  
+  /* Card Components */
+  .card {
+    @apply bg-white rounded-xl shadow-soft border-0 transition-all duration-300;
+    @apply hover:shadow-medium hover:-translate-y-1;
+  }
+  
+  [data-theme="dark"] .card {
+    @apply bg-gray-800 border border-gray-700;
+  }
+  
+  .card-header {
+    @apply bg-white border-b border-gray-200 font-semibold px-6 py-4 rounded-t-xl;
+    font-family: 'Helvetica Neue', Helvetica, Calibri, Arial, system-ui, sans-serif;
+  }
+  
+  [data-theme="dark"] .card-header {
+    @apply bg-gray-800 border-gray-700 text-gray-100;
+  }
+  
+  .card-body {
+    @apply p-6;
+  }
+  
+  /* Quick Access Cards */
+  .quick-access-card {
+    @apply bg-white rounded-xl shadow-soft transition-all duration-300 cursor-pointer;
+    @apply hover:shadow-medium hover:-translate-y-1 hover:bg-gradient-to-br hover:from-gray-50 hover:to-gray-100;
+  }
+  
+  [data-theme="dark"] .quick-access-card {
+    @apply bg-gray-800 border border-gray-700;
+    @apply hover:bg-gradient-to-br hover:from-gray-800 hover:to-gray-700;
+  }
+  
+  .quick-access-card i {
+    @apply transition-transform duration-300;
+  }
+  
+  .quick-access-card:hover i {
+    @apply scale-110;
+  }
+  
+  /* Stat Cards */
+  .stat-card {
+    @apply bg-white rounded-xl shadow-soft transition-all duration-300;
+    @apply hover:shadow-medium hover:-translate-y-1;
+  }
+  
+  [data-theme="dark"] .stat-card {
+    @apply bg-gray-800 border border-gray-700;
+  }
+  
+  .stat-icon {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0;
+  }
+  
+  /* Button Components */
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium px-6 py-3 rounded-lg;
+    @apply transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium px-6 py-3 rounded-lg;
+    @apply transition-all duration-200 shadow-sm hover:shadow-md;
+  }
+  
+  [data-theme="dark"] .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-gray-100;
+  }
+  
+  .btn-outline-light {
+    @apply border border-white/20 text-white hover:bg-white/10 font-medium px-6 py-3 rounded-lg;
+    @apply transition-all duration-200;
+  }
+  
+  /* Form Components */
+  .form-control {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900;
+    @apply focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-200;
+  }
+  
+  [data-theme="dark"] .form-control {
+    @apply bg-gray-700 border-gray-600 text-gray-100;
+    @apply focus:border-primary-400 focus:ring-primary-400/20;
+  }
+  
+  .form-select {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900;
+    @apply focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-200;
+  }
+  
+  [data-theme="dark"] .form-select {
+    @apply bg-gray-700 border-gray-600 text-gray-100;
+  }
+  
+  /* Alert Components */
+  .alert {
+    @apply px-4 py-3 rounded-lg border-0 font-medium;
+  }
+  
+  .alert-success {
+    @apply bg-success-50 text-success-800 border border-success-200;
+  }
+  
+  .alert-warning {
+    @apply bg-warning-50 text-warning-800 border border-warning-200;
+  }
+  
+  .alert-danger {
+    @apply bg-error-50 text-error-800 border border-error-200;
+  }
+  
+  .alert-info {
+    @apply bg-info-50 text-info-800 border border-info-200;
+  }
+  
+  [data-theme="dark"] .alert-success {
+    @apply bg-success-900/20 text-success-300 border-success-700;
+  }
+  
+  [data-theme="dark"] .alert-warning {
+    @apply bg-warning-900/20 text-warning-300 border-warning-700;
+  }
+  
+  [data-theme="dark"] .alert-danger {
+    @apply bg-error-900/20 text-error-300 border-error-700;
+  }
+  
+  [data-theme="dark"] .alert-info {
+    @apply bg-info-900/20 text-info-300 border-info-700;
+  }
+  
+  /* Table Components */
+  .table {
+    @apply w-full rounded-lg overflow-hidden shadow-soft;
+  }
+  
+  .table thead th {
+    @apply bg-gray-50 text-gray-700 font-semibold px-6 py-4 text-left border-b border-gray-200;
+  }
+  
+  .table tbody td {
+    @apply px-6 py-4 border-b border-gray-100 text-gray-900;
+  }
+  
+  [data-theme="dark"] .table thead th {
+    @apply bg-gray-800 text-gray-300 border-gray-700;
+  }
+  
+  [data-theme="dark"] .table tbody td {
+    @apply border-gray-700 text-gray-100;
+  }
+  
+  /* Loading Components */
+  .loading-overlay {
+    @apply fixed inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-50;
+    @apply opacity-0 invisible transition-all duration-300;
+  }
+  
+  .loading-overlay.show {
+    @apply opacity-100 visible;
+  }
+  
+  [data-theme="dark"] .loading-overlay {
+    @apply bg-gray-900/90;
+  }
+  
+  .loading-content {
+    @apply flex flex-col items-center gap-4 p-8 bg-white rounded-xl shadow-large;
+  }
+  
+  [data-theme="dark"] .loading-content {
+    @apply bg-gray-800 text-gray-100;
+  }
+  
+  /* Navigation Components */
+  .navbar {
+    @apply bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg;
+  }
+  
+  .navbar-brand {
+    @apply text-white font-bold text-lg flex items-center;
+    font-family: 'Helvetica Neue', Helvetica, Calibri, Arial, system-ui, sans-serif;
+  }
+  
+  .nav-link {
+    @apply text-white/80 hover:text-white transition-colors duration-200 flex items-center;
+  }
+  
+  .nav-link.active {
+    @apply text-white font-medium;
+  }
+  
+  /* SWOT Analysis Components */
+  .swot-item {
+    @apply bg-white border-l-4 rounded-lg p-4 mb-3 shadow-soft transition-all duration-200;
+    @apply hover:shadow-medium hover:-translate-y-0.5;
+  }
+  
+  .swot-item.strength {
+    @apply border-success-500;
+  }
+  
+  .swot-item.weakness {
+    @apply border-error-500;
+  }
+  
+  .swot-item.opportunity {
+    @apply border-info-500;
+  }
+  
+  .swot-item.threat {
+    @apply border-warning-500;
+  }
+  
+  [data-theme="dark"] .swot-item {
+    @apply bg-gray-800 border-gray-700;
+  }
+  
+  /* Activity Timeline */
+  .activity-timeline {
+    @apply relative pl-6;
+  }
+  
+  .activity-timeline::before {
+    @apply absolute left-1.5 top-1 bottom-1 w-0.5 bg-gray-200 content-[''];
+  }
+  
+  [data-theme="dark"] .activity-timeline::before {
+    @apply bg-gray-700;
+  }
+  
+  .activity-item {
+    @apply relative mb-4;
+  }
+  
+  .activity-item::before {
+    @apply absolute -left-1 top-1.5 w-3 h-3 bg-primary-600 rounded-full border-2 border-white content-[''];
+    @apply shadow-sm;
+  }
+  
+  [data-theme="dark"] .activity-item::before {
+    @apply border-gray-800;
+  }
+}
+
+/* Utilities Layer - Custom utility classes */
+@layer utilities {
+  /* Background utilities */
+  .bg-primary-light {
+    @apply bg-primary-500/10;
+  }
+  
+  .bg-success-light {
+    @apply bg-success-500/10;
+  }
+  
+  .bg-warning-light {
+    @apply bg-warning-500/10;
+  }
+  
+  .bg-error-light {
+    @apply bg-error-500/10;
+  }
+  
+  .bg-info-light {
+    @apply bg-info-500/10;
+  }
+  
+  /* Text utilities */
+  .text-real-estate-gold {
+    color: #d4af37;
+  }
+  
+  .text-real-estate-earth {
+    color: #8b4513;
+  }
+  
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+  
+  /* Responsive utilities */
+  .sidebar-mobile-hidden {
+    @apply -translate-x-full lg:translate-x-0;
+  }
+  
+  .sidebar-mobile-visible {
+    @apply translate-x-0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .sidebar {
+    @apply -translate-x-full;
+  }
+  
+  .sidebar.show {
+    @apply translate-x-0;
+  }
+  
+  .main-content.with-sidebar {
+    @apply ml-0;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-body {
+    @apply p-4;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    @apply px-4 py-2 text-sm;
+  }
+  
+  .stat-card .card-body {
+    @apply p-4;
+  }
+  
+  .quick-access-card .card-body {
+    @apply p-3;
+  }
+}
+
+/* Print styles */
+@media print {
+  .sidebar,
+  .navbar,
+  .btn,
+  .loading-overlay {
+    @apply hidden;
+  }
+  
+  .main-content.with-sidebar {
+    @apply ml-0;
+  }
+  
+  .card {
+    @apply shadow-none border border-gray-300;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    @apply transition-none animate-none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card {
+    @apply border-2 border-gray-900;
+  }
+  
+  [data-theme="dark"] .card {
+    @apply border-gray-100;
+  }
+}

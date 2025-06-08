@@ -1,280 +1,301 @@
 {% extends "crm/crm_base.html" %}
 
-{% block title %}Fırsatlar - CRM{% endblock %}
+{% block crm_title %}Fırsatlar - CRM{% endblock %}
 
-{% block head_extra %}
-    {{ super() }}
-    <!-- Sortable.js için gerekli stiller -->
-    <style>
-        /* Sortable.js için gerekli stiller */
-        .sortable-ghost {
-            opacity: 0.5;
-            background: #c8ebfb;
-        }
-        .sortable-drag {
-            opacity: 0.9;
-            background: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .kanban-deal-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: move;
-        }
-        .kanban-deal-card.dragging {
-            transform: scale(1.02);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        #test-box {
-            padding: 10px;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            line-height: 80px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            width: 100px;
-            height: 100px;
-            background: red;
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 9999;
-            cursor: move;
-        }
-        
-        /* Kanban tahtası stilleri */
-        .kanban-board {
-            display: flex;
-            gap: 1rem;
-            overflow-x: auto;
-            padding: 1rem 0;
-            min-height: 70vh;
-        }
-        .kanban-column {
-            flex: 0 0 300px;
-            background: #f8f9fa;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-height: 100%;
-        }
-        .kanban-column .card-body {
-            min-height: 100px;
-            transition: background-color 0.2s;
-        }
-        .kanban-column-header {
-            font-weight: 600;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #dee2e6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .kanban-deal-card {
-            background: white;
-            border-radius: 0.375rem;
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            cursor: move;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border-left: 3px solid #0d6efd;
-        }
-        .kanban-deal-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .kanban-deal-card.dragging {
-            opacity: 0.5;
-            background: #f8f9fa;
-        }
-        .deal-title {
-            font-weight: 500;
-            margin-bottom: 0.25rem;
-            color: #212529;
-        }
-        .deal-amount {
-            font-weight: 600;
-            color: #0d6efd;
-            font-size: 1.1rem;
-        }
-        .deal-company {
-            font-size: 0.875rem;
-            color: #6c757d;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        .deal-stage {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 1rem;
-            font-size: 0.7rem;
-            font-weight: 500;
-            margin-top: 0.5rem;
-            background: #e9ecef;
-            color: #495057;
-        }
-        
-        /* Sürükleme efekti stilleri */
-        .sortable-ghost {
-            opacity: 0.4;
-            background: #e9ecef;
-            border: 2px dashed #adb5bd;
-        }
-        .sortable-chosen {
-            cursor: grabbing;
-        }
-        .sortable-drag {
-            opacity: 1 !important;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transform: rotate(2deg);
-        }
-        
-        /* Sütun vurgulama */
-        .kanban-column.highlight {
-            background-color: #f1f8ff;
-        }
-    </style>
+{% block crm_meta_description %}CRM fırsatlar listesi - Satış fırsatlarınızı Kanban board ile yönetin{% endblock %}
+
+{% block crm_extra_css %}
+<style>
+  /* Kanban Board Styles */
+  .kanban-board {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    min-height: 100vh;
+  }
+  .kanban-column {
+    flex-shrink: 0;
+    width: 20rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    min-height: 70vh;
+  }
+  .kanban-column-header {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .kanban-deal-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    cursor: move;
+    transition: all 0.2s;
+    border-left: 4px solid #3b82f6;
+  }
+  .kanban-deal-card:hover {
+    transform: translateY(-0.25rem);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  .kanban-deal-card.dragging {
+    opacity: 0.5;
+    background-color: #f9fafb;
+  }
+  .deal-title {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: #111827;
+  }
+  .deal-amount {
+    font-weight: 600;
+    color: #2563eb;
+    font-size: 1.125rem;
+  }
+  .deal-company {
+    font-size: 0.875rem;
+    color: #4b5563;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Sortable.js Styles */
+  .sortable-ghost {
+    opacity: 0.4;
+    background-color: #e5e7eb;
+    border: 2px dashed #9ca3af;
+  }
+  .sortable-chosen {
+    cursor: grabbing;
+  }
+  .sortable-drag {
+    opacity: 1;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: rotate(2deg);
+  }
+  .kanban-column.highlight {
+    background-color: #eff6ff;
+  }
+</style>
 {% endblock %}
 
 {% block crm_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-kanban-fill me-2"></i> Fırsat Yönetimi</h2>
-    <a href="{{ url_for('crm.crm_deal_new') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-1"></i> Yeni Fırsat Ekle
-    </a>
+<div class="mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center">
+        <i class="fas fa-handshake mr-3 text-green-600"></i>Fırsat Yönetimi
+      </h2>
+      <p class="text-gray-600">Satış fırsatlarınızı Kanban board ile yönetin</p>
+    </div>
+    <div class="mt-4 sm:mt-0">
+      <a href="{{ url_for('crm.crm_deal_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus mr-2"></i>Yeni Fırsat Ekle
+      </a>
+    </div>
+  </div>
 </div>
 
 {% if deals_by_stage %}
 <div class="kanban-board">
-    {% for stage in stages %}
-        {% if stage in deals_by_stage and deals_by_stage[stage] or stage not in ["Kazanıldı", "Kaybedildi"] %} {# Kazanıldı/Kaybedildi boşsa gösterme, diğerlerini hep göster #}
-        <div class="kanban-column card" data-stage="{{ stage }}">
-            <div class="card-header bg-light">
-                {{ stage }} ({{ deals_by_stage[stage]|length if stage in deals_by_stage else 0 }})
-            </div>
-            <div class="card-body p-2" id="stage-{{ stage|lower|replace(' ', '-') }}">
-                {% if stage in deals_by_stage and deals_by_stage[stage] %}
-                    {% for deal in deals_by_stage[stage] %}
-                    <div class="kanban-deal-card shadow-sm" data-deal-id="{{ deal.id }}">
-                        <h6><a href="{{ url_for('crm.crm_deal_detail', deal_id=deal.id) }}">{{ deal.title }}</a></h6>
-                        <p class="mb-1">
-                            <i class="bi bi-person-circle me-1"></i> {{ deal.contact.first_name }} {{ deal.contact.last_name }}
-                            {% if deal.company %}<br><i class="bi bi-building me-1"></i> {{ deal.company.name }}{% endif %}
-                        </p>
-                        <p class="fw-bold">{{ "%.2f"|format(deal.value) if deal.value else 'N/A' }} {{ deal.currency }}</p>
-                        {% if deal.expected_close_date %}
-                        <p><i class="bi bi-calendar-check me-1"></i> Tahmini Kapanış: {{ deal.expected_close_date.strftime('%d.%m.%Y') }}</p>
-                        {% endif %}
-                        <div>
-                            <a href="{{ url_for('crm.crm_deal_edit', deal_id=deal.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
-                            {# Silme formu daha sonra eklenebilir veya detay sayfasında kalabilir #}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted small text-center p-3">Bu aşamada fırsat yok.</p>
-                {% endif %}
-                <div class="text-center mt-2">
-                    <a href="{{ url_for('crm.crm_deal_new', stage=stage) }}" class="btn btn-sm btn-outline-success w-100">
-                        <i class="bi bi-plus"></i> Bu Aşamaya Ekle
-                    </a>
-                </div>
-            </div>
+  {% for stage in stages %}
+    {% if stage in deals_by_stage and deals_by_stage[stage] or stage not in ["Kazanıldı", "Kaybedildi"] %}
+    <div class="kanban-column" data-stage="{{ stage }}">
+      <div class="kanban-column-header">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">{{ stage }}</h3>
+          <span class="text-sm text-gray-500">({{ deals_by_stage[stage]|length if stage in deals_by_stage else 0 }})</span>
         </div>
+        <div class="flex items-center space-x-2">
+          {% if stage == "Potansiyel" %}
+            <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
+          {% elif stage == "Nitelikli" %}
+            <div class="w-3 h-3 bg-blue-400 rounded-full"></div>
+          {% elif stage == "Teklif" %}
+            <div class="w-3 h-3 bg-purple-400 rounded-full"></div>
+          {% elif stage == "Müzakere" %}
+            <div class="w-3 h-3 bg-orange-400 rounded-full"></div>
+          {% elif stage == "Kazanıldı" %}
+            <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+          {% elif stage == "Kaybedildi" %}
+            <div class="w-3 h-3 bg-red-400 rounded-full"></div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="space-y-3" id="stage-{{ stage|lower|replace(' ', '-') }}">
+        {% if stage in deals_by_stage and deals_by_stage[stage] %}
+          {% for deal in deals_by_stage[stage] %}
+          <div class="kanban-deal-card" data-deal-id="{{ deal.id }}">
+            <div class="flex items-start justify-between mb-2">
+              <h4 class="deal-title">
+                <a href="{{ url_for('crm.crm_deal_detail', deal_id=deal.id) }}"
+                   class="hover:text-blue-600">
+                  {{ deal.title }}
+                </a>
+              </h4>
+              <a href="{{ url_for('crm.crm_deal_edit', deal_id=deal.id) }}"
+                 class="text-gray-400 hover:text-gray-600" title="Düzenle">
+                <i class="fas fa-edit text-sm"></i>
+              </a>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center text-sm text-gray-600">
+                <i class="fas fa-user mr-2"></i>
+                {{ deal.contact.first_name }} {{ deal.contact.last_name }}
+              </div>
+
+              {% if deal.company %}
+              <div class="flex items-center text-sm text-gray-600">
+                <i class="fas fa-building mr-2"></i>
+                {{ deal.company.name }}
+              </div>
+              {% endif %}
+
+              <div class="deal-amount">
+                {{ "%.2f"|format(deal.value) if deal.value else 'N/A' }} {{ deal.currency }}
+              </div>
+
+              {% if deal.expected_close_date %}
+              <div class="flex items-center text-xs text-gray-500">
+                <i class="fas fa-calendar mr-2"></i>
+                {{ deal.expected_close_date.strftime('%d.%m.%Y') }}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-8">
+            <div class="text-gray-400 mb-2">
+              <i class="fas fa-inbox text-2xl"></i>
+            </div>
+            <p class="text-sm text-gray-500">Bu aşamada fırsat yok</p>
+          </div>
         {% endif %}
-    {% endfor %}
+
+        <div class="mt-4">
+          <a href="{{ url_for('crm.crm_deal_new', stage=stage) }}"
+             class="w-full flex items-center justify-center px-3 py-2 border border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors">
+            <i class="fas fa-plus mr-2"></i>Bu Aşamaya Ekle
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  {% endfor %}
 </div>
-{% else %} {# Bu, {% if deals_by_stage %} bloğunun else kısmı #}
-<div class="alert alert-light text-center" role="alert">
-    <i class="bi bi-info-circle me-2"></i> Henüz hiç fırsat eklenmemiş.
-    <a href="{{ url_for('crm.crm_deal_new') }}" class="alert-link">Hemen bir fırsat ekleyin!</a>
+{% else %}
+<div class="text-center py-12">
+  <div class="max-w-md mx-auto">
+    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-handshake text-gray-400 text-2xl"></i>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Henüz fırsat yok</h3>
+    <p class="text-gray-600 mb-6">İlk satış fırsatınızı ekleyerek başlayın.</p>
+    <a href="{{ url_for('crm.crm_deal_new') }}" class="btn btn-primary">
+      <i class="fas fa-plus mr-2"></i>Yeni Fırsat Ekle
+    </a>
+  </div>
 </div>
-{% endif %} {# Bu, {% if deals_by_stage %} bloğunun kapanışı #}
-
-{% endblock %} {# BU, crm_content bloğunun kapanışı. EKLENMELİ! #}
-
+{% endif %}
+{% endblock %}
 
 
-{% block scripts_extra %}
-    {{ super() }}
-    <!-- Sortable.js kütüphanesini yükle -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
-    
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Sayfa yüklendi, Sortable başlatılıyor...');
-        
-        // Sortable kütüphanesinin yüklü olduğundan emin ol
-        if (typeof Sortable === 'undefined') {
-            console.error('HATA: Sortable.js kütüphanesi yüklenemedi!');
-            showErrorToast('Sürükle-bırak özelliği için gerekli kütüphane yüklenemedi. Lütfen internet bağlantınızı kontrol edin.');
-            return;
-        }
-        
-        console.log('Sortable versiyonu:', Sortable.version);
-        
-        // Kanban tahtasını başlat
-        initializeKanban();
-        
-        // Toast'ları başlat
-        initializeToasts();
-    });
-    
-    // Toast bildirimlerini başlat
-    function initializeToasts() {
-        // Sayfadaki tüm toast'ları al
-        const toastElList = [].slice.call(document.querySelectorAll('.toast'));
-        // Her toast için Bootstrap Toast örneği oluştur
-        window.toastList = toastElList.map(function (toastEl) {
-            return new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
-        });
+
+{% block crm_extra_js %}
+<!-- Sortable.js kütüphanesini yükle -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Sayfa yüklendi, Sortable başlatılıyor...');
+
+    // Sortable kütüphanesinin yüklü olduğundan emin ol
+    if (typeof Sortable === 'undefined') {
+        console.error('HATA: Sortable.js kütüphanesi yüklenemedi!');
+        showErrorToast('Sürükle-bırak özelliği için gerekli kütüphane yüklenemedi. Lütfen internet bağlantınızı kontrol edin.');
+        return;
     }
-    
-    // Başarılı işlem bildirimi göster
-    function showSuccessToast(message) {
-        const toastEl = document.getElementById('successToast');
-        const toastBody = document.getElementById('toastMessage');
-        const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
-        
+
+    console.log('Sortable versiyonu:', Sortable.version);
+
+    // Kanban tahtasını başlat
+    initializeKanban();
+
+    // Toast'ları başlat
+    initializeToasts();
+});
+// Toast bildirimlerini başlat
+function initializeToasts() {
+    // Modern toast handling
+    console.log('Toast sistemi başlatıldı');
+}
+
+// Başarılı işlem bildirimi göster
+function showSuccessToast(message) {
+    const toastEl = document.getElementById('successToast');
+    const toastBody = document.getElementById('toastMessage');
+
+    if (toastEl && toastBody) {
         toastBody.textContent = message || 'İşlem başarıyla tamamlandı.';
-        toast.show();
+        toastEl.classList.remove('hidden');
+
+        // 5 saniye sonra gizle
+        setTimeout(() => {
+            toastEl.classList.add('hidden');
+        }, 5000);
     }
-    
-    // Hata bildirimi göster
-    function showErrorToast(message) {
-        const toastEl = document.getElementById('errorToast');
-        const toastBody = document.getElementById('errorToastMessage');
-        const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
-        
+}
+
+// Hata bildirimi göster
+function showErrorToast(message) {
+    const toastEl = document.getElementById('errorToast');
+    const toastBody = document.getElementById('errorToastMessage');
+
+    if (toastEl && toastBody) {
         toastBody.textContent = message || 'Bir hata oluştu. Lütfen tekrar deneyin.';
-        toast.show();
+        toastEl.classList.remove('hidden');
+
+        // 5 saniye sonra gizle
+        setTimeout(() => {
+            toastEl.classList.add('hidden');
+        }, 5000);
     }
+}
     
-    function initializeKanban() {
-        console.log('Kanban tahtası başlatılıyor...');
-        
-        // Tüm sütunları seç
-        const columns = document.querySelectorAll('.kanban-column .card-body');
-        console.log('Toplam sütun sayısı:', columns.length);
-        
-        if (columns.length === 0) {
-            console.warn('Uyarı: Sürükleme için hiçbir sütun bulunamadı.');
-            return;
-        }
-        
-        // Her sütun için Sortable'ı başlat
-        columns.forEach((column, index) => {
-            try {
-                new Sortable(column, {
-                    group: 'deals', // Tüm sürükleme alanları aynı grupta olacak
-                    animation: 150,  // Animasyon süresi (ms)
-                    ghostClass: 'sortable-ghost', // Sürükleme sırasındaki hayalet öğe sınıfı
-                    chosenClass: 'sortable-chosen', // Seçili öğe sınıfı
-                    dragClass: 'sortable-drag', // Sürüklenen öğe sınıfı
-                    draggable: '.kanban-deal-card', // Sürüklenebilir öğeler
-                    handle: '.kanban-deal-card', // Sürükleme tutamaçları
+function initializeKanban() {
+    console.log('Kanban tahtası başlatılıyor...');
+
+    // Tüm sütunları seç (güncellenmiş selector)
+    const columns = document.querySelectorAll('.kanban-column > div:last-child');
+    console.log('Toplam sütun sayısı:', columns.length);
+
+    if (columns.length === 0) {
+        console.warn('Uyarı: Sürükleme için hiçbir sütun bulunamadı.');
+        return;
+    }
+
+    // Her sütun için Sortable'ı başlat
+    columns.forEach((column, index) => {
+        try {
+            new Sortable(column, {
+                group: 'deals', // Tüm sürükleme alanları aynı grupta olacak
+                animation: 150,  // Animasyon süresi (ms)
+                ghostClass: 'sortable-ghost', // Sürükleme sırasındaki hayalet öğe sınıfı
+                chosenClass: 'sortable-chosen', // Seçili öğe sınıfı
+                dragClass: 'sortable-drag', // Sürüklenen öğe sınıfı
+                draggable: '.kanban-deal-card', // Sürüklenebilir öğeler
+                handle: '.kanban-deal-card', // Sürükleme tutamaçları
                     
                     // Sürükleme başladığında
                     onStart: function(evt) {

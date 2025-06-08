@@ -378,24 +378,44 @@ def contact_delete(contact_id):
 @crm.route('/api/contacts', methods=['GET'])
 @login_required
 def api_contacts():
-    """Kişiler için API endpoint'i"""
+    """Kişiler için gelişmiş API endpoint'i - arama ve filtreleme destekli"""
     user_id = get_user_id()
-    search_term = request.args.get('q', '')
-    
-    # Arama terimi varsa filtreleme yap
+
+    # Query parametrelerini al
+    search_term = request.args.get('q', '').strip()
+    status_filter = request.args.get('status', '').strip()
+    company_filter = request.args.get('company_id', '').strip()
+
+    # Base query
+    query = Contact.query.filter(Contact.user_id == user_id)
+
+    # Arama terimi filtresi
     if search_term:
-        contacts = Contact.query.filter(
-            Contact.user_id == user_id,
-            or_(
-                Contact.first_name.ilike(f'%{search_term}%'),
-                Contact.last_name.ilike(f'%{search_term}%'),
-                Contact.email.ilike(f'%{search_term}%'),
-                Contact.phone.ilike(f'%{search_term}%')
-            )
-        ).order_by(Contact.last_name, Contact.first_name).all()
-    else:
-        contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
-    
+        search_filter = or_(
+            Contact.first_name.ilike(f'%{search_term}%'),
+            Contact.last_name.ilike(f'%{search_term}%'),
+            Contact.email.ilike(f'%{search_term}%'),
+            Contact.phone.ilike(f'%{search_term}%')
+        )
+        query = query.filter(search_filter)
+
+    # Durum filtresi
+    if status_filter:
+        query = query.filter(Contact.status == status_filter)
+
+    # Şirket filtresi
+    if company_filter:
+        try:
+            company_id = int(company_filter)
+            query = query.filter(Contact.company_id == company_id)
+        except ValueError:
+            # Geçersiz company_id, filtreyi yoksay
+            pass
+
+    # Sonuçları al ve sırala
+    contacts = query.order_by(Contact.last_name, Contact.first_name).all()
+
+    # JSON formatında döndür
     return jsonify([contact.to_dict() for contact in contacts])
 
 

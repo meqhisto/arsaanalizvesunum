@@ -1,0 +1,652 @@
+{% extends "crm/crm_base.html" %}
+
+{% block crm_title %}Dashboard{% endblock %}
+{% block crm_meta_description %}CRM Dashboard - İş süreçlerinizi takip edin{% endblock %}
+
+{% block crm_extra_css %}
+<style>
+/* Dashboard Styles */
+.stat-card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.stat-number {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+}
+
+.activity-item {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.2s;
+}
+
+.activity-item:hover {
+  background-color: #f9fafb;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 0.375rem;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+  height: 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-number {
+  height: 2.5rem;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  height: 6rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Smooth transitions */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block crm_content %}
+<div class="mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center">
+        <i class="fas fa-chart-line mr-3 text-blue-600"></i>Dashboard
+      </h2>
+      <p class="text-gray-600">İş süreçlerinizin genel görünümü</p>
+    </div>
+    <div class="mt-4 sm:mt-0">
+      <button id="refresh-dashboard" class="btn btn-outline-primary">
+        <i class="fas fa-sync-alt mr-2"></i>Yenile
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <!-- Toplam Kişiler -->
+  <div class="stat-card p-6">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-users text-blue-600 text-xl"></i>
+        </div>
+      </div>
+      <div class="ml-4 flex-1">
+        <div id="total-contacts-loading" class="skeleton skeleton-number" style="display: none;"></div>
+        <div id="total-contacts" class="stat-number text-blue-600">-</div>
+        <div class="stat-label">Toplam Kişi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bu Ay Eklenen -->
+  <div class="stat-card p-6">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-user-plus text-green-600 text-xl"></i>
+        </div>
+      </div>
+      <div class="ml-4 flex-1">
+        <div id="contacts-this-month-loading" class="skeleton skeleton-number" style="display: none;"></div>
+        <div id="contacts-this-month" class="stat-number text-green-600">-</div>
+        <div class="stat-label">Bu Ay Eklenen</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toplam Şirketler -->
+  <div class="stat-card p-6">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-building text-purple-600 text-xl"></i>
+        </div>
+      </div>
+      <div class="ml-4 flex-1">
+        <div id="total-companies-loading" class="skeleton skeleton-number" style="display: none;"></div>
+        <div id="total-companies" class="stat-number text-purple-600">-</div>
+        <div class="stat-label">Toplam Şirket</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dönüşüm Oranı -->
+  <div class="stat-card p-6">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-chart-line text-orange-600 text-xl"></i>
+        </div>
+      </div>
+      <div class="ml-4 flex-1">
+        <div id="conversion-rate-loading" class="skeleton skeleton-number" style="display: none;"></div>
+        <div id="conversion-rate" class="stat-number text-orange-600">-%</div>
+        <div class="stat-label">Dönüşüm Oranı</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <!-- Durum Dağılımı -->
+  <div class="chart-container">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Durum Dağılımı</h3>
+    <div id="status-chart-loading" class="skeleton" style="height: 200px; display: none;"></div>
+    <canvas id="statusChart" style="display: none;"></canvas>
+    <div id="status-chart-empty" class="flex items-center justify-center h-48 text-gray-500" style="display: none;">
+      <div class="text-center">
+        <i class="fas fa-chart-pie text-4xl mb-2"></i>
+        <p>Henüz veri yok</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aylık Trend -->
+  <div class="chart-container">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Son 6 Ay Trend</h3>
+    <div id="trend-chart-loading" class="skeleton" style="height: 200px; display: none;"></div>
+    <canvas id="trendChart" style="display: none;"></canvas>
+    <div id="trend-chart-empty" class="flex items-center justify-center h-48 text-gray-500" style="display: none;">
+      <div class="text-center">
+        <i class="fas fa-chart-line text-4xl mb-2"></i>
+        <p>Henüz veri yok</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Son Eklenen Kişiler -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">Son Eklenen Kişiler</h3>
+    </div>
+    <div id="recent-contacts-loading" class="p-4" style="display: none;">
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text"></div>
+    </div>
+    <div id="recent-contacts-list">
+      <!-- JavaScript ile doldurulacak -->
+    </div>
+    <div id="recent-contacts-empty" class="p-6 text-center text-gray-500" style="display: none;">
+      <i class="fas fa-user-plus text-2xl mb-2"></i>
+      <p>Henüz kişi eklenmemiş</p>
+    </div>
+  </div>
+
+  <!-- Son Güncellenen Kişiler -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">Son Güncellenen</h3>
+    </div>
+    <div id="updated-contacts-loading" class="p-4" style="display: none;">
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text"></div>
+    </div>
+    <div id="updated-contacts-list">
+      <!-- JavaScript ile doldurulacak -->
+    </div>
+    <div id="updated-contacts-empty" class="p-6 text-center text-gray-500" style="display: none;">
+      <i class="fas fa-edit text-2xl mb-2"></i>
+      <p>Henüz güncelleme yok</p>
+    </div>
+  </div>
+
+  <!-- Son Etkileşimler -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">Son Etkileşimler</h3>
+    </div>
+    <div id="recent-interactions-loading" class="p-4" style="display: none;">
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text"></div>
+    </div>
+    <div id="recent-interactions-list">
+      <!-- JavaScript ile doldurulacak -->
+    </div>
+    <div id="recent-interactions-empty" class="p-6 text-center text-gray-500" style="display: none;">
+      <i class="fas fa-comments text-2xl mb-2"></i>
+      <p>Henüz etkileşim yok</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block crm_extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+class DashboardManager {
+  constructor() {
+    this.statusChart = null;
+    this.trendChart = null;
+    this.refreshBtn = document.getElementById('refresh-dashboard');
+    
+    this.init();
+  }
+  
+  init() {
+    this.bindEvents();
+    this.loadDashboard();
+  }
+  
+  bindEvents() {
+    if (this.refreshBtn) {
+      this.refreshBtn.addEventListener('click', () => {
+        this.loadDashboard();
+      });
+    }
+  }
+  
+  async loadDashboard() {
+    this.showLoading();
+    
+    try {
+      // Paralel olarak tüm verileri yükle
+      const [statsData, trendData, activitiesData] = await Promise.all([
+        this.fetchStats(),
+        this.fetchTrendData(),
+        this.fetchActivities()
+      ]);
+      
+      this.renderStats(statsData);
+      this.renderCharts(statsData, trendData);
+      this.renderActivities(activitiesData);
+      
+    } catch (error) {
+      console.error('Dashboard yüklenirken hata:', error);
+      this.showError('Dashboard verileri yüklenirken bir hata oluştu.');
+    } finally {
+      this.hideLoading();
+    }
+  }
+  
+  async fetchStats() {
+    const response = await fetch('/crm/api/dashboard/stats');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  }
+  
+  async fetchTrendData() {
+    const response = await fetch('/crm/api/dashboard/charts/monthly-trend');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  }
+  
+  async fetchActivities() {
+    const response = await fetch('/crm/api/dashboard/recent-activities');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  }
+  
+  showLoading() {
+    // Stats loading
+    document.querySelectorAll('[id$="-loading"]').forEach(el => {
+      el.style.display = 'block';
+    });
+    
+    // Hide actual content
+    document.getElementById('total-contacts').style.display = 'none';
+    document.getElementById('contacts-this-month').style.display = 'none';
+    document.getElementById('total-companies').style.display = 'none';
+    document.getElementById('conversion-rate').style.display = 'none';
+  }
+  
+  hideLoading() {
+    // Hide loading
+    document.querySelectorAll('[id$="-loading"]').forEach(el => {
+      el.style.display = 'none';
+    });
+    
+    // Show actual content
+    document.getElementById('total-contacts').style.display = 'block';
+    document.getElementById('contacts-this-month').style.display = 'block';
+    document.getElementById('total-companies').style.display = 'block';
+    document.getElementById('conversion-rate').style.display = 'block';
+  }
+  
+  renderStats(data) {
+    document.getElementById('total-contacts').textContent = data.total_contacts || 0;
+    document.getElementById('contacts-this-month').textContent = data.contacts_this_month || 0;
+    document.getElementById('total-companies').textContent = data.total_companies || 0;
+    document.getElementById('conversion-rate').textContent = `${data.conversion_rate || 0}%`;
+  }
+
+  renderCharts(statsData, trendData) {
+    this.renderStatusChart(statsData.status_distribution);
+    this.renderTrendChart(trendData);
+  }
+
+  renderStatusChart(statusData) {
+    const canvas = document.getElementById('statusChart');
+    const loading = document.getElementById('status-chart-loading');
+    const empty = document.getElementById('status-chart-empty');
+
+    loading.style.display = 'none';
+
+    if (!statusData || statusData.length === 0) {
+      empty.style.display = 'flex';
+      canvas.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    canvas.style.display = 'block';
+
+    // Destroy existing chart
+    if (this.statusChart) {
+      this.statusChart.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    this.statusChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: statusData.map(item => item.status || 'Belirtilmemiş'),
+        datasets: [{
+          data: statusData.map(item => item.count),
+          backgroundColor: [
+            '#3B82F6', // Blue
+            '#10B981', // Green
+            '#F59E0B', // Yellow
+            '#EF4444', // Red
+            '#8B5CF6', // Purple
+            '#06B6D4'  // Cyan
+          ],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 20,
+              usePointStyle: true
+            }
+          }
+        }
+      }
+    });
+  }
+
+  renderTrendChart(trendData) {
+    const canvas = document.getElementById('trendChart');
+    const loading = document.getElementById('trend-chart-loading');
+    const empty = document.getElementById('trend-chart-empty');
+
+    loading.style.display = 'none';
+
+    if (!trendData || !trendData.months || trendData.months.length === 0) {
+      empty.style.display = 'flex';
+      canvas.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    canvas.style.display = 'block';
+
+    // Destroy existing chart
+    if (this.trendChart) {
+      this.trendChart.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    this.trendChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: trendData.months,
+        datasets: [{
+          label: 'Eklenen Kişiler',
+          data: trendData.counts,
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#3B82F6',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+  }
+
+  renderActivities(data) {
+    this.renderRecentContacts(data.recent_contacts);
+    this.renderUpdatedContacts(data.updated_contacts);
+    this.renderRecentInteractions(data.recent_interactions);
+  }
+
+  renderRecentContacts(contacts) {
+    const container = document.getElementById('recent-contacts-list');
+    const loading = document.getElementById('recent-contacts-loading');
+    const empty = document.getElementById('recent-contacts-empty');
+
+    loading.style.display = 'none';
+
+    if (!contacts || contacts.length === 0) {
+      empty.style.display = 'block';
+      container.innerHTML = '';
+      return;
+    }
+
+    empty.style.display = 'none';
+    container.innerHTML = contacts.map(contact => `
+      <div class="activity-item">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <span class="text-xs font-medium text-blue-600">
+                ${(contact.name.split(' ')[0]?.[0] || '?') + (contact.name.split(' ')[1]?.[0] || '')}
+              </span>
+            </div>
+          </div>
+          <div class="ml-3 flex-1">
+            <p class="text-sm font-medium text-gray-900">
+              <a href="/crm/contact/${contact.id}" class="hover:text-blue-600">
+                ${contact.name}
+              </a>
+            </p>
+            <p class="text-xs text-gray-500">${contact.email || 'Email yok'}</p>
+            <p class="text-xs text-gray-400">
+              ${new Date(contact.created_at).toLocaleDateString('tr-TR')}
+            </p>
+          </div>
+          <div class="flex-shrink-0">
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+              ${contact.status || 'Lead'}
+            </span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  renderUpdatedContacts(contacts) {
+    const container = document.getElementById('updated-contacts-list');
+    const loading = document.getElementById('updated-contacts-loading');
+    const empty = document.getElementById('updated-contacts-empty');
+
+    loading.style.display = 'none';
+
+    if (!contacts || contacts.length === 0) {
+      empty.style.display = 'block';
+      container.innerHTML = '';
+      return;
+    }
+
+    empty.style.display = 'none';
+    container.innerHTML = contacts.map(contact => `
+      <div class="activity-item">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-edit text-green-600 text-xs"></i>
+            </div>
+          </div>
+          <div class="ml-3 flex-1">
+            <p class="text-sm font-medium text-gray-900">
+              <a href="/crm/contact/${contact.id}" class="hover:text-blue-600">
+                ${contact.name}
+              </a>
+            </p>
+            <p class="text-xs text-gray-500">${contact.email || 'Email yok'}</p>
+            <p class="text-xs text-gray-400">
+              ${new Date(contact.updated_at).toLocaleDateString('tr-TR')}
+            </p>
+          </div>
+          <div class="flex-shrink-0">
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+              Güncellendi
+            </span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  renderRecentInteractions(interactions) {
+    const container = document.getElementById('recent-interactions-list');
+    const loading = document.getElementById('recent-interactions-loading');
+    const empty = document.getElementById('recent-interactions-empty');
+
+    loading.style.display = 'none';
+
+    if (!interactions || interactions.length === 0) {
+      empty.style.display = 'block';
+      container.innerHTML = '';
+      return;
+    }
+
+    empty.style.display = 'none';
+    container.innerHTML = interactions.map(interaction => `
+      <div class="activity-item">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-comments text-purple-600 text-xs"></i>
+            </div>
+          </div>
+          <div class="ml-3 flex-1">
+            <p class="text-sm font-medium text-gray-900">${interaction.type}</p>
+            <p class="text-xs text-gray-600">${interaction.contact_name}</p>
+            <p class="text-xs text-gray-500 truncate">${interaction.summary}</p>
+            <p class="text-xs text-gray-400">
+              ${new Date(interaction.interaction_date).toLocaleDateString('tr-TR')}
+            </p>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  showError(message) {
+    console.error(message);
+    // Burada toast notification gösterilebilir
+  }
+}
+
+// Sayfa yüklendiğinde başlat
+document.addEventListener('DOMContentLoaded', () => {
+  new DashboardManager();
+});
+</script>
+{% endblock %}

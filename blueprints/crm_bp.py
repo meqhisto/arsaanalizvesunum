@@ -1,7 +1,7 @@
 # blueprints/crm_bp.py
 import json # JSON işlemleri için eklendi
 from flask import (
-    Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+    Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, make_response
 )
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
@@ -29,6 +29,20 @@ DEAL_STAGES = [
 
 crm_bp = Blueprint('crm', __name__, template_folder='../templates/crm')
 # template_folder='../templates/crm' ayarı, şablonların ana 'templates/crm' klasöründe olduğunu varsayar.
+
+# --- DASHBOARD ROTALARI ---
+@crm_bp.route('/')
+@crm_bp.route('/dashboard')
+@login_required
+def crm_dashboard():
+    """CRM Dashboard ana sayfası"""
+    return render_template('dashboard.html', title="Dashboard")
+
+@crm_bp.route('/import')
+@login_required
+def crm_import_wizard():
+    """CRM Import Wizard sayfası"""
+    return render_template('import_wizard.html', title="Import Wizard")
 
 # --- SABİTLER (Eski app.py'den taşındı, bir constants.py dosyasına da alınabilir) ---
 DEAL_STAGES = ["Potansiyel", "Görüşme Planlandı", "Teklif Sunuldu", "Müzakere", "Kazanıldı", "Kaybedildi", "Beklemede"]
@@ -919,6 +933,906 @@ def crm_task_toggle_status(task_id):
 # Şimdilik bunları main_bp.py'ye taşıyalım, çünkü daha genel kullanıcı portföyleri gibi duruyor.
 # Eğer CRM ile çok entegre olacaksa buraya da gelebilir.
 # Bu örnekte main_bp.py'de bırakıyorum.
+
+# --- API ROTALARI ---
+
+@crm_bp.route('/api/contacts', methods=['GET'])
+@login_required
+def api_contacts():
+    """Kişiler için gelişmiş API endpoint'i - arama, filtreleme ve sayfalama destekli"""
+    user_id = current_user.id
+
+    # Query parametrelerini al
+    search_term = request.args.get('q', '').strip()
+    status_filter = request.args.get('status', '').strip()
+    company_filter = request.args.get('company_id', '').strip()
+
+    # Pagination parametreleri
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 25, type=int)
+
+    # per_page limitini kontrol et (max 100)
+    per_page = min(per_page, 100)
+
+    # Base query
+    from sqlalchemy import or_
+    query = Contact.query.filter(Contact.user_id == user_id)
+
+    # Arama terimi filtresi
+    if search_term:
+        search_filter = or_(
+            Contact.first_name.ilike(f'%{search_term}%'),
+            Contact.last_name.ilike(f'%{search_term}%'),
+            Contact.email.ilike(f'%{search_term}%'),
+            Contact.phone.ilike(f'%{search_term}%')
+        )
+        query = query.filter(search_filter)
+
+    # Durum filtresi
+    if status_filter:
+        query = query.filter(Contact.status == status_filter)
+
+    # Şirket filtresi
+    if company_filter:
+        try:
+            company_id = int(company_filter)
+            query = query.filter(Contact.company_id == company_id)
+        except ValueError:
+            # Geçersiz company_id, filtreyi yoksay
+            pass
+
+    # Sıralama ve sayfalama
+    query = query.order_by(Contact.last_name, Contact.first_name)
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    # Response formatı
+    return jsonify({
+        'contacts': [contact.to_dict() for contact in pagination.items],
+        'pagination': {
+            'page': pagination.page,
+            'per_page': pagination.per_page,
+            'total': pagination.total,
+            'pages': pagination.pages,
+            'has_prev': pagination.has_prev,
+            'has_next': pagination.has_next,
+            'prev_num': pagination.prev_num,
+            'next_num': pagination.next_num
+        }
+    })
+
+
+@crm_bp.route('/api/companies', methods=['GET'])
+@login_required
+def api_companies():
+    """Şirketler için API endpoint'i"""
+    user_id = current_user.id
+    search_term = request.args.get('q', '')
+
+    # Arama terimi varsa filtreleme yap
+    if search_term:
+        from sqlalchemy import or_
+        companies = Company.query.filter(
+            Company.user_id == user_id,
+            or_(
+                Company.name.ilike(f'%{search_term}%'),
+                Company.industry.ilike(f'%{search_term}%'),
+                Company.email.ilike(f'%{search_term}%'),
+                Company.phone.ilike(f'%{search_term}%')
+            )
+        ).order_by(Company.name).all()
+    else:
+        companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+
+    return jsonify([company.to_dict() for company in companies])
+
+
+@crm_bp.route('/api/contacts/bulk-delete', methods=['POST'])
+@login_required
+def api_bulk_delete_contacts():
+    """Toplu kişi silme API endpoint'i"""
+    user_id = current_user.id
+    data = request.get_json()
+
+    if not data or 'contact_ids' not in data:
+        return jsonify({'error': 'contact_ids gerekli'}), 400
+
+    contact_ids = data['contact_ids']
+    if not isinstance(contact_ids, list) or not contact_ids:
+        return jsonify({'error': 'Geçerli contact_ids listesi gerekli'}), 400
+
+    try:
+        # Kullanıcının kişilerini kontrol et ve sil
+        deleted_count = Contact.query.filter(
+            Contact.user_id == user_id,
+            Contact.id.in_(contact_ids)
+        ).delete(synchronize_session=False)
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'deleted_count': deleted_count,
+            'message': f'{deleted_count} kişi başarıyla silindi'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@crm_bp.route('/api/contacts/bulk-update-status', methods=['POST'])
+@login_required
+def api_bulk_update_status():
+    """Toplu durum güncelleme API endpoint'i"""
+    user_id = current_user.id
+    data = request.get_json()
+
+    if not data or 'contact_ids' not in data or 'status' not in data:
+        return jsonify({'error': 'contact_ids ve status gerekli'}), 400
+
+    contact_ids = data['contact_ids']
+    new_status = data['status']
+
+    if not isinstance(contact_ids, list) or not contact_ids:
+        return jsonify({'error': 'Geçerli contact_ids listesi gerekli'}), 400
+
+    if not new_status:
+        return jsonify({'error': 'Geçerli status gerekli'}), 400
+
+    try:
+        # Kullanıcının kişilerini kontrol et ve güncelle
+        updated_count = Contact.query.filter(
+            Contact.user_id == user_id,
+            Contact.id.in_(contact_ids)
+        ).update({'status': new_status}, synchronize_session=False)
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'updated_count': updated_count,
+            'message': f'{updated_count} kişinin durumu başarıyla güncellendi'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@crm_bp.route('/api/contacts/bulk-export', methods=['POST'])
+@login_required
+def api_bulk_export_contacts():
+    """Toplu export API endpoint'i"""
+    user_id = current_user.id
+    data = request.get_json()
+
+    if not data or 'contact_ids' not in data:
+        return jsonify({'error': 'contact_ids gerekli'}), 400
+
+    contact_ids = data['contact_ids']
+    if not isinstance(contact_ids, list) or not contact_ids:
+        return jsonify({'error': 'Geçerli contact_ids listesi gerekli'}), 400
+
+    try:
+        # Kullanıcının kişilerini al
+        contacts = Contact.query.filter(
+            Contact.user_id == user_id,
+            Contact.id.in_(contact_ids)
+        ).all()
+
+        # CSV oluştur
+        import csv
+        import io
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+
+        # Header
+        writer.writerow([
+            'ID', 'Ad', 'Soyad', 'E-posta', 'Telefon',
+            'Şirket', 'Durum', 'Kaynak', 'Segment',
+            'Değer Skoru', 'Etiketler', 'Notlar', 'Oluşturma Tarihi'
+        ])
+
+        # Data
+        for contact in contacts:
+            writer.writerow([
+                contact.id,
+                contact.first_name or '',
+                contact.last_name or '',
+                contact.email or '',
+                contact.phone or '',
+                contact.company.name if contact.company else '',
+                contact.status or '',
+                contact.source or '',
+                contact.segment or '',
+                contact.value_score or '',
+                contact.tags or '',
+                contact.notes or '',
+                contact.created_at.strftime('%Y-%m-%d %H:%M:%S') if contact.created_at else ''
+            ])
+
+        # Response
+        output.seek(0)
+        response = make_response(output.getvalue())
+        response.headers['Content-Type'] = 'text/csv'
+        response.headers['Content-Disposition'] = f'attachment; filename=contacts_export_{len(contacts)}_records.csv'
+
+        return response
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@crm_bp.route('/api/dashboard/stats', methods=['GET'])
+@login_required
+def api_dashboard_stats():
+    """Dashboard istatistikleri API endpoint'i"""
+    user_id = current_user.id
+
+    try:
+        from datetime import datetime, timedelta
+        from sqlalchemy import func, extract
+
+        # Temel sayılar
+        total_contacts = Contact.query.filter_by(user_id=user_id).count()
+        total_companies = Company.query.filter_by(user_id=user_id).count()
+
+        # Bu ay eklenen kişiler
+        current_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        contacts_this_month = Contact.query.filter(
+            Contact.user_id == user_id,
+            Contact.created_at >= current_month
+        ).count()
+
+        # Durum dağılımı
+        status_distribution = db.session.query(
+            Contact.status,
+            func.count(Contact.id).label('count')
+        ).filter(
+            Contact.user_id == user_id
+        ).group_by(Contact.status).all()
+
+        # Lead → Müşteri dönüşüm oranı (basit hesaplama)
+        total_leads = Contact.query.filter_by(user_id=user_id, status='Lead').count()
+        total_customers = Contact.query.filter_by(user_id=user_id, status='Müşteri').count()
+        conversion_rate = round((total_customers / (total_leads + total_customers) * 100), 1) if (total_leads + total_customers) > 0 else 0
+
+        # Son 30 gün aktivite
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        recent_contacts = Contact.query.filter(
+            Contact.user_id == user_id,
+            Contact.created_at >= thirty_days_ago
+        ).count()
+
+        return jsonify({
+            'total_contacts': total_contacts,
+            'total_companies': total_companies,
+            'contacts_this_month': contacts_this_month,
+            'recent_contacts': recent_contacts,
+            'conversion_rate': conversion_rate,
+            'status_distribution': [
+                {'status': status, 'count': count}
+                for status, count in status_distribution
+            ]
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@crm_bp.route('/api/dashboard/charts/monthly-trend', methods=['GET'])
+@login_required
+def api_dashboard_monthly_trend():
+    """Aylık trend grafiği için veri"""
+    user_id = current_user.id
+
+    try:
+        from datetime import datetime, timedelta
+        from sqlalchemy import func, extract
+
+        # Son 6 ay
+        months_data = []
+        current_date = datetime.now()
+
+        for i in range(6):
+            # Her ayın başlangıcı
+            month_start = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            if i > 0:
+                # Önceki aylara git
+                if month_start.month > i:
+                    month_start = month_start.replace(month=month_start.month - i)
+                else:
+                    year_diff = (i - month_start.month) // 12 + 1
+                    new_month = 12 - ((i - month_start.month) % 12)
+                    month_start = month_start.replace(year=month_start.year - year_diff, month=new_month)
+
+            # Sonraki ayın başlangıcı
+            if month_start.month == 12:
+                month_end = month_start.replace(year=month_start.year + 1, month=1)
+            else:
+                month_end = month_start.replace(month=month_start.month + 1)
+
+            # Bu ay eklenen kişi sayısı
+            count = Contact.query.filter(
+                Contact.user_id == user_id,
+                Contact.created_at >= month_start,
+                Contact.created_at < month_end
+            ).count()
+
+            months_data.append({
+                'month': month_start.strftime('%Y-%m'),
+                'month_name': month_start.strftime('%B %Y'),
+                'count': count
+            })
+
+        # Ters çevir (en eski aydan en yeniye)
+        months_data.reverse()
+
+        return jsonify({
+            'months': [item['month_name'] for item in months_data],
+            'counts': [item['count'] for item in months_data]
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@crm_bp.route('/api/dashboard/recent-activities', methods=['GET'])
+@login_required
+def api_dashboard_recent_activities():
+    """Son aktiviteler için veri"""
+    user_id = current_user.id
+
+    try:
+        # Son eklenen kişiler (5 adet)
+        recent_contacts = Contact.query.filter_by(user_id=user_id)\
+            .order_by(Contact.created_at.desc())\
+            .limit(5).all()
+
+        # Son güncellenen kişiler (5 adet)
+        updated_contacts = Contact.query.filter_by(user_id=user_id)\
+            .filter(Contact.updated_at.isnot(None))\
+            .order_by(Contact.updated_at.desc())\
+            .limit(5).all()
+
+        # Son etkileşimler (5 adet)
+        recent_interactions = Interaction.query.filter_by(user_id=user_id)\
+            .order_by(Interaction.interaction_date.desc())\
+            .limit(5).all()
+
+        return jsonify({
+            'recent_contacts': [
+                {
+                    'id': contact.id,
+                    'name': f"{contact.first_name} {contact.last_name}",
+                    'email': contact.email,
+                    'status': contact.status,
+                    'created_at': contact.created_at.isoformat() if contact.created_at else None
+                }
+                for contact in recent_contacts
+            ],
+            'updated_contacts': [
+                {
+                    'id': contact.id,
+                    'name': f"{contact.first_name} {contact.last_name}",
+                    'email': contact.email,
+                    'status': contact.status,
+                    'updated_at': contact.updated_at.isoformat() if contact.updated_at else None
+                }
+                for contact in updated_contacts
+            ],
+            'recent_interactions': [
+                {
+                    'id': interaction.id,
+                    'type': interaction.type,
+                    'summary': interaction.summary,
+                    'contact_name': f"{interaction.contact.first_name} {interaction.contact.last_name}" if interaction.contact else 'N/A',
+                    'interaction_date': interaction.interaction_date.isoformat() if interaction.interaction_date else None
+                }
+                for interaction in recent_interactions
+            ]
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# --- IMPORT/EXPORT API ROTALARI ---
+
+@crm_bp.route('/api/import/template', methods=['GET'])
+@login_required
+def api_download_import_template():
+    """Import template dosyası indirme"""
+    try:
+        import pandas as pd
+        import io
+
+        # Template data
+        template_data = {
+            'first_name': ['Ahmet', 'Ayşe', 'Mehmet'],
+            'last_name': ['Yılmaz', 'Kaya', 'Demir'],
+            'email': ['ahmet@example.com', 'ayse@example.com', 'mehmet@example.com'],
+            'phone': ['+90 555 123 4567', '+90 555 987 6543', '+90 555 456 7890'],
+            'company_name': ['ABC Şirketi', 'XYZ Ltd.', 'DEF A.Ş.'],
+            'status': ['Lead', 'Müşteri', 'Lead'],
+            'source': ['Website', 'Referans', 'Sosyal Medya'],
+            'segment': ['A', 'B', 'A'],
+            'notes': ['Potansiyel müşteri', 'Mevcut müşteri', 'Takip edilecek']
+        }
+
+        # Create DataFrame
+        df = pd.DataFrame(template_data)
+
+        # Create Excel file in memory
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='Kişiler', index=False)
+
+            # Add instructions sheet
+            instructions = pd.DataFrame({
+                'Sütun Adı': ['first_name', 'last_name', 'email', 'phone', 'company_name', 'status', 'source', 'segment', 'notes'],
+                'Açıklama': [
+                    'Kişinin adı (zorunlu)',
+                    'Kişinin soyadı (zorunlu)',
+                    'E-posta adresi (benzersiz olmalı)',
+                    'Telefon numarası',
+                    'Şirket adı',
+                    'Durum: Lead, Müşteri, Partner, Eski Müşteri, Diğer',
+                    'Kaynak: Website, Referans, Sosyal Medya, vb.',
+                    'Segment: A, B, C',
+                    'Notlar ve açıklamalar'
+                ],
+                'Zorunlu': ['Evet', 'Evet', 'Hayır', 'Hayır', 'Hayır', 'Hayır', 'Hayır', 'Hayır', 'Hayır']
+            })
+            instructions.to_excel(writer, sheet_name='Talimatlar', index=False)
+
+        output.seek(0)
+
+        response = make_response(output.getvalue())
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response.headers['Content-Disposition'] = 'attachment; filename=crm_import_template.xlsx'
+
+        return response
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@crm_bp.route('/api/import/upload', methods=['POST'])
+@login_required
+def api_upload_import_file():
+    """Import dosyası yükleme ve önizleme"""
+    user_id = current_user.id
+
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'Dosya seçilmedi'}), 400
+
+        # File extension check
+        allowed_extensions = {'.csv', '.xlsx', '.xls'}
+        file_ext = '.' + file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+
+        if file_ext not in allowed_extensions:
+            return jsonify({'error': 'Desteklenen formatlar: CSV, Excel (.xlsx, .xls)'}), 400
+
+        # Read file
+        import pandas as pd
+
+        if file_ext == '.csv':
+            df = pd.read_csv(file, encoding='utf-8')
+        else:
+            df = pd.read_excel(file)
+
+        # Basic validation
+        if df.empty:
+            return jsonify({'error': 'Dosya boş'}), 400
+
+        if len(df) > 1000:
+            return jsonify({'error': 'Maksimum 1000 kayıt yüklenebilir'}), 400
+
+        # Column mapping
+        column_mapping = {
+            'first_name': ['first_name', 'ad', 'name', 'isim'],
+            'last_name': ['last_name', 'soyad', 'surname', 'soyisim'],
+            'email': ['email', 'e-mail', 'eposta', 'mail'],
+            'phone': ['phone', 'telefon', 'tel', 'mobile'],
+            'company_name': ['company_name', 'company', 'şirket', 'firma'],
+            'status': ['status', 'durum', 'state'],
+            'source': ['source', 'kaynak', 'origin'],
+            'segment': ['segment', 'segmenti'],
+            'notes': ['notes', 'notlar', 'açıklama', 'description']
+        }
+
+        # Auto-map columns
+        mapped_columns = {}
+        available_columns = [col.lower() for col in df.columns]
+
+        for target_col, possible_names in column_mapping.items():
+            for possible_name in possible_names:
+                if possible_name.lower() in available_columns:
+                    original_col = df.columns[available_columns.index(possible_name.lower())]
+                    mapped_columns[target_col] = original_col
+                    break
+
+        # Preview data (first 10 rows)
+        preview_data = df.head(10).to_dict('records')
+
+        # Store file data in session for later processing
+        session['import_data'] = {
+            'data': df.to_dict('records'),
+            'columns': list(df.columns),
+            'mapped_columns': mapped_columns,
+            'total_rows': len(df)
+        }
+
+        return jsonify({
+            'success': True,
+            'preview': preview_data,
+            'columns': list(df.columns),
+            'mapped_columns': mapped_columns,
+            'total_rows': len(df),
+            'message': f'{len(df)} kayıt başarıyla yüklendi'
+        })
+
+    except Exception as e:
+        return jsonify({'error': f'Dosya işlenirken hata: {str(e)}'}), 500
+
+
+@crm_bp.route('/api/import/validate', methods=['POST'])
+@login_required
+def api_validate_import_data():
+    """Import verilerini doğrulama"""
+    user_id = current_user.id
+
+    try:
+        data = request.get_json()
+        column_mapping = data.get('column_mapping', {})
+
+        if 'import_data' not in session:
+            return jsonify({'error': 'Import verisi bulunamadı'}), 400
+
+        import_data = session['import_data']
+        df_data = import_data['data']
+
+        validation_results = {
+            'valid_rows': [],
+            'invalid_rows': [],
+            'errors': [],
+            'warnings': []
+        }
+
+        for idx, row in enumerate(df_data):
+            row_errors = []
+            row_warnings = []
+
+            # Map columns
+            mapped_row = {}
+            for target_col, source_col in column_mapping.items():
+                if source_col and source_col in row:
+                    mapped_row[target_col] = row[source_col]
+                else:
+                    mapped_row[target_col] = None
+
+            # Validate required fields
+            if not mapped_row.get('first_name'):
+                row_errors.append('Ad alanı zorunlu')
+
+            if not mapped_row.get('last_name'):
+                row_errors.append('Soyad alanı zorunlu')
+
+            # Validate email format
+            email = mapped_row.get('email')
+            if email:
+                import re
+                email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                if not re.match(email_pattern, str(email)):
+                    row_errors.append('Geçersiz e-posta formatı')
+                else:
+                    # Check if email already exists
+                    existing_contact = Contact.query.filter_by(user_id=user_id, email=email).first()
+                    if existing_contact:
+                        row_warnings.append(f'E-posta zaten mevcut: {email}')
+
+            # Validate status
+            status = mapped_row.get('status')
+            if status:
+                valid_statuses = ['Lead', 'Müşteri', 'Partner', 'Eski Müşteri', 'Diğer']
+                if status not in valid_statuses:
+                    row_warnings.append(f'Geçersiz durum: {status}. Varsayılan olarak "Lead" kullanılacak')
+                    mapped_row['status'] = 'Lead'
+            else:
+                mapped_row['status'] = 'Lead'
+
+            # Add row to results
+            row_result = {
+                'index': idx + 1,
+                'data': mapped_row,
+                'errors': row_errors,
+                'warnings': row_warnings
+            }
+
+            if row_errors:
+                validation_results['invalid_rows'].append(row_result)
+            else:
+                validation_results['valid_rows'].append(row_result)
+
+        # Summary
+        validation_results['summary'] = {
+            'total_rows': len(df_data),
+            'valid_rows': len(validation_results['valid_rows']),
+            'invalid_rows': len(validation_results['invalid_rows']),
+            'can_import': len(validation_results['valid_rows']) > 0
+        }
+
+        return jsonify(validation_results)
+
+    except Exception as e:
+        return jsonify({'error': f'Doğrulama hatası: {str(e)}'}), 500
+
+
+@crm_bp.route('/api/import/process', methods=['POST'])
+@login_required
+def api_process_import():
+    """Import işlemini gerçekleştirme"""
+    user_id = current_user.id
+
+    try:
+        data = request.get_json()
+        import_valid_rows = data.get('valid_rows', [])
+
+        if not import_valid_rows:
+            return jsonify({'error': 'İçe aktarılacak geçerli veri yok'}), 400
+
+        imported_count = 0
+        skipped_count = 0
+        errors = []
+
+        for row_data in import_valid_rows:
+            try:
+                contact_data = row_data['data']
+
+                # Check if contact already exists (by email)
+                email = contact_data.get('email')
+                if email:
+                    existing_contact = Contact.query.filter_by(user_id=user_id, email=email).first()
+                    if existing_contact:
+                        skipped_count += 1
+                        continue
+
+                # Handle company
+                company_id = None
+                company_name = contact_data.get('company_name')
+                if company_name:
+                    company = Company.query.filter_by(user_id=user_id, name=company_name).first()
+                    if not company:
+                        # Create new company
+                        company = Company(
+                            user_id=user_id,
+                            name=company_name
+                        )
+                        db.session.add(company)
+                        db.session.flush()  # Get the ID
+                    company_id = company.id
+
+                # Create contact
+                contact = Contact(
+                    user_id=user_id,
+                    first_name=contact_data.get('first_name'),
+                    last_name=contact_data.get('last_name'),
+                    email=contact_data.get('email'),
+                    phone=contact_data.get('phone'),
+                    company_id=company_id,
+                    status=contact_data.get('status', 'Lead'),
+                    source=contact_data.get('source'),
+                    segment=contact_data.get('segment'),
+                    notes=contact_data.get('notes')
+                )
+
+                db.session.add(contact)
+                imported_count += 1
+
+            except Exception as e:
+                errors.append(f"Satır {row_data.get('index', '?')}: {str(e)}")
+
+        # Commit all changes
+        db.session.commit()
+
+        # Clear session data
+        if 'import_data' in session:
+            del session['import_data']
+
+        return jsonify({
+            'success': True,
+            'imported_count': imported_count,
+            'skipped_count': skipped_count,
+            'errors': errors,
+            'message': f'{imported_count} kişi başarıyla içe aktarıldı'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'İçe aktarma hatası: {str(e)}'}), 500
+
+
+@crm_bp.route('/api/contacts/export/<format>', methods=['POST'])
+@login_required
+def api_export_contacts(format):
+    """Gelişmiş export API endpoint'i"""
+    user_id = current_user.id
+
+    try:
+        data = request.get_json() or {}
+        export_type = data.get('export_type', 'selected')
+
+        # Base query
+        from sqlalchemy import or_
+        query = Contact.query.filter(Contact.user_id == user_id)
+
+        if export_type == 'selected':
+            contact_ids = data.get('contact_ids', [])
+            if not contact_ids:
+                return jsonify({'error': 'Seçili kişi bulunamadı'}), 400
+            query = query.filter(Contact.id.in_(contact_ids))
+
+        elif export_type == 'filtered':
+            # Apply filters from query params
+            search_term = request.args.get('q', '').strip()
+            status_filter = request.args.get('status', '').strip()
+            company_filter = request.args.get('company_id', '').strip()
+
+            if search_term:
+                search_filter = or_(
+                    Contact.first_name.ilike(f'%{search_term}%'),
+                    Contact.last_name.ilike(f'%{search_term}%'),
+                    Contact.email.ilike(f'%{search_term}%'),
+                    Contact.phone.ilike(f'%{search_term}%')
+                )
+                query = query.filter(search_filter)
+
+            if status_filter:
+                query = query.filter(Contact.status == status_filter)
+
+            if company_filter:
+                try:
+                    company_id = int(company_filter)
+                    query = query.filter(Contact.company_id == company_id)
+                except ValueError:
+                    pass
+
+        # Get contacts
+        contacts = query.order_by(Contact.last_name, Contact.first_name).all()
+
+        if not contacts:
+            return jsonify({'error': 'Export edilecek kişi bulunamadı'}), 400
+
+        # Generate export file
+        if format.lower() == 'csv':
+            return generate_csv_export(contacts)
+        elif format.lower() == 'excel':
+            return generate_excel_export(contacts)
+        else:
+            return jsonify({'error': 'Desteklenmeyen format'}), 400
+
+    except Exception as e:
+        return jsonify({'error': f'Export hatası: {str(e)}'}), 500
+
+
+def generate_csv_export(contacts):
+    """CSV export oluşturma"""
+    import csv
+    import io
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header
+    writer.writerow([
+        'ID', 'Ad', 'Soyad', 'E-posta', 'Telefon',
+        'Şirket', 'Durum', 'Kaynak', 'Segment',
+        'Değer Skoru', 'Etiketler', 'Notlar', 'Oluşturma Tarihi', 'Güncelleme Tarihi'
+    ])
+
+    # Data
+    for contact in contacts:
+        writer.writerow([
+            contact.id,
+            contact.first_name or '',
+            contact.last_name or '',
+            contact.email or '',
+            contact.phone or '',
+            contact.company.name if contact.company else '',
+            contact.status or '',
+            contact.source or '',
+            contact.segment or '',
+            contact.value_score or '',
+            contact.tags or '',
+            contact.notes or '',
+            contact.created_at.strftime('%Y-%m-%d %H:%M:%S') if contact.created_at else '',
+            contact.updated_at.strftime('%Y-%m-%d %H:%M:%S') if contact.updated_at else ''
+        ])
+
+    output.seek(0)
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+    response.headers['Content-Disposition'] = f'attachment; filename=contacts_export_{len(contacts)}_records.csv'
+
+    return response
+
+
+def generate_excel_export(contacts):
+    """Excel export oluşturma"""
+    import pandas as pd
+    import io
+    from datetime import datetime
+
+    # Prepare data
+    data = []
+    for contact in contacts:
+        data.append({
+            'ID': contact.id,
+            'Ad': contact.first_name or '',
+            'Soyad': contact.last_name or '',
+            'E-posta': contact.email or '',
+            'Telefon': contact.phone or '',
+            'Şirket': contact.company.name if contact.company else '',
+            'Durum': contact.status or '',
+            'Kaynak': contact.source or '',
+            'Segment': contact.segment or '',
+            'Değer Skoru': contact.value_score or '',
+            'Etiketler': contact.tags or '',
+            'Notlar': contact.notes or '',
+            'Oluşturma Tarihi': contact.created_at.strftime('%Y-%m-%d %H:%M:%S') if contact.created_at else '',
+            'Güncelleme Tarihi': contact.updated_at.strftime('%Y-%m-%d %H:%M:%S') if contact.updated_at else ''
+        })
+
+    # Create DataFrame
+    df = pd.DataFrame(data)
+
+    # Create Excel file in memory
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Kişiler', index=False)
+
+        # Format the worksheet
+        worksheet = writer.sheets['Kişiler']
+
+        # Auto-adjust column widths
+        for column in worksheet.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            worksheet.column_dimensions[column_letter].width = adjusted_width
+
+        # Add summary sheet
+        summary_data = {
+            'Metrik': ['Toplam Kayıt', 'Export Tarihi', 'Export Saati'],
+            'Değer': [len(contacts), datetime.now().strftime('%Y-%m-%d'), datetime.now().strftime('%H:%M:%S')]
+        }
+        summary_df = pd.DataFrame(summary_data)
+        summary_df.to_excel(writer, sheet_name='Özet', index=False)
+
+    output.seek(0)
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    response.headers['Content-Disposition'] = f'attachment; filename=contacts_export_{len(contacts)}_records.xlsx'
+
+    return response
+
 
 # --- CRM V2 EKİP YÖNETİMİ ROTALARI ---
 # Bu rotalar için yeni template'ler ve modellerde (CrmTeam, crm_team_members) bazı

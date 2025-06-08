@@ -39,6 +39,27 @@ class Contact(db.Model):
     def __repr__(self):
         return f"<Contact {self.first_name} {self.last_name}>"
 
+    def to_dict(self):
+        """Contact nesnesini dictionary'ye dönüştürür"""
+        return {
+            'id': self.id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'email': self.email,
+            'phone': self.phone,
+            'role': self.role,
+            'status': self.status,
+            'source': self.source,
+            'company_id': self.company_id,
+            'company_name': self.company.name if self.company else None,
+            'segment': self.segment,
+            'value_score': self.value_score,
+            'tags': self.tags,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'notes': self.notes
+        }
+
 class Company(db.Model):
     __tablename__ = "crm_companies"
     id = db.Column(db.Integer, primary_key=True)
@@ -61,6 +82,21 @@ class Company(db.Model):
 
     def __repr__(self):
         return f"<Company {self.name}>"
+
+    def to_dict(self):
+        """Company nesnesini dictionary'ye dönüştürür"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'industry': self.industry,
+            'website': self.website,
+            'address': self.address,
+            'phone': self.phone,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'contact_count': self.contacts.count() if self.contacts else 0
+        }
 
 class Interaction(db.Model):
     __tablename__ = "crm_interactions"

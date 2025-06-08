@@ -7,6 +7,7 @@ from flask_jwt_extended import (
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta
 import secrets
+import traceback
 
 from models import db
 from models.user_models import User
@@ -182,10 +183,7 @@ def register():
 
 
 @auth_v1.route('/login', methods=['POST'])
-@log_api_call
-@handle_db_errors
-@validate_json(UserLoginSchema)
-def login(data):
+def login():
     """
     Kullanıcı girişi
     ---
@@ -227,67 +225,101 @@ def login(data):
       423:
         description: Account locked
     """
-    email = data['email']
-    password = data['password']
-    remember_me = data.get('remember_me', False)
-    
-    # Kullanıcıyı bul
-    user = User.query.filter_by(email=email).first()
-    
-    if not user:
-        return unauthorized_response("Invalid email or password")
-    
-    # Hesap kilidi kontrolü
-    if user.failed_attempts >= 5:
-        return error_response("Account locked due to too many failed attempts", 423)
-    
-    # Aktif kullanıcı kontrolü
-    if not user.is_active:
-        return unauthorized_response("Account is deactivated")
-    
-    # Parola kontrolü
-    if not check_password_hash(user.password_hash, password):
-        # Başarısız deneme sayısını artır
-        user.failed_attempts += 1
+    try:
+        # JSON verilerini al
+        data = request.get_json()
+        current_app.logger.info(f"Raw request data: {data}")
+        current_app.logger.info(f"Request headers: {dict(request.headers)}")
+        current_app.logger.info(f"Request method: {request.method}")
+        current_app.logger.info(f"Request content type: {request.content_type}")
+
+        if not data:
+            current_app.logger.error("No JSON data provided in request")
+            return error_response("No JSON data provided", 400)
+
+        current_app.logger.info(f"Login attempt for data: {data}")
+
+        email = data.get('email')
+        password = data.get('password')
+        remember_me = data.get('remember_me', False)
+
+        if not email or not password:
+            current_app.logger.error(f"Missing email or password: email={email}, password={'***' if password else None}")
+            return error_response("Email and password are required", 400)
+
+        current_app.logger.info(f"Login attempt for email: {email}")
+
+        # Kullanıcıyı bul
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            current_app.logger.warning(f"User not found: {email}")
+            return unauthorized_response("Invalid email or password")
+
+        current_app.logger.info(f"User found: {user.email}, active: {user.is_active}, failed_attempts: {user.failed_attempts}")
+
+        # Hesap kilidi kontrolü
+        if user.failed_attempts >= 5:
+            current_app.logger.warning(f"Account locked: {email}")
+            return error_response("Account locked due to too many failed attempts", 423)
+
+        # Aktif kullanıcı kontrolü
+        if not user.is_active:
+            current_app.logger.warning(f"Account deactivated: {email}")
+            return unauthorized_response("Account is deactivated")
+
+        # Parola kontrolü
+        password_check = user.check_password(password)
+        current_app.logger.info(f"Password check result for {email}: {password_check}")
+
+        if not password_check:
+            # Başarısız deneme sayısını artır
+            user.failed_attempts += 1
+            db.session.commit()
+            current_app.logger.warning(f"Invalid password for: {email}")
+            return unauthorized_response("Invalid email or password")
+
+        # Başarılı giriş - failed_attempts'i sıfırla
+        user.failed_attempts = 0
+        user.son_giris = datetime.utcnow()
         db.session.commit()
-        return unauthorized_response("Invalid email or password")
-    
-    # Başarılı giriş - failed_attempts'i sıfırla
-    user.failed_attempts = 0
-    user.son_giris = datetime.utcnow()
-    db.session.commit()
-    
-    # Token süreleri
-    access_expires = timedelta(hours=24 if remember_me else 1)
-    refresh_expires = timedelta(days=30 if remember_me else 7)
-    
-    # Token'ları oluştur
-    access_token = create_access_token(
-        identity=str(user.id),
-        expires_delta=access_expires
-    )
-    refresh_token = create_refresh_token(
-        identity=str(user.id),
-        expires_delta=refresh_expires
-    )
-    
-    # Kullanıcı bilgilerini serialize et
-    user_schema = UserSchema()
-    user_data = user_schema.dump(user)
-    
-    response_data = {
-        'access_token': access_token,
-        'refresh_token': refresh_token,
-        'expires_in': int(access_expires.total_seconds()),
-        'token_type': 'Bearer',
-        'user': user_data
-    }
-    
-    current_app.logger.info(f"User logged in: {user.email}")
-    return success_response(
-        data=response_data,
-        message="Login successful"
-    )
+
+        # Token süreleri
+        access_expires = timedelta(hours=24 if remember_me else 1)
+        refresh_expires = timedelta(days=30 if remember_me else 7)
+
+        # Token'ları oluştur
+        access_token = create_access_token(
+            identity=str(user.id),
+            expires_delta=access_expires
+        )
+        refresh_token = create_refresh_token(
+            identity=str(user.id),
+            expires_delta=refresh_expires
+        )
+
+        # Kullanıcı bilgilerini serialize et
+        user_schema = UserSchema()
+        user_data = user_schema.dump(user)
+
+        response_data = {
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'expires_in': int(access_expires.total_seconds()),
+            'token_type': 'Bearer',
+            'user': user_data
+        }
+
+        current_app.logger.info(f"User logged in: {user.email}")
+        return success_response(
+            data=response_data,
+            message="Login successful"
+        )
+
+    except Exception as e:
+        current_app.logger.error(f"Login endpoint error: {str(e)}")
+        current_app.logger.error(f"Login endpoint traceback: {traceback.format_exc()}")
+        return error_response("Login failed due to server error", 500)
 
 
 @auth_v1.route('/refresh', methods=['POST'])

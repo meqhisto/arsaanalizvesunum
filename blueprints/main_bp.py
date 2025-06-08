@@ -366,6 +366,12 @@ def logout_redirect():
     """Redirect /logout to /auth/logout for backward compatibility"""
     return redirect(url_for('auth.logout'))
 
+@main_bp.route('/tailwind-test')
+@login_required
+def tailwind_test():
+    """Test page for Tailwind CSS implementation"""
+    return render_template('tailwind-test.html')
+
 @main_bp.route('/favicon.ico')
 def favicon():
     # send_from_directory için current_app.root_path kullanılabilir.

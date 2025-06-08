@@ -4,106 +4,130 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Giriş Yap - İnveco Proje</title>
-    <!-- Bootstrap 5 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Bootstrap Icons -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <!-- Google Fonts - Inter for modern look -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='dist/main.2971b4d080879e97d332.css') }}" rel="stylesheet">
 
+    <!-- Bootstrap 5 CSS (for compatibility) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS + Custom Styles -->
+    <link href="{{ url_for('static', filename='dist/main.css') }}" rel="stylesheet">
+
+    <style>
+      body {
+        font-family: 'Helvetica Neue', Helvetica, Calibri, Arial, system-ui, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+
+      .auth-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        max-width: 400px;
+        margin: 2rem auto;
+        padding: 2rem;
+      }
+
+      .auth-logo {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .auth-logo i {
+        font-size: 3rem;
+        color: #2563eb;
+      }
+    </style>
   </head>
-  <body>
-    <div class="container">
+  <body class="bg-gradient-to-br from-primary-600 to-purple-700 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
       <div class="auth-card">
         <div class="auth-logo">
-          <i class="bi bi-building"></i>
-          <h4 class="mt-2 fw-bold">İnveco Proje</h4>
+          <i class="fas fa-building text-5xl text-primary-600 mb-4"></i>
+          <h4 class="text-xl font-bold text-gray-900">İnveco Proje</h4>
         </div>
-        <h3 class="text-center mb-4 fw-bold">Giriş Yap</h3>
-        {% with messages = get_flashed_messages(with_categories=true) %} {% if
-        messages %} {% for category, message in messages %}
-        <div class="alert alert-{{ category }} border-0 shadow-sm">
+        <h3 class="text-center text-2xl font-bold text-gray-900 mb-6">Giriş Yap</h3>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} mb-4 p-3 rounded-lg border-0">
           {{ message }}
         </div>
-        {% endfor %} {% endif %} {% endwith %}
-        <form action="{{ url_for('auth.login') }}" method="post" id="loginForm">
-          <div class="mb-3">
-            <label for="email" class="form-label"
-              ><i class="bi bi-envelope me-2"></i>E-Posta</label
-            >
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <form action="{{ url_for('auth.login') }}" method="post" id="loginForm" class="space-y-4">
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-envelope mr-2"></i>E-Posta
+            </label>
             <input
               type="email"
-              class="form-control"
+              class="form-control w-full"
               id="email"
               name="email"
               placeholder="Email adresiniz"
               required
             />
-            <div class="invalid-feedback">
+            <div class="invalid-feedback text-red-600 text-sm mt-1">
               Lütfen geçerli bir e-posta adresi giriniz.
             </div>
           </div>
-          <div class="mb-3">
-            <label for="password" class="form-label"
-              ><i class="bi bi-lock me-2"></i>Şifre</label
-            >
-            <div class="input-group">
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-lock mr-2"></i>Şifre
+            </label>
+            <div class="relative">
               <input
                 type="password"
-                class="form-control"
+                class="form-control w-full pr-12"
                 id="password"
                 name="password"
                 placeholder="Şifreniz"
                 required
               />
               <button
-                class="btn btn-outline-secondary"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 type="button"
                 onclick="togglePassword()"
               >
-                <i class="bi bi-eye" id="toggleIcon"></i>
+                <i class="fas fa-eye" id="toggleIcon"></i>
               </button>
             </div>
-            <div class="invalid-feedback">
+            <div class="invalid-feedback text-red-600 text-sm mt-1">
               Şifreniz en az 6 karakter olmalıdır.
             </div>
           </div>
-          <div class="mb-3 form-check">
+
+          <div class="flex items-center">
             <input
               type="checkbox"
-              class="form-check-input"
+              class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
               id="remember"
               name="remember"
             />
-            <label class="form-check-label" for="remember">Beni Hatırla</label>
+            <label class="ml-2 text-sm text-gray-700" for="remember">Beni Hatırla</label>
           </div>
-          <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary btn-lg fw-medium">
-              <i class="bi bi-box-arrow-in-right me-2"></i>Giriş Yap
+
+          <div>
+            <button type="submit" class="btn-primary w-full py-3 text-lg">
+              <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
             </button>
           </div>
         </form>
 
-        <div class="mt-4 d-flex justify-content-between">
+        <div class="mt-6 text-center">
           <a
             href="{{ url_for('auth.forgot_password') }}"
-            class="text-decoration-none text-muted"
+            class="text-sm text-gray-600 hover:text-primary-600 transition-colors"
           >
-            <i class="bi bi-question-circle me-1"></i>Şifremi Unuttum
+            <i class="fas fa-question-circle mr-1"></i>Şifremi Unuttum
           </a>
-
         </div>
       </div>
     </div>
@@ -116,12 +140,12 @@
 
         if (x.type === "password") {
           x.type = "text";
-          icon.classList.remove("bi-eye");
-          icon.classList.add("bi-eye-slash");
+          icon.classList.remove("fa-eye");
+          icon.classList.add("fa-eye-slash");
         } else {
           x.type = "password";
-          icon.classList.remove("bi-eye-slash");
-          icon.classList.add("bi-eye");
+          icon.classList.remove("fa-eye-slash");
+          icon.classList.add("fa-eye");
         }
       }
 

@@ -12,18 +12,14 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
-    <!-- Preload critical resources -->
-    <link rel="preload" href="{{ url_for('static', filename='dist/main.2971b4d080879e97d332.css') }}" as="style">
-    <link rel="preload" href="{{ url_for('static', filename='dist/vendors.ab1f81aacc13adc14ddb.js') }}" as="script">
-
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS (for compatibility) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='dist/main.2971b4d080879e97d332.css') }}" rel="stylesheet">
+    <!-- Tailwind CSS + Custom Styles (built by Webpack) -->
+    <link href="{{ url_for('static', filename='dist/main.css') }}" rel="stylesheet">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,6 +28,144 @@
 
     <!-- Additional CSS -->
     {% block extra_css %}{% endblock %}
+
+    <!-- Modern Navbar Styles -->
+    <style>
+        /* Modern Navbar Styles */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            color: var(--primary-color);
+            background-color: var(--bg-secondary);
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 12rem;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 50;
+            padding: 0.5rem 0;
+        }
+
+        .dropdown-menu.right-0 {
+            left: auto;
+            right: 0;
+        }
+
+        .group:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            border: none;
+            background: none;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--bg-secondary);
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-secondary);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 1024px) {
+            .nav-item.active::after {
+                display: none;
+            }
+        }
+    </style>
 
     <!-- Theme detection script (inline for performance) -->
     <script>
@@ -43,12 +177,10 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
     <!-- Loading overlay -->
-    <div id="globalLoading" class="loading-overlay global-overlay">
+    <div id="globalLoading" class="loading-overlay">
         <div class="loading-content">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Yükleniyor...</span>
-            </div>
-            <div class="loading-text mt-2">Yükleniyor...</div>
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <div class="text-gray-700 mt-3 font-medium">Yükleniyor...</div>
         </div>
     </div>
 
@@ -60,105 +192,170 @@
     <!-- Navigation -->
     {% block navigation %}
     {% if not (current_user.is_authenticated and (request.endpoint in ['main.index', 'analysis.analizler', 'analysis.analiz_detay', 'portfolio.portfolios_list', 'main.profile'] or 'crm.' in request.endpoint)) %}
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" height="32" class="me-2">
-                <span class="fw-bold">Arsa Analiz</span>
-            </a>
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
 
-            <!-- Mobile menu toggle -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+                <!-- Logo Section -->
+                <div class="flex items-center">
+                    <a href="{{ url_for('main.index') }}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-lg"></i>
+                        </div>
+                        <div class="hidden sm:block">
+                            <h1 class="text-xl font-bold" style="color: var(--text-primary);">Arsa Analiz</h1>
+                            <p class="text-xs" style="color: var(--text-secondary);">Gayrimenkul Platformu</p>
+                        </div>
+                    </a>
+                </div>
 
-            <!-- Desktop navigation -->
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">
-                            <i class="fas fa-home me-1"></i>Ana Sayfa
-                        </a>
-                    </li>
+                <!-- Center Navigation (Desktop) -->
+                <div class="hidden lg:flex items-center space-x-8">
+                    <a href="{{ url_for('main.index') }}"
+                       class="nav-item {% if request.endpoint == 'main.index' %}active{% endif %}">
+                        <i class="fas fa-home mr-2"></i>Ana Sayfa
+                    </a>
+
                     {% if current_user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-chart-line me-1"></i>Analiz
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.analizler') }}">Analizler</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.analysis_form') }}">Yeni Analiz</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('crm.crm_contacts_list') }}">
-                            <i class="fas fa-users me-1"></i>CRM
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('portfolio.portfolios_list') }}">
-                            <i class="fas fa-briefcase me-1"></i>Portföy
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-
-                <!-- User menu -->
-                <ul class="navbar-nav">
-                    <!-- Theme toggle -->
-                    <li class="nav-item">
-                        <button id="theme-toggle" class="btn btn-link nav-link border-0" title="Tema değiştir">
-                            <i class="fas fa-moon"></i>
+                    <div class="relative group">
+                        <button class="nav-item flex items-center">
+                            <i class="fas fa-chart-line mr-2"></i>Analiz
+                            <i class="fas fa-chevron-down ml-1 text-xs transition-transform group-hover:rotate-180"></i>
                         </button>
-                    </li>
+                        <div class="dropdown-menu">
+                            <a href="{{ url_for('analysis.analizler') }}" class="dropdown-item">
+                                <i class="fas fa-list mr-2"></i>Analizlerim
+                            </a>
+                            <a href="{{ url_for('main.analysis_form') }}" class="dropdown-item">
+                                <i class="fas fa-plus mr-2"></i>Yeni Analiz
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('crm.crm_contacts_list') }}"
+                       class="nav-item {% if 'crm.' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-users mr-2"></i>CRM
+                    </a>
+
+                    <a href="{{ url_for('portfolio.portfolios_list') }}"
+                       class="nav-item {% if 'portfolio.' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-briefcase mr-2"></i>Portföy
+                    </a>
+                    {% endif %}
+                </div>
+
+                <!-- Right Section -->
+                <div class="flex items-center space-x-4">
 
                     {% if current_user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">
-                                <i class="fas fa-user me-2"></i>Profil
-                            </a></li>
+                    <!-- User Menu -->
+                    <div class="relative group">
+                        <button class="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors" style="background-color: transparent;">
+                            <img src="{{ get_avatar_url(current_user, 32) }}"
+                                 alt="{{ current_user.ad }} {{ current_user.soyad }}"
+                                 class="w-8 h-8 rounded-full border-2 border-gray-200">
+                            <div class="hidden sm:block text-left">
+                                <p class="text-sm font-medium" style="color: var(--text-primary);">
+                                    {{ current_user.ad or current_user.email.split('@')[0] }}
+                                </p>
+                                <p class="text-xs" style="color: var(--text-secondary);">
+                                    {{ current_user.role.title() if current_user.role else 'Kullanıcı' }}
+                                </p>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180" style="color: var(--text-secondary);"></i>
+                        </button>
+
+                        <div class="dropdown-menu right-0">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <p class="text-sm font-medium" style="color: var(--text-primary);">
+                                    {{ current_user.ad }} {{ current_user.soyad }}
+                                </p>
+                                <p class="text-xs" style="color: var(--text-secondary);">
+                                    {{ current_user.email }}
+                                </p>
+                            </div>
+
+                            <a href="{{ url_for('main.profile') }}" class="dropdown-item">
+                                <i class="fas fa-user mr-2"></i>Profil
+                            </a>
+
                             {% if current_user.role == 'admin' %}
-                            <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">
-                                <i class="fas fa-cog me-2"></i>Yönetim
-                            </a></li>
+                            <a href="{{ url_for('admin.admin_dashboard') }}" class="dropdown-item">
+                                <i class="fas fa-cog mr-2"></i>Yönetim
+                            </a>
                             {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                <i class="fas fa-sign-out-alt me-2"></i>Çıkış
-                            </a></li>
-                        </ul>
-                    </li>
+
+                            <button id="theme-toggle-dropdown" class="dropdown-item w-full text-left">
+                                <i class="fas fa-moon mr-2" id="theme-icon"></i>
+                                <span id="theme-text">Koyu Tema</span>
+                            </button>
+
+                            <hr class="my-1">
+
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item text-red-600 hover:bg-red-50">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Çıkış Yap
+                            </a>
+                        </div>
+                    </div>
+
                     {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.login') }}">
-                            <i class="fas fa-sign-in-alt me-1"></i>Giriş
+                    <!-- Guest Menu -->
+                    <div class="flex items-center space-x-2">
+                        <a href="{{ url_for('auth.login') }}" class="btn-secondary">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Giriş
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.register') }}">
-                            <i class="fas fa-user-plus me-1"></i>Kayıt
+                        <a href="{{ url_for('auth.register') }}" class="btn-primary">
+                            <i class="fas fa-user-plus mr-2"></i>Kayıt Ol
                         </a>
-                    </li>
+                    </div>
                     {% endif %}
-                </ul>
+
+                    <!-- Mobile Menu Toggle -->
+                    <button class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                            type="button"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#mobileMenu">
+                        <i class="fas fa-bars text-lg" style="color: var(--text-primary);"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
+
+    <!-- Spacer for fixed navbar -->
+    <div class="h-16"></div>
     {% endif %}
     {% endblock %}
 
     <!-- Mobile menu offcanvas -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Menü</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    <div class="offcanvas offcanvas-start bg-white" tabindex="-1" id="mobileMenu">
+        <div class="offcanvas-header border-b border-gray-200 p-4">
+            <h5 class="offcanvas-title font-semibold text-gray-900">Menü</h5>
+            <button type="button" class="text-gray-500 hover:text-gray-700" data-bs-dismiss="offcanvas">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div class="offcanvas-body">
+        <div class="offcanvas-body p-4">
             <!-- Mobile navigation items will be populated by JavaScript -->
+            <div class="space-y-2">
+                <a href="{{ url_for('main.index') }}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-home mr-2"></i>Ana Sayfa
+                </a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('analysis.analizler') }}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-chart-line mr-2"></i>Analizler
+                </a>
+                <a href="{{ url_for('main.analysis_form') }}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i>Yeni Analiz
+                </a>
+                <a href="{{ url_for('crm.crm_contacts_list') }}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-users mr-2"></i>CRM
+                </a>
+                <a href="{{ url_for('portfolio.portfolios_list') }}" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <i class="fas fa-briefcase mr-2"></i>Portföy
+                </a>
+                {% endif %}
+            </div>
         </div>
     </div>
 
@@ -166,59 +363,63 @@
     <div class="layout-wrapper">
         <!-- Sidebar for dashboard pages -->
         {% if current_user.is_authenticated and (request.endpoint in ['main.index', 'analysis.analizler', 'analysis.analiz_detay', 'portfolio.portfolios_list', 'main.profile'] or 'crm.' in request.endpoint) %}
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h5 class="sidebar-title">
-                    <i class="fas fa-building me-2"></i>Arsa Panel
+                    <i class="fas fa-building mr-2"></i>Arsa Panel
                 </h5>
             </div>
             <nav class="sidebar-nav">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
-                            <i class="fas fa-home me-2"></i>Ana Sayfa
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('analysis.analizler') }}" class="nav-link {% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}">
-                            <i class="fas fa-chart-line me-2"></i>Analizlerim
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('crm.crm_contacts_list') }}" class="nav-link {% if 'crm.' in request.endpoint %}active{% endif %}">
-                            <i class="fas fa-users me-2"></i>CRM
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('portfolio.portfolios_list') }}" class="nav-link {% if 'portfolio.' in request.endpoint or 'portfolio_list' in request.endpoint %}active{% endif %}">
-                            <i class="fas fa-briefcase me-2"></i>Portföyler
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.profile') }}" class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
-                            <i class="fas fa-cog me-2"></i>Ayarlar
-                        </a>
-                    </li>
-                </ul>
+                <div class="space-y-1">
+                    <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+                        <i class="fas fa-home"></i>
+                        <span>Ana Sayfa</span>
+                    </a>
+                    <a href="{{ url_for('analysis.analizler') }}" class="nav-link {% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analizlerim</span>
+                    </a>
+                    <a href="{{ url_for('crm.crm_contacts_list') }}" class="nav-link {% if 'crm.' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span>CRM</span>
+                    </a>
+                    <a href="{{ url_for('portfolio.portfolios_list') }}" class="nav-link {% if 'portfolio.' in request.endpoint or 'portfolio_list' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Portföyler</span>
+                    </a>
+                    <a href="{{ url_for('main.profile') }}" class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+                        <i class="fas fa-cog"></i>
+                        <span>Ayarlar</span>
+                    </a>
+                </div>
             </nav>
             <div class="sidebar-footer">
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm w-100">
-                    <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light w-full text-sm">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Çıkış Yap
                 </a>
             </div>
         </aside>
         {% endif %}
 
         <!-- Main content -->
-        <main id="main-content" class="main-content {% block main_class %}{% if current_user.is_authenticated and (request.endpoint in ['main.index', 'analysis.analizler', 'analysis.analiz_detay', 'portfolio.portfolios_list', 'main.profile'] or 'crm.' in request.endpoint) %}with-sidebar{% else %}container-fluid{% endif %}{% endblock %}">
+        <main id="main-content" class="main-content {% block main_class %}{% if current_user.is_authenticated and (request.endpoint in ['main.index', 'analysis.analizler', 'analysis.analiz_detay', 'portfolio.portfolios_list', 'main.profile'] or 'crm.' in request.endpoint) %}with-sidebar{% else %}w-full{% endif %}{% endblock %} p-6">
+            <!-- Mobile sidebar toggle -->
+            {% if current_user.is_authenticated and (request.endpoint in ['main.index', 'analysis.analizler', 'analysis.analiz_detay', 'portfolio.portfolios_list', 'main.profile'] or 'crm.' in request.endpoint) %}
+            <button id="sidebar-toggle" class="lg:hidden fixed top-4 left-4 z-50 bg-primary-600 text-white p-2 rounded-lg shadow-lg">
+                <i class="fas fa-bars"></i>
+            </button>
+            {% endif %}
+
             <!-- Flash messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    <div class="flash-messages mt-3">
+                    <div class="flash-messages mb-6">
                         {% for category, message in messages %}
-                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} mb-3 flex items-center justify-between">
+                                <span>{{ message }}</span>
+                                <button type="button" class="ml-4 text-current opacity-70 hover:opacity-100" data-bs-dismiss="alert">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
                         {% endfor %}
                     </div>
@@ -232,15 +433,15 @@
 
     <!-- Footer -->
     {% block footer %}
-    <footer class="bg-light mt-5 py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h6>Arsa Analiz Platformu</h6>
-                    <p class="text-muted small">Gayrimenkul analizi ve değerlendirme sistemi</p>
+    <footer class="bg-gray-100 mt-12 py-8 border-t border-gray-200">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h6 class="font-semibold text-gray-900 mb-2">Arsa Analiz Platformu</h6>
+                    <p class="text-gray-600 text-sm">Gayrimenkul analizi ve değerlendirme sistemi</p>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="text-muted small">
+                <div class="md:text-right">
+                    <p class="text-gray-600 text-sm">
                         © 2025 Inveco Proje. Tüm hakları saklıdır.
                     </p>
                 </div>
@@ -272,6 +473,44 @@
             <script src="{{ url_for('static', filename='dist/admin.d77eb85dbcf23e09a010.js') }}"></script>
         {% endif %}
     {% endblock %}
+
+    <!-- Theme Toggle JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const themeText = document.getElementById('theme-text');
+        const html = document.documentElement;
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+        updateThemeUI(savedTheme);
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = html.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeUI(newTheme);
+            });
+        }
+
+        function updateThemeUI(theme) {
+            if (themeIcon && themeText) {
+                if (theme === 'dark') {
+                    themeIcon.className = 'fas fa-sun mr-2';
+                    themeText.textContent = 'Açık Tema';
+                } else {
+                    themeIcon.className = 'fas fa-moon mr-2';
+                    themeText.textContent = 'Koyu Tema';
+                }
+            }
+        }
+    });
+    </script>
 
     <!-- Additional JavaScript -->
     {% block extra_js %}{% endblock %}

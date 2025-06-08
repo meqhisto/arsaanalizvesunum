@@ -1,180 +1,306 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}CRM Modülü{% endblock %} - İnveco Proje</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Google Fonts - Inter for modern look -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='dist/main.2971b4d080879e97d332.css') }}" rel="stylesheet">
-    {% block head_extra %}{% endblock %}
+{% extends "base.html" %}
 
-</head>
-<body class="bg-light">
-    <div class="container-fluid p-0">
-        <div class="row g-0">
-            <!-- Mobil Sidebar Butonu -->
-            <button class="btn btn-primary d-md-none m-3 rounded-pill shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#mobilSidebarCrm">
-                <i class="bi bi-list"></i> Menü
-            </button>
+{% block title %}{% block crm_title %}CRM Modülü{% endblock %} - Arsa Analiz Platformu{% endblock %}
 
-            <!-- Mobil Sidebar -->
-            <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobilSidebarCrm">
-                <div class="offcanvas-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white;">
-                    <h5 class="offcanvas-title"><i class="bi bi-building"></i> CRM Menüsü</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-                </div>
-                <div class="offcanvas-body d-flex flex-column gap-2">
-                    <h4 class="mb-4">İnveco Panel</h4>
-                    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-                    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-                    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
-                    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
-                    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
-                    <hr>
-                    <h5 class="text-muted small mb-2">CRM</h5>
-                    <a href="{{ url_for('crm.crm_companies_list') }}" class="{{ 'active' if 'crm_companies' in request.endpoint else '' }}"><i class="bi bi-building"></i> Şirketler</a>
-                    <a href="{{ url_for('crm.crm_deals_list') }}" class="{{ 'active' if 'crm_deals' in request.endpoint else '' }}"><i class="bi bi-cash-coin"></i> Fırsatlar</a>
-                    <a href="{{ url_for('crm.crm_tasks_list') }}" class="{{ 'active' if 'crm_tasks' in request.endpoint else '' }}"><i class="bi bi-check2-square"></i> Görevler</a>
-                </div>
-            </div>
+{% block meta_description %}{% block crm_meta_description %}CRM modülü - Müşteri ilişkileri yönetimi, kişiler, şirketler, fırsatlar ve görevler{% endblock %}{% endblock %}
 
-            <!-- Ana Sidebar (Desktop) -->
-            <nav id="sidebarMenu" class="d-none d-md-block sidebar collapse bg-light shadow-sm">
-                <div class="d-flex align-items-center gap-2 mb-4">
-                    <i class="bi bi-building fs-3"></i>
-                    <h4 class="mb-0">İnveco Panel</h4>
-                </div>
-                <div class="nav flex-column">
-                    <a href="{{ url_for('main.index') }}" class="{% if request.endpoint == 'main.index' %}active{% endif %}"><i class="bi bi-house-door"></i> Ana Sayfa</a>
-                    <a href="{{ url_for('analysis.analizler') }}" class="{% if request.endpoint == 'analysis.analizler' or request.endpoint == 'analysis.analiz_detay' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Analizlerim</a>
-                    <a href="{{ url_for('crm.crm_contacts_list') }}" class="{% if 'crm.' in request.endpoint %}active{% endif %}"><i class="bi bi-person-rolodex"></i> CRM</a>
-                    <a href="{{ url_for('portfolio.portfolios_list') }}" class="{% if request.endpoint == 'portfolio.portfolios_list' %}active{% endif %}"><i class="bi bi-graph-up"></i> Portföyler</a>
-                    <a href="{{ url_for('main.profile') }}" class="{% if request.endpoint == 'main.profile' %}active{% endif %}"><i class="bi bi-gear"></i> Ayarlar</a>
-                <!-- ... diğer ana sayfa linkleri ... -->
-                <hr>
-                <h5 class="text-muted small mb-2">CRM</h5>
-                                <!-- ... -->
-                    <!-- ... -->
-                    <a href="{{ url_for('crm.crm_companies_list') }}" class="{{ 'active' if 'crm_companies' in request.endpoint else '' }}"><i class="bi bi-building"></i> Şirketler</a>
-                    <a href="{{ url_for('crm.crm_deals_list') }}" class="{{ 'active' if 'crm_deals' in request.endpoint else '' }}"><i class="bi bi-cash-coin"></i> Fırsatlar</a>
-                    <a href="{{ url_for('crm.crm_tasks_list') }}" class="{{ 'active' if 'crm_tasks' in request.endpoint else '' }}"><i class="bi bi-check2-square"></i> Görevler</a>                    <!-- ... -->
-                <!-- ... -->
-            </div>
+{% block extra_css %}
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+  /* CRM Dark Mode Support */
+  .nav-tab {
+    @apply px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-lg;
+    color: var(--text-secondary);
+    background-color: transparent;
+  }
 
-                <!-- Minimal User Info at bottom -->
-                <div class="mt-auto pt-3 border-top border-white border-opacity-25">
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm d-flex align-items-center gap-2 w-100">
-                        <i class="bi bi-box-arrow-right"></i> Çıkış Yap
-                    </a>
-                </div>
-            </nav>
+  .nav-tab:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+  }
 
-            <!-- Ana İçerik Alanı -->
-            <main class="col-12 px-md-4 content-area">
-                <!-- CRM Navigation Bar -->
-                <nav class="navbar navbar-expand-lg navbar-dark px-3 mb-3">
-                    <div class="container-fluid">
-                        <span class="navbar-brand">CRM Modülü</span>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#crmNavbar">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        
-                        <div class="collapse navbar-collapse" id="crmNavbar">
-                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                                <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_contact' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_contacts_list') }}"><i class="bi bi-person"></i> Kişiler</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_company' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_companies_list') }}"><i class="bi bi-building"></i> Şirketler</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_deal' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_deals_list') }}"><i class="bi bi-currency-dollar"></i> Fırsatlar</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_task' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_tasks_list') }}"><i class="bi bi-check2-all"></i> Görevler</a>
-                                </li>
-                                {% if current_user.role == 'broker' %}
-                                <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_team_management' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_team_management') }}"><i class="bi bi-people"></i> Ekip Yönetimi</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if 'crm_team_dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('crm.crm_team_dashboard') }}"><i class="bi bi-graph-up"></i> Ekip Performans</a>
-                                </li>
-                                {% endif %}
-                            </ul>
-                            
-                            <!-- Hatırlatıcı Bildirimleri -->
-                            <div class="dropdown">
-                                <a class="nav-link text-light dropdown-toggle position-relative" href="#" id="reminderDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-bell fs-5"></i>
-                                    <span id="reminder-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem; display: none;">0</span>
-                                </a>
-                                <ul id="reminder-list" class="dropdown-menu dropdown-menu-end" aria-labelledby="reminderDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
-                                    <li><span class="dropdown-item text-center">Hatırlatıcılar yükleniyor...</span></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </nav>
-                
-                <!-- İçerik Alanı -->
-                <div class="p-4">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+  .nav-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+  }
 
-                {% block crm_content %}
-                <!-- CRM sayfalarına özgü içerik buraya gelecek -->
-                {% endblock %}
-                </div>
-            </div>
+  /* CRM specific dark mode styles */
+  .crm-card {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+
+  .crm-header {
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .table-dark-mode {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .table-dark-mode th {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+  .table-dark-mode td {
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .table-dark-mode tbody tr:hover {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Form controls dark mode */
+  .form-control-dark {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .form-control-dark:focus {
+    background-color: var(--bg-secondary);
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color), 0.25);
+  }
+
+  .form-control-dark::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Button dark mode */
+  .btn-outline-dark-mode {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+  .btn-outline-dark-mode:hover {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+
+  /* Modal dark mode */
+  .modal-dark {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .modal-dark .modal-header {
+    border-bottom-color: var(--border-color);
+  }
+
+  .modal-dark .modal-footer {
+    border-top-color: var(--border-color);
+  }
+</style>
+{% block crm_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<!-- CRM Header -->
+<div class="crm-header sticky top-16 z-40 mb-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header Content -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between py-6">
+      <!-- Title Section -->
+      <div class="flex items-center space-x-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+          <i class="fas fa-users text-white text-xl"></i>
         </div>
+        <div>
+          <h1 class="text-2xl lg:text-3xl font-bold" style="color: var(--text-primary);">
+            CRM Sistemi
+          </h1>
+          <p class="text-sm" style="color: var(--text-secondary);">
+            Müşteri ilişkileri yönetim sistemi
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="mt-4 lg:mt-0 flex items-center space-x-3">
+        <a href="{{ url_for('crm.crm_contact_add') }}" class="btn-primary">
+          <i class="fas fa-plus mr-2"></i>Yeni Kişi
+        </a>
+        <a href="{{ url_for('crm.crm_import_wizard') }}" class="btn-secondary">
+          <i class="fas fa-file-import mr-2"></i>Import
+        </a>
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/contact_form.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/task_form.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/reminders.js') }}"></script>
-    {% block extra_js %}{% endblock %}
+    <!-- CRM Navigation -->
+    <nav class="border-t" style="border-color: var(--border-color);">
+      <!-- Mobile Navigation Toggle -->
+      <div class="sm:hidden py-4">
+        <button id="mobile-nav-toggle" class="w-full flex items-center justify-between px-4 py-3 rounded-lg border" style="border-color: var(--border-color); background-color: var(--bg-primary);">
+          <span class="font-medium" style="color: var(--text-primary);">CRM Menü</span>
+          <i class="fas fa-chevron-down transition-transform duration-200" style="color: var(--text-secondary);" id="mobile-nav-icon"></i>
+        </button>
+      </div>
 
-    <!-- Toast Bildirimleri -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
-        <!-- Başarı Bildirimi -->
-        <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header bg-success text-white">
-                <strong class="me-auto">Başarılı</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Kapat"></button>
-            </div>
-            <div class="toast-body" id="toastMessage">
-                İşlem başarıyla tamamlandı.
-            </div>
+      <!-- Desktop Navigation -->
+      <div class="hidden sm:flex items-center space-x-1 py-4 overflow-x-auto" id="desktop-nav">
+        <a href="{{ url_for('crm.crm_dashboard') }}"
+           class="nav-tab {% if 'crm_dashboard' in request.endpoint %}active{% endif %}">
+          <i class="fas fa-chart-line mr-2"></i>Dashboard
+        </a>
+          <a href="{{ url_for('crm.crm_contacts_list') }}"
+             class="nav-tab {% if 'crm_contact' in request.endpoint %}active{% endif %}">
+            <i class="fas fa-user mr-2"></i>Kişiler
+          </a>
+          <a href="{{ url_for('crm.crm_companies_list') }}"
+             class="nav-tab {% if 'crm_company' in request.endpoint %}active{% endif %}">
+            <i class="fas fa-building mr-2"></i>Şirketler
+          </a>
+          <a href="{{ url_for('crm.crm_import_wizard') }}"
+             class="nav-tab {% if 'crm_import' in request.endpoint %}active{% endif %}">
+            <i class="fas fa-file-import mr-2"></i>Import
+          </a>
+          <a href="{{ url_for('crm.crm_deals_list') }}"
+             class="nav-tab {% if 'crm_deal' in request.endpoint %}active{% endif %}">
+            <i class="fas fa-handshake mr-2"></i>Fırsatlar
+          </a>
+          <a href="{{ url_for('crm.crm_tasks_list') }}"
+             class="nav-tab {% if 'crm_task' in request.endpoint %}active{% endif %}">
+            <i class="fas fa-tasks mr-2"></i>Görevler
+          </a>
+          {% if current_user.role == 'broker' %}
+          <a href="{{ url_for('crm.crm_team_management') }}"
+             class="nav-tab {% if 'crm_team_management' in request.endpoint %}active{% endif %}">
+            <i class="fas fa-users-cog mr-2"></i>Ekip
+          </a>
+          {% endif %}
         </div>
-        
-        <!-- Hata Bildirimi -->
-        <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header bg-danger text-white">
-                <strong class="me-auto">Hata</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Kapat"></button>
-            </div>
-            <div class="toast-body" id="errorToastMessage">
-                Bir hata oluştu. Lütfen tekrar deneyin.
-            </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div class="sm:hidden hidden flex-col gap-2 mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200" id="mobile-nav-menu">
+          <a href="{{ url_for('crm.crm_dashboard') }}"
+             class="nav-tab {% if 'crm_dashboard' in request.endpoint %}active{% endif %} w-full justify-start">
+            <i class="fas fa-chart-line mr-3"></i>Dashboard
+          </a>
+          <a href="{{ url_for('crm.crm_contacts_list') }}"
+             class="nav-tab {% if 'crm_contact' in request.endpoint %}active{% endif %} w-full justify-start">
+            <i class="fas fa-user mr-3"></i>Kişiler
+          </a>
+          <a href="{{ url_for('crm.crm_companies_list') }}"
+             class="nav-tab {% if 'crm_company' in request.endpoint %}active{% endif %} w-full justify-start">
+            <i class="fas fa-building mr-3"></i>Şirketler
+          </a>
+          <a href="{{ url_for('crm.crm_import_wizard') }}"
+             class="nav-tab {% if 'crm_import' in request.endpoint %}active{% endif %} w-full justify-start">
+            <i class="fas fa-file-import mr-3"></i>Import
+          </a>
+          <a href="{{ url_for('crm.crm_deals_list') }}"
+             class="nav-tab {% if 'crm_deal' in request.endpoint %}active{% endif %} w-full justify-start">
+            <i class="fas fa-handshake mr-3"></i>Fırsatlar
+          </a>
+          <a href="{{ url_for('crm.crm_tasks_list') }}"
+             class="nav-tab {% if 'crm_task' in request.endpoint %}active{% endif %} w-full justify-start">
+            <i class="fas fa-tasks mr-3"></i>Görevler
+          </a>
+          {% if current_user.role == 'broker' %}
+          <a href="{{ url_for('crm.crm_team_management') }}"
+             class="nav-tab {% if 'crm_team_management' in request.endpoint %}active{% endif %} w-full justify-start">
+            <i class="fas fa-users-cog mr-3"></i>Ekip
+          </a>
+          {% endif %}
         </div>
+      </nav>
     </div>
-    
-    {% block scripts_extra %}{% endblock %}
-</body>
-</html>
+  </div>
+</div>
+<!-- Hatırlatıcı Bildirimleri -->
+<div class="fixed top-4 right-4 z-50">
+  <div class="relative">
+    <button id="reminderDropdown" class="btn btn-outline-primary relative" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="fas fa-bell"></i>
+      <span id="reminder-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+    </button>
+    <ul id="reminder-list" class="dropdown-menu dropdown-menu-end" aria-labelledby="reminderDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+      <li><span class="dropdown-item text-center">Hatırlatıcılar yükleniyor...</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- CRM İçerik Alanı -->
+{% block crm_content %}
+<!-- CRM sayfalarına özgü içerik buraya gelecek -->
+{% endblock %}
+{% endblock %}
+
+{% block extra_js %}
+<!-- CRM specific JavaScript -->
+<script src="{{ url_for('static', filename='js/contact_form.js') }}"></script>
+<script src="{{ url_for('static', filename='js/task_form.js') }}"></script>
+<script src="{{ url_for('static', filename='js/reminders.js') }}"></script>
+
+<!-- Mobile Navigation JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+  const mobileNavMenu = document.getElementById('mobile-nav-menu');
+  const mobileNavIcon = document.getElementById('mobile-nav-icon');
+
+  if (mobileNavToggle && mobileNavMenu) {
+    mobileNavToggle.addEventListener('click', function() {
+      const isHidden = mobileNavMenu.classList.contains('hidden');
+
+      if (isHidden) {
+        mobileNavMenu.classList.remove('hidden');
+        mobileNavMenu.classList.add('flex');
+        mobileNavIcon.style.transform = 'rotate(180deg)';
+      } else {
+        mobileNavMenu.classList.add('hidden');
+        mobileNavMenu.classList.remove('flex');
+        mobileNavIcon.style.transform = 'rotate(0deg)';
+      }
+    });
+  }
+});
+</script>
+
+<!-- Toast Bildirimleri -->
+<div class="fixed bottom-4 right-4 z-50 space-y-2" id="toast-container">
+  <!-- Başarı Bildirimi -->
+  <div id="successToast" class="toast hidden" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="bg-green-500 text-white p-4 rounded-lg shadow-lg flex items-center justify-between">
+      <div class="flex items-center">
+        <i class="fas fa-check-circle mr-3"></i>
+        <div>
+          <div class="font-semibold">Başarılı</div>
+          <div id="toastMessage" class="text-sm">İşlem başarıyla tamamlandı.</div>
+        </div>
+      </div>
+      <button type="button" class="ml-4 text-white hover:text-gray-200" data-bs-dismiss="toast">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hata Bildirimi -->
+  <div id="errorToast" class="toast hidden" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="bg-red-500 text-white p-4 rounded-lg shadow-lg flex items-center justify-between">
+      <div class="flex items-center">
+        <i class="fas fa-exclamation-circle mr-3"></i>
+        <div>
+          <div class="font-semibold">Hata</div>
+          <div id="errorToastMessage" class="text-sm">Bir hata oluştu. Lütfen tekrar deneyin.</div>
+        </div>
+      </div>
+      <button type="button" class="ml-4 text-white hover:text-gray-200" data-bs-dismiss="toast">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+{% block crm_extra_js %}{% endblock %}
+{% endblock %}

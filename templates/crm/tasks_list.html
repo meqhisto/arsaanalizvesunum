@@ -1,98 +1,182 @@
 {% extends "crm/crm_base.html" %}
 
-{% block title %}Görevler - CRM{% endblock %}
+{% block crm_title %}Görevler - CRM{% endblock %}
+
+{% block crm_meta_description %}CRM görevler listesi - Görevlerinizi yönetin ve takip edin{% endblock %}
 
 {% block crm_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-check2-all me-2"></i> Görevlerim</h2>
-    <div class="d-flex align-items-center">
-        <form method="GET" action="{{ url_for('crm.crm_tasks_list') }}" class="d-flex me-2">
-            <select name="status" class="form-select form-select-sm me-2" onchange="this.form.submit()">
-                <option value="">Tüm Durumlar</option>
-                {% for status_item in statuses %}
-                <option value="{{ status_item }}" {% if current_status == status_item %}selected{% endif %}>{{ status_item }}</option>
-                {% endfor %}
-            </select>
-            {# <button type="submit" class="btn btn-sm btn-outline-secondary">Filtrele</button> #}
-        </form>
-        <a href="{{ url_for('crm.crm_task_new') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Yeni Görev Ekle
-        </a>
+<div class="mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center">
+        <i class="fas fa-tasks mr-3 text-purple-600"></i>Görevlerim
+      </h2>
+      <p class="text-gray-600">Görevlerinizi yönetin ve takip edin</p>
     </div>
+    <div class="mt-4 sm:mt-0 flex items-center space-x-3">
+      <form method="GET" action="{{ url_for('crm.crm_tasks_list') }}" class="flex items-center">
+        <select name="status" class="form-select text-sm" onchange="this.form.submit()">
+          <option value="">Tüm Durumlar</option>
+          {% for status_item in statuses %}
+          <option value="{{ status_item }}" {% if current_status == status_item %}selected{% endif %}>{{ status_item }}</option>
+          {% endfor %}
+        </select>
+      </form>
+      <a href="{{ url_for('crm.crm_task_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus mr-2"></i>Yeni Görev Ekle
+      </a>
+    </div>
+  </div>
 </div>
 
 {% if tasks %}
-<div class="list-group">
-    {% for task in tasks %}
-    <div class="list-group-item list-group-item-action flex-column align-items-start {% if task.status == 'Tamamlandı' %}list-group-item-success{% elif task.status == 'İptal Edildi' %}list-group-item-danger text-decoration-line-through{% elif task.due_date and task.due_date < datetime.utcnow() and task.status not in ['Tamamlandı', 'İptal Edildi'] %}list-group-item-warning{% endif %}">
-        <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">
-                <form action="{{ url_for('crm.crm_task_toggle_status', task_id=task.id) }}" method="POST" class="d-inline me-2">
-                    <input type="hidden" name="new_status" value="{{ 'Devam Ediyor' if task.status == 'Tamamlandı' else 'Tamamlandı' }}">
-                    <button type="submit" class="btn btn-sm p-0 border-0" title="Durumu Değiştir">
-                        {% if task.status == 'Tamamlandı' %}
-                            <i class="bi bi-check-square-fill text-success fs-5"></i>
-                        {% else %}
-                            <i class="bi bi-square text-muted fs-5"></i>
-                        {% endif %}
-                    </button>
-                </form>
-                <a href="{{ url_for('crm.crm_task_edit', task_id=task.id) }}" class="text-decoration-none">{{ task.title }}</a>
-            </h5>
-            <small class="text-muted">
-                {% if task.due_date %}
-                    Bitiş: {{ task.due_date.strftime('%d.%m.%Y %H:%M') }}
-                {% else %}
-                    Bitiş Tarihi Yok
-                {% endif %}
-            </small>
-        </div>
-        {% if task.description %}
-            <p class="mb-1 small text-muted">{{ task.description | nl2br }}</p>
-        {% endif %}
-        <small>
-            <span class="badge 
-                {% if task.priority == 'Acil' %}bg-danger
-                {% elif task.priority == 'Yüksek' %}bg-warning text-dark
-                {% elif task.priority == 'Normal' %}bg-info
-                {% else %}bg-secondary{% endif %} me-2">{{ task.priority }}</span>
-            <span class="badge bg-light text-dark me-2">{{ task.status }}</span>
-            
+<div class="space-y-4">
+  {% for task in tasks %}
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6
+    {% if task.status == 'Tamamlandı' %}border-green-200 bg-green-50{% elif task.status == 'İptal Edildi' %}border-red-200 bg-red-50 opacity-75{% elif task.due_date and task.due_date < datetime.utcnow() and task.status not in ['Tamamlandı', 'İptal Edildi'] %}border-yellow-200 bg-yellow-50{% endif %}">
+
+    <div class="flex items-start justify-between">
+      <div class="flex items-start space-x-3 flex-1">
+        <!-- Checkbox -->
+        <form action="{{ url_for('crm.crm_task_toggle_status', task_id=task.id) }}" method="POST" class="mt-1">
+          <input type="hidden" name="new_status" value="{{ 'Devam Ediyor' if task.status == 'Tamamlandı' else 'Tamamlandı' }}">
+          <button type="submit" class="text-2xl hover:scale-110 transition-transform" title="Durumu Değiştir">
+            {% if task.status == 'Tamamlandı' %}
+              <i class="fas fa-check-square text-green-600"></i>
+            {% else %}
+              <i class="far fa-square text-gray-400 hover:text-gray-600"></i>
+            {% endif %}
+          </button>
+        </form>
+
+        <!-- Task Content -->
+        <div class="flex-1">
+          <div class="flex items-start justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 {% if task.status == 'İptal Edildi' %}line-through{% endif %}">
+              <a href="{{ url_for('crm.crm_task_edit', task_id=task.id) }}" class="hover:text-blue-600">
+                {{ task.title }}
+              </a>
+            </h3>
+            <div class="text-sm text-gray-500">
+              {% if task.due_date %}
+                <div class="flex items-center">
+                  <i class="fas fa-clock mr-1"></i>
+                  {{ task.due_date.strftime('%d.%m.%Y %H:%M') }}
+                </div>
+              {% else %}
+                <span class="text-gray-400">Bitiş Tarihi Yok</span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if task.description %}
+          <p class="text-gray-600 mt-2 text-sm">{{ task.description | nl2br }}</p>
+          {% endif %}
+          <!-- Badges and Meta Info -->
+          <div class="flex flex-wrap items-center gap-2 mt-3">
+            <!-- Priority Badge -->
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+              {% if task.priority == 'Acil' %}bg-red-100 text-red-800
+              {% elif task.priority == 'Yüksek' %}bg-yellow-100 text-yellow-800
+              {% elif task.priority == 'Normal' %}bg-blue-100 text-blue-800
+              {% else %}bg-gray-100 text-gray-800{% endif %}">
+              {{ task.priority }}
+            </span>
+
+            <!-- Status Badge -->
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+              {{ task.status }}
+            </span>
+
+            <!-- Reminder Badge -->
             {% if task.reminder_enabled and task.reminder_time %}
-                <span class="badge bg-info text-white me-2" title="Hatırlatıcı aktif - {{ task.reminder_time.strftime('%d.%m.%Y %H:%M') }}"><i class="bi bi-bell-fill"></i></span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                  title="Hatırlatıcı aktif - {{ task.reminder_time.strftime('%d.%m.%Y %H:%M') }}">
+              <i class="fas fa-bell mr-1"></i>Hatırlatıcı
+            </span>
             {% endif %}
-            
+
+            <!-- Recurring Badge -->
             {% if task.is_recurring %}
-                <span class="badge bg-primary text-white me-2" title="{{ task.recurrence_interval }} {{ task.recurrence_type }} aralıklarla tekrarlanıyor">
-                    <i class="bi bi-arrow-repeat"></i> Tekrarlı
-                </span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                  title="{{ task.recurrence_interval }} {{ task.recurrence_type }} aralıklarla tekrarlanıyor">
+              <i class="fas fa-redo mr-1"></i>Tekrarlı
+            </span>
             {% endif %}
-            
+          </div>
+
+          <!-- Related Items -->
+          {% if task.contact or task.deal %}
+          <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-600">
             {% if task.contact %}
-                <i class="bi bi-person-fill"></i> <a href="{{ url_for('crm.crm_contact_detail', contact_id=task.contact_id) }}" class="text-muted">{{ task.contact.first_name }} {{ task.contact.last_name }}</a>
+            <div class="flex items-center">
+              <i class="fas fa-user mr-2"></i>
+              <a href="{{ url_for('crm.crm_contact_detail', contact_id=task.contact_id) }}"
+                 class="hover:text-blue-600">
+                {{ task.contact.first_name }} {{ task.contact.last_name }}
+              </a>
+            </div>
             {% endif %}
+
             {% if task.deal %}
-                | <i class="bi bi-piggy-bank-fill"></i> <a href="{{ url_for('crm.crm_deal_detail', deal_id=task.deal_id) }}" class="text-muted">{{ task.deal.title }}</a>
+            <div class="flex items-center">
+              <i class="fas fa-handshake mr-2"></i>
+              <a href="{{ url_for('crm.crm_deal_detail', deal_id=task.deal_id) }}"
+                 class="hover:text-blue-600">
+                {{ task.deal.title }}
+              </a>
+            </div>
             {% endif %}
-        </small>
-        <div class="float-end">
-             <a href="{{ url_for('crm.crm_task_edit', task_id=task.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-1" title="Düzenle"><i class="bi bi-pencil"></i></a>
-            <form action="{{ url_for('crm.crm_task_delete', task_id=task.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bu görevi silmek istediğinizden emin misiniz?');">
-                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Sil"><i class="bi bi-trash"></i></button>
-            </form>
+          </div>
+          {% endif %}
         </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2 ml-4">
+        <a href="{{ url_for('crm.crm_task_edit', task_id=task.id) }}"
+           class="text-gray-400 hover:text-gray-600" title="Düzenle">
+          <i class="fas fa-edit"></i>
+        </a>
+        <form action="{{ url_for('crm.crm_task_delete', task_id=task.id) }}"
+              method="POST"
+              class="inline"
+              onsubmit="return confirm('Bu görevi silmek istediğinizden emin misiniz?');">
+          <button type="submit"
+                  class="text-gray-400 hover:text-red-600"
+                  title="Sil">
+            <i class="fas fa-trash"></i>
+          </button>
+        </form>
+      </div>
     </div>
-    {% endfor %}
+  </div>
+  {% endfor %}
 </div>
 {% else %}
-<div class="alert alert-light text-center" role="alert">
-    <i class="bi bi-info-circle me-2"></i> 
-    {% if current_status %}
-        '{{current_status}}' durumunda görev bulunamadı.
-    {% else %}
-        Henüz hiç görev eklenmemiş.
-    {% endif %}
-    <a href="{{ url_for('crm.crm_task_new') }}" class="alert-link">Hemen bir görev ekleyin!</a>
+<div class="text-center py-12">
+  <div class="max-w-md mx-auto">
+    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-tasks text-gray-400 text-2xl"></i>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">
+      {% if current_status %}
+        '{{current_status}}' durumunda görev yok
+      {% else %}
+        Henüz görev yok
+      {% endif %}
+    </h3>
+    <p class="text-gray-600 mb-6">
+      {% if current_status %}
+        Bu durumda görev bulunamadı. Farklı bir filtre deneyin.
+      {% else %}
+        İlk görevinizi ekleyerek başlayın.
+      {% endif %}
+    </p>
+    <a href="{{ url_for('crm.crm_task_new') }}" class="btn btn-primary">
+      <i class="fas fa-plus mr-2"></i>Yeni Görev Ekle
+    </a>
+  </div>
 </div>
 {% endif %}
 {% endblock %}

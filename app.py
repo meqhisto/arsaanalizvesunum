@@ -49,9 +49,8 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.register_blueprint(admin_bp) # Eğer admin_bp.py içinde url_prefix='/admin' tanımlıysa
 
     # --- CONFIGURATION ---
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        os.environ.get("DATABASE_URL", "mssql+pyodbc://altan:Yxrkt2bb7q8.@46.221.49.106/arsa_db?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes")
-    )
+    # Force MSSQL for testing
+    app.config["SQLALCHEMY_DATABASE_URI"] = "mssql+pyodbc://altan:Yxrkt2bb7q8.@46.221.49.106/arsa_db?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
     print(f"DATABASE_URL: {os.environ.get('DATABASE_URL')}")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     # SECRET_KEY'i daha güvenli bir yerden alın veya çok güçlü bir varsayılan kullanın
@@ -98,7 +97,7 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     # --- CORS CONFIGURATION ---
     CORS(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:3000", "http://localhost:5000"],
+            "origins": ["http://localhost:3000", "http://localhost:3001", "http://localhost:5000"],
             "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
             "supports_credentials": True
@@ -127,18 +126,35 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     def inject_current_user():
         return dict(current_user=current_user, get_current_user=lambda: current_user)
 
+    # Avatar helper fonksiyonları
+    @app.context_processor
+    def inject_avatar_helpers():
+        from utils.avatar_utils import get_avatar_url, get_contact_avatar_url, get_user_initials
+        return dict(
+            get_avatar_url=get_avatar_url,
+            get_contact_avatar_url=get_contact_avatar_url,
+            get_user_initials=get_user_initials
+        )
+
 
     # --- LOGGING ---
     # Log dosyasının yolu, app.py'nin bulunduğu dizinde olacak şekilde ayarlandı.
     log_file_path = os.path.join(BASE_DIR, "app.log")
-    handler = ConcurrentRotatingFileHandler(log_file_path, maxBytes=100000, backupCount=5, encoding='utf-8')
-    handler.setLevel(logging.INFO)
+    file_handler = ConcurrentRotatingFileHandler(log_file_path, maxBytes=100000, backupCount=5, encoding='utf-8')
+    file_handler.setLevel(logging.INFO)
+
+    # Console handler for real-time debugging
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+
     # Daha detaylı format: %(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(module)s - %(message)s")
-    handler.setFormatter(formatter)
-    
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+
     if not app.logger.handlers: # Handler'ların tekrar tekrar eklenmesini önle
-        app.logger.addHandler(handler)
+        app.logger.addHandler(file_handler)
+        app.logger.addHandler(console_handler)
         app.logger.setLevel(logging.INFO) # Flask'ın kendi logger'ının seviyesini de ayarla
 
     # --- ERROR HANDLER ---
