@@ -78,13 +78,18 @@ def list_analyses():
         today = datetime.now().date()
 
         if date_filter == 'today':
-            query = query.filter(db.func.date(ArsaAnaliz.created_at) == today)
+            # SQL Server compatible date filtering
+            start_of_day = datetime.combine(today, datetime.min.time())
+            end_of_day = datetime.combine(today, datetime.max.time())
+            query = query.filter(ArsaAnaliz.created_at.between(start_of_day, end_of_day))
         elif date_filter == 'week':
             week_ago = today - timedelta(days=7)
-            query = query.filter(db.func.date(ArsaAnaliz.created_at) >= week_ago)
+            start_of_week = datetime.combine(week_ago, datetime.min.time())
+            query = query.filter(ArsaAnaliz.created_at >= start_of_week)
         elif date_filter == 'month':
             month_ago = today - timedelta(days=30)
-            query = query.filter(db.func.date(ArsaAnaliz.created_at) >= month_ago)
+            start_of_month = datetime.combine(month_ago, datetime.min.time())
+            query = query.filter(ArsaAnaliz.created_at >= start_of_month)
 
     # Execute query with ordering
     analyses = query.order_by(ArsaAnaliz.created_at.desc()).all()
