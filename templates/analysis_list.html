@@ -11,10 +11,14 @@
         <i class="fas fa-plus me-1"></i>Yeni Analiz
     </a>
     <div class="dropdown">
-        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" id="exportBtn">
+        <button class="btn btn-outline-primary dropdown-toggle"
+                type="button"
+                id="exportBtn"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
             <i class="fas fa-download me-1"></i>Dışa Aktar
         </button>
-        <ul class="dropdown-menu">
+        <ul class="dropdown-menu" aria-labelledby="exportBtn">
             <li><a class="dropdown-item export-item" href="#" onclick="exportToExcel()">
                 <i class="fas fa-file-excel me-2 text-success"></i>Excel Olarak İndir
                 <small class="d-block text-muted">Tablo formatında detaylı rapor</small>
@@ -161,10 +165,15 @@
                                     <small class="text-muted">{{ analysis.mahalle or 'Mahalle belirtilmemiş' }}</small>
                                 </div>
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                            type="button"
+                                            id="actionDropdown{{ analysis.id }}"
+                                            data-bs-toggle="dropdown"
+                                            data-bs-boundary="viewport"
+                                            aria-expanded="false">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <ul class="dropdown-menu">
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionDropdown{{ analysis.id }}">
                                         <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}">
                                             <i class="fas fa-eye me-2"></i>Görüntüle
                                         </a></li>
@@ -178,6 +187,9 @@
                                         </a></li>
                                         <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}/report/pdf">
                                             <i class="fas fa-file-pdf me-2 text-danger"></i>PDF Raporu
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="generatePowerPointReport({{ analysis.id }})">
+                                            <i class="fas fa-file-powerpoint me-2 text-warning"></i>PowerPoint Sunumu
                                         </a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="#" onclick="deleteAnalysis({{ analysis.id }})">
@@ -268,15 +280,22 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" title="Rapor İndir">
+                                            <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle"
+                                                    id="reportDropdown{{ analysis.id }}"
+                                                    data-bs-toggle="dropdown"
+                                                    aria-expanded="false"
+                                                    title="Rapor İndir">
                                                 <i class="fas fa-download"></i>
                                             </button>
-                                            <ul class="dropdown-menu">
+                                            <ul class="dropdown-menu" aria-labelledby="reportDropdown{{ analysis.id }}">
                                                 <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}/report/word">
                                                     <i class="fas fa-file-word me-2 text-primary"></i>Word
                                                 </a></li>
                                                 <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}/report/pdf">
                                                     <i class="fas fa-file-pdf me-2 text-danger"></i>PDF
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="generatePowerPointReport({{ analysis.id }})">
+                                                    <i class="fas fa-file-powerpoint me-2 text-warning"></i>PPT
                                                 </a></li>
                                             </ul>
                                         </div>
@@ -312,7 +331,8 @@
     transition: all 0.3s ease;
     border: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
 }
 
 .analysis-card:hover {
@@ -323,6 +343,19 @@
 .analysis-card .card-header {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Dropdown Fixes for Analysis Cards */
+.analysis-card .dropdown {
+    position: relative;
+    z-index: 1000;
+}
+
+.analysis-card .dropdown-menu {
+    z-index: 1050;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid rgba(0,0,0,0.1);
+    min-width: 200px;
 }
 
 /* Stats Cards */
@@ -670,6 +703,52 @@ function exportToPDF() {
     }, 2000);
 }
 
+// PowerPoint report function
+function generatePowerPointReport(analysisId) {
+    if (typeof showToast === 'function') {
+        showToast('PowerPoint sunumu hazırlanıyor... 🎯', 'info', 3000);
+    }
+
+    // PowerPoint için POST verisi
+    const formData = new FormData();
+    formData.append('sections', '["genel_bilgiler", "analiz_sonuclari", "swot_analizi"]');
+    formData.append('color_scheme', 'blue');
+
+    // POST isteği gönder
+    fetch(`/analysis/report/generate_pptx/${analysisId}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.blob();
+        }
+        throw new Error('PowerPoint raporu oluşturulamadı');
+    })
+    .then(blob => {
+        // Dosyayı indir
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `arsa_analiz_${analysisId}.pptx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        if (typeof showToast === 'function') {
+            showToast('PowerPoint sunumu indirildi! ✅', 'success', 2000);
+        }
+    })
+    .catch(error => {
+        console.error('PowerPoint raporu hatası:', error);
+        if (typeof showToast === 'function') {
+            showToast('PowerPoint raporu oluşturulamadı! ❌', 'error', 3000);
+        }
+    });
+}
+
 // Delete analysis function
 function deleteAnalysis(analysisId) {
     if (confirm('Bu analizi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
@@ -679,7 +758,7 @@ function deleteAnalysis(analysisId) {
         }
 
         // AJAX request to delete analysis
-        fetch(`/analysis/${analysisId}/delete`, {
+        fetch(`/analysis/delete/${analysisId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

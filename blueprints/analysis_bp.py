@@ -104,6 +104,7 @@ def export_excel():
         import pandas as pd
         from io import BytesIO
         from flask import make_response
+        from datetime import datetime
 
         user_id = 1  # Geçici olarak test için
 
@@ -222,6 +223,7 @@ def export_pdf():
         from reportlab.lib.units import inch
         from io import BytesIO
         from flask import make_response
+        from datetime import datetime
 
         user_id = 1  # Geçici olarak test için
 
