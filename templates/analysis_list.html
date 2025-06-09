@@ -172,6 +172,14 @@
                                             <i class="fas fa-edit me-2"></i>Düzenle
                                         </a></li>
                                         <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Rapor İndir</h6></li>
+                                        <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}/report/word">
+                                            <i class="fas fa-file-word me-2 text-primary"></i>Word Raporu
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}/report/pdf">
+                                            <i class="fas fa-file-pdf me-2 text-danger"></i>PDF Raporu
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="#" onclick="deleteAnalysis({{ analysis.id }})">
                                             <i class="fas fa-trash me-2"></i>Sil
                                         </a></li>
@@ -253,12 +261,28 @@
                                 <td>{{ analysis.created_at.strftime('%d.%m.%Y') }}</td>
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="/analysis/{{ analysis.id }}" class="btn btn-sm btn-outline-primary">
+                                        <a href="/analysis/{{ analysis.id }}" class="btn btn-sm btn-outline-primary" title="Görüntüle">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="/analysis/{{ analysis.id }}/edit" class="btn btn-sm btn-outline-secondary">
+                                        <a href="/analysis/{{ analysis.id }}/edit" class="btn btn-sm btn-outline-secondary" title="Düzenle">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-info dropdown-toggle" data-bs-toggle="dropdown" title="Rapor İndir">
+                                                <i class="fas fa-download"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}/report/word">
+                                                    <i class="fas fa-file-word me-2 text-primary"></i>Word
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="/analysis/{{ analysis.id }}/report/pdf">
+                                                    <i class="fas fa-file-pdf me-2 text-danger"></i>PDF
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteAnalysis({{ analysis.id }})" title="Sil">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -648,13 +672,46 @@ function exportToPDF() {
 
 // Delete analysis function
 function deleteAnalysis(analysisId) {
-    if (confirm('Bu analizi silmek istediğinizden emin misiniz?')) {
-        // Here you would typically make an AJAX request to delete the analysis
+    if (confirm('Bu analizi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+        // Show loading toast
         if (typeof showToast === 'function') {
-            showToast('Analiz silme özelliği yakında eklenecek!', 'info');
-        } else {
-            alert('Analiz silme özelliği yakında eklenecek!');
+            showToast('Analiz siliniyor... 🗑️', 'info');
         }
+
+        // AJAX request to delete analysis
+        fetch(`/analysis/${analysisId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'success');
+                }
+                // Reload page after short delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'error');
+                } else {
+                    alert(data.message);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (typeof showToast === 'function') {
+                showToast('Analiz silinirken bir hata oluştu.', 'error');
+            } else {
+                alert('Analiz silinirken bir hata oluştu.');
+            }
+        });
     }
 }
 </script>

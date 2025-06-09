@@ -1,6 +1,6 @@
 # blueprints/analysis_bp.py
 from flask import (
-    Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_file, send_from_directory
+    Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_file, send_from_directory, make_response
 )
 from flask_login import login_required, current_user
 from datetime import datetime
@@ -444,6 +444,457 @@ def view_analysis(analysis_id):
         current_app.logger.error(f"Analysis detail error: {str(e)}", exc_info=True)
         flash('Analiz detayları yüklenirken bir hata oluştu.', 'error')
         return redirect(url_for('analysis.list_analyses'))
+
+@analysis_bp.route('/<int:analysis_id>/edit', methods=['GET', 'POST'])
+# @login_required # Geçici olarak kaldırıldı
+def edit_analysis(analysis_id):
+    """Analizi düzenle"""
+    user_id = 1  # Geçici olarak test için
+
+    try:
+        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+
+        if request.method == 'POST':
+            # Form verilerini al
+            analysis.il = request.form.get('il', '').strip()
+            analysis.ilce = request.form.get('ilce', '').strip()
+            analysis.mahalle = request.form.get('mahalle', '').strip()
+            analysis.ada = request.form.get('ada', '').strip()
+            analysis.parsel = request.form.get('parsel', '').strip()
+            analysis.koordinatlar = request.form.get('koordinatlar', '').strip()
+            analysis.pafta = request.form.get('pafta', '').strip()
+
+            # Sayısal değerler
+            try:
+                analysis.metrekare = float(request.form.get('metrekare', 0)) if request.form.get('metrekare') else None
+                analysis.fiyat = float(request.form.get('fiyat', 0)) if request.form.get('fiyat') else None
+                analysis.bolge_fiyat = float(request.form.get('bolge_fiyat', 0)) if request.form.get('bolge_fiyat') else None
+                analysis.taks = float(request.form.get('taks', 0)) if request.form.get('taks') else None
+                analysis.kaks = float(request.form.get('kaks', 0)) if request.form.get('kaks') else None
+            except ValueError:
+                flash('Sayısal değerlerde hata var. Lütfen kontrol edin.', 'error')
+                return render_template('analysis_edit.html', analysis=analysis, title="Analizi Düzenle")
+
+            analysis.imar_durumu = request.form.get('imar_durumu', '').strip()
+            analysis.notlar = request.form.get('notlar', '').strip()
+
+            # Altyapı bilgileri (checkbox'lar)
+            altyapi_list = []
+            altyapi_options = ['elektrik', 'su', 'dogalgaz', 'kanalizasyon', 'telefon', 'internet', 'yol']
+            for option in altyapi_options:
+                if request.form.get(f'altyapi_{option}'):
+                    altyapi_list.append(option.title())
+
+            analysis.altyapi = json.dumps(altyapi_list) if altyapi_list else None
+
+            # SWOT analizi
+            swot_data = {
+                'strengths': [s.strip() for s in request.form.get('strengths', '').split('\n') if s.strip()],
+                'weaknesses': [w.strip() for w in request.form.get('weaknesses', '').split('\n') if w.strip()],
+                'opportunities': [o.strip() for o in request.form.get('opportunities', '').split('\n') if o.strip()],
+                'threats': [t.strip() for t in request.form.get('threats', '').split('\n') if t.strip()]
+            }
+
+            analysis.swot_analizi = json.dumps(swot_data) if any(swot_data.values()) else None
+            analysis.updated_at = datetime.utcnow()
+
+            try:
+                db.session.commit()
+                flash('Analiz başarıyla güncellendi!', 'success')
+                return redirect(url_for('analysis.view_analysis', analysis_id=analysis.id))
+            except Exception as e:
+                db.session.rollback()
+                current_app.logger.error(f"Analysis update error: {str(e)}", exc_info=True)
+                flash('Analiz güncellenirken bir hata oluştu.', 'error')
+
+        # Parse existing data for form
+        altyapi_parsed = []
+        if analysis.altyapi:
+            try:
+                altyapi_data = json.loads(analysis.altyapi)
+                if isinstance(altyapi_data, list):
+                    altyapi_parsed = altyapi_data
+                elif isinstance(altyapi_data, dict):
+                    altyapi_parsed = [key for key, value in altyapi_data.items() if value]
+            except json.JSONDecodeError:
+                pass
+
+        swot_parsed = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
+        if analysis.swot_analizi:
+            try:
+                swot_data = json.loads(analysis.swot_analizi)
+                if isinstance(swot_data, dict):
+                    swot_parsed.update(swot_data)
+            except json.JSONDecodeError:
+                pass
+
+        return render_template('analysis_edit.html',
+                             analysis=analysis,
+                             altyapi=altyapi_parsed,
+                             swot=swot_parsed,
+                             title=f"Analizi Düzenle - {analysis.il} {analysis.ilce}")
+
+    except Exception as e:
+        current_app.logger.error(f"Analysis edit error: {str(e)}", exc_info=True)
+        flash('Analiz düzenleme sayfası yüklenirken bir hata oluştu.', 'error')
+        return redirect(url_for('analysis.list_analyses'))
+
+@analysis_bp.route('/<int:analysis_id>/delete', methods=['POST'])
+# @login_required # Geçici olarak kaldırıldı
+def delete_analysis(analysis_id):
+    """Analizi sil"""
+    user_id = 1  # Geçici olarak test için
+
+    try:
+        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+
+        # İlgili medya dosyalarını da sil
+        media_files = AnalizMedya.query.filter_by(analiz_id=analysis_id).all()
+        for media in media_files:
+            # Dosyayı fiziksel olarak sil (eğer varsa)
+            if media.filename and os.path.exists(media.filename):
+                try:
+                    os.remove(media.filename)
+                except OSError:
+                    pass
+            db.session.delete(media)
+
+        # Analizi sil
+        db.session.delete(analysis)
+        db.session.commit()
+
+        flash(f'{analysis.il} {analysis.ilce} analizi başarıyla silindi.', 'success')
+        return jsonify({'success': True, 'message': 'Analiz başarıyla silindi.'})
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Analysis delete error: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'message': 'Analiz silinirken bir hata oluştu.'}), 500
+
+@analysis_bp.route('/<int:analysis_id>/duplicate', methods=['POST'])
+# @login_required # Geçici olarak kaldırıldı
+def duplicate_analysis(analysis_id):
+    """Analizi kopyala"""
+    user_id = 1  # Geçici olarak test için
+
+    try:
+        original = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+
+        # Yeni analiz oluştur
+        new_analysis = ArsaAnaliz(
+            user_id=user_id,
+            office_id=original.office_id,
+            il=original.il,
+            ilce=original.ilce,
+            mahalle=f"{original.mahalle} (Kopya)" if original.mahalle else "Kopya",
+            ada=original.ada,
+            parsel=original.parsel,
+            koordinatlar=original.koordinatlar,
+            pafta=original.pafta,
+            metrekare=original.metrekare,
+            imar_durumu=original.imar_durumu,
+            taks=original.taks,
+            kaks=original.kaks,
+            fiyat=original.fiyat,
+            bolge_fiyat=original.bolge_fiyat,
+            altyapi=original.altyapi,
+            swot_analizi=original.swot_analizi,
+            notlar=f"{original.notlar}\n\n[Bu analiz {original.il} {original.ilce} analizinden kopyalanmıştır]" if original.notlar else f"[Bu analiz {original.il} {original.ilce} analizinden kopyalanmıştır]",
+            created_at=datetime.utcnow()
+        )
+
+        db.session.add(new_analysis)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Analiz başarıyla kopyalandı.',
+            'new_id': new_analysis.id,
+            'redirect_url': url_for('analysis.view_analysis', analysis_id=new_analysis.id)
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Analysis duplicate error: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'message': 'Analiz kopyalanırken bir hata oluştu.'}), 500
+
+@analysis_bp.route('/<int:analysis_id>/share', methods=['GET'])
+# @login_required # Geçici olarak kaldırıldı
+def share_analysis(analysis_id):
+    """Analiz paylaşım bilgilerini getir"""
+    user_id = 1  # Geçici olarak test için
+
+    try:
+        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+
+        share_data = {
+            'title': f'Arsa Analizi - {analysis.il} {analysis.ilce}',
+            'description': f'{analysis.metrekare} m² arsa analizi. Fiyat: ₺{analysis.fiyat:,.0f}' if analysis.metrekare and analysis.fiyat else f'{analysis.il} {analysis.ilce} arsa analizi',
+            'url': request.url_root.rstrip('/') + url_for('analysis.view_analysis', analysis_id=analysis_id),
+            'image': None  # Gelecekte analiz görseli eklenebilir
+        }
+
+        return jsonify({'success': True, 'data': share_data})
+
+    except Exception as e:
+        current_app.logger.error(f"Analysis share error: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'message': 'Paylaşım bilgileri alınırken bir hata oluştu.'}), 500
+
+@analysis_bp.route('/<int:analysis_id>/report/word', methods=['GET'])
+# @login_required # Geçici olarak kaldırıldı
+def generate_word_report(analysis_id):
+    """DocumentGenerator kullanarak Word raporu oluştur"""
+    user_id = 1  # Geçici olarak test için
+
+    try:
+        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+
+        # Analysis verisini DocumentGenerator formatına çevir
+        arsa_data = {
+            'id': analysis.id,
+            'il': analysis.il,
+            'ilce': analysis.ilce,
+            'mahalle': analysis.mahalle,
+            'ada': analysis.ada,
+            'parsel': analysis.parsel,
+            'koordinatlar': analysis.koordinatlar,
+            'pafta': analysis.pafta,
+            'metrekare': analysis.metrekare,
+            'imar_durumu': analysis.imar_durumu,
+            'taks': analysis.taks,
+            'kaks': analysis.kaks,
+            'fiyat': analysis.fiyat,
+            'bolge_fiyat': analysis.bolge_fiyat,
+            'notlar': analysis.notlar
+        }
+
+        # Altyapı verilerini parse et
+        if analysis.altyapi:
+            try:
+                altyapi_data = json.loads(analysis.altyapi)
+                if isinstance(altyapi_data, list):
+                    arsa_data['altyapi[]'] = [item.lower() for item in altyapi_data]
+                else:
+                    arsa_data['altyapi[]'] = []
+            except json.JSONDecodeError:
+                arsa_data['altyapi[]'] = []
+        else:
+            arsa_data['altyapi[]'] = []
+
+        # SWOT verilerini parse et
+        if analysis.swot_analizi:
+            try:
+                swot_data = json.loads(analysis.swot_analizi)
+                if isinstance(swot_data, dict):
+                    arsa_data['strengths'] = swot_data.get('strengths', [])
+                    arsa_data['weaknesses'] = swot_data.get('weaknesses', [])
+                    arsa_data['opportunities'] = swot_data.get('opportunities', [])
+                    arsa_data['threats'] = swot_data.get('threats', [])
+                else:
+                    arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
+            except json.JSONDecodeError:
+                arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
+        else:
+            arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
+
+        # Analiz özeti (basit)
+        analiz_ozeti = {
+            'temel_ozet': f"{analysis.il} {analysis.ilce} bölgesinde bulunan {analysis.metrekare} m² arsa analizi.",
+            'yatirim_ozet': f"Toplam maliyet: ₺{float(analysis.fiyat):,.0f}" if analysis.fiyat else "Maliyet bilgisi mevcut değil.",
+            'uygunluk_ozet': "Detaylı analiz sonuçları raporda yer almaktadır.",
+            'tavsiyeler': analysis.notlar or "Özel tavsiye bulunmamaktadır."
+        }
+
+        # Profil bilgileri (basit)
+        profile_info = {
+            'ad': 'Sistem',
+            'soyad': 'Kullanıcısı',
+            'unvan': 'Analiz Uzmanı',
+            'firma': 'Arsa Analiz Platformu',
+            'email': 'info@arsaanaliz.com',
+            'telefon': '-',
+            'adres': '-',
+            'created_at': analysis.created_at
+        }
+
+        # Geçici dosya ID'si
+        file_id = f"analiz_{analysis_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        # Geçici output directory
+        import tempfile
+        output_dir = tempfile.mkdtemp()
+
+        # DocumentGenerator oluştur
+        doc_generator = DocumentGenerator(
+            arsa_data=arsa_data,
+            analiz_ozeti=analiz_ozeti,
+            file_id=file_id,
+            output_dir=output_dir,
+            profile_info=profile_info
+        )
+
+        # Word dosyası oluştur
+        word_file_path = doc_generator.create_word()
+
+        if word_file_path and os.path.exists(word_file_path):
+            # Dosyayı oku
+            with open(word_file_path, 'rb') as f:
+                file_data = f.read()
+
+            # Geçici dosyaları temizle
+            import shutil
+            shutil.rmtree(output_dir, ignore_errors=True)
+
+            # Response oluştur
+            response = make_response(file_data)
+            response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+            # Safe filename
+            safe_il = analysis.il.replace('İ', 'I').replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c') if analysis.il else 'analiz'
+            safe_ilce = analysis.ilce.replace('İ', 'I').replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c') if analysis.ilce else 'rapor'
+            filename = f'analiz_raporu_{safe_il}_{safe_ilce}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx'
+            response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+
+            return response
+        else:
+            # Geçici dosyaları temizle
+            import shutil
+            shutil.rmtree(output_dir, ignore_errors=True)
+            flash('Word raporu oluşturulamadı.', 'error')
+            return redirect(url_for('analysis.view_analysis', analysis_id=analysis_id))
+
+    except Exception as e:
+        current_app.logger.error(f"Word report error: {str(e)}", exc_info=True)
+        flash('Word raporu oluşturulurken bir hata oluştu.', 'error')
+        return redirect(url_for('analysis.view_analysis', analysis_id=analysis_id))
+
+@analysis_bp.route('/<int:analysis_id>/report/pdf', methods=['GET'])
+# @login_required # Geçici olarak kaldırıldı
+def generate_pdf_report(analysis_id):
+    """DocumentGenerator kullanarak PDF raporu oluştur"""
+    user_id = 1  # Geçici olarak test için
+
+    try:
+        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+
+        # Analysis verisini DocumentGenerator formatına çevir (Word ile aynı)
+        arsa_data = {
+            'id': analysis.id,
+            'il': analysis.il,
+            'ilce': analysis.ilce,
+            'mahalle': analysis.mahalle,
+            'ada': analysis.ada,
+            'parsel': analysis.parsel,
+            'koordinatlar': analysis.koordinatlar,
+            'pafta': analysis.pafta,
+            'metrekare': analysis.metrekare,
+            'imar_durumu': analysis.imar_durumu,
+            'taks': analysis.taks,
+            'kaks': analysis.kaks,
+            'fiyat': analysis.fiyat,
+            'bolge_fiyat': analysis.bolge_fiyat,
+            'notlar': analysis.notlar
+        }
+
+        # Altyapı verilerini parse et
+        if analysis.altyapi:
+            try:
+                altyapi_data = json.loads(analysis.altyapi)
+                if isinstance(altyapi_data, list):
+                    arsa_data['altyapi[]'] = [item.lower() for item in altyapi_data]
+                else:
+                    arsa_data['altyapi[]'] = []
+            except json.JSONDecodeError:
+                arsa_data['altyapi[]'] = []
+        else:
+            arsa_data['altyapi[]'] = []
+
+        # SWOT verilerini parse et
+        if analysis.swot_analizi:
+            try:
+                swot_data = json.loads(analysis.swot_analizi)
+                if isinstance(swot_data, dict):
+                    arsa_data['strengths'] = swot_data.get('strengths', [])
+                    arsa_data['weaknesses'] = swot_data.get('weaknesses', [])
+                    arsa_data['opportunities'] = swot_data.get('opportunities', [])
+                    arsa_data['threats'] = swot_data.get('threats', [])
+                else:
+                    arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
+            except json.JSONDecodeError:
+                arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
+        else:
+            arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
+
+        # Analiz özeti (basit)
+        analiz_ozeti = {
+            'temel_ozet': f"{analysis.il} {analysis.ilce} bölgesinde bulunan {analysis.metrekare} m² arsa analizi.",
+            'yatirim_ozet': f"Toplam maliyet: ₺{float(analysis.fiyat):,.0f}" if analysis.fiyat else "Maliyet bilgisi mevcut değil.",
+            'uygunluk_ozet': "Detaylı analiz sonuçları raporda yer almaktadır.",
+            'tavsiyeler': analysis.notlar or "Özel tavsiye bulunmamaktadır."
+        }
+
+        # Profil bilgileri (basit)
+        profile_info = {
+            'ad': 'Sistem',
+            'soyad': 'Kullanıcısı',
+            'unvan': 'Analiz Uzmanı',
+            'firma': 'Arsa Analiz Platformu',
+            'email': 'info@arsaanaliz.com',
+            'telefon': '-',
+            'adres': '-',
+            'created_at': analysis.created_at
+        }
+
+        # Geçici dosya ID'si
+        file_id = f"analiz_{analysis_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        # Geçici output directory
+        import tempfile
+        output_dir = tempfile.mkdtemp()
+
+        # DocumentGenerator oluştur
+        doc_generator = DocumentGenerator(
+            arsa_data=arsa_data,
+            analiz_ozeti=analiz_ozeti,
+            file_id=file_id,
+            output_dir=output_dir,
+            profile_info=profile_info
+        )
+
+        # PDF dosyası oluştur
+        pdf_file_path = doc_generator.create_pdf()
+
+        if pdf_file_path and os.path.exists(pdf_file_path):
+            # Dosyayı oku
+            with open(pdf_file_path, 'rb') as f:
+                file_data = f.read()
+
+            # Geçici dosyaları temizle
+            import shutil
+            shutil.rmtree(output_dir, ignore_errors=True)
+
+            # Response oluştur
+            response = make_response(file_data)
+            response.headers['Content-Type'] = 'application/pdf'
+
+            # Safe filename
+            safe_il = analysis.il.replace('İ', 'I').replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c') if analysis.il else 'analiz'
+            safe_ilce = analysis.ilce.replace('İ', 'I').replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c') if analysis.ilce else 'rapor'
+            filename = f'analiz_raporu_{safe_il}_{safe_ilce}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
+            response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+
+            return response
+        else:
+            # Geçici dosyaları temizle
+            import shutil
+            shutil.rmtree(output_dir, ignore_errors=True)
+            flash('PDF raporu oluşturulamadı.', 'error')
+            return redirect(url_for('analysis.view_analysis', analysis_id=analysis_id))
+
+    except Exception as e:
+        current_app.logger.error(f"PDF report error: {str(e)}", exc_info=True)
+        flash('PDF raporu oluşturulurken bir hata oluştu.', 'error')
+        return redirect(url_for('analysis.view_analysis', analysis_id=analysis_id))
 
 # ÖNEMLİ NOT: Eski app.py'de iki adet analiz submit rotası vardı: /submit ve /submit_analysis.
 # /submit_analysis daha yeni ve daha detaylı validasyon içeriyor gibi duruyor.

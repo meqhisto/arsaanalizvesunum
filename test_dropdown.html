@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropdown Test</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Dropdown Test</h1>
+        
+        <div class="d-flex gap-2">
+            <a href="#" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Geri Dön
+            </a>
+            <a href="#" class="btn btn-outline-primary">
+                <i class="fas fa-edit me-1"></i>Düzenle
+            </a>
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="reportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-download me-1"></i>Rapor
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="reportDropdown">
+                    <li><a class="dropdown-item" href="#" onclick="alert('Word Raporu')">
+                        <i class="fas fa-file-word me-2 text-primary"></i>Word Raporu İndir
+                    </a></li>
+                    <li><a class="dropdown-item" href="#" onclick="alert('PDF Raporu')">
+                        <i class="fas fa-file-pdf me-2 text-danger"></i>PDF Raporu İndir
+                    </a></li>
+                    <li><a class="dropdown-item" href="#" onclick="alert('PowerPoint Raporu')">
+                        <i class="fas fa-file-powerpoint me-2 text-warning"></i>PowerPoint Sunumu İndir
+                    </a></li>
+                </ul>
+            </div>
+            <button class="btn btn-outline-danger">
+                <i class="fas fa-trash me-1"></i>Sil
+            </button>
+        </div>
+        
+        <div class="mt-4">
+            <h3>Test Sonuçları:</h3>
+            <ul>
+                <li>Bootstrap CSS yüklendi mi? <span id="bootstrap-css-check">❌</span></li>
+                <li>Bootstrap JS yüklendi mi? <span id="bootstrap-js-check">❌</span></li>
+                <li>Dropdown çalışıyor mu? <span id="dropdown-check">❌</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Bootstrap CSS kontrolü
+        function checkBootstrapCSS() {
+            const testElement = document.createElement('div');
+            testElement.className = 'btn btn-primary';
+            document.body.appendChild(testElement);
+            const styles = window.getComputedStyle(testElement);
+            const hasBootstrap = styles.backgroundColor !== 'rgba(0, 0, 0, 0)' && styles.backgroundColor !== 'transparent';
+            document.body.removeChild(testElement);
+            return hasBootstrap;
+        }
+        
+        // Bootstrap JS kontrolü
+        function checkBootstrapJS() {
+            return typeof bootstrap !== 'undefined';
+        }
+        
+        // Dropdown kontrolü
+        function checkDropdown() {
+            const dropdownElement = document.getElementById('reportDropdown');
+            if (!dropdownElement) return false;
+            
+            try {
+                const dropdown = new bootstrap.Dropdown(dropdownElement);
+                return true;
+            } catch (e) {
+                console.error('Dropdown hatası:', e);
+                return false;
+            }
+        }
+        
+        // Testleri çalıştır
+        document.addEventListener('DOMContentLoaded', function() {
+            // Bootstrap CSS kontrolü
+            if (checkBootstrapCSS()) {
+                document.getElementById('bootstrap-css-check').textContent = '✅';
+                document.getElementById('bootstrap-css-check').style.color = 'green';
+            }
+            
+            // Bootstrap JS kontrolü
+            if (checkBootstrapJS()) {
+                document.getElementById('bootstrap-js-check').textContent = '✅';
+                document.getElementById('bootstrap-js-check').style.color = 'green';
+            }
+            
+            // Dropdown kontrolü
+            if (checkDropdown()) {
+                document.getElementById('dropdown-check').textContent = '✅';
+                document.getElementById('dropdown-check').style.color = 'green';
+            }
+            
+            // Dropdown event listener'ları
+            const dropdownElement = document.getElementById('reportDropdown');
+            if (dropdownElement) {
+                dropdownElement.addEventListener('show.bs.dropdown', function () {
+                    console.log('Dropdown açılıyor...');
+                });
+                
+                dropdownElement.addEventListener('shown.bs.dropdown', function () {
+                    console.log('Dropdown açıldı!');
+                });
+                
+                dropdownElement.addEventListener('hide.bs.dropdown', function () {
+                    console.log('Dropdown kapanıyor...');
+                });
+                
+                dropdownElement.addEventListener('hidden.bs.dropdown', function () {
+                    console.log('Dropdown kapandı!');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

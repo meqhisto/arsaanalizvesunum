@@ -25,6 +25,7 @@ import logging # Logging modülünü import et
 import qrcode
 from pptx import Presentation
 from pptx.util import Inches as PPTXInches, Pt as PPTXPt # pptx için Inches ve Pt import et (docx ile çakışmaması için alias)
+from pptx.dml.color import RGBColor as PPTXRGBColor # PowerPoint için RGBColor import et (docx ile çakışmaması için alias)
 
 # Logging yapılandırması
 logging.basicConfig(level=logging.INFO, stream=sys.stdout,
@@ -2146,9 +2147,9 @@ class DocumentGenerator:
                 
                 # Duruma göre metin rengini ayarla
                 if status == '✓':
-                     p2.font.color.rgb = RGBColor(0, 128, 0) # Yeşil
+                     p2.font.color.rgb = PPTXRGBColor(0, 128, 0) # Yeşil
                 else:
-                     p2.font.color.rgb = RGBColor(255, 0, 0) # Kırmızı
+                     p2.font.color.rgb = PPTXRGBColor(255, 0, 0) # Kırmızı
                 
                 # Metni ortala
                 p2.alignment = 2 # CENTER
@@ -2201,12 +2202,12 @@ class DocumentGenerator:
 
         swot_data_dict = self._get_swot_analizi()
 
-        # SWOT başlıkları ve renkleri (RGBColor nesneleri)
+        # SWOT başlıkları ve renkleri (PPTXRGBColor nesneleri)
         swot_config = {
-            'Güçlü Yönler': {'color': RGBColor(0, 128, 0), 'key': 'Güçlü Yönler'}, # Yeşil
-            'Zayıf Yönler': {'color': RGBColor(255, 0, 0), 'key': 'Zayıf Yönler'}, # Kırmızı
-            'Fırsatlar': {'color': RGBColor(0, 0, 255), 'key': 'Fırsatlar'},   # Mavi
-            'Tehditler': {'color': RGBColor(255, 165, 0), 'key': 'Tehditler'}    # Turuncu
+            'Güçlü Yönler': {'color': PPTXRGBColor(0, 128, 0), 'key': 'Güçlü Yönler'}, # Yeşil
+            'Zayıf Yönler': {'color': PPTXRGBColor(255, 0, 0), 'key': 'Zayıf Yönler'}, # Kırmızı
+            'Fırsatlar': {'color': PPTXRGBColor(0, 0, 255), 'key': 'Fırsatlar'},   # Mavi
+            'Tehditler': {'color': PPTXRGBColor(255, 165, 0), 'key': 'Tehditler'}    # Turuncu
         }
         swot_keys_ordered = ['Güçlü Yönler', 'Zayıf Yönler', 'Fırsatlar', 'Tehditler']
 
@@ -2269,7 +2270,7 @@ class DocumentGenerator:
                 logging.error(f"PPTX SWOT metin kutusu eklenemedi ({title}): {e}")
                 txBox_err = slide.shapes.add_textbox(left, top, box_width, box_height)
                 tf_err = txBox_err.text_frame; p_err = tf_err.add_paragraph()
-                p_err.text = f"{title} yüklenemedi."; p_err.font.size = PPTXPt(10); p_err.font.color.rgb = RGBColor(255,0,0)
+                p_err.text = f"{title} yüklenemedi."; p_err.font.size = PPTXPt(10); p_err.font.color.rgb = PPTXRGBColor(255,0,0)
 
 
     def _add_pptx_analiz_ozeti_slide(self, prs):
@@ -2420,7 +2421,7 @@ class DocumentGenerator:
                 logging.error(f"PPTX resim eklenemedi: {img_path} - {e}")
                 txBox = slide.shapes.add_textbox(left, top, img_width, PPTXInches(0.5)) # Hata mesajı için küçük kutu
                 tf = txBox.text_frame; p = tf.add_paragraph()
-                p.text = "Resim Hatalı"; p.font.size = PPTXPt(10); p.alignment = 2; p.font.color.rgb = RGBColor(255,0,0)
+                p.text = "Resim Hatalı"; p.font.size = PPTXPt(10); p.alignment = 2; p.font.color.rgb = PPTXRGBColor(255,0,0)
 
         logging.info("_add_pptx_photos_slide metodu tamamlandı.")
 
@@ -2459,16 +2460,16 @@ class DocumentGenerator:
                 p_caption.font.size = PPTXPt(12) # Açıklama boyutu
                 p_caption.alignment = 2 # CENTER
                 p_caption.font.italic = True
-                p_caption.font.color.rgb = RGBColor(100, 100, 100) # Gri tonu
+                p_caption.font.color.rgb = PPTXRGBColor(100, 100, 100) # Gri tonu
 
             except Exception as e:
                 logging.error(f"PPTX QR kod resmi eklenemedi: {e}")
                 txBox = slide.shapes.add_textbox(PPTXInches(3.5), PPTXInches(3), PPTXInches(3), PPTXInches(1))
                 tf = txBox.text_frame; p = tf.add_paragraph()
-                p.text = "QR Kod yüklenemedi."; p.font.size = PPTXPt(10); p.alignment = 2; p.font.color.rgb = RGBColor(255,0,0)
+                p.text = "QR Kod yüklenemedi."; p.font.size = PPTXPt(10); p.alignment = 2; p.font.color.rgb = PPTXRGBColor(255,0,0)
         else:
              logging.warning("QR kod dosyası bulunamadı, PPTX'e eklenemedi.")
              txBox = slide.shapes.add_textbox(PPTXInches(3.5), PPTXInches(3), PPTXInches(3), PPTXInches(1))
              tf = txBox.text_frame; p = tf.add_paragraph()
-             p.text = "QR Kod Yüklenemedi (Dosya Bulunamadı)."; p.font.size = PPTXPt(10); p.alignment = 2; p.font.color.rgb = RGBColor(255,0,0)
+             p.text = "QR Kod Yüklenemedi (Dosya Bulunamadı)."; p.font.size = PPTXPt(10); p.alignment = 2; p.font.color.rgb = PPTXRGBColor(255,0,0)
 
