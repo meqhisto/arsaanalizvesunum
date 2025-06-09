@@ -32,6 +32,109 @@ def home(): # Eski home() fonksiyonu
         return redirect(url_for('main.index'))
     return redirect(url_for('auth.login')) # auth Blueprint'indeki login'e yönlendir
 
+@main_bp.route('/broker/dashboard')
+@login_required
+@broker_required
+def broker_dashboard():
+    """Broker Dashboard - Ofis yönetimi ve ekip performansı"""
+
+    # Broker'ın ofis bilgilerini al
+    office = current_user.office if current_user.office_id else None
+
+    # Temel istatistikler
+    stats = {
+        'office_consultants': 0,
+        'monthly_analyses': 0,
+        'active_customers': 0,
+        'pending_tasks': 0
+    }
+
+    if office:
+        # Ofis danışmanlarını say
+        stats['office_consultants'] = User.query.filter_by(office_id=office.id, role='danisman').count()
+
+        # Bu ay yapılan analizler
+        from datetime import datetime
+        start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        stats['monthly_analyses'] = ArsaAnaliz.query.filter(
+            ArsaAnaliz.office_id == office.id,
+            ArsaAnaliz.created_at >= start_of_month
+        ).count()
+
+        # Aktif müşteriler
+        stats['active_customers'] = Contact.query.filter_by(office_id=office.id).count()
+
+    # Ekip üyeleri
+    team_members = []
+    if office:
+        team_members = User.query.filter(
+            User.office_id == office.id,
+            User.id != current_user.id
+        ).limit(5).all()
+
+    return render_template('dashboard_base.html',
+                         page_title="Broker Dashboard",
+                         page_subtitle="Ofis yönetimi ve ekip performansı",
+                         office=office,
+                         stats=stats,
+                         team_members=team_members,
+                         show_broker_content=True)
+
+@main_bp.route('/broker/team')
+@login_required
+@broker_required
+def broker_team():
+    """Broker Ekip Yönetimi"""
+    office = current_user.office if current_user.office_id else None
+
+    team_members = []
+    if office:
+        team_members = User.query.filter(
+            User.office_id == office.id,
+            User.id != current_user.id
+        ).all()
+
+    return render_template('dashboard_base.html',
+                         page_title="Ekip Yönetimi",
+                         page_subtitle="Ofis çalışanlarını yönetin",
+                         office=office,
+                         team_members=team_members,
+                         show_team_content=True)
+
+@main_bp.route('/broker/permissions')
+@login_required
+@broker_required
+def broker_permissions():
+    """Broker Yetki Yönetimi"""
+    office = current_user.office if current_user.office_id else None
+
+    team_members = []
+    if office:
+        team_members = User.query.filter(
+            User.office_id == office.id,
+            User.id != current_user.id
+        ).all()
+
+    return render_template('dashboard_base.html',
+                         page_title="Yetki Yönetimi",
+                         page_subtitle="Ekip üyelerinin yetkilerini yönetin",
+                         office=office,
+                         team_members=team_members,
+                         show_permissions_content=True)
+
+@main_bp.route('/broker/reports')
+@login_required
+@broker_required
+def broker_reports():
+    """Broker Performans Raporları"""
+    office = current_user.office if current_user.office_id else None
+
+    return render_template('dashboard_base.html',
+                         page_title="Performans Raporları",
+                         page_subtitle="Ofis ve ekip performans analizi",
+                         office=office,
+                         show_reports_content=True)
+
 @main_bp.route('/my_office', methods=['GET', 'POST'])
 @login_required
 @broker_required

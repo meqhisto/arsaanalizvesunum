@@ -20,6 +20,7 @@ from blueprints.main_bp import main_bp
 from blueprints.analysis_bp import analysis_bp
 from blueprints.crm_bp import crm_bp
 from blueprints.portfolio_bp import portfolio_bp # Import et
+from blueprints.broker_bp import broker_bp # Broker blueprint'ini import et
 
 # API Blueprint'ini import et
 from blueprints.api.api_bp import api_bp, init_swagger
@@ -178,6 +179,16 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
             get_user_initials=get_user_initials
         )
 
+    # Permission helper fonksiyonları
+    @app.context_processor
+    def inject_permission_helpers():
+        """Permission helper fonksiyonlarını template'lere enjekte eder."""
+        from models.permission_models import PermissionManager
+        return dict(
+            get_sidebar_menu=PermissionManager.get_sidebar_menu,
+            has_permission=PermissionManager.has_permission
+        )
+
 
     # --- LOGGING ---
     # Log dosyasının yolu, app.py'nin bulunduğu dizinde olacak şekilde ayarlandı.
@@ -219,6 +230,7 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.register_blueprint(main_bp) # Prefix yok, kök URL'ler burada olacak (örn: /index)
     app.register_blueprint(analysis_bp, url_prefix='/analysis') # url_for('analysis.analizler')
     app.register_blueprint(crm_bp, url_prefix='/crm') # url_for('crm.crm_contacts_list')
+    app.register_blueprint(broker_bp) # Broker blueprint'ini kaydet (prefix zaten /broker)
     # portfolio_bp için de benzer bir kayıt yapabilirsiniz.
 
     # --- API BLUEPRINT REGISTRATION ---
@@ -231,6 +243,12 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     # app.permanent_session_lifetime = timedelta(days=30) # "Beni Hatırla" için
     # Flask-Login'in remember_me özelliği bunu zaten yönetir.
     # Eğer session.permanent = True yapıyorsanız, bu ayar kullanılır.
+
+    # --- PERMISSION SYSTEM INITIALIZATION ---
+    with app.app_context():
+        # Varsayılan permission template'lerini oluştur
+        from blueprints.permission_helpers import initialize_default_permissions
+        initialize_default_permissions()
 
     app.logger.info("Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.")
     return app

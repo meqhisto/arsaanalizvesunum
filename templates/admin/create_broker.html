@@ -1,169 +1,291 @@
-{% extends "base_admin.html" %} {% block title %}Yeni Broker Oluştur - Admin
-Paneli{% endblock %} {% block content %}
-<div class="container mt-5">
-  <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <div class="card shadow-lg">
-        <div class="card-header bg-primary text-white">
-          <h3 class="mb-0">
-            <i class="bi bi-person-plus-fill me-2"></i>Yeni Broker Oluştur
-          </h3>
-        </div>
-        <div class="card-body p-4">
-          <form
-            method="POST"
-            action="{{ url_for('admin.create_broker') }}"
-            class="needs-validation"
-            novalidate
-          >
-            <h5 class="mb-3">Kişisel Bilgiler</h5>
-            <div class="row g-3">
-              <div class="col-md-6 mb-3">
-                <label for="ad" class="form-label"
-                  >Ad <span class="text-danger">*</span></label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="ad"
-                  name="ad"
-                  required
-                  value="{{ request.form.ad if request.form.ad }}"
-                />
-                <div class="invalid-feedback">Lütfen broker adını giriniz.</div>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="soyad" class="form-label"
-                  >Soyad <span class="text-danger">*</span></label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="soyad"
-                  name="soyad"
-                  required
-                  value="{{ request.form.soyad if request.form.soyad }}"
-                />
-                <div class="invalid-feedback">
-                  Lütfen broker soyadını giriniz.
-                </div>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="email" class="form-label"
-                >E-posta <span class="text-danger">*</span></label
-              >
-              <input
-                type="email"
-                class="form-control"
-                id="email"
-                name="email"
-                required
-                value="{{ request.form.email if request.form.email }}"
-              />
-              <div class="invalid-feedback">
-                Lütfen geçerli bir e-posta adresi giriniz.
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="password" class="form-label"
-                >Şifre <span class="text-danger">*</span></label
-              >
-              <input
-                type="password"
-                class="form-control"
-                id="password"
-                name="password"
-                required
-                minlength="6"
-              />
-              <div class="invalid-feedback">
-                Şifre en az 6 karakter olmalıdır.
-              </div>
-            </div>
+{% extends "dashboard_base.html" %}
 
-            <h5 class="mt-4 mb-3">Firma ve Pozisyon Bilgileri</h5>
-            <div class="mb-3">
-              <label for="firma" class="form-label"
-                >Kullanıcının Çalıştığı Firma (Opsiyonel)</label
-              >
-              <input
-                type="text"
-                class="form-control"
-                id="firma"
-                name="firma"
-                value="{{ request.form.firma if request.form.firma }}"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="unvan" class="form-label">Ünvan (Opsiyonel)</label>
-              <input
-                type="text"
-                class="form-control"
-                id="unvan"
-                name="unvan"
-                value="{{ request.form.unvan if request.form.unvan }}"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="office_id" class="form-label"
-                >Atanacak Ofis <span class="text-danger">*</span></label
-              >
-              <select
-                class="form-select"
-                id="office_id"
-                name="office_id"
-                required
-              >
-                <option value="" disabled selected>
-                  Lütfen Bir Ofis Seçin...
-                </option>
-                {% for office_item in offices %} {# Döngü değişkeni adını
-                'office' yerine 'office_item' yaptım #}
-                <option value="{{ office_item.id }}">
-                  {{ office_item.name }}
-                </option>
-                {% endfor %}
-              </select>
-              <div class="invalid-feedback">
-                Lütfen broker için bir ofis seçiniz.
-              </div>
-            </div>
-            <hr class="my-4" />
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-              <a
-                href="{{ url_for('admin.dashboard') }}"
-                class="btn btn-outline-secondary btn-lg"
-                >İptal</a
-              >
-              <button type="submit" class="btn btn-primary btn-lg">
-                <i class="bi bi-person-check-fill me-2"></i>Broker Oluştur
-              </button>
-            </div>
-          </form>
+{% block title %}Yeni Broker Oluştur - Arsa Analiz Platformu{% endblock %}
+
+{% block dashboard_content %}
+<!-- Broker Oluşturma Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-user-tie me-2"></i>Yeni Broker Oluştur
+            </h1>
+            <p class="page-subtitle text-muted">Sisteme yeni broker kullanıcısı ekleyin</p>
         </div>
-      </div>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-1"></i>Dashboard'a Dön
+            </a>
+            <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-primary">
+                <i class="fas fa-users me-1"></i>Kullanıcı Listesi
+            </a>
+        </div>
     </div>
-  </div>
 </div>
+
+<!-- Broker Oluşturma Formu -->
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-user-plus me-2"></i>Broker Bilgileri
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.create_broker') }}" class="needs-validation" novalidate>
+                    <!-- Kişisel Bilgiler Bölümü -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-user me-2"></i>Kişisel Bilgiler
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="ad" class="form-label">
+                                <i class="fas fa-user me-1"></i>Ad <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="ad" name="ad" required
+                                   value="{{ request.form.ad if request.form.ad }}"
+                                   placeholder="Broker adını giriniz">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen broker adını giriniz.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="soyad" class="form-label">
+                                <i class="fas fa-user me-1"></i>Soyad <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="soyad" name="soyad" required
+                                   value="{{ request.form.soyad if request.form.soyad }}"
+                                   placeholder="Broker soyadını giriniz">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen broker soyadını giriniz.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>E-posta <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required
+                                   value="{{ request.form.email if request.form.email }}"
+                                   placeholder="ornek@email.com">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen geçerli bir e-posta adresi giriniz.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-1"></i>Şifre <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" required
+                                   minlength="6" placeholder="En az 6 karakter">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Şifre en az 6 karakter olmalıdır.
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Güvenli bir şifre oluşturun (en az 6 karakter)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Firma ve Pozisyon Bilgileri Bölümü -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-success border-bottom pb-2 mb-3">
+                                <i class="fas fa-building me-2"></i>Firma ve Pozisyon Bilgileri
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firma" class="form-label">
+                                <i class="fas fa-building me-1"></i>Çalıştığı Firma
+                                <span class="badge bg-secondary ms-1">Opsiyonel</span>
+                            </label>
+                            <input type="text" class="form-control" id="firma" name="firma"
+                                   value="{{ request.form.firma if request.form.firma }}"
+                                   placeholder="Firma adını giriniz">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Broker'ın çalıştığı firma adı
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="unvan" class="form-label">
+                                <i class="fas fa-id-badge me-1"></i>Ünvan
+                                <span class="badge bg-secondary ms-1">Opsiyonel</span>
+                            </label>
+                            <input type="text" class="form-control" id="unvan" name="unvan"
+                                   value="{{ request.form.unvan if request.form.unvan }}"
+                                   placeholder="Ünvanını giriniz">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Broker'ın iş ünvanı
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ofis Atama Bölümü -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-warning border-bottom pb-2 mb-3">
+                                <i class="fas fa-map-marker-alt me-2"></i>Ofis Atama
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="office_id" class="form-label">
+                                <i class="fas fa-building me-1"></i>Atanacak Ofis <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="office_id" name="office_id" required>
+                                <option value="" disabled selected>
+                                    <i class="fas fa-hand-pointer"></i> Lütfen Bir Ofis Seçin...
+                                </option>
+                                {% for office_item in offices %}
+                                <option value="{{ office_item.id }}"
+                                        {% if request.form.office_id and request.form.office_id|string == office_item.id|string %}selected{% endif %}>
+                                    {{ office_item.name }}
+                                    {% if office_item.address %} - {{ office_item.address }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen broker için bir ofis seçiniz.
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Broker bu ofise atanacak ve ofis yönetimi yapabilecek
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Form Butonları -->
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <hr class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Zorunlu alanlar <span class="text-danger">*</span> ile işaretlenmiştir
+                                    </small>
+                                </div>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>İptal
+                                    </a>
+                                    <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-info">
+                                        <i class="fas fa-list me-1"></i>Kullanıcı Listesi
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-user-check me-1"></i>Broker Oluştur
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ek Bilgi Kartı -->
+<div class="row mt-4">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Broker Oluşturma Hakkında
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">
+                            <i class="fas fa-user-tie me-1"></i>Broker Yetkileri
+                        </h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-check text-success me-1"></i> Ofis yönetimi</li>
+                            <li><i class="fas fa-check text-success me-1"></i> Ekip üyesi ekleme/çıkarma</li>
+                            <li><i class="fas fa-check text-success me-1"></i> Danışman yetki yönetimi</li>
+                            <li><i class="fas fa-check text-success me-1"></i> Performans raporları</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-warning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Önemli Notlar
+                        </h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-info text-info me-1"></i> Broker otomatik olarak seçilen ofise atanır</li>
+                            <li><i class="fas fa-info text-info me-1"></i> İlk giriş sonrası şifre değiştirmesi önerilir</li>
+                            <li><i class="fas fa-info text-info me-1"></i> E-posta adresi benzersiz olmalıdır</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-  // Bootstrap 5 form validation
-  (function () {
-    "use strict";
-    var forms = document.querySelectorAll(".needs-validation");
-    Array.prototype.slice.call(forms).forEach(function (form) {
-      form.addEventListener(
-        "submit",
-        function (event) {
-          if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          form.classList.add("was-validated");
-        },
-        false
-      );
+// Bootstrap 5 form validation
+(function() {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
     });
-  })();
+})();
+
+// Form alanları için real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Email validation
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+            const email = this.value;
+            if (email && !email.includes('@')) {
+                this.setCustomValidity('Geçerli bir e-posta adresi giriniz');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+
+    // Password strength indicator
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const helpText = this.parentNode.querySelector('.form-text');
+
+            if (password.length < 6) {
+                helpText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-1"></i>Şifre çok kısa (en az 6 karakter)';
+            } else if (password.length < 8) {
+                helpText.innerHTML = '<i class="fas fa-check text-warning me-1"></i>Orta güçlü şifre (8+ karakter önerilir)';
+            } else {
+                helpText.innerHTML = '<i class="fas fa-check text-success me-1"></i>Güçlü şifre';
+            }
+        });
+    }
+});
 </script>
 {% endblock %}
