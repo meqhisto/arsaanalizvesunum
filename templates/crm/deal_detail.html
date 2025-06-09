@@ -1,26 +1,57 @@
-{% extends "crm/crm_base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block title %}{{ title }} - CRM Fırsat Detayı{% endblock %}
+{% block title %}{{ deal.title }} - Fırsat Detayı - CRM - Arsa Analiz Platformu{% endblock %}
 
-{% block crm_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>
-        <i class="bi bi-piggy-bank-fill me-2"></i> Fırsat Detayı: {{ deal.title }}
-    </h2>
-    <div>
-        <a href="{{ url_for('crm.crm_deals_list') }}" class="btn btn-outline-secondary me-2">
-            <i class="bi bi-arrow-left me-1"></i> Listeye Dön
-        </a>
-        <a href="{{ url_for('crm.crm_deal_edit', deal_id=deal.id) }}" class="btn btn-secondary me-2">
-            <i class="bi bi-pencil-square me-1"></i> Düzenle
-        </a>
-        <form action="{{ url_for('crm.crm_deal_delete', deal_id=deal.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bu fırsatı ve ilişkili tüm etkileşimleri/görevleri silmek istediğinizden emin misiniz?');">
-            <button type="submit" class="btn btn-danger">
-                <i class="bi bi-trash me-1"></i> Sil
-            </button>
-        </form>
+{% block page_title %}{{ deal.title }}{% endblock %}
+{% block page_description %}Fırsat detay bilgileri ve satış süreci{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('crm.crm_deals_list') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Listeye Dön
+    </a>
+    <a href="{{ url_for('crm.crm_deal_edit', deal_id=deal.id) }}" class="btn btn-primary">
+        <i class="fas fa-edit me-1"></i> Düzenle
+    </a>
+    <form action="{{ url_for('crm.crm_deal_delete', deal_id=deal.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Bu fırsatı ve ilişkili tüm etkileşimleri/görevleri silmek istediğinizden emin misiniz?');">
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-1"></i> Sil
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block page_nav %}
+<!-- CRM Navigation Tabs -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_new_contacts_list') }}">
+                    <i class="fas fa-users me-2"></i>Kişiler
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_companies_list') }}">
+                    <i class="fas fa-building me-2"></i>Şirketler
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('crm.crm_deals_list') }}">
+                    <i class="fas fa-handshake me-2"></i>Fırsatlar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_tasks_list') }}">
+                    <i class="fas fa-tasks me-2"></i>Görevler
+                </a>
+            </li>
+        </ul>
     </div>
 </div>
+{% endblock %}
+
+{% block dashboard_content %}
 
 <div class="card mb-4">
     <div class="card-header">
@@ -68,7 +99,7 @@
 <!-- İlişkili Etkileşimler -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5><i class="bi bi-chat-dots-fill me-2"></i> Bu Fırsatla İlgili Etkileşimler</h5>
+        <h5><i class="fas fa-comments me-2"></i> Bu Fırsatla İlgili Etkileşimler</h5>
     </div>
     <div class="card-body">
         {# Yeni etkileşim ekleme formu bu fırsata özel olarak buraya da eklenebilir #}
@@ -108,9 +139,9 @@
 <!-- ... (İlişkili Etkileşimler kartından sonra) ... -->
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5><i class="bi bi-check2-square me-2"></i> Bu Fırsatla İlgili Görevler</h5>
+        <h5><i class="fas fa-tasks me-2"></i> Bu Fırsatla İlgili Görevler</h5>
         <a href="{{ url_for('crm.crm_task_new', deal_id=deal.id, contact_id=deal.contact_id) }}" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-plus-circle"></i> Yeni Görev Ekle
+            <i class="fas fa-plus-circle"></i> Yeni Görev Ekle
         </a>
     </div>
     <div class="card-body">
