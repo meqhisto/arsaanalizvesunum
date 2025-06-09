@@ -78,7 +78,7 @@ def login():
             logger.warning(f"Login failed: User not found for email {email}")
             flash('Geçersiz e-posta veya şifre ya da hesap aktif değil.', 'danger')
 
-    return render_template('login.html') # veya templates/auth/login.html
+    return render_template('auth/new_login.html') # Yeni template kullan
 # @auth_bp.route('/register', methods=['GET', 'POST'])
 # def register():
 #     if current_user.is_authenticated:

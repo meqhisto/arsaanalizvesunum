@@ -34,7 +34,8 @@ module.exports = (env, argv) => {
           test: /\.css$/,
           use: [
             isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
-            'css-loader'
+            'css-loader',
+            'postcss-loader'
           ]
         },
         {
@@ -42,6 +43,7 @@ module.exports = (env, argv) => {
           use: [
             isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
             'css-loader',
+            'postcss-loader',
             'sass-loader'
           ]
         },
@@ -64,7 +66,7 @@ module.exports = (env, argv) => {
     plugins: [
       ...(isProduction ? [
         new MiniCssExtractPlugin({
-          filename: '[name].[contenthash].css'
+          filename: '[name].css'
         })
       ] : [])
     ],

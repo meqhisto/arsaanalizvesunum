@@ -3,6 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+# Model import'larını dışarı çıkaralım
+from .user_models import User, Portfolio
+from .arsa_models import ArsaAnaliz, BolgeDagilimi, YatirimPerformansi, DashboardStats, AnalizMedya
+from .crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam, crm_team_members
+from .office_models import Office
+
 def init_db_models(app):
     """Veritabanını uygulamaya bağlar ve tabloları oluşturur."""
     db.init_app(app)
@@ -15,16 +21,8 @@ def init_db_models(app):
     from . import office_models
     # Bu importlar, user_models.py, arsa_models.py, crm_models.py dosyalarının
     # içindeki tüm model sınıflarını yükler.
-    
 
-
-    from .user_models import User
     with app.app_context():
         print("Veritabanı tabloları oluşturuluyor...")
         db.create_all()
         print("Veritabanı tabloları (models/__init__.py üzerinden) başarıyla oluşturuldu!")
-        
-    from .user_models import User, Portfolio # portfolio_arsalar'ı da ekleyebilirsiniz
-    from .arsa_models import ArsaAnaliz, BolgeDagilimi, YatirimPerformansi, DashboardStats, AnalizMedya
-    from .crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam, crm_team_members
-    from .office_models import Office # YENİ EKLEDİK

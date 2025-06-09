@@ -1,6 +1,6 @@
 // Main JavaScript Entry Point
 import 'bootstrap';
-import '../css/modern-style.css';
+import '../css/main.scss';
 
 // Import utilities and components
 import { UIManager } from '@components/ui-manager';
@@ -58,7 +58,7 @@ window.ArsaApp = {
   // Bind global event listeners
   bindGlobalEvents() {
     // Handle AJAX errors globally
-    document.addEventListener('ajaxError', (e) => {
+    document.addEventListener('ajaxError', () => {
       this.notifications.error('Bir hata oluştu. Lütfen tekrar deneyin.');
       this.loading.hide();
     });
@@ -86,7 +86,7 @@ window.ArsaApp = {
     // Active menu highlighting
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.nav-link');
-    
+
     navLinks.forEach(link => {
       if (link.getAttribute('href') === currentPath) {
         link.classList.add('active');
@@ -97,6 +97,33 @@ window.ArsaApp = {
         }
       }
     });
+
+    // Mobile sidebar toggle
+    this.initMobileSidebar();
+  },
+
+  // Initialize mobile sidebar
+  initMobileSidebar() {
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('sidebar-mobile-visible');
+        sidebar.classList.toggle('sidebar-mobile-hidden');
+      });
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth < 1024 &&
+            !sidebar.contains(e.target) &&
+            !sidebarToggle.contains(e.target) &&
+            sidebar.classList.contains('sidebar-mobile-visible')) {
+          sidebar.classList.add('sidebar-mobile-hidden');
+          sidebar.classList.remove('sidebar-mobile-visible');
+        }
+      });
+    }
   },
   
   // Initialize theme system
@@ -213,7 +240,7 @@ window.ArsaApp = {
     
     // Generate random ID
     generateId() {
-      return Math.random().toString(36).substr(2, 9);
+      return Math.random().toString(36).substring(2, 11);
     }
   }
 };

@@ -1,0 +1,870 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Import Wizard - CRM - Arsa Analiz Platformu{% endblock %}
+
+{% block page_title %}Import Wizard{% endblock %}
+{% block page_description %}Kişilerinizi toplu olarak sisteme aktarın{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('crm.crm_new_contacts_list') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Kişi Listesine Dön
+    </a>
+    <a href="/crm/api/import/template" class="btn btn-outline-primary">
+        <i class="fas fa-download me-1"></i>Template İndir
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Dashboard Base Compatible Import Wizard Styles */
+.wizard-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.wizard-steps {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  position: relative;
+  padding: 0 1rem;
+}
+
+.wizard-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  max-width: 150px;
+}
+
+.wizard-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 60%;
+  right: -40%;
+  height: 2px;
+  background-color: #dee2e6;
+  z-index: 1;
+}
+
+.wizard-step.active:not(:last-child)::after,
+.wizard-step.completed:not(:last-child)::after {
+  background-color: #0d6efd;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 0.5rem;
+  border: 2px solid #dee2e6;
+}
+
+.wizard-step.active .step-circle {
+  background-color: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+
+.wizard-step.completed .step-circle {
+  background-color: #198754;
+  color: white;
+  border-color: #198754;
+}
+
+.step-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  color: #6c757d;
+}
+
+.wizard-step.active .step-title {
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+.wizard-step.completed .step-title {
+  color: #198754;
+  font-weight: 600;
+}
+
+.wizard-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: none;
+  padding: 2rem;
+  min-height: 400px;
+}
+
+.file-upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+  background-color: #f8f9fa;
+}
+
+.file-upload-area:hover {
+  border-color: #0d6efd;
+  background-color: #e7f1ff;
+}
+
+.file-upload-area.dragover {
+  border-color: #0d6efd;
+  background-color: #cfe2ff;
+}
+
+.file-info-card {
+  background-color: #e7f1ff;
+  border: 1px solid #b6d7ff;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.preview-table {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+.column-mapping {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mapping-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.validation-item {
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.validation-item.valid {
+  background-color: #d1e7dd;
+  border: 1px solid #badbcc;
+  color: #0f5132;
+}
+
+.validation-item.invalid {
+  background-color: #f8d7da;
+  border: 1px solid #f5c2c7;
+  color: #842029;
+}
+
+.validation-item.warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffecb5;
+  color: #664d03;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #0d6efd;
+  transition: width 0.3s ease;
+}
+
+.completion-icon {
+  width: 80px;
+  height: 80px;
+  background-color: #d1e7dd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.import-results-card {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Loading spinner */
+.spinner {
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #0d6efd;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .wizard-steps {
+    padding: 0 0.5rem;
+  }
+
+  .wizard-step {
+    max-width: 100px;
+  }
+
+  .step-circle {
+    width: 35px;
+    height: 35px;
+  }
+
+  .step-title {
+    font-size: 0.75rem;
+  }
+
+  .wizard-content {
+    padding: 1.5rem;
+  }
+
+  .file-upload-area {
+    padding: 2rem 1rem;
+  }
+
+  .column-mapping {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="wizard-container">
+
+  <!-- Wizard Steps -->
+  <div class="wizard-steps">
+    <div class="wizard-step active" id="step-1">
+      <div class="step-circle">1</div>
+      <div class="step-title">Dosya Yükle</div>
+    </div>
+    <div class="wizard-step" id="step-2">
+      <div class="step-circle">2</div>
+      <div class="step-title">Önizleme</div>
+    </div>
+    <div class="wizard-step" id="step-3">
+      <div class="step-circle">3</div>
+      <div class="step-title">Eşleştirme</div>
+    </div>
+    <div class="wizard-step" id="step-4">
+      <div class="step-circle">4</div>
+      <div class="step-title">Doğrulama</div>
+    </div>
+    <div class="wizard-step" id="step-5">
+      <div class="step-circle">5</div>
+      <div class="step-title">Tamamla</div>
+    </div>
+  </div>
+
+  <!-- Wizard Content -->
+  <div class="wizard-content">
+    <!-- Step 1: File Upload -->
+    <div id="step-content-1" class="step-content">
+      <h4 class="mb-4">Dosya Yükleme</h4>
+
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <p class="text-muted mb-0">Excel (.xlsx, .xls) veya CSV dosyası seçin</p>
+        </div>
+
+        <div class="file-upload-area" id="file-upload-area">
+          <div class="mb-3">
+            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Dosyayı buraya sürükleyin</h5>
+            <p class="text-muted small">veya tıklayarak seçin</p>
+          </div>
+          <input type="file" id="file-input" accept=".csv,.xlsx,.xls" class="d-none">
+          <button type="button" class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+            <i class="fas fa-folder-open me-2"></i>Dosya Seç
+          </button>
+        </div>
+
+        <div id="file-info" class="mt-3" style="display: none;">
+          <div class="file-info-card">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-file text-primary me-3 fa-2x"></i>
+              <div>
+                <h6 class="mb-1 text-primary" id="file-name"></h6>
+                <p class="small text-muted mb-0" id="file-size"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end">
+        <button id="upload-btn" class="btn btn-primary" disabled>
+          <span id="upload-text">Dosya Yükle</span>
+          <div id="upload-spinner" class="spinner ms-2" style="display: none;"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Preview -->
+    <div id="step-content-2" class="step-content" style="display: none;">
+      <h4 class="mb-4">Veri Önizlemesi</h4>
+
+      <div id="preview-info" class="mb-4">
+        <!-- Preview bilgileri buraya gelecek -->
+      </div>
+
+      <div id="preview-table-container">
+        <!-- Preview tablosu buraya gelecek -->
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <button id="prev-btn-2" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Geri
+        </button>
+        <button id="next-btn-2" class="btn btn-primary">
+          Devam Et<i class="fas fa-arrow-right ms-2"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Column Mapping -->
+    <div id="step-content-3" class="step-content" style="display: none;">
+      <h4 class="mb-4">Sütun Eşleştirmesi</h4>
+
+      <p class="text-muted mb-4">Dosyanızdaki sütunları sistem alanlarıyla eşleştirin</p>
+
+      <div id="column-mapping-container">
+        <!-- Column mapping buraya gelecek -->
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <button id="prev-btn-3" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Geri
+        </button>
+        <button id="next-btn-3" class="btn btn-primary">
+          Doğrula<i class="fas fa-arrow-right ms-2"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 4: Validation -->
+    <div id="step-content-4" class="step-content" style="display: none;">
+      <h4 class="mb-4">Veri Doğrulaması</h4>
+
+      <div id="validation-summary" class="mb-4">
+        <!-- Validation özeti buraya gelecek -->
+      </div>
+
+      <div id="validation-results">
+        <!-- Validation sonuçları buraya gelecek -->
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <button id="prev-btn-4" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Geri
+        </button>
+        <button id="import-btn" class="btn btn-success" disabled>
+          <span id="import-text">İçe Aktar</span>
+          <div id="import-spinner" class="spinner ms-2" style="display: none;"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 5: Complete -->
+    <div id="step-content-5" class="step-content" style="display: none;">
+      <div class="text-center">
+        <div class="mb-4">
+          <div class="completion-icon">
+            <i class="fas fa-check text-success fa-2x"></i>
+          </div>
+          <h4 class="mb-3">İçe Aktarma Tamamlandı!</h4>
+          <p class="text-muted" id="completion-message">Verileriniz başarıyla sisteme aktarıldı.</p>
+        </div>
+
+        <div id="import-results" class="import-results-card">
+          <!-- Import sonuçları buraya gelecek -->
+        </div>
+
+        <div class="d-flex justify-content-center gap-3">
+          <a href="{{ url_for('crm.crm_new_contacts_list') }}" class="btn btn-primary">
+            <i class="fas fa-users me-2"></i>Kişileri Görüntüle
+          </a>
+          <button id="new-import-btn" class="btn btn-outline-secondary">
+            <i class="fas fa-plus me-2"></i>Yeni İçe Aktarma
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+class ImportWizard {
+  constructor() {
+    this.currentStep = 1;
+    this.totalSteps = 5;
+    this.uploadedData = null;
+    this.columnMapping = {};
+    this.validationResults = null;
+    
+    this.init();
+  }
+  
+  init() {
+    this.bindEvents();
+  }
+  
+  bindEvents() {
+    // File input events
+    const fileInput = document.getElementById('file-input');
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const uploadBtn = document.getElementById('upload-btn');
+    
+    fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+    
+    // Drag and drop events
+    fileUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fileUploadArea.classList.add('dragover');
+    });
+    
+    fileUploadArea.addEventListener('dragleave', () => {
+      fileUploadArea.classList.remove('dragover');
+    });
+    
+    fileUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileUploadArea.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        this.handleFileSelect({ target: { files } });
+      }
+    });
+    
+    uploadBtn.addEventListener('click', () => this.uploadFile());
+    
+    // Navigation buttons
+    document.getElementById('prev-btn-2').addEventListener('click', () => this.goToStep(1));
+    document.getElementById('next-btn-2').addEventListener('click', () => this.goToStep(3));
+    document.getElementById('prev-btn-3').addEventListener('click', () => this.goToStep(2));
+    document.getElementById('next-btn-3').addEventListener('click', () => this.validateData());
+    document.getElementById('prev-btn-4').addEventListener('click', () => this.goToStep(3));
+    document.getElementById('import-btn').addEventListener('click', () => this.processImport());
+    document.getElementById('new-import-btn').addEventListener('click', () => this.resetWizard());
+  }
+  
+  handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['.csv', '.xlsx', '.xls'];
+    const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(fileExt)) {
+      alert('Desteklenen formatlar: CSV, Excel (.xlsx, .xls)');
+      return;
+    }
+    
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Dosya boyutu 10MB\'dan küçük olmalıdır');
+      return;
+    }
+    
+    // Show file info
+    document.getElementById('file-name').textContent = file.name;
+    document.getElementById('file-size').textContent = this.formatFileSize(file.size);
+    document.getElementById('file-info').style.display = 'block';
+    document.getElementById('upload-btn').disabled = false;
+  }
+  
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  
+  async uploadFile() {
+    const fileInput = document.getElementById('file-input');
+    const file = fileInput.files[0];
+
+    if (!file) return;
+
+    const uploadBtn = document.getElementById('upload-btn');
+    const uploadText = document.getElementById('upload-text');
+    const uploadSpinner = document.getElementById('upload-spinner');
+
+    // Show loading
+    uploadBtn.disabled = true;
+    uploadText.textContent = 'Yükleniyor...';
+    uploadSpinner.style.display = 'inline-block';
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/crm/api/import/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        this.uploadedData = result;
+        this.columnMapping = result.mapped_columns || {};
+        this.showPreview(result);
+        this.goToStep(2);
+      } else {
+        this.showError(result.error || 'Dosya yüklenirken hata oluştu');
+      }
+
+    } catch (error) {
+      this.showError('Dosya yüklenirken hata oluştu: ' + error.message);
+    } finally {
+      // Hide loading
+      uploadBtn.disabled = false;
+      uploadText.textContent = 'Dosya Yükle';
+      uploadSpinner.style.display = 'none';
+    }
+  }
+
+  showPreview(data) {
+    const infoContainer = document.getElementById('preview-info');
+    const tableContainer = document.getElementById('preview-table-container');
+
+    // Show info
+    infoContainer.innerHTML = `
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-medium text-blue-900">${data.total_rows} kayıt bulundu</p>
+            <p class="text-sm text-blue-700">İlk 10 kayıt önizlemede gösteriliyor</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-blue-700">${data.columns.length} sütun</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Show preview table
+    if (data.preview && data.preview.length > 0) {
+      const headers = data.columns;
+      let tableHTML = `
+        <div class="preview-table">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                ${headers.map(header => `<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">${header}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+      `;
+
+      data.preview.forEach(row => {
+        tableHTML += '<tr>';
+        headers.forEach(header => {
+          const value = row[header] || '';
+          tableHTML += `<td class="px-4 py-2 text-sm text-gray-900">${value}</td>`;
+        });
+        tableHTML += '</tr>';
+      });
+
+      tableHTML += '</tbody></table></div>';
+      tableContainer.innerHTML = tableHTML;
+    }
+  }
+
+  goToStep(step) {
+    // Hide current step
+    document.getElementById(`step-content-${this.currentStep}`).style.display = 'none';
+    document.getElementById(`step-${this.currentStep}`).classList.remove('active');
+
+    // Mark previous steps as completed
+    for (let i = 1; i < step; i++) {
+      document.getElementById(`step-${i}`).classList.add('completed');
+    }
+
+    // Show new step
+    this.currentStep = step;
+    document.getElementById(`step-content-${step}`).style.display = 'block';
+    document.getElementById(`step-${step}`).classList.add('active');
+
+    // Special handling for step 3 (column mapping)
+    if (step === 3) {
+      this.showColumnMapping();
+    }
+  }
+
+  showColumnMapping() {
+    const container = document.getElementById('column-mapping-container');
+    const columns = this.uploadedData.columns;
+
+    const systemFields = {
+      'first_name': 'Ad (zorunlu)',
+      'last_name': 'Soyad (zorunlu)',
+      'email': 'E-posta',
+      'phone': 'Telefon',
+      'company_name': 'Şirket Adı',
+      'status': 'Durum',
+      'source': 'Kaynak',
+      'segment': 'Segment',
+      'notes': 'Notlar'
+    };
+
+    let mappingHTML = '<div class="column-mapping">';
+
+    Object.entries(systemFields).forEach(([field, label]) => {
+      mappingHTML += `
+        <div class="mapping-item">
+          <label class="block text-sm font-medium text-gray-700 mb-1">${label}</label>
+          <select class="form-select" data-field="${field}">
+            <option value="">-- Seçin --</option>
+            ${columns.map(col => `
+              <option value="${col}" ${this.columnMapping[field] === col ? 'selected' : ''}>
+                ${col}
+              </option>
+            `).join('')}
+          </select>
+        </div>
+      `;
+    });
+
+    mappingHTML += '</div>';
+    container.innerHTML = mappingHTML;
+
+    // Bind change events
+    container.querySelectorAll('select').forEach(select => {
+      select.addEventListener('change', (e) => {
+        const field = e.target.dataset.field;
+        const value = e.target.value;
+        if (value) {
+          this.columnMapping[field] = value;
+        } else {
+          delete this.columnMapping[field];
+        }
+      });
+    });
+  }
+
+  async validateData() {
+    try {
+      const response = await fetch('/crm/api/import/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          column_mapping: this.columnMapping
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        this.validationResults = result;
+        this.showValidationResults(result);
+        this.goToStep(4);
+      } else {
+        this.showError(result.error || 'Doğrulama hatası');
+      }
+
+    } catch (error) {
+      this.showError('Doğrulama hatası: ' + error.message);
+    }
+  }
+
+  showValidationResults(results) {
+    const summaryContainer = document.getElementById('validation-summary');
+    const resultsContainer = document.getElementById('validation-results');
+    const importBtn = document.getElementById('import-btn');
+
+    // Show summary
+    summaryContainer.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-green-600">${results.summary.valid_rows}</div>
+          <div class="text-sm text-green-700">Geçerli Kayıt</div>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-red-600">${results.summary.invalid_rows}</div>
+          <div class="text-sm text-red-700">Hatalı Kayıt</div>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-blue-600">${results.summary.total_rows}</div>
+          <div class="text-sm text-blue-700">Toplam Kayıt</div>
+        </div>
+      </div>
+    `;
+
+    // Enable/disable import button
+    importBtn.disabled = !results.summary.can_import;
+
+    // Show detailed results (first 20 items)
+    let resultsHTML = '';
+
+    if (results.invalid_rows.length > 0) {
+      resultsHTML += '<h4 class="font-medium text-red-900 mb-2">Hatalı Kayıtlar:</h4>';
+      results.invalid_rows.slice(0, 10).forEach(row => {
+        resultsHTML += `
+          <div class="validation-item invalid">
+            <div class="font-medium">Satır ${row.index}</div>
+            <div class="text-sm text-red-700">
+              ${row.errors.join(', ')}
+            </div>
+          </div>
+        `;
+      });
+
+      if (results.invalid_rows.length > 10) {
+        resultsHTML += `<p class="text-sm text-gray-600 mb-4">... ve ${results.invalid_rows.length - 10} hatalı kayıt daha</p>`;
+      }
+    }
+
+    resultsContainer.innerHTML = resultsHTML;
+  }
+
+  async processImport() {
+    if (!this.validationResults || !this.validationResults.summary.can_import) {
+      return;
+    }
+
+    const importBtn = document.getElementById('import-btn');
+    const importText = document.getElementById('import-text');
+    const importSpinner = document.getElementById('import-spinner');
+
+    // Show loading
+    importBtn.disabled = true;
+    importText.textContent = 'İçe Aktarılıyor...';
+    importSpinner.style.display = 'inline-block';
+
+    try {
+      const response = await fetch('/crm/api/import/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          valid_rows: this.validationResults.valid_rows
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        this.showImportResults(result);
+        this.goToStep(5);
+      } else {
+        this.showError(result.error || 'İçe aktarma hatası');
+      }
+
+    } catch (error) {
+      this.showError('İçe aktarma hatası: ' + error.message);
+    } finally {
+      // Hide loading
+      importBtn.disabled = false;
+      importText.textContent = 'İçe Aktar';
+      importSpinner.style.display = 'none';
+    }
+  }
+
+  showImportResults(results) {
+    const messageEl = document.getElementById('completion-message');
+    const resultsEl = document.getElementById('import-results');
+
+    messageEl.textContent = results.message;
+
+    resultsEl.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+        <div>
+          <div class="text-2xl font-bold text-green-600">${results.imported_count}</div>
+          <div class="text-sm text-gray-600">İçe Aktarılan</div>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-yellow-600">${results.skipped_count}</div>
+          <div class="text-sm text-gray-600">Atlanan</div>
+        </div>
+      </div>
+      ${results.errors.length > 0 ? `
+        <div class="mt-4 text-left">
+          <h5 class="font-medium text-red-900 mb-2">Hatalar:</h5>
+          <ul class="text-sm text-red-700">
+            ${results.errors.map(error => `<li>• ${error}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+    `;
+  }
+
+  resetWizard() {
+    this.currentStep = 1;
+    this.uploadedData = null;
+    this.columnMapping = {};
+    this.validationResults = null;
+
+    // Reset UI
+    document.querySelectorAll('.step-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.wizard-step').forEach(el => {
+      el.classList.remove('active', 'completed');
+    });
+
+    document.getElementById('step-content-1').style.display = 'block';
+    document.getElementById('step-1').classList.add('active');
+
+    // Reset form
+    document.getElementById('file-input').value = '';
+    document.getElementById('file-info').style.display = 'none';
+    document.getElementById('upload-btn').disabled = true;
+  }
+
+  showError(message) {
+    alert(message); // Basit error handling, daha sonra toast notification eklenebilir
+  }
+
+  showSuccess(message) {
+    alert(message); // Basit success handling
+  }
+}
+
+// Sayfa yüklendiğinde başlat
+document.addEventListener('DOMContentLoaded', () => {
+  new ImportWizard();
+});
+</script>
+{% endblock %}

@@ -33,6 +33,46 @@ def nl2br_filter(value):
     escaped_value = escape(value)
     return Markup(escaped_value.replace('\n', '<br>\n'))
 
+def format_currency_filter(value):
+    """Format large currency values with K, M, B, T suffixes"""
+    if value is None or value == 0:
+        return '₺0'
+
+    try:
+        value = float(value)
+        if value >= 1000000000000:
+            return f'₺{value/1000000000000:.1f}T'
+        elif value >= 1000000000:
+            return f'₺{value/1000000000:.1f}B'
+        elif value >= 1000000:
+            return f'₺{value/1000000:.1f}M'
+        elif value >= 1000:
+            return f'₺{value/1000:.1f}K'
+        else:
+            return f'₺{value:,.0f}'
+    except (ValueError, TypeError):
+        return '₺0'
+
+def format_number_filter(value):
+    """Format large numbers with K, M, B, T suffixes"""
+    if value is None or value == 0:
+        return '0'
+
+    try:
+        value = float(value)
+        if value >= 1000000000000:
+            return f'{value/1000000000000:.1f}T'
+        elif value >= 1000000000:
+            return f'{value/1000000000:.1f}B'
+        elif value >= 1000000:
+            return f'{value/1000000:.1f}M'
+        elif value >= 1000:
+            return f'{value/1000:.1f}K'
+        else:
+            return f'{value:,.0f}'
+    except (ValueError, TypeError):
+        return '0'
+
 # Flask uygulamasını application olarak ayarlayın (bazı hosting platformları için)
 application = None
 migrate = Migrate() # Migrate nesnesini globalde (veya app factory dışında) oluştur
@@ -49,9 +89,8 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.register_blueprint(admin_bp) # Eğer admin_bp.py içinde url_prefix='/admin' tanımlıysa
 
     # --- CONFIGURATION ---
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        os.environ.get("DATABASE_URL", "mssql+pyodbc://altan:Yxrkt2bb7q8.@46.221.49.106/arsa_db?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes")
-    )
+    # Force MSSQL for testing
+    app.config["SQLALCHEMY_DATABASE_URI"] = "mssql+pyodbc://altan:Yxrkt2bb7q8.@46.221.49.106/arsa_db?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
     print(f"DATABASE_URL: {os.environ.get('DATABASE_URL')}")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     # SECRET_KEY'i daha güvenli bir yerden alın veya çok güçlü bir varsayılan kullanın
@@ -98,7 +137,7 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     # --- CORS CONFIGURATION ---
     CORS(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:3000", "http://localhost:5000"],
+            "origins": ["http://localhost:3000", "http://localhost:3001", "http://localhost:5000"],
             "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
             "supports_credentials": True
@@ -122,23 +161,42 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.jinja_env.globals.update(datetime=dt_module)
     app.jinja_env.globals.update(zip=zip)
     app.jinja_env.filters['nl2br'] = nl2br_filter
+    app.jinja_env.filters['format_currency'] = format_currency_filter
+    app.jinja_env.filters['format_number'] = format_number_filter
     # current_user'ı tüm şablonlara global olarak eklemek için (Flask-Login bunu zaten yapar ama explicit olabilir)
     @app.context_processor
     def inject_current_user():
         return dict(current_user=current_user, get_current_user=lambda: current_user)
 
+    # Avatar helper fonksiyonları
+    @app.context_processor
+    def inject_avatar_helpers():
+        from utils.avatar_utils import get_avatar_url, get_contact_avatar_url, get_user_initials
+        return dict(
+            get_avatar_url=get_avatar_url,
+            get_contact_avatar_url=get_contact_avatar_url,
+            get_user_initials=get_user_initials
+        )
+
 
     # --- LOGGING ---
     # Log dosyasının yolu, app.py'nin bulunduğu dizinde olacak şekilde ayarlandı.
     log_file_path = os.path.join(BASE_DIR, "app.log")
-    handler = ConcurrentRotatingFileHandler(log_file_path, maxBytes=100000, backupCount=5, encoding='utf-8')
-    handler.setLevel(logging.INFO)
+    file_handler = ConcurrentRotatingFileHandler(log_file_path, maxBytes=100000, backupCount=5, encoding='utf-8')
+    file_handler.setLevel(logging.INFO)
+
+    # Console handler for real-time debugging
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+
     # Daha detaylı format: %(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(module)s - %(message)s")
-    handler.setFormatter(formatter)
-    
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+
     if not app.logger.handlers: # Handler'ların tekrar tekrar eklenmesini önle
-        app.logger.addHandler(handler)
+        app.logger.addHandler(file_handler)
+        app.logger.addHandler(console_handler)
         app.logger.setLevel(logging.INFO) # Flask'ın kendi logger'ının seviyesini de ayarla
 
     # --- ERROR HANDLER ---

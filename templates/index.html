@@ -14,43 +14,43 @@
 {% block content %}
 <!-- Dashboard Content -->
       <!-- Page Header -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="flex justify-between items-center mb-6">
         <div>
-          <h1 class="h2 fw-bold text-gray-900">Ana Sayfa</h1>
-          <p class="text-muted mb-0">
-            Hoşgeldiniz, <span class="fw-medium">{{ current_user.ad }} {{ current_user.soyad }}</span>!
+          <h1 class="text-3xl font-bold text-gray-900">Ana Sayfa</h1>
+          <p class="text-gray-600 mt-1">
+            Hoşgeldiniz, <span class="font-medium">{{ current_user.ad }} {{ current_user.soyad }}</span>!
           </p>
         </div>
-        <div class="d-flex align-items-center gap-3">
+        <div class="flex items-center space-x-3">
           <!-- Theme Toggle -->
-          <button id="theme-toggle" class="btn btn-outline-secondary btn-sm" title="Tema değiştir">
+          <button id="theme-toggle" class="btn-secondary text-sm" title="Tema değiştir">
             <i class="fas fa-moon"></i>
           </button>
 
           <!-- Notifications -->
           {% if bildirimler and bildirimler|length > 0 %}
-          <div class="dropdown">
-            <button class="btn btn-outline-primary position-relative" type="button" data-bs-toggle="dropdown">
+          <div class="relative group">
+            <button class="btn-primary relative" type="button">
               <i class="fas fa-bell"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 {{ bildirimler|length }}
               </span>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><h6 class="dropdown-header">Bildirimler</h6></li>
+            <div class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <h6 class="px-4 py-2 text-sm font-semibold text-gray-700 border-b">Bildirimler</h6>
               {% for bildirim in bildirimler %}
-              <li><a class="dropdown-item" href="#">{{ bildirim.mesaj }}</a></li>
+              <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">{{ bildirim.mesaj }}</a>
               {% endfor %}
-            </ul>
+            </div>
           </div>
           {% endif %}
         </div>
       </div>
 
       <!-- Welcome Alert -->
-      <div class="alert alert-info border-0 shadow-sm mb-4" role="alert">
-        <div class="d-flex align-items-center">
-          <i class="fas fa-info-circle me-3 fs-4"></i>
+      <div class="alert alert-info mb-6">
+        <div class="flex items-center">
+          <i class="fas fa-info-circle mr-3 text-xl"></i>
           <div>
             <strong>Yenilikler Geliyor!</strong> Modern arayüz güncellemesi tamamlandı.
             Analiz raporlarına detaylı harita entegrasyonu çok yakında!
@@ -59,63 +59,51 @@
       </div>
 
       <!-- Quick Access Cards -->
-      <div class="row g-4 mb-5">
-        <div class="col-12">
-          <h4 class="fw-bold mb-3">
-            <i class="fas fa-bolt text-warning me-2"></i>Hızlı Erişim
-          </h4>
-        </div>
+      <div class="mb-8">
+        <h4 class="text-xl font-bold mb-4 flex items-center">
+          <i class="fas fa-bolt text-warning-500 mr-2"></i>Hızlı Erişim
+        </h4>
 
-        <div class="col-6 col-md-4 col-lg-2">
-          <a href="{{ url_for('main.analysis_form') }}" class="card quick-access-card text-decoration-none h-100">
-            <div class="card-body text-center p-3">
-              <i class="fas fa-plus-circle text-primary mb-2" style="font-size: 2.5rem;"></i>
-              <h6 class="card-title mb-0">Yeni Analiz</h6>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <a href="{{ url_for('main.analysis_form') }}" class="quick-access-card no-underline h-full">
+            <div class="card-body text-center p-4">
+              <i class="fas fa-plus-circle text-primary-600 mb-3 text-4xl"></i>
+              <h6 class="font-medium text-gray-900">Yeni Analiz</h6>
             </div>
           </a>
-        </div>
 
-        <div class="col-6 col-md-4 col-lg-2">
-          <a href="{{ url_for('analysis.analizler') }}" class="card quick-access-card text-decoration-none h-100">
-            <div class="card-body text-center p-3">
-              <i class="fas fa-file-alt text-success mb-2" style="font-size: 2.5rem;"></i>
-              <h6 class="card-title mb-0">Analizlerim</h6>
+          <a href="{{ url_for('analysis.analizler') }}" class="quick-access-card no-underline h-full">
+            <div class="card-body text-center p-4">
+              <i class="fas fa-file-alt text-success-600 mb-3 text-4xl"></i>
+              <h6 class="font-medium text-gray-900">Analizlerim</h6>
             </div>
           </a>
-        </div>
 
-        <div class="col-6 col-md-4 col-lg-2">
-          <a href="{{ url_for('crm.crm_contacts_list') }}" class="card quick-access-card text-decoration-none h-100">
-            <div class="card-body text-center p-3">
-              <i class="fas fa-users text-info mb-2" style="font-size: 2.5rem;"></i>
-              <h6 class="card-title mb-0">CRM</h6>
+          <a href="{{ url_for('crm.crm_contacts_list') }}" class="quick-access-card no-underline h-full">
+            <div class="card-body text-center p-4">
+              <i class="fas fa-users text-info-600 mb-3 text-4xl"></i>
+              <h6 class="font-medium text-gray-900">CRM</h6>
             </div>
           </a>
-        </div>
 
-        <div class="col-6 col-md-4 col-lg-2">
-          <a href="{{ url_for('crm.crm_deals_list') }}" class="card quick-access-card text-decoration-none h-100">
-            <div class="card-body text-center p-3">
-              <i class="fas fa-handshake text-purple mb-2" style="font-size: 2.5rem; color: #6f42c1;"></i>
-              <h6 class="card-title mb-0">Fırsatlar</h6>
+          <a href="{{ url_for('crm.crm_deals_list') }}" class="quick-access-card no-underline h-full">
+            <div class="card-body text-center p-4">
+              <i class="fas fa-handshake text-purple-600 mb-3 text-4xl"></i>
+              <h6 class="font-medium text-gray-900">Fırsatlar</h6>
             </div>
           </a>
-        </div>
 
-        <div class="col-6 col-md-4 col-lg-2">
-          <a href="{{ url_for('crm.crm_tasks_list') }}" class="card quick-access-card text-decoration-none h-100">
-            <div class="card-body text-center p-3">
-              <i class="fas fa-tasks text-warning mb-2" style="font-size: 2.5rem;"></i>
-              <h6 class="card-title mb-0">Görevler</h6>
+          <a href="{{ url_for('crm.crm_tasks_list') }}" class="quick-access-card no-underline h-full">
+            <div class="card-body text-center p-4">
+              <i class="fas fa-tasks text-warning-600 mb-3 text-4xl"></i>
+              <h6 class="font-medium text-gray-900">Görevler</h6>
             </div>
           </a>
-        </div>
 
-        <div class="col-6 col-md-4 col-lg-2">
-          <a href="{{ url_for('portfolio.portfolios_list') }}" class="card quick-access-card text-decoration-none h-100">
-            <div class="card-body text-center p-3">
-              <i class="fas fa-chart-line text-secondary mb-2" style="font-size: 2.5rem;"></i>
-              <h6 class="card-title mb-0">Portföyler</h6>
+          <a href="{{ url_for('portfolio.portfolios_list') }}" class="quick-access-card no-underline h-full">
+            <div class="card-body text-center p-4">
+              <i class="fas fa-chart-line text-gray-600 mb-3 text-4xl"></i>
+              <h6 class="font-medium text-gray-900">Portföyler</h6>
             </div>
           </a>
         </div>

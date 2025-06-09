@@ -146,7 +146,11 @@ Bu proje, emlak profesyonelleri için geliştirilmiş modern bir Flask web uygul
 
 6. **Frontend'i derleyin:**
    ```bash
+   # Mevcut Flask frontend
    npm run build
+
+   # YENİ: Modern API-driven frontend
+   npm run frontend:build
    ```
 
 7. **Uygulamayı başlatın:**
@@ -155,6 +159,22 @@ Bu proje, emlak profesyonelleri için geliştirilmiş modern bir Flask web uygul
    ```
 
 🎉 **Uygulama hazır!** → `http://localhost:5000`
+
+### 🆕 Modern Frontend (Yeni!)
+
+Artık tamamen API-driven, modern bir frontend seçeneği de mevcut:
+
+```bash
+# Modern frontend development server
+npm run frontend:dev
+```
+
+📱 **Modern Frontend:** → `http://localhost:3001`
+- Tamamen API-driven architecture
+- JWT authentication ile güvenli erişim
+- Responsive design (Tailwind CSS)
+- Real-time dashboard ve notifications
+- Modern JavaScript (ES6+ modules)
 
 ### 🔧 Geliştirme Ortamı
 
@@ -238,10 +258,23 @@ arsaanalizvesunum/
 │   ├── js/
 │   ├── fonts/
 │   └── uploads/
+├── frontend/             # 🆕 Modern API-driven frontend
+│   ├── src/              # Source files
+│   │   ├── js/           # JavaScript modules
+│   │   │   ├── api/      # API client & auth
+│   │   │   ├── pages/    # Page components
+│   │   │   ├── utils/    # Utilities
+│   │   │   └── app.js    # Main application
+│   │   ├── css/          # Stylesheets
+│   │   │   └── main.scss # Main SCSS file
+│   │   └── index.html    # HTML template
+│   ├── dist/             # Built files
+│   └── README.md         # Frontend documentation
 ├── migrations/           # Veritabanı migration dosyaları
 ├── instance/             # Konfigürasyon dosyaları
 ├── tests/                # Test dosyaları
 ├── test_api.py           # API test scripti
+├── frontend.webpack.config.js # Frontend build config
 └── API_DOCUMENTATION.md  # API dokümantasyonu
 ```
 

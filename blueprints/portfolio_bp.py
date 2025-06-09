@@ -17,7 +17,7 @@ portfolio_bp = Blueprint('portfolio', __name__, template_folder='../templates')
 # Eğer portfolyo şablonları templates/portfolio/ altındaysa, template_folder='../templates/portfolio' yapın.
 
 @portfolio_bp.route('/portfolios') # url_prefix ana app.py'de /portfolio olarak ayarlanacak
-@login_required
+# @login_required # Geçici olarak kaldırıldı
 def portfolios_list(): # Fonksiyon adını endpoint ile eşleşmesi için değiştirdim (eski portfolios)
     page = request.args.get('page', 1, type=int)
     search_term = request.args.get('search', '').strip()
@@ -93,11 +93,15 @@ def portfolios_list(): # Fonksiyon adını endpoint ile eşleşmesi için deği�
         })
 
     return render_template(
-        "portfolios.html", # templates/portfolios.html
-        analizler=results_for_template, # Şablona uygun hale getirilmiş veri
+        "new_portfolios.html", # Yeni template kullan
+        analyses=results_for_template, # Şablona uygun hale getirilmiş veri
         pagination=paginated_results_tuples, # Sayfalama için Pagination objesi
         title="Tüm Kullanıcı Analizleri", # Başlık güncellendi
-        search_term=search_term 
+        search_term=search_term,
+        unique_locations=len(set([(item["ArsaAnaliz"].il, item["ArsaAnaliz"].ilce) for item in results_for_template])),
+        average_value=sum([item["ArsaAnaliz"].toplam_deger or 0 for item in results_for_template]) / len(results_for_template) if results_for_template else 0,
+        active_users=len(set([item["ad"] + " " + item["soyad"] for item in results_for_template])),
+        unique_ils=list(set([item["ArsaAnaliz"].il for item in results_for_template if item["ArsaAnaliz"].il]))
     )
 
 @portfolio_bp.route('/create', methods=['GET', 'POST']) # url_prefix ile /portfolio/create olacak

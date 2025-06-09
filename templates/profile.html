@@ -6,126 +6,129 @@
 
 {% block content %}
     <!-- Breadcrumb Navigation -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Ana Sayfa</a></li>
-            <li class="breadcrumb-item active">Profil</li>
+    <nav aria-label="breadcrumb" class="mb-6">
+        <ol class="flex space-x-2 text-sm text-gray-600">
+            <li><a href="{{ url_for('main.index') }}" class="hover:text-primary-600">Ana Sayfa</a></li>
+            <li class="before:content-['/'] before:mx-2">Profil</li>
         </ol>
     </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-                    <div class="col-md-4">
-                        <div class="card mb-4 profile-card">
-                            <div class="card-body text-center">
-                                {% if user.profil_foto %}
-                                    {% set profile_image_path = ['uploads', user.profil_foto.strip().lstrip('/')] | join('/') %}
-                                    <img src="{{ url_for('static', filename=profile_image_path) }}"
-                                         class="rounded-circle img-fluid mb-3"
-                                         style="width: 120px; height: 120px; object-fit: cover;"
-                                         alt="Profil Fotoğrafı">
-                                {% else %}
-                                    <img src="https://via.placeholder.com/150"
-                                         class="rounded-circle img-fluid mb-3"
-                                         style="width: 120px; height: 120px; object-fit: cover;"
-                                     alt="Profil Fotoğrafı">
-                                {% endif %}
-                                <h4>{{ user.ad }} {{ user.soyad }}</h4>
-                                <p class="text-muted">{{ user.unvan }}</p>
-                                <p><i class="bi bi-building"></i> {{ user.firma }}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Şifre Değiştir</h5>
-                            </div>
-                            <div class="card-body">
-                                <form action="{{ url_for('main.change_password') }}" method="post">
-                                    <div class="mb-3">
-                                        <label class="form-label">Mevcut Şifre</label>
-                                        <input type="password" class="form-control" name="current_password" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Yeni Şifre</label>
-                                        <input type="password" class="form-control" name="new_password" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Yeni Şifre (Tekrar)</label>
-                                        <input type="password" class="form-control" name="confirm_password" required>
-                                    </div>
-                                    <button type="submit" class="btn btn-warning w-100">Şifreyi Değiştir</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-8">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h4 class="mb-0"><i class="bi bi-person-circle me-2"></i>Profil Bilgileri</h4>
-                            </div>
-                            <div class="card-body">
-<form action="{{ url_for('main.profile') }}" method="post" enctype="multipart/form-data">
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Ad</label>
-                                            <input type="text" class="form-control" name="ad" value="{{ user.ad }}" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Soyad</label>
-                                            <input type="text" class="form-control" name="soyad" value="{{ user.soyad }}" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">E-posta</label>
-                                            <input type="email" class="form-control" value="{{ user.email }}" readonly>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Telefon</label>
-                                            <input type="tel" class="form-control" name="telefon" value="{{ user.telefon }}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Firma</label>
-                                            <input type="text" class="form-control" name="firma" value="{{ user.firma }}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Ünvan</label>
-                                            <input type="text" class="form-control" name="unvan" value="{{ user.unvan }}">
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label">Adres</label>
-                                            <textarea class="form-control" name="adres" rows="3">{{ user.adres }}</textarea>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <label for="timezone" class="col-md-4 col-lg-3 col-form-label">Zaman Dilimi</label>
-                                            <div class="col-md-8 col-lg-9">
-                                                <select class="form-select" id="timezone" name="timezone">
-                                                    {% for tz in timezones %}
-                                                    <option value="{{ tz }}" {% if user.timezone == tz %}selected{% endif %}>{{ tz }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <label class="form-label">Profil Fotoğrafı</label>
-                                            <input type="file" class="form-control" name="profil_foto" accept="image/*">
-                                        </div>
-                                        <div class="col-12 mt-4">
-                                            <div class="d-flex justify-content-between">
-                                                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
-                                                    <i class="bi bi-arrow-left me-2"></i>Anasayfaya Dön
-                                                </a>
-                                                <button type="submit" class="btn btn-primary">
-                                                    <i class="bi bi-save me-2"></i>Profili Güncelle
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+    <div class="max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1">
+                <div class="card mb-6">
+                    <div class="card-body text-center">
+                        {% if user.profil_foto %}
+                            {% set profile_image_path = ['uploads', user.profil_foto.strip().lstrip('/')] | join('/') %}
+                            <img src="{{ url_for('static', filename=profile_image_path) }}"
+                                 class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-gray-200"
+                                 alt="Profil Fotoğrafı">
+                        {% else %}
+                            <img src="https://via.placeholder.com/150"
+                                 class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-gray-200"
+                                 alt="Profil Fotoğrafı">
+                        {% endif %}
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">{{ user.ad }} {{ user.soyad }}</h4>
+                        <p class="text-gray-600 mb-2">{{ user.unvan }}</p>
+                        <p class="text-gray-600 flex items-center justify-center">
+                            <i class="fas fa-building mr-2"></i>{{ user.firma }}
+                        </p>
                     </div>
                 </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="text-lg font-semibold flex items-center">
+                            <i class="fas fa-shield-alt mr-2"></i>Şifre Değiştir
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('main.change_password') }}" method="post" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Mevcut Şifre</label>
+                                <input type="password" class="form-control w-full" name="current_password" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre</label>
+                                <input type="password" class="form-control w-full" name="new_password" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre (Tekrar)</label>
+                                <input type="password" class="form-control w-full" name="confirm_password" required>
+                            </div>
+                            <button type="submit" class="bg-warning-500 hover:bg-warning-600 text-white font-medium px-4 py-2 rounded-lg w-full transition-colors">
+                                Şifreyi Değiştir
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="text-xl font-semibold flex items-center">
+                            <i class="fas fa-user-circle mr-2"></i>Profil Bilgileri
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('main.profile') }}" method="post" enctype="multipart/form-data">
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Ad</label>
+                                    <input type="text" class="form-control w-full" name="ad" value="{{ user.ad }}" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Soyad</label>
+                                    <input type="text" class="form-control w-full" name="soyad" value="{{ user.soyad }}" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                                    <input type="email" class="form-control w-full bg-gray-100" value="{{ user.email }}" readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
+                                    <input type="tel" class="form-control w-full" name="telefon" value="{{ user.telefon }}">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Firma</label>
+                                    <input type="text" class="form-control w-full" name="firma" value="{{ user.firma }}">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Ünvan</label>
+                                    <input type="text" class="form-control w-full" name="unvan" value="{{ user.unvan }}">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Adres</label>
+                                    <textarea class="form-control w-full" name="adres" rows="3">{{ user.adres }}</textarea>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="timezone" class="block text-sm font-medium text-gray-700 mb-2">Zaman Dilimi</label>
+                                    <select class="form-select w-full" id="timezone" name="timezone">
+                                        {% for tz in timezones %}
+                                        <option value="{{ tz }}" {% if user.timezone == tz %}selected{% endif %}>{{ tz }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Profil Fotoğrafı</label>
+                                    <input type="file" class="form-control w-full" name="profil_foto" accept="image/*">
+                                </div>
+                                <div class="md:col-span-2 mt-6">
+                                    <div class="flex justify-between">
+                                        <a href="{{ url_for('main.index') }}" class="btn-secondary">
+                                            <i class="fas fa-arrow-left mr-2"></i>Anasayfaya Dön
+                                        </a>
+                                        <button type="submit" class="btn-primary">
+                                            <i class="fas fa-save mr-2"></i>Profili Güncelle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

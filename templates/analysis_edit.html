@@ -1,0 +1,366 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}{{ title }} - Arsa Analiz Platformu{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_description %}Analiz bilgilerini düzenleyin ve güncelleyin{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="/analysis/{{ analysis.id }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Geri Dön
+    </a>
+    <button type="submit" form="editAnalysisForm" class="btn btn-primary">
+        <i class="fas fa-save me-1"></i>Kaydet
+    </button>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<form id="editAnalysisForm" method="POST" class="needs-validation" novalidate>
+    <div class="row">
+        <!-- Ana Form -->
+        <div class="col-lg-8">
+            <!-- Lokasyon Bilgileri -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>Lokasyon Bilgileri
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="il" class="form-label">İl <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="il" name="il" value="{{ analysis.il }}" required>
+                            <div class="invalid-feedback">İl bilgisi gereklidir.</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="ilce" class="form-label">İlçe <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="ilce" name="ilce" value="{{ analysis.ilce }}" required>
+                            <div class="invalid-feedback">İlçe bilgisi gereklidir.</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="mahalle" class="form-label">Mahalle</label>
+                            <input type="text" class="form-control" id="mahalle" name="mahalle" value="{{ analysis.mahalle or '' }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="ada" class="form-label">Ada</label>
+                            <input type="text" class="form-control" id="ada" name="ada" value="{{ analysis.ada or '' }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="parsel" class="form-label">Parsel</label>
+                            <input type="text" class="form-control" id="parsel" name="parsel" value="{{ analysis.parsel or '' }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="pafta" class="form-label">Pafta</label>
+                            <input type="text" class="form-control" id="pafta" name="pafta" value="{{ analysis.pafta or '' }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="koordinatlar" class="form-label">Koordinatlar</label>
+                            <input type="text" class="form-control" id="koordinatlar" name="koordinatlar" value="{{ analysis.koordinatlar or '' }}" placeholder="Enlem, Boylam">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teknik Bilgiler -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-ruler-combined me-2"></i>Teknik Bilgiler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="metrekare" class="form-label">Alan (m²) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="metrekare" name="metrekare" value="{{ analysis.metrekare or '' }}" step="0.01" min="0" required>
+                            <div class="invalid-feedback">Alan bilgisi gereklidir.</div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="imar_durumu" class="form-label">İmar Durumu</label>
+                            <select class="form-select" id="imar_durumu" name="imar_durumu">
+                                <option value="">Seçiniz</option>
+                                <option value="İmarlı" {{ 'selected' if analysis.imar_durumu == 'İmarlı' }}>İmarlı</option>
+                                <option value="İmarsız" {{ 'selected' if analysis.imar_durumu == 'İmarsız' }}>İmarsız</option>
+                                <option value="Tarla" {{ 'selected' if analysis.imar_durumu == 'Tarla' }}>Tarla</option>
+                                <option value="Bahçe" {{ 'selected' if analysis.imar_durumu == 'Bahçe' }}>Bahçe</option>
+                                <option value="Orman" {{ 'selected' if analysis.imar_durumu == 'Orman' }}>Orman</option>
+                                <option value="Diğer" {{ 'selected' if analysis.imar_durumu == 'Diğer' }}>Diğer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="taks" class="form-label">TAKS</label>
+                            <input type="number" class="form-control" id="taks" name="taks" value="{{ analysis.taks or '' }}" step="0.01" min="0" max="1" placeholder="0.40">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="kaks" class="form-label">KAKS</label>
+                            <input type="number" class="form-control" id="kaks" name="kaks" value="{{ analysis.kaks or '' }}" step="0.01" min="0" placeholder="1.20">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finansal Bilgiler -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Finansal Bilgiler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fiyat" class="form-label">Maliyet (₺) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="fiyat" name="fiyat" value="{{ analysis.fiyat or '' }}" step="0.01" min="0" required>
+                            <div class="invalid-feedback">Maliyet bilgisi gereklidir.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="bolge_fiyat" class="form-label">Bölge Fiyatı (₺)</label>
+                            <input type="number" class="form-control" id="bolge_fiyat" name="bolge_fiyat" value="{{ analysis.bolge_fiyat or '' }}" step="0.01" min="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Altyapı Bilgileri -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>Altyapı Bilgileri
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% set altyapi_options = [
+                            ('elektrik', 'Elektrik'),
+                            ('su', 'Su'),
+                            ('dogalgaz', 'Doğalgaz'),
+                            ('kanalizasyon', 'Kanalizasyon'),
+                            ('telefon', 'Telefon'),
+                            ('internet', 'İnternet'),
+                            ('yol', 'Yol')
+                        ] %}
+                        {% for key, label in altyapi_options %}
+                        <div class="col-md-3 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="altyapi_{{ key }}" name="altyapi_{{ key }}" 
+                                       {{ 'checked' if label in altyapi }}>
+                                <label class="form-check-label" for="altyapi_{{ key }}">
+                                    {{ label }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- SWOT Analizi -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>SWOT Analizi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="strengths" class="form-label text-success">
+                                <i class="fas fa-plus-circle me-1"></i>Güçlü Yönler
+                            </label>
+                            <textarea class="form-control" id="strengths" name="strengths" rows="4" placeholder="Her satıra bir güçlü yön yazın">{{ swot.strengths|join('\n') if swot.strengths else '' }}</textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="weaknesses" class="form-label text-danger">
+                                <i class="fas fa-minus-circle me-1"></i>Zayıf Yönler
+                            </label>
+                            <textarea class="form-control" id="weaknesses" name="weaknesses" rows="4" placeholder="Her satıra bir zayıf yön yazın">{{ swot.weaknesses|join('\n') if swot.weaknesses else '' }}</textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="opportunities" class="form-label text-primary">
+                                <i class="fas fa-lightbulb me-1"></i>Fırsatlar
+                            </label>
+                            <textarea class="form-control" id="opportunities" name="opportunities" rows="4" placeholder="Her satıra bir fırsat yazın">{{ swot.opportunities|join('\n') if swot.opportunities else '' }}</textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="threats" class="form-label text-warning">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Tehditler
+                            </label>
+                            <textarea class="form-control" id="threats" name="threats" rows="4" placeholder="Her satıra bir tehdit yazın">{{ swot.threats|join('\n') if swot.threats else '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notlar -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>Notlar
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <textarea class="form-control" id="notlar" name="notlar" rows="5" placeholder="Analiz ile ilgili notlarınızı buraya yazabilirsiniz...">{{ analysis.notlar or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yan Panel -->
+        <div class="col-lg-4">
+            <!-- Kaydet Butonu -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-save me-2"></i>Kaydet
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                        </button>
+                        <a href="/analysis/{{ analysis.id }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>İptal Et
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analiz Bilgileri -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Analiz Bilgileri
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Analiz ID:</span>
+                        <span class="fw-semibold">#{{ analysis.id }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Oluşturma:</span>
+                        <span class="fw-semibold">{{ analysis.created_at.strftime('%d.%m.%Y') }}</span>
+                    </div>
+                    {% if analysis.updated_at %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Son Güncelleme:</span>
+                        <span class="fw-semibold">{{ analysis.updated_at.strftime('%d.%m.%Y') }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Durum:</span>
+                        <span class="badge bg-warning">Düzenleniyor</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yardım -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-question-circle me-2"></i>Yardım
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="small text-muted">
+                        <p><strong>TAKS:</strong> Taban Alanı Katsayısı (0-1 arası)</p>
+                        <p><strong>KAKS:</strong> Kat Alanları Katsayısı</p>
+                        <p><strong>SWOT:</strong> Her satıra bir madde yazın</p>
+                        <p class="mb-0"><strong>Koordinatlar:</strong> Enlem, Boylam formatında</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Form Enhancements */
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Required field indicator */
+.text-danger {
+    font-weight: 500;
+}
+
+/* Button enhancements */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.getElementById('editAnalysisForm');
+    
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    // Auto-calculate unit prices
+    const metrekareInput = document.getElementById('metrekare');
+    const fiyatInput = document.getElementById('fiyat');
+    const bolgeFiyatInput = document.getElementById('bolge_fiyat');
+    
+    function updateCalculations() {
+        const metrekare = parseFloat(metrekareInput.value) || 0;
+        const fiyat = parseFloat(fiyatInput.value) || 0;
+        const bolgeFiyat = parseFloat(bolgeFiyatInput.value) || 0;
+        
+        // Birim fiyat hesaplamaları burada gösterilebilir
+        // Şimdilik sadece validation yapıyoruz
+    }
+    
+    metrekareInput.addEventListener('input', updateCalculations);
+    fiyatInput.addEventListener('input', updateCalculations);
+    bolgeFiyatInput.addEventListener('input', updateCalculations);
+    
+    // Show success toast on load
+    setTimeout(() => {
+        if (typeof showToast === 'function') {
+            showToast('Analiz düzenleme sayfası yüklendi! ✏️', 'info', 3000);
+        }
+    }, 500);
+});
+</script>
+{% endblock %}

@@ -1,105 +1,1254 @@
-{% extends "crm/crm_base.html" %} {% block title %}Kişiler - CRM{% endblock %}
-{% block crm_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h2><i class="bi bi-people-fill me-2"></i> Kişiler</h2>
-  <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary shadow-sm">
-    <i class="bi bi-plus-circle me-1"></i> Yeni Kişi Ekle
-  </a>
-</div>
+{% extends "dashboard_base.html" %}
 
-{% if contacts %}
-<div class="card shadow-sm">
-  <div class="card-body">
-    <div class="table-responsive">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>Ad Soyad</th>
-            <th>E-posta</th>
-            <th>Telefon</th>
-            <th>Şirket</th>
-            <th>Durum</th>
-            <th>Eklenme Tarihi</th>
-            <th>İşlemler</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for contact in contacts %}
-          <tr>
-            <td>
-              <a
-                href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}"
-              >
-                {{ contact.first_name }} {{ contact.last_name }}
-              </a>
-            </td>
-            <td>{{ contact.email if contact.email else '-' }}</td>
-            <td>{{ contact.phone if contact.phone else '-' }}</td>
-            <td>
-              {% if contact.company %} {{ contact.company.name }} {% else %} -
-              {% endif %}
-            </td>
-            <td><span class="badge bg-info text-white">{{ contact.status }}</span></td>
-            <td>{{ contact.created_at.strftime('%d.%m.%Y') }}</td>
-            <!-- ... -->
-            <!-- ... -->
-            <td>
-              <a
-                href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}"
-                class="btn btn-sm btn-outline-primary shadow-sm"
-                title="Görüntüle"
-              >
-                <i class="bi bi-eye"></i>
-              </a>
-              <a
-                href="{{ url_for('crm.crm_contact_edit', contact_id=contact.id) }}"
-                class="btn btn-sm btn-outline-secondary shadow-sm"
-                title="Düzenle"
-              >
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <form
-                action="{{ url_for('crm.crm_contact_delete', contact_id=contact.id) }}"
-                method="POST"
-                style="display: inline"
-                onsubmit="return confirm('Bu kişiyi ve ilişkili tüm verilerini (etkileşimler, fırsatlar, görevler) silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!');"
-              >
-                {# Action güncellendi ve uyarı mesajı detaylandırıldı #} {# CSRF
-                token (eğer Flask-WTF veya benzeri bir kütüphane
-                kullanıyorsanız) Eğer Flask-WTF kullanmıyorsanız ve basit bir
-                CSRF koruması istiyorsanız, session tabanlı bir token oluşturup
-                formla gönderebilir ve sunucuda doğrulayabilirsiniz. Şimdilik bu
-                kısmı basit tutuyorum. #} {#
-                <input
-                  type="hidden"
-                  name="csrf_token"
-                  value="{{ csrf_token() }}"
-                />
-                #}
-                <button
-                  type="submit"
-                  class="btn btn-sm btn-outline-danger shadow-sm"
-                  title="Sil"
-                >
-                  {# Artık aktif #}
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
-            </td>
-            <!-- ... -->
-            <!-- ... -->
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+{% block title %}Kişiler - CRM - Arsa Analiz Platformu{% endblock %}
+
+{% block page_title %}CRM Sistemi{% endblock %}
+{% block page_description %}Müşteri ilişkileri yönetim sistemi{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary">
+        <i class="fas fa-user-plus me-1"></i>Yeni Kişi
+    </a>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-download me-1"></i>Dışa Aktar
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" onclick="exportContacts('excel')">
+                <i class="fas fa-file-excel me-2 text-success"></i>Excel
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="exportContacts('csv')">
+                <i class="fas fa-file-csv me-2 text-info"></i>CSV
+            </a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Dashboard Base Compatible Styles */
+.contacts-search-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.contacts-table-card {
+    background: white;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.bulk-actions-toolbar {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.bulk-actions-toolbar.show {
+    display: block;
+}
+
+.contact-checkbox {
+    transition: all 0.2s;
+}
+
+.contact-checkbox:checked {
+    transform: scale(1.05);
+}
+
+.contact-row.selected {
+    background-color: #f8f9fa;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #6c757d;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    margin: 0 2px;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    color: white;
+}
+
+.action-btn.btn-view:hover {
+    background: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.action-btn.btn-edit:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+}
+
+.action-btn.btn-delete:hover {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.pagination-container {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+}
+
+.empty-state {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: #adb5bd;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0d6efd;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .contacts-search-card {
+        padding: 1rem;
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- Arama ve Filtreleme -->
+<div class="contacts-search-card">
+  <div class="row align-items-center mb-3">
+    <div class="col">
+      <h6 class="mb-0">
+        <i class="fas fa-search me-2"></i>Arama ve Filtreleme
+      </h6>
+    </div>
+    <div class="col-auto">
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-filters">
+        <i class="fas fa-times me-1"></i>Temizle
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">
+        <i class="fas fa-search me-1"></i>Arama
+      </label>
+      <input type="text"
+             id="search-input"
+             class="form-control"
+             placeholder="Ad, soyad, email veya telefon..."
+             autocomplete="off">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">
+        <i class="fas fa-filter me-1"></i>Durum
+      </label>
+      <select id="status-filter" class="form-select">
+        <option value="">Tüm Durumlar</option>
+        <option value="Lead">Potansiyel (Lead)</option>
+        <option value="Müşteri">Müşteri</option>
+        <option value="Partner">Partner</option>
+        <option value="Eski Müşteri">Eski Müşteri</option>
+        <option value="Diğer">Diğer</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">
+        <i class="fas fa-building me-1"></i>Şirket
+      </label>
+      <select id="company-filter" class="form-select">
+        <option value="">Tüm Şirketler</option>
+        <!-- Şirketler dinamik olarak yüklenecek -->
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">&nbsp;</label>
+      <div class="d-grid">
+        <button type="button" class="btn btn-primary" onclick="performSearch()">
+          <i class="fas fa-search me-1"></i>Filtrele
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sonuç Bilgisi -->
+  <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+    <div id="search-results-info" class="text-muted small">
+      <span id="total-contacts">{{ contacts|length if contacts else 0 }}</span> kişi gösteriliyor
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <label class="form-label small mb-0">Sayfa başına:</label>
+      <select id="page-size" class="form-select form-select-sm" style="width: auto;">
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
     </div>
   </div>
 </div>
-{% else %}
-<div class="alert alert-light text-center shadow-sm" role="alert">
-  <i class="bi bi-info-circle me-2"></i> Henüz hiç kişi eklenmemiş.
-  <a href="{{ url_for('crm.crm_contact_new') }}" class="alert-link"
-    >Hemen bir kişi ekleyin!</a
-  >
+
+<!-- Loading State -->
+<div id="loading-state" class="contacts-table-card text-center p-4" style="display: none;">
+  <div class="spinner-border text-primary mb-3" role="status">
+    <span class="visually-hidden">Yükleniyor...</span>
+  </div>
+  <p class="text-muted">Kişiler yükleniyor...</p>
 </div>
-{% endif %} {% endblock %}
+
+<!-- Bulk Actions Toolbar -->
+<div id="bulk-actions-toolbar" class="bulk-actions-toolbar">
+  <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <span id="selected-count" class="fw-semibold">
+        0 kişi seçildi
+      </span>
+      <button id="clear-selection" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-times me-1"></i>Seçimi Temizle
+      </button>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <!-- Durum Güncelleme -->
+      <select id="bulk-status-select" class="form-select form-select-sm" style="width: auto;">
+        <option value="">Durum Seç</option>
+        <option value="Lead">Potansiyel (Lead)</option>
+        <option value="Müşteri">Müşteri</option>
+        <option value="Partner">Partner</option>
+        <option value="Eski Müşteri">Eski Müşteri</option>
+        <option value="Diğer">Diğer</option>
+      </select>
+      <button id="bulk-update-status" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-edit me-1"></i>Güncelle
+      </button>
+
+      <!-- Export Dropdown -->
+      <div class="dropdown">
+        <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="fas fa-download me-1"></i>Export
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#" id="export-selected-csv">
+            <i class="fas fa-file-csv me-2"></i>Seçili (CSV)
+          </a></li>
+          <li><a class="dropdown-item" href="#" id="export-selected-excel">
+            <i class="fas fa-file-excel me-2"></i>Seçili (Excel)
+          </a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#" id="export-all-csv">
+            <i class="fas fa-file-csv me-2"></i>Tümü (CSV)
+          </a></li>
+          <li><a class="dropdown-item" href="#" id="export-all-excel">
+            <i class="fas fa-file-excel me-2"></i>Tümü (Excel)
+          </a></li>
+        </ul>
+      </div>
+
+      <!-- Delete -->
+      <button id="bulk-delete" class="btn btn-sm btn-outline-danger">
+        <i class="fas fa-trash me-1"></i>Sil
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Contacts Table -->
+<div id="contacts-table-container" class="contacts-table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 50px;">
+            <div class="form-check">
+              <input type="checkbox" id="select-all-checkbox" class="form-check-input">
+            </div>
+          </th>
+          <th>Kişi</th>
+          <th>E-posta</th>
+          <th>Telefon</th>
+          <th>Şirket</th>
+          <th>Durum</th>
+          <th>Eklenme Tarihi</th>
+          <th style="width: 120px;">İşlemler</th>
+        </tr>
+      </thead>
+      <tbody id="contacts-table-body">
+        {% if contacts %}
+        {% for contact in contacts %}
+        <tr class="contact-row">
+          <td>
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input contact-checkbox" value="{{ contact.id }}">
+            </div>
+          </td>
+          <td>
+            <div class="d-flex align-items-center">
+              <div class="contact-avatar bg-primary text-white me-3">
+                {{ contact.first_name[0] if contact.first_name else 'U' }}{{ contact.last_name[0] if contact.last_name else '' }}
+              </div>
+              <div>
+                <h6 class="mb-1">
+                  <a href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}" class="text-decoration-none">
+                    {{ contact.first_name }} {{ contact.last_name }}
+                  </a>
+                </h6>
+                <p class="text-muted small mb-0">{{ contact.title or 'Pozisyon belirtilmemiş' }}</p>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="text-muted small">{{ contact.email if contact.email else '-' }}</span>
+          </td>
+          <td>
+            <span class="text-muted small">{{ contact.phone if contact.phone else '-' }}</span>
+          </td>
+          <td>
+            {% if contact.company %}
+              <span class="badge bg-light text-dark">{{ contact.company.name }}</span>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge bg-{{ 'success' if contact.status == 'Müşteri' else 'warning' if contact.status == 'Lead' else 'info' if contact.status == 'Partner' else 'secondary' }}">
+              {{ contact.status }}
+            </span>
+          </td>
+          <td>
+            <span class="text-muted small">{{ contact.created_at.strftime('%d.%m.%Y') }}</span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}"
+                 class="action-btn btn-view"
+                 title="Görüntüle">
+                <i class="fas fa-eye"></i>
+              </a>
+              <a href="{{ url_for('crm.crm_contact_edit', contact_id=contact.id) }}"
+                 class="action-btn btn-edit"
+                 title="Düzenle">
+                <i class="fas fa-edit"></i>
+              </a>
+              <button type="button"
+                      class="action-btn btn-delete"
+                      title="Sil"
+                      onclick="deleteContact({{ contact.id }}, '{{ contact.first_name }} {{ contact.last_name }}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <!-- Empty State -->
+        <tr id="no-contacts-row">
+          <td colspan="8" class="text-center py-5">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <h5 class="mb-3">Henüz kişi eklenmemiş</h5>
+              <p class="text-muted mb-4">İlk kişinizi ekleyerek CRM sisteminizi kullanmaya başlayın.</p>
+              <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary">
+                <i class="fas fa-user-plus me-2"></i>İlk Kişiyi Ekle
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div id="pagination-container" class="pagination-container">
+    <div class="d-flex justify-content-between align-items-center">
+      <div id="pagination-info" class="text-muted small">
+        <!-- Pagination bilgisi buraya gelecek -->
+      </div>
+      <nav id="pagination-nav">
+        <!-- Pagination butonları buraya gelecek -->
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- No Search Results State -->
+<div id="no-results-state" class="contacts-table-card text-center p-5" style="display: none;">
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <i class="fas fa-search"></i>
+    </div>
+    <h5 class="mb-3">Sonuç bulunamadı</h5>
+    <p class="text-muted mb-4">Arama kriterlerinizi değiştirip tekrar deneyin.</p>
+    <button id="clear-search" class="btn btn-outline-secondary">
+      <i class="fas fa-times me-2"></i>Aramayı Temizle
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+class ContactsSearchManager {
+  constructor() {
+    this.searchInput = document.getElementById('search-input');
+    this.statusFilter = document.getElementById('status-filter');
+    this.companyFilter = document.getElementById('company-filter');
+    this.clearFiltersBtn = document.getElementById('clear-filters');
+    this.clearSearchBtn = document.getElementById('clear-search');
+    this.tableContainer = document.getElementById('contacts-table-container');
+    this.tableBody = document.getElementById('contacts-table-body');
+    this.loadingState = document.getElementById('loading-state');
+    this.noResultsState = document.getElementById('no-results-state');
+    this.resultsInfo = document.getElementById('search-results-info');
+    this.totalContactsSpan = document.getElementById('total-contacts');
+
+    this.searchTimeout = null;
+    this.currentFilters = {
+      search: '',
+      status: '',
+      company: ''
+    };
+
+    // Pagination state
+    this.currentPage = 1;
+    this.perPage = 25;
+    this.totalPages = 1;
+    this.totalContacts = 0;
+
+    // Bulk actions state
+    this.selectedContacts = new Set();
+    this.selectAllCheckbox = document.getElementById('select-all-checkbox');
+    this.bulkActionsToolbar = document.getElementById('bulk-actions-toolbar');
+    this.selectedCountSpan = document.getElementById('selected-count');
+
+    this.init();
+  }
+
+  init() {
+    this.bindEvents();
+    this.loadCompanies();
+    this.initializeFromURL();
+  }
+
+  bindEvents() {
+    // Arama input'u için debounced event
+    this.searchInput.addEventListener('input', (e) => {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = setTimeout(() => {
+        this.currentFilters.search = e.target.value.trim();
+        this.performSearch();
+      }, 300);
+    });
+
+    // Filtre değişiklikleri
+    this.statusFilter.addEventListener('change', (e) => {
+      this.currentFilters.status = e.target.value;
+      this.performSearch();
+    });
+
+    this.companyFilter.addEventListener('change', (e) => {
+      this.currentFilters.company = e.target.value;
+      this.performSearch();
+    });
+
+    // Filtreleri temizle
+    this.clearFiltersBtn.addEventListener('click', () => {
+      this.clearAllFilters();
+    });
+
+    this.clearSearchBtn.addEventListener('click', () => {
+      this.clearAllFilters();
+    });
+
+    // Sayfa boyutu değişikliği
+    const pageSizeSelect = document.getElementById('page-size');
+    if (pageSizeSelect) {
+      pageSizeSelect.addEventListener('change', (e) => {
+        this.perPage = parseInt(e.target.value);
+        this.currentPage = 1; // İlk sayfaya dön
+        this.performSearch(1);
+      });
+    }
+
+    // Bulk actions events
+    this.bindBulkActionsEvents();
+  }
+
+  bindBulkActionsEvents() {
+    // Select All checkbox
+    if (this.selectAllCheckbox) {
+      this.selectAllCheckbox.addEventListener('change', (e) => {
+        this.toggleSelectAll(e.target.checked);
+      });
+    }
+
+    // Clear selection
+    const clearSelectionBtn = document.getElementById('clear-selection');
+    if (clearSelectionBtn) {
+      clearSelectionBtn.addEventListener('click', () => {
+        this.clearSelection();
+      });
+    }
+
+    // Bulk delete
+    const bulkDeleteBtn = document.getElementById('bulk-delete');
+    if (bulkDeleteBtn) {
+      bulkDeleteBtn.addEventListener('click', () => {
+        this.bulkDelete();
+      });
+    }
+
+    // Bulk status update
+    const bulkUpdateStatusBtn = document.getElementById('bulk-update-status');
+    if (bulkUpdateStatusBtn) {
+      bulkUpdateStatusBtn.addEventListener('click', () => {
+        this.bulkUpdateStatus();
+      });
+    }
+
+    // Export dropdown
+    const exportDropdownBtn = document.getElementById('export-dropdown-btn');
+    const exportDropdown = document.getElementById('export-dropdown');
+
+    if (exportDropdownBtn && exportDropdown) {
+      exportDropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        exportDropdown.style.display = exportDropdown.style.display === 'none' ? 'block' : 'none';
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', () => {
+        exportDropdown.style.display = 'none';
+      });
+
+      // Export event listeners
+      document.getElementById('export-selected-csv').addEventListener('click', () => this.exportSelected('csv'));
+      document.getElementById('export-selected-excel').addEventListener('click', () => this.exportSelected('excel'));
+      document.getElementById('export-all-csv').addEventListener('click', () => this.exportAll('csv'));
+      document.getElementById('export-all-excel').addEventListener('click', () => this.exportAll('excel'));
+      document.getElementById('export-filtered-csv').addEventListener('click', () => this.exportFiltered('csv'));
+      document.getElementById('export-filtered-excel').addEventListener('click', () => this.exportFiltered('excel'));
+    }
+  }
+
+  async loadCompanies() {
+    try {
+      const response = await fetch('/crm/api/companies');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const companies = await response.json();
+
+      // Şirket filtresi seçeneklerini doldur
+      this.companyFilter.innerHTML = '<option value="">Tüm Şirketler</option>';
+      companies.forEach(company => {
+        const option = document.createElement('option');
+        option.value = company.id;
+        option.textContent = company.name;
+        this.companyFilter.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Şirketler yüklenirken hata:', error);
+    }
+  }
+
+  async performSearch(page = 1) {
+    this.showLoading();
+    this.currentPage = page;
+
+    try {
+      const params = new URLSearchParams();
+
+      // Filters
+      if (this.currentFilters.search) {
+        params.append('q', this.currentFilters.search);
+      }
+      if (this.currentFilters.status) {
+        params.append('status', this.currentFilters.status);
+      }
+      if (this.currentFilters.company) {
+        params.append('company_id', this.currentFilters.company);
+      }
+
+      // Pagination
+      params.append('page', page.toString());
+      params.append('per_page', this.perPage.toString());
+
+      const response = await fetch(`/crm/api/contacts?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+
+      this.renderResults(data.contacts, data.pagination);
+      this.updateFiltersVisibility();
+      this.updateURL();
+
+    } catch (error) {
+      console.error('Arama hatası:', error);
+      this.showError('Arama sırasında bir hata oluştu.');
+    }
+  }
+
+  renderResults(contacts, pagination) {
+    this.hideLoading();
+
+    // Pagination bilgilerini güncelle
+    if (pagination) {
+      this.currentPage = pagination.page;
+      this.perPage = pagination.per_page;
+      this.totalPages = pagination.pages;
+      this.totalContacts = pagination.total;
+    }
+
+    if (contacts.length === 0) {
+      this.showNoResults();
+      return;
+    }
+
+    this.showTable();
+    this.updateResultsInfo();
+
+    // Tablo içeriğini güncelle
+    this.tableBody.innerHTML = contacts.map(contact => this.createContactRow(contact)).join('');
+
+    // Checkbox event'lerini bind et
+    this.bindContactCheckboxes();
+
+    // Pagination controls'ü güncelle
+    this.renderPagination();
+
+    // Selection state'i temizle
+    this.clearSelection();
+  }
+
+  createContactRow(contact) {
+    const initials = (contact.first_name?.[0] || '?') + (contact.last_name?.[0] || '');
+    const fullName = `${contact.first_name || ''} ${contact.last_name || ''}`.trim();
+    const createdDate = new Date(contact.created_at).toLocaleDateString('tr-TR');
+
+    return `
+      <tr class="hover:bg-gray-50 contact-row" data-contact-id="${contact.id}">
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center">
+            <input type="checkbox"
+                   class="contact-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                   data-contact-id="${contact.id}"
+                   value="${contact.id}">
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 h-10 w-10">
+              <img src="${this.getContactAvatarUrl(contact, 40)}"
+                   alt="${fullName}"
+                   class="h-10 w-10 rounded-full border-2 border-gray-200"
+                   onerror="this.src='${this.getDefaultAvatarUrl(contact, 40)}'">
+            </div>
+            <div class="ml-4">
+              <div class="text-sm font-medium text-gray-900">
+                <a href="/crm/contact/${contact.id}" class="hover:text-blue-600">
+                  ${fullName}
+                </a>
+              </div>
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          ${contact.email || '-'}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          ${contact.phone || '-'}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          ${contact.company_name || '-'}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+            ${contact.status || 'Lead'}
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          ${createdDate}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          <div class="flex space-x-2">
+            <a href="/crm/contact/${contact.id}" class="text-blue-600 hover:text-blue-900" title="Görüntüle">
+              <i class="fas fa-eye"></i>
+            </a>
+            <a href="/crm/contact/${contact.id}/edit" class="text-gray-600 hover:text-gray-900" title="Düzenle">
+              <i class="fas fa-edit"></i>
+            </a>
+            <form action="/crm/contact/${contact.id}/delete" method="POST" class="inline"
+                  onsubmit="return confirm('Bu kişiyi silmek istediğinizden emin misiniz?');">
+              <button type="submit" class="text-red-600 hover:text-red-900" title="Sil">
+                <i class="fas fa-trash"></i>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  showLoading() {
+    this.tableContainer.style.display = 'none';
+    this.noResultsState.style.display = 'none';
+    this.loadingState.style.display = 'block';
+  }
+
+  hideLoading() {
+    this.loadingState.style.display = 'none';
+  }
+
+  showTable() {
+    this.tableContainer.style.display = 'block';
+    this.noResultsState.style.display = 'none';
+  }
+
+  showNoResults() {
+    this.tableContainer.style.display = 'none';
+    this.noResultsState.style.display = 'block';
+  }
+
+  updateResultsInfo() {
+    const startRecord = (this.currentPage - 1) * this.perPage + 1;
+    const endRecord = Math.min(this.currentPage * this.perPage, this.totalContacts);
+
+    this.resultsInfo.innerHTML = `
+      <span class="text-sm text-gray-600">
+        ${startRecord}-${endRecord} / ${this.totalContacts} kişi gösteriliyor
+      </span>
+    `;
+  }
+
+  updateFiltersVisibility() {
+    const hasActiveFilters = this.currentFilters.search ||
+                           this.currentFilters.status ||
+                           this.currentFilters.company;
+
+    this.clearFiltersBtn.style.display = hasActiveFilters ? 'block' : 'none';
+  }
+
+  clearAllFilters() {
+    this.searchInput.value = '';
+    this.statusFilter.value = '';
+    this.companyFilter.value = '';
+
+    this.currentFilters = {
+      search: '',
+      status: '',
+      company: ''
+    };
+
+    this.performSearch();
+  }
+
+  showError(message) {
+    this.hideLoading();
+    // Toast notification göster
+    console.error(message);
+  }
+
+  getContactAvatarUrl(contact, size = 40) {
+    // Contact'ın email'i varsa Gravatar'ı dene
+    if (contact.email) {
+      return this.getGravatarUrl(contact.email, size);
+    }
+
+    // Default contact avatar
+    return this.getDefaultAvatarUrl(contact, size);
+  }
+
+  getGravatarUrl(email, size = 40) {
+    // Basit hash için email'in ilk karakterlerini kullan
+    const hash = email.toLowerCase().split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0).toString(16).padStart(32, '0');
+
+    return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon&r=g`;
+  }
+
+  getDefaultAvatarUrl(contact, size = 40) {
+    const initials = this.getContactInitials(contact);
+    const colors = [
+      '#3498DB', '#E74C3C', '#2ECC71', '#F39C12', '#9B59B6',
+      '#1ABC9C', '#E67E22', '#34495E', '#16A085', '#27AE60'
+    ];
+    const color = colors[contact.id % colors.length];
+
+    const svg = `
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="${size/2}" cy="${size/2}" r="${size/2}" fill="${color}"/>
+        <text x="${size/2}" y="${size/2 + size/6}"
+              text-anchor="middle"
+              font-family="Arial, sans-serif"
+              font-size="${size/2.5}"
+              font-weight="bold"
+              fill="white">
+          ${initials}
+        </text>
+      </svg>
+    `;
+
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  }
+
+  getContactInitials(contact) {
+    let initials = "";
+    if (contact.first_name) initials += contact.first_name[0].toUpperCase();
+    if (contact.last_name) initials += contact.last_name[0].toUpperCase();
+    return initials || "?";
+  }
+
+  renderPagination() {
+    const paginationNav = document.getElementById('pagination-nav');
+    if (!paginationNav || this.totalPages <= 1) {
+      paginationNav.style.display = 'none';
+      return;
+    }
+
+    paginationNav.style.display = 'flex';
+
+    let paginationHTML = '';
+
+    // Previous button
+    if (this.currentPage > 1) {
+      paginationHTML += `
+        <button class="pagination-btn" data-page="${this.currentPage - 1}">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      `;
+    }
+
+    // Page numbers
+    const startPage = Math.max(1, this.currentPage - 2);
+    const endPage = Math.min(this.totalPages, this.currentPage + 2);
+
+    if (startPage > 1) {
+      paginationHTML += `<button class="pagination-btn" data-page="1">1</button>`;
+      if (startPage > 2) {
+        paginationHTML += `<span class="pagination-dots">...</span>`;
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      const isActive = i === this.currentPage;
+      paginationHTML += `
+        <button class="pagination-btn ${isActive ? 'active' : ''}" data-page="${i}">
+          ${i}
+        </button>
+      `;
+    }
+
+    if (endPage < this.totalPages) {
+      if (endPage < this.totalPages - 1) {
+        paginationHTML += `<span class="pagination-dots">...</span>`;
+      }
+      paginationHTML += `<button class="pagination-btn" data-page="${this.totalPages}">${this.totalPages}</button>`;
+    }
+
+    // Next button
+    if (this.currentPage < this.totalPages) {
+      paginationHTML += `
+        <button class="pagination-btn" data-page="${this.currentPage + 1}">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      `;
+    }
+
+    paginationNav.innerHTML = paginationHTML;
+
+    // Event listeners ekle
+    paginationNav.querySelectorAll('.pagination-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const page = parseInt(e.currentTarget.dataset.page);
+        if (page && page !== this.currentPage) {
+          this.performSearch(page);
+        }
+      });
+    });
+  }
+
+  initializeFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // URL'den parametreleri al
+    this.currentPage = parseInt(urlParams.get('page')) || 1;
+    this.perPage = parseInt(urlParams.get('per_page')) || 25;
+    this.currentFilters.search = urlParams.get('q') || '';
+    this.currentFilters.status = urlParams.get('status') || '';
+    this.currentFilters.company = urlParams.get('company_id') || '';
+
+    // Form elemanlarını güncelle
+    if (this.searchInput) this.searchInput.value = this.currentFilters.search;
+    if (this.statusFilter) this.statusFilter.value = this.currentFilters.status;
+    if (this.companyFilter) this.companyFilter.value = this.currentFilters.company;
+
+    const pageSizeSelect = document.getElementById('page-size');
+    if (pageSizeSelect) pageSizeSelect.value = this.perPage.toString();
+
+    // İlk arama yap
+    this.performSearch(this.currentPage);
+  }
+
+  updateURL() {
+    const params = new URLSearchParams();
+
+    if (this.currentFilters.search) params.set('q', this.currentFilters.search);
+    if (this.currentFilters.status) params.set('status', this.currentFilters.status);
+    if (this.currentFilters.company) params.set('company_id', this.currentFilters.company);
+    if (this.currentPage > 1) params.set('page', this.currentPage.toString());
+    if (this.perPage !== 25) params.set('per_page', this.perPage.toString());
+
+    const newURL = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+    window.history.replaceState({}, '', newURL);
+  }
+
+  // Bulk Actions Methods
+  bindContactCheckboxes() {
+    const checkboxes = document.querySelectorAll('.contact-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const contactId = parseInt(e.target.dataset.contactId);
+        if (e.target.checked) {
+          this.selectedContacts.add(contactId);
+        } else {
+          this.selectedContacts.delete(contactId);
+        }
+        this.updateSelectionUI();
+      });
+    });
+  }
+
+  toggleSelectAll(checked) {
+    const checkboxes = document.querySelectorAll('.contact-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = checked;
+      const contactId = parseInt(checkbox.dataset.contactId);
+      if (checked) {
+        this.selectedContacts.add(contactId);
+      } else {
+        this.selectedContacts.delete(contactId);
+      }
+    });
+    this.updateSelectionUI();
+  }
+
+  clearSelection() {
+    this.selectedContacts.clear();
+    const checkboxes = document.querySelectorAll('.contact-checkbox');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    if (this.selectAllCheckbox) {
+      this.selectAllCheckbox.checked = false;
+    }
+    this.updateSelectionUI();
+  }
+
+  updateSelectionUI() {
+    const count = this.selectedContacts.size;
+
+    // Update selected count
+    if (this.selectedCountSpan) {
+      this.selectedCountSpan.textContent = `${count} kişi seçildi`;
+    }
+
+    // Show/hide bulk actions toolbar
+    if (this.bulkActionsToolbar) {
+      this.bulkActionsToolbar.style.display = count > 0 ? 'block' : 'none';
+    }
+
+    // Update select all checkbox state
+    if (this.selectAllCheckbox) {
+      const totalCheckboxes = document.querySelectorAll('.contact-checkbox').length;
+      if (count === 0) {
+        this.selectAllCheckbox.indeterminate = false;
+        this.selectAllCheckbox.checked = false;
+      } else if (count === totalCheckboxes) {
+        this.selectAllCheckbox.indeterminate = false;
+        this.selectAllCheckbox.checked = true;
+      } else {
+        this.selectAllCheckbox.indeterminate = true;
+        this.selectAllCheckbox.checked = false;
+      }
+    }
+
+    // Update row highlighting
+    document.querySelectorAll('.contact-row').forEach(row => {
+      const contactId = parseInt(row.dataset.contactId);
+      if (this.selectedContacts.has(contactId)) {
+        row.classList.add('selected');
+      } else {
+        row.classList.remove('selected');
+      }
+    });
+  }
+
+  async bulkDelete() {
+    if (this.selectedContacts.size === 0) return;
+
+    const count = this.selectedContacts.size;
+    const confirmed = confirm(`${count} kişiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`);
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch('/crm/api/contacts/bulk-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contact_ids: Array.from(this.selectedContacts)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Success message
+      alert(`${result.deleted_count} kişi başarıyla silindi.`);
+
+      // Refresh the list
+      this.performSearch(this.currentPage);
+
+    } catch (error) {
+      console.error('Bulk delete hatası:', error);
+      alert('Silme işlemi sırasında bir hata oluştu.');
+    }
+  }
+
+  async bulkUpdateStatus() {
+    if (this.selectedContacts.size === 0) return;
+
+    const statusSelect = document.getElementById('bulk-status-select');
+    const newStatus = statusSelect.value;
+
+    if (!newStatus) {
+      alert('Lütfen bir durum seçin.');
+      return;
+    }
+
+    const count = this.selectedContacts.size;
+    const confirmed = confirm(`${count} kişinin durumunu "${newStatus}" olarak güncellemek istediğinizden emin misiniz?`);
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch('/crm/api/contacts/bulk-update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contact_ids: Array.from(this.selectedContacts),
+          status: newStatus
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Success message
+      alert(`${result.updated_count} kişinin durumu başarıyla güncellendi.`);
+
+      // Reset status select
+      statusSelect.value = '';
+
+      // Refresh the list
+      this.performSearch(this.currentPage);
+
+    } catch (error) {
+      console.error('Bulk update hatası:', error);
+      alert('Güncelleme işlemi sırasında bir hata oluştu.');
+    }
+  }
+
+  async exportSelected(format) {
+    if (this.selectedContacts.size === 0) {
+      alert('Lütfen export edilecek kişileri seçin.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/crm/api/contacts/export/${format}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contact_ids: Array.from(this.selectedContacts),
+          export_type: 'selected'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      this.downloadFile(response, `contacts_selected_${this.selectedContacts.size}_records.${format === 'excel' ? 'xlsx' : 'csv'}`);
+
+    } catch (error) {
+      console.error('Export hatası:', error);
+      alert('Export işlemi sırasında bir hata oluştu.');
+    }
+  }
+
+  async exportAll(format) {
+    const confirmed = confirm('Tüm kişileri export etmek istediğinizden emin misiniz?');
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/crm/api/contacts/export/${format}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          export_type: 'all'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      this.downloadFile(response, `contacts_all.${format === 'excel' ? 'xlsx' : 'csv'}`);
+
+    } catch (error) {
+      console.error('Export hatası:', error);
+      alert('Export işlemi sırasında bir hata oluştu.');
+    }
+  }
+
+  async exportFiltered(format) {
+    try {
+      const params = new URLSearchParams();
+
+      // Current filters
+      if (this.currentFilters.search) {
+        params.append('q', this.currentFilters.search);
+      }
+      if (this.currentFilters.status) {
+        params.append('status', this.currentFilters.status);
+      }
+      if (this.currentFilters.company) {
+        params.append('company_id', this.currentFilters.company);
+      }
+
+      const response = await fetch(`/crm/api/contacts/export/${format}?${params.toString()}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          export_type: 'filtered'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      this.downloadFile(response, `contacts_filtered.${format === 'excel' ? 'xlsx' : 'csv'}`);
+
+    } catch (error) {
+      console.error('Export hatası:', error);
+      alert('Export işlemi sırasında bir hata oluştu.');
+    }
+  }
+
+  async downloadFile(response, filename) {
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+}
+
+// Sayfa yüklendiğinde başlat
+document.addEventListener('DOMContentLoaded', () => {
+  new ContactsSearchManager();
+});
+</script>
+{% endblock %}
