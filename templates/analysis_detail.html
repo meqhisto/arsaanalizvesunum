@@ -369,7 +369,7 @@
                     </div>
                     <div class="progress" style="height: 8px;">
                         <div class="progress-bar {{ 'bg-success' if calculations.price_difference > 0 else 'bg-danger' }}"
-                             style="width: {{ (calculations.price_difference_percent|abs / 100 * 100)|min(100) }}%"></div>
+                             style="width: {{ [100, (calculations.price_difference_percent|abs)]|min }}%"></div>
                     </div>
                 </div>
                 {% endif %}
@@ -378,11 +378,20 @@
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="text-muted small">İnşaat Potansiyeli</span>
-                        <span class="fw-semibold">{{ (calculations.buildable_area / analysis.metrekare * 100)|round(1) }}%</span>
+                        <span class="fw-semibold">
+                            {% if calculations.buildable_area and analysis.metrekare %}
+                                {% set metrekare_float = analysis.metrekare|float %}
+                                {% set buildable_float = calculations.buildable_area|float %}
+                                {% set construction_percent = (buildable_float / metrekare_float * 100) %}
+                                {{ construction_percent|round(1) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </span>
                     </div>
                     <div class="progress" style="height: 8px;">
                         <div class="progress-bar bg-info"
-                             style="width: {{ (calculations.buildable_area / analysis.metrekare * 100)|min(100) }}%"></div>
+                             style="width: {% if calculations.buildable_area and analysis.metrekare %}{{ [100, (calculations.buildable_area|float / analysis.metrekare|float * 100)]|min }}{% else %}0{% endif %}%"></div>
                     </div>
                 </div>
                 {% endif %}

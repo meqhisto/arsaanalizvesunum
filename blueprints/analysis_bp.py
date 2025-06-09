@@ -396,17 +396,27 @@ def view_analysis(analysis_id):
 
         # Calculate additional metrics
         calculations = {}
-        if analysis.metrekare and analysis.fiyat:
-            calculations['unit_price'] = float(analysis.fiyat) / float(analysis.metrekare)
-        if analysis.metrekare and analysis.bolge_fiyat:
-            calculations['unit_market_price'] = float(analysis.bolge_fiyat) / float(analysis.metrekare)
-        if analysis.fiyat and analysis.bolge_fiyat:
-            calculations['price_difference'] = float(analysis.bolge_fiyat) - float(analysis.fiyat)
-            calculations['price_difference_percent'] = (calculations['price_difference'] / float(analysis.fiyat)) * 100
-        if analysis.taks and analysis.metrekare:
-            calculations['buildable_area'] = float(analysis.taks) * float(analysis.metrekare)
-        if analysis.kaks and analysis.metrekare:
-            calculations['total_construction_area'] = float(analysis.kaks) * float(analysis.metrekare)
+        try:
+            metrekare = float(analysis.metrekare) if analysis.metrekare else 0
+            fiyat = float(analysis.fiyat) if analysis.fiyat else 0
+            bolge_fiyat = float(analysis.bolge_fiyat) if analysis.bolge_fiyat else 0
+            taks = float(analysis.taks) if analysis.taks else 0
+            kaks = float(analysis.kaks) if analysis.kaks else 0
+
+            if metrekare and fiyat:
+                calculations['unit_price'] = fiyat / metrekare
+            if metrekare and bolge_fiyat:
+                calculations['unit_market_price'] = bolge_fiyat / metrekare
+            if fiyat and bolge_fiyat:
+                calculations['price_difference'] = bolge_fiyat - fiyat
+                calculations['price_difference_percent'] = (calculations['price_difference'] / fiyat) * 100
+            if taks and metrekare:
+                calculations['buildable_area'] = taks * metrekare
+            if kaks and metrekare:
+                calculations['total_construction_area'] = kaks * metrekare
+        except (ValueError, TypeError, ZeroDivisionError) as e:
+            current_app.logger.warning(f"Calculation error for analysis {analysis_id}: {str(e)}")
+            calculations = {}
 
         # Get related analyses in same location
         related_analyses = ArsaAnaliz.query.filter(
