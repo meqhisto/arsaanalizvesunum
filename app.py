@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template # render_template error.html için
+from flask import Flask, render_template, request # render_template error.html için, request logging için
 from flask_login import LoginManager, current_user # current_user Jinja'ya eklenebilir
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -247,8 +247,8 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
         app.logger.info(f'{request.method} {request.url} - {request.remote_addr}')
 
     # --- ERROR HANDLER ---
-    @app.errorhandler(Exception)
-    def handle_exception(e):
+    @app.errorhandler(500)
+    def handle_internal_server_error(e):
         # Hatanın tam traceback'ini logla
         import traceback
         tb_str = traceback.format_exc()

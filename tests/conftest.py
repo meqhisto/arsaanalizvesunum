@@ -33,6 +33,9 @@ def app():
         "SQLALCHEMY_DATABASE_URI": test_db_uri,
         "WTF_CSRF_ENABLED": False,  # Disable CSRF for testing
         "LOGIN_DISABLED": False,
+        "SERVER_NAME": "localhost:5000",  # Fix URL generation in tests
+        "APPLICATION_ROOT": "/",
+        "PREFERRED_URL_SCHEME": "http"
     })
 
     # Create the database and the database table
@@ -65,43 +68,61 @@ def test_office(app):
         )
         db.session.add(office)
         db.session.commit()
-        office_id = office.id
 
-        # Return office ID instead of object to avoid session issues
-        return office_id
+        # Return the office object
+        return office
 
 
 @pytest.fixture
-def test_user(app, test_office):
-    """Create a test user."""
+def test_user(app):
+    """Create a test user with office."""
     with app.app_context():
+        # Create office first
+        office = Office(
+            name="Test Ofis",
+            address="Test Adres",
+            phone="555-0123"
+        )
+        db.session.add(office)
+        db.session.flush()  # Get ID without committing
+
+        # Create user
         user = User(
             ad="Test",
             soyad="User",
             email="test@example.com",
             password_hash=generate_password_hash("testpassword"),
             role="danisman",
-            office_id=test_office  # test_office is now an ID
+            office_id=office.id
         )
         db.session.add(user)
         db.session.commit()
-        user_id = user.id
 
-        # Return user ID instead of object
-        return user_id
+        # Return the user object
+        return user
 
 
 @pytest.fixture
-def test_admin_user(app, test_office):
-    """Create a test admin user."""
+def test_admin_user(app):
+    """Create a test admin user with office."""
     with app.app_context():
+        # Create office first
+        office = Office(
+            name="Admin Ofis",
+            address="Admin Adres",
+            phone="555-0456"
+        )
+        db.session.add(office)
+        db.session.flush()  # Get ID without committing
+
+        # Create admin user
         admin = User(
             ad="Admin",
             soyad="User",
             email="admin@example.com",
             password_hash=generate_password_hash("adminpassword"),
             role="superadmin",
-            office_id=test_office.id
+            office_id=office.id
         )
         db.session.add(admin)
         db.session.commit()
@@ -125,51 +146,21 @@ def test_broker_user(app, test_office):
         return broker
 
 
-@pytest.fixture
-def test_contact(app, test_user):
-    """Create a test contact."""
-    with app.app_context():
-        contact = Contact(
-            ad="Test",
-            soyad="Contact",
-            email="contact@example.com",
-            telefon="555-0123",
-            user_id=test_user.id,
-            status="lead"
-        )
-        db.session.add(contact)
-        db.session.commit()
-        return contact
-
-
-@pytest.fixture
-def test_analysis(app, test_user):
-    """Create a test analysis."""
-    with app.app_context():
-        analysis = ArsaAnaliz(
-            baslik="Test Analiz",
-            il="İstanbul",
-            ilce="Kadıköy",
-            mahalle="Test Mahalle",
-            user_id=test_user.id,
-            durum="tamamlandi"
-        )
-        db.session.add(analysis)
-        db.session.commit()
-        return analysis
+# test_contact and test_analysis fixtures removed - tests now create their own data
 
 
 @pytest.fixture
 def auth_headers(client, test_user):
     """Get authentication headers for API requests."""
     # Login to get JWT token
-    response = client.post('/api/auth/login', json={
-        'email': test_user.email,
+    response = client.post('/api/v1/auth/login', json={
+        'email': 'test@example.com',  # test_user fixture'ının email'i
         'password': 'testpassword'
     })
-    
+
     if response.status_code == 200:
-        token = response.get_json()['access_token']
+        data = response.get_json()
+        token = data['data']['access_token']
         return {'Authorization': f'Bearer {token}'}
     else:
         return {}
@@ -179,13 +170,14 @@ def auth_headers(client, test_user):
 def admin_auth_headers(client, test_admin_user):
     """Get admin authentication headers for API requests."""
     # Login to get JWT token
-    response = client.post('/api/auth/login', json={
-        'email': test_admin_user.email,
+    response = client.post('/api/v1/auth/login', json={
+        'email': 'admin@example.com',  # test_admin_user fixture'ının email'i
         'password': 'adminpassword'
     })
-    
+
     if response.status_code == 200:
-        token = response.get_json()['access_token']
+        data = response.get_json()
+        token = data['data']['access_token']
         return {'Authorization': f'Bearer {token}'}
     else:
         return {}

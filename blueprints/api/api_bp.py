@@ -302,6 +302,15 @@ def health_check():
     return jsonify(health_status), status_code
 
 
+@api_bp.route('/health/detailed')
+def health_check_detailed():
+    """
+    Detaylı API sağlık kontrolü.
+    /api/health ile aynı işlevi görür ama daha detaylı bilgi verir.
+    """
+    return health_check()  # Aynı fonksiyonu kullan
+
+
 @api_bp.route('/v1')
 def api_v1_info():
     """API v1 bilgileri."""
@@ -413,6 +422,23 @@ def handle_unexpected_error(error):
 
 
 # JWT error handlers
+from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError, JWTDecodeError
+
+@api_bp.errorhandler(NoAuthorizationError)
+def handle_no_authorization_error(error):
+    """JWT authorization header eksik."""
+    return error_response("Missing Authorization Header", 401)
+
+@api_bp.errorhandler(InvalidHeaderError)
+def handle_invalid_header_error(error):
+    """JWT header geçersiz."""
+    return error_response("Invalid Authorization Header", 401)
+
+@api_bp.errorhandler(JWTDecodeError)
+def handle_jwt_decode_error(error):
+    """JWT decode hatası."""
+    return error_response("Invalid token", 401)
+
 @api_bp.errorhandler(422)
 def handle_jwt_exceptions(error):
     """JWT hatalarını yakalar."""
