@@ -1,13 +1,26 @@
-{% extends "crm/crm_base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block crm_title %}Import Wizard{% endblock %}
-{% block crm_meta_description %}CRM Import Wizard - Toplu veri yükleme{% endblock %}
+{% block title %}Import Wizard - CRM - Arsa Analiz Platformu{% endblock %}
 
-{% block crm_extra_css %}
+{% block page_title %}Import Wizard{% endblock %}
+{% block page_description %}Kişilerinizi toplu olarak sisteme aktarın{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('crm.crm_new_contacts_list') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Kişi Listesine Dön
+    </a>
+    <a href="/crm/api/import/template" class="btn btn-outline-primary">
+        <i class="fas fa-download me-1"></i>Template İndir
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
 <style>
-/* Import Wizard Styles */
+/* Dashboard Base Compatible Import Wizard Styles */
 .wizard-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -16,6 +29,7 @@
   justify-content: center;
   margin-bottom: 2rem;
   position: relative;
+  padding: 0 1rem;
 }
 
 .wizard-step {
@@ -34,21 +48,21 @@
   left: 60%;
   right: -40%;
   height: 2px;
-  background-color: #e5e7eb;
+  background-color: #dee2e6;
   z-index: 1;
 }
 
 .wizard-step.active:not(:last-child)::after,
 .wizard-step.completed:not(:last-child)::after {
-  background-color: #3b82f6;
+  background-color: #0d6efd;
 }
 
 .step-circle {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #e5e7eb;
-  color: #6b7280;
+  background-color: #f8f9fa;
+  color: #6c757d;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,66 +70,79 @@
   position: relative;
   z-index: 2;
   margin-bottom: 0.5rem;
+  border: 2px solid #dee2e6;
 }
 
 .wizard-step.active .step-circle {
-  background-color: #3b82f6;
+  background-color: #0d6efd;
   color: white;
+  border-color: #0d6efd;
 }
 
 .wizard-step.completed .step-circle {
-  background-color: #10b981;
+  background-color: #198754;
   color: white;
+  border-color: #198754;
 }
 
 .step-title {
   font-size: 0.875rem;
   font-weight: 500;
   text-align: center;
-  color: #6b7280;
+  color: #6c757d;
 }
 
 .wizard-step.active .step-title {
-  color: #3b82f6;
+  color: #0d6efd;
+  font-weight: 600;
 }
 
 .wizard-step.completed .step-title {
-  color: #10b981;
+  color: #198754;
+  font-weight: 600;
 }
 
 .wizard-content {
   background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: none;
   padding: 2rem;
   min-height: 400px;
 }
 
 .file-upload-area {
-  border: 2px dashed #d1d5db;
-  border-radius: 0.5rem;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
   padding: 3rem 2rem;
   text-align: center;
   transition: all 0.2s;
   cursor: pointer;
+  background-color: #f8f9fa;
 }
 
 .file-upload-area:hover {
-  border-color: #3b82f6;
-  background-color: #f8fafc;
+  border-color: #0d6efd;
+  background-color: #e7f1ff;
 }
 
 .file-upload-area.dragover {
-  border-color: #3b82f6;
-  background-color: #eff6ff;
+  border-color: #0d6efd;
+  background-color: #cfe2ff;
+}
+
+.file-info-card {
+  background-color: #e7f1ff;
+  border: 1px solid #b6d7ff;
+  border-radius: 8px;
+  padding: 1rem;
 }
 
 .preview-table {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.375rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
 }
 
 .column-mapping {
@@ -133,43 +160,64 @@
 
 .validation-item {
   padding: 0.75rem;
-  border-radius: 0.375rem;
+  border-radius: 8px;
   margin-bottom: 0.5rem;
 }
 
 .validation-item.valid {
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background-color: #d1e7dd;
+  border: 1px solid #badbcc;
+  color: #0f5132;
 }
 
 .validation-item.invalid {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
+  background-color: #f8d7da;
+  border: 1px solid #f5c2c7;
+  color: #842029;
 }
 
 .validation-item.warning {
-  background-color: #fffbeb;
-  border: 1px solid #fed7aa;
+  background-color: #fff3cd;
+  border: 1px solid #ffecb5;
+  color: #664d03;
 }
 
 .progress-bar {
   width: 100%;
   height: 8px;
-  background-color: #e5e7eb;
+  background-color: #e9ecef;
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background-color: #3b82f6;
+  background-color: #0d6efd;
   transition: width 0.3s ease;
+}
+
+.completion-icon {
+  width: 80px;
+  height: 80px;
+  background-color: #d1e7dd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.import-results-card {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 /* Loading spinner */
 .spinner {
   border: 2px solid #f3f4f6;
-  border-top: 2px solid #3b82f6;
+  border-top: 2px solid #0d6efd;
   border-radius: 50%;
   width: 20px;
   height: 20px;
@@ -180,18 +228,43 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .wizard-steps {
+    padding: 0 0.5rem;
+  }
+
+  .wizard-step {
+    max-width: 100px;
+  }
+
+  .step-circle {
+    width: 35px;
+    height: 35px;
+  }
+
+  .step-title {
+    font-size: 0.75rem;
+  }
+
+  .wizard-content {
+    padding: 1.5rem;
+  }
+
+  .file-upload-area {
+    padding: 2rem 1rem;
+  }
+
+  .column-mapping {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 {% endblock %}
 
-{% block crm_content %}
+{% block dashboard_content %}
 <div class="wizard-container">
-  <!-- Page Header -->
-  <div class="mb-6">
-    <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center">
-      <i class="fas fa-file-import mr-3 text-blue-600"></i>Import Wizard
-    </h2>
-    <p class="text-gray-600">Kişilerinizi toplu olarak sisteme aktarın</p>
-  </div>
 
   <!-- Wizard Steps -->
   <div class="wizard-steps">
@@ -221,110 +294,107 @@
   <div class="wizard-content">
     <!-- Step 1: File Upload -->
     <div id="step-content-1" class="step-content">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Dosya Yükleme</h3>
-      
-      <div class="mb-6">
-        <div class="flex items-center justify-between mb-4">
-          <p class="text-gray-600">Excel (.xlsx, .xls) veya CSV dosyası seçin</p>
-          <a href="/crm/api/import/template" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-download mr-2"></i>Template İndir
-          </a>
+      <h4 class="mb-4">Dosya Yükleme</h4>
+
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <p class="text-muted mb-0">Excel (.xlsx, .xls) veya CSV dosyası seçin</p>
         </div>
-        
+
         <div class="file-upload-area" id="file-upload-area">
-          <div class="mb-4">
-            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
-            <p class="text-lg font-medium text-gray-700">Dosyayı buraya sürükleyin</p>
-            <p class="text-sm text-gray-500">veya tıklayarak seçin</p>
+          <div class="mb-3">
+            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Dosyayı buraya sürükleyin</h5>
+            <p class="text-muted small">veya tıklayarak seçin</p>
           </div>
-          <input type="file" id="file-input" accept=".csv,.xlsx,.xls" class="hidden">
+          <input type="file" id="file-input" accept=".csv,.xlsx,.xls" class="d-none">
           <button type="button" class="btn btn-primary" onclick="document.getElementById('file-input').click()">
-            <i class="fas fa-folder-open mr-2"></i>Dosya Seç
+            <i class="fas fa-folder-open me-2"></i>Dosya Seç
           </button>
         </div>
-        
-        <div id="file-info" class="mt-4" style="display: none;">
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div class="flex items-center">
-              <i class="fas fa-file text-blue-600 mr-3"></i>
+
+        <div id="file-info" class="mt-3" style="display: none;">
+          <div class="file-info-card">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-file text-primary me-3 fa-2x"></i>
               <div>
-                <p class="font-medium text-blue-900" id="file-name"></p>
-                <p class="text-sm text-blue-700" id="file-size"></p>
+                <h6 class="mb-1 text-primary" id="file-name"></h6>
+                <p class="small text-muted mb-0" id="file-size"></p>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      <div class="flex justify-end">
+
+      <div class="d-flex justify-content-end">
         <button id="upload-btn" class="btn btn-primary" disabled>
           <span id="upload-text">Dosya Yükle</span>
-          <div id="upload-spinner" class="spinner ml-2" style="display: none;"></div>
+          <div id="upload-spinner" class="spinner ms-2" style="display: none;"></div>
         </button>
       </div>
     </div>
 
     <!-- Step 2: Preview -->
     <div id="step-content-2" class="step-content" style="display: none;">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Veri Önizlemesi</h3>
-      
+      <h4 class="mb-4">Veri Önizlemesi</h4>
+
       <div id="preview-info" class="mb-4">
         <!-- Preview bilgileri buraya gelecek -->
       </div>
-      
+
       <div id="preview-table-container">
         <!-- Preview tablosu buraya gelecek -->
       </div>
-      
-      <div class="flex justify-between mt-6">
+
+      <div class="d-flex justify-content-between mt-4">
         <button id="prev-btn-2" class="btn btn-outline-secondary">
-          <i class="fas fa-arrow-left mr-2"></i>Geri
+          <i class="fas fa-arrow-left me-2"></i>Geri
         </button>
         <button id="next-btn-2" class="btn btn-primary">
-          Devam Et<i class="fas fa-arrow-right ml-2"></i>
+          Devam Et<i class="fas fa-arrow-right ms-2"></i>
         </button>
       </div>
     </div>
 
     <!-- Step 3: Column Mapping -->
     <div id="step-content-3" class="step-content" style="display: none;">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Sütun Eşleştirmesi</h3>
-      
-      <p class="text-gray-600 mb-6">Dosyanızdaki sütunları sistem alanlarıyla eşleştirin</p>
-      
+      <h4 class="mb-4">Sütun Eşleştirmesi</h4>
+
+      <p class="text-muted mb-4">Dosyanızdaki sütunları sistem alanlarıyla eşleştirin</p>
+
       <div id="column-mapping-container">
         <!-- Column mapping buraya gelecek -->
       </div>
-      
-      <div class="flex justify-between mt-6">
+
+      <div class="d-flex justify-content-between mt-4">
         <button id="prev-btn-3" class="btn btn-outline-secondary">
-          <i class="fas fa-arrow-left mr-2"></i>Geri
+          <i class="fas fa-arrow-left me-2"></i>Geri
         </button>
         <button id="next-btn-3" class="btn btn-primary">
-          Doğrula<i class="fas fa-arrow-right ml-2"></i>
+          Doğrula<i class="fas fa-arrow-right ms-2"></i>
         </button>
       </div>
     </div>
 
     <!-- Step 4: Validation -->
     <div id="step-content-4" class="step-content" style="display: none;">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Veri Doğrulaması</h3>
-      
-      <div id="validation-summary" class="mb-6">
+      <h4 class="mb-4">Veri Doğrulaması</h4>
+
+      <div id="validation-summary" class="mb-4">
         <!-- Validation özeti buraya gelecek -->
       </div>
-      
+
       <div id="validation-results">
         <!-- Validation sonuçları buraya gelecek -->
       </div>
-      
-      <div class="flex justify-between mt-6">
+
+      <div class="d-flex justify-content-between mt-4">
         <button id="prev-btn-4" class="btn btn-outline-secondary">
-          <i class="fas fa-arrow-left mr-2"></i>Geri
+          <i class="fas fa-arrow-left me-2"></i>Geri
         </button>
         <button id="import-btn" class="btn btn-success" disabled>
           <span id="import-text">İçe Aktar</span>
-          <div id="import-spinner" class="spinner ml-2" style="display: none;"></div>
+          <div id="import-spinner" class="spinner ms-2" style="display: none;"></div>
         </button>
       </div>
     </div>
@@ -332,24 +402,24 @@
     <!-- Step 5: Complete -->
     <div id="step-content-5" class="step-content" style="display: none;">
       <div class="text-center">
-        <div class="mb-6">
-          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-check text-green-600 text-2xl"></i>
+        <div class="mb-4">
+          <div class="completion-icon">
+            <i class="fas fa-check text-success fa-2x"></i>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">İçe Aktarma Tamamlandı!</h3>
-          <p class="text-gray-600" id="completion-message">Verileriniz başarıyla sisteme aktarıldı.</p>
+          <h4 class="mb-3">İçe Aktarma Tamamlandı!</h4>
+          <p class="text-muted" id="completion-message">Verileriniz başarıyla sisteme aktarıldı.</p>
         </div>
-        
-        <div id="import-results" class="bg-gray-50 rounded-lg p-4 mb-6">
+
+        <div id="import-results" class="import-results-card">
           <!-- Import sonuçları buraya gelecek -->
         </div>
-        
-        <div class="flex justify-center gap-4">
-          <a href="{{ url_for('crm.crm_contacts_list') }}" class="btn btn-primary">
-            <i class="fas fa-users mr-2"></i>Kişileri Görüntüle
+
+        <div class="d-flex justify-content-center gap-3">
+          <a href="{{ url_for('crm.crm_new_contacts_list') }}" class="btn btn-primary">
+            <i class="fas fa-users me-2"></i>Kişileri Görüntüle
           </a>
           <button id="new-import-btn" class="btn btn-outline-secondary">
-            <i class="fas fa-plus mr-2"></i>Yeni İçe Aktarma
+            <i class="fas fa-plus me-2"></i>Yeni İçe Aktarma
           </button>
         </div>
       </div>
@@ -358,7 +428,7 @@
 </div>
 {% endblock %}
 
-{% block crm_extra_js %}
+{% block extra_js %}
 <script>
 class ImportWizard {
   constructor() {

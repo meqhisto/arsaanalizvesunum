@@ -6,7 +6,7 @@ from flask import (
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 from decimal import Decimal
-from sqlalchemy import text, cast, Date # Sorgular için
+from sqlalchemy import text, cast, Date, or_ # Sorgular için
 
 # Modelleri ve db nesnesini models paketinden import et
 from models import db
@@ -42,7 +42,7 @@ def crm_dashboard():
 @login_required
 def crm_import_wizard():
     """CRM Import Wizard sayfası"""
-    return render_template('import_wizard.html', title="Import Wizard")
+    return render_template('crm/import_wizard.html', title="Import Wizard")
 
 # --- SABİTLER (Eski app.py'den taşındı, bir constants.py dosyasına da alınabilir) ---
 DEAL_STAGES = ["Potansiyel", "Görüşme Planlandı", "Teklif Sunuldu", "Müzakere", "Kazanıldı", "Kaybedildi", "Beklemede"]
@@ -55,7 +55,70 @@ TASK_PRIORITIES = ["Düşük", "Normal", "Yüksek", "Acil"]
 def crm_contacts_list():
     user_id = 1 # Geçici olarak test için
     contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
-    return render_template('crm/new_contacts_list.html', contacts=contacts, title="Kişiler")
+    return render_template('crm/contacts_list.html', contacts=contacts, title="Kişiler")
+
+
+@crm_bp.route('/new_contacts_list')
+# @login_required # Geçici olarak kaldırıldı
+def crm_new_contacts_list():
+    """Modern CRM Contacts List sayfası"""
+    user_id = 1 # Geçici olarak test için
+
+    # Arama ve filtreleme parametreleri
+    search = request.args.get('search', '')
+    status = request.args.get('status', '')
+    company = request.args.get('company', '')
+    date_range = request.args.get('date_range', '')
+
+    # Base query
+    query = Contact.query.filter_by(user_id=user_id)
+
+    # Arama filtresi
+    if search:
+        search_filter = or_(
+            Contact.first_name.ilike(f'%{search}%'),
+            Contact.last_name.ilike(f'%{search}%'),
+            Contact.email.ilike(f'%{search}%'),
+            Contact.phone.ilike(f'%{search}%')
+        )
+        query = query.filter(search_filter)
+
+    # Durum filtresi
+    if status:
+        query = query.filter(Contact.status == status)
+
+    # Şirket filtresi
+    if company:
+        query = query.filter(Contact.company.has(name=company))
+
+    # Tarih filtresi
+    if date_range:
+        from datetime import datetime, timedelta
+        today = datetime.utcnow()
+
+        if date_range == 'today':
+            start_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
+            query = query.filter(Contact.created_at >= start_date)
+        elif date_range == 'week':
+            start_date = today - timedelta(days=7)
+            query = query.filter(Contact.created_at >= start_date)
+        elif date_range == 'month':
+            start_date = today - timedelta(days=30)
+            query = query.filter(Contact.created_at >= start_date)
+        elif date_range == 'year':
+            start_date = today - timedelta(days=365)
+            query = query.filter(Contact.created_at >= start_date)
+
+    # Sıralama ve sonuçları getir
+    contacts = query.order_by(Contact.last_name, Contact.first_name).all()
+
+    return render_template('crm/new_contacts_list.html',
+                         contacts=contacts,
+                         title="Modern Kişiler Listesi",
+                         search=search,
+                         status=status,
+                         company=company,
+                         date_range=date_range)
 
 @crm_bp.route('/contact/add', methods=['GET', 'POST'])
 @login_required
@@ -825,6 +888,40 @@ def crm_task_new(related_contact_id=None, related_deal_id=None): # Değişken ad
             return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task=request.form)
 
     return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task={}, current_user=current_user, users_for_assignment=User.query.filter(User.id != current_user.id, User.firma == current_user.firma).all() if current_user.role == 'broker' else [])
+
+
+@crm_bp.route('/task/<int:task_id>')
+@login_required
+def crm_task_detail(task_id):
+    """Görev detay sayfası"""
+    user_id = current_user.id
+    # Kullanıcının ya oluşturduğu ya da kendisine atanan görevi görebilir
+    task = Task.query.get_or_404(task_id)
+
+    can_view = False
+    if task.user_id == user_id or task.assigned_to_user_id == user_id:
+        can_view = True
+    elif current_user.role == 'broker' and task.owner_user.firma == current_user.firma:
+        can_view = True
+
+    if not can_view:
+        flash("Bu görevi görüntüleme yetkiniz yok.", "danger")
+        return redirect(url_for('crm.crm_tasks_list'))
+
+    # İlişkili etkileşimler (eğer varsa)
+    interactions = []
+    if task.contact_id:
+        interactions = Interaction.query.filter_by(
+            contact_id=task.contact_id,
+            user_id=task.user_id
+        ).order_by(Interaction.interaction_date.desc()).limit(5).all()
+
+    return render_template('task_detail.html',
+                         task=task,
+                         title=f"Görev: {task.title}",
+                         interactions=interactions,
+                         statuses=TASK_STATUSES,
+                         priorities=TASK_PRIORITIES)
 
 
 @crm_bp.route('/task/<int:task_id>/edit', methods=['GET', 'POST'])

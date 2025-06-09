@@ -1,34 +1,30 @@
-{% extends "crm/crm_base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block crm_title %}{{ title }} - CRM{% endblock %}
+{% block title %}{{ title }} - CRM - Arsa Analiz Platformu{% endblock %}
 
-{% block crm_content %}
-<div class="mb-6">
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-    <div>
-      <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center">
-        <i class="fas fa-user-plus mr-3 text-blue-600"></i>{{ title }}
-      </h2>
-      <p class="text-gray-600">Kişi bilgilerini girin ve kaydedin</p>
-    </div>
-    <div class="mt-4 sm:mt-0">
-      <a href="{{ url_for('crm.crm_contacts_list') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left mr-2"></i>Kişi Listesine Dön
-      </a>
-    </div>
-  </div>
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_description %}Kişi bilgilerini girin ve kaydedin{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('crm.crm_new_contacts_list') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Kişi Listesine Dön
+    </a>
 </div>
+{% endblock %}
 
-<div class="bg-white rounded-lg shadow-sm border border-gray-200">
-  <div class="p-6">
+{% block dashboard_content %}
+
+<div class="card">
+  <div class="card-body">
     <form method="POST" action="{{ request.url }}">
       {{ csrf_token() if csrf_token else '' }}
 
       <!-- Temel Bilgiler -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">
-            Ad <span class="text-red-500">*</span>
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="first_name" class="form-label">
+            Ad <span class="text-danger">*</span>
           </label>
           <input type="text"
                  class="form-control"
@@ -37,9 +33,9 @@
                  value="{{ contact.first_name if contact else '' }}"
                  required>
         </div>
-        <div>
-          <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">
-            Soyad <span class="text-red-500">*</span>
+        <div class="col-md-6">
+          <label for="last_name" class="form-label">
+            Soyad <span class="text-danger">*</span>
           </label>
           <input type="text"
                  class="form-control"
@@ -51,17 +47,17 @@
       </div>
 
       <!-- İletişim Bilgileri -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="email" class="form-label">E-posta</label>
           <input type="email"
                  class="form-control"
                  id="email"
                  name="email"
                  value="{{ contact.email if contact else '' }}">
         </div>
-        <div>
-          <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
+        <div class="col-md-6">
+          <label for="phone" class="form-label">Telefon</label>
           <input type="tel"
                  class="form-control"
                  id="phone"
@@ -71,17 +67,17 @@
       </div>
 
       <!-- İş Bilgileri -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Pozisyon/Rol</label>
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="role" class="form-label">Pozisyon/Rol</label>
           <input type="text"
                  class="form-control"
                  id="role"
                  name="role"
                  value="{{ contact.role if contact else '' }}">
         </div>
-        <div>
-          <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+        <div class="col-md-6">
+          <label for="status" class="form-label">Durum</label>
           <select class="form-select" id="status" name="status">
             <option value="Lead" {% if contact and contact.status == 'Lead' or not contact %}selected{% endif %}>Potansiyel (Lead)</option>
             <option value="Müşteri" {% if contact and contact.status == 'Müşteri' %}selected{% endif %}>Müşteri</option>
@@ -157,12 +153,12 @@
             </div>
 
       <!-- Form Actions -->
-      <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-        <a href="{{ url_for('crm.crm_contacts_list') }}" class="btn btn-secondary">
+      <div class="d-flex justify-content-end gap-2 pt-4 border-top">
+        <a href="{{ url_for('crm.crm_new_contacts_list') }}" class="btn btn-secondary">
           İptal
         </a>
         <button type="submit" class="btn btn-primary">
-          <i class="fas fa-save mr-2"></i>Kaydet
+          <i class="fas fa-save me-2"></i>Kaydet
         </button>
       </div>
     </form>

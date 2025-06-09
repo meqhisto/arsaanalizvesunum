@@ -7,10 +7,10 @@
 
 {% block page_actions %}
 <div class="d-flex gap-2">
-    <a href="#" class="btn btn-primary">
+    <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary">
         <i class="fas fa-user-plus me-1"></i>Yeni Kişi
     </a>
-    <a href="#" class="btn btn-outline-primary">
+    <a href="{{ url_for('crm.crm_import_wizard') }}" class="btn btn-outline-primary">
         <i class="fas fa-upload me-1"></i>İçe Aktar
     </a>
     <div class="dropdown">
@@ -18,117 +18,361 @@
             <i class="fas fa-download me-1"></i>Dışa Aktar
         </button>
         <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel</a></li>
-            <li><a class="dropdown-item" href="#"><i class="fas fa-file-csv me-2"></i>CSV</a></li>
-            <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF</a></li>
+            <li><a class="dropdown-item" href="#" onclick="exportContacts('excel')">
+                <i class="fas fa-file-excel me-2 text-success"></i>Excel
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="exportContacts('csv')">
+                <i class="fas fa-file-csv me-2 text-info"></i>CSV
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="exportContacts('pdf')">
+                <i class="fas fa-file-pdf me-2 text-danger"></i>PDF
+            </a></li>
         </ul>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* CRM Dashboard Integration Styles */
+.crm-stats-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.crm-stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.crm-stats-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.crm-search-filters {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.crm-table-card {
+    background: white;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.crm-table-header {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.crm-table {
+    margin-bottom: 0;
+}
+
+.crm-table th {
+    background: transparent;
+    border: none;
+    font-weight: 600;
+    color: #495057;
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+}
+
+.crm-table td {
+    border: none;
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.crm-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.contact-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+    margin-right: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.contact-info {
+    font-size: 0.875rem;
+}
+
+.contact-info a {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.contact-info a:hover {
+    color: #0d6efd;
+}
+
+.status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: none;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #6c757d;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    color: white;
+}
+
+.action-btn.btn-outline-primary:hover {
+    background: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.action-btn.btn-outline-secondary:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+}
+
+.action-btn.btn-outline-danger:hover {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.crm-empty-state {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.crm-empty-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: #adb5bd;
+}
+
+.bulk-actions-toolbar {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+.bulk-actions-toolbar.show {
+    display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .crm-table th,
+    .crm-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .contact-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 0.75rem;
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0d6efd;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
 {% block dashboard_content %}
 <!-- CRM Stats -->
 <div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
-                    <i class="fas fa-users fa-2x text-primary"></i>
-                </div>
-                <h4 class="mb-1">{{ contacts|length }}</h4>
-                <p class="text-muted small mb-0">Toplam Kişi</p>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="crm-stats-card">
+            <div class="crm-stats-icon bg-primary text-white">
+                <i class="fas fa-users"></i>
             </div>
+            <h4 class="mb-1 fw-bold">{{ contacts|length }}</h4>
+            <p class="text-muted small mb-0">Toplam Kişi</p>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="bg-success bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
-                    <i class="fas fa-user-check fa-2x text-success"></i>
-                </div>
-                <h4 class="mb-1">{{ contacts|selectattr('status', 'equalto', 'Müşteri')|list|length }}</h4>
-                <p class="text-muted small mb-0">Müşteri</p>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="crm-stats-card">
+            <div class="crm-stats-icon bg-success text-white">
+                <i class="fas fa-user-check"></i>
             </div>
+            <h4 class="mb-1 fw-bold">{{ contacts|selectattr('status', 'equalto', 'Müşteri')|list|length }}</h4>
+            <p class="text-muted small mb-0">Aktif Müşteri</p>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="bg-warning bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
-                    <i class="fas fa-user-clock fa-2x text-warning"></i>
-                </div>
-                <h4 class="mb-1">{{ contacts|selectattr('status', 'equalto', 'Potansiyel (Lead)')|list|length }}</h4>
-                <p class="text-muted small mb-0">Potansiyel</p>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="crm-stats-card">
+            <div class="crm-stats-icon bg-warning text-white">
+                <i class="fas fa-user-clock"></i>
             </div>
+            <h4 class="mb-1 fw-bold">{{ contacts|selectattr('status', 'equalto', 'Lead')|list|length }}</h4>
+            <p class="text-muted small mb-0">Potansiyel</p>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <div class="bg-info bg-opacity-10 rounded-circle p-3 d-inline-flex mb-2">
-                    <i class="fas fa-handshake fa-2x text-info"></i>
-                </div>
-                <h4 class="mb-1">{{ contacts|selectattr('status', 'equalto', 'Partner')|list|length }}</h4>
-                <p class="text-muted small mb-0">Partner</p>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="crm-stats-card">
+            <div class="crm-stats-icon bg-info text-white">
+                <i class="fas fa-handshake"></i>
             </div>
+            <h4 class="mb-1 fw-bold">{{ contacts|selectattr('status', 'equalto', 'Partner')|list|length }}</h4>
+            <p class="text-muted small mb-0">Partner</p>
         </div>
     </div>
 </div>
 
 <!-- Filters and Search -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <form method="GET" class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label">
-                    <i class="fas fa-search me-1"></i>Arama
-                </label>
-                <input type="text" name="search" class="form-control" 
-                       placeholder="Ad, soyad, e-posta veya telefon..." 
-                       value="{{ request.args.get('search', '') }}">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">
-                    <i class="fas fa-filter me-1"></i>Durum
-                </label>
-                <select name="status" class="form-select">
-                    <option value="">Tüm Durumlar</option>
-                    <option value="Potansiyel (Lead)" {{ 'selected' if request.args.get('status') == 'Potansiyel (Lead)' }}>Potansiyel (Lead)</option>
-                    <option value="Müşteri" {{ 'selected' if request.args.get('status') == 'Müşteri' }}>Müşteri</option>
-                    <option value="Partner" {{ 'selected' if request.args.get('status') == 'Partner' }}>Partner</option>
-                    <option value="Eski Müşteri" {{ 'selected' if request.args.get('status') == 'Eski Müşteri' }}>Eski Müşteri</option>
-                    <option value="Diğer" {{ 'selected' if request.args.get('status') == 'Diğer' }}>Diğer</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">
-                    <i class="fas fa-building me-1"></i>Şirket
-                </label>
-                <select name="company" class="form-select">
-                    <option value="">Tüm Şirketler</option>
-                    <option value="Inveco Proje">Inveco Proje</option>
-                    <option value="Diğer Şirket">Diğer Şirket</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">&nbsp;</label>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search me-1"></i>Filtrele
-                    </button>
-                </div>
-            </div>
-        </form>
+<div class="crm-search-filters">
+    <div class="row align-items-center mb-3">
+        <div class="col">
+            <h6 class="mb-0">
+                <i class="fas fa-search me-2"></i>Arama ve Filtreleme
+            </h6>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
+                <i class="fas fa-times me-1"></i>Temizle
+            </button>
+        </div>
     </div>
+
+    <form method="GET" id="searchForm" class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">
+                <i class="fas fa-search me-1"></i>Arama
+            </label>
+            <input type="text"
+                   name="search"
+                   class="form-control"
+                   placeholder="Ad, soyad, e-posta veya telefon..."
+                   value="{{ request.args.get('search', '') }}"
+                   id="searchInput">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">
+                <i class="fas fa-filter me-1"></i>Durum
+            </label>
+            <select name="status" class="form-select" id="statusFilter">
+                <option value="">Tüm Durumlar</option>
+                <option value="Lead" {{ 'selected' if request.args.get('status') == 'Lead' }}>Potansiyel (Lead)</option>
+                <option value="Müşteri" {{ 'selected' if request.args.get('status') == 'Müşteri' }}>Müşteri</option>
+                <option value="Partner" {{ 'selected' if request.args.get('status') == 'Partner' }}>Partner</option>
+                <option value="Eski Müşteri" {{ 'selected' if request.args.get('status') == 'Eski Müşteri' }}>Eski Müşteri</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">
+                <i class="fas fa-building me-1"></i>Şirket
+            </label>
+            <select name="company" class="form-select" id="companyFilter">
+                <option value="">Tüm Şirketler</option>
+                <option value="Inveco Proje">Inveco Proje</option>
+                <option value="Diğer Şirket">Diğer Şirket</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i>Filtrele
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 
 <!-- Contacts List -->
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-transparent border-0">
+<div class="crm-table-card">
+    <div class="crm-table-header">
         <div class="d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">
+            <h6 class="mb-0">
                 <i class="fas fa-users me-2"></i>Kişiler
-            </h5>
+            </h6>
             <div class="d-flex align-items-center gap-3">
                 <span class="text-muted small">
                     {{ contacts|length }} kişi gösteriliyor
@@ -144,71 +388,96 @@
             </div>
         </div>
     </div>
-    <div class="card-body p-0">
-        {% if contacts %}
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="border-0">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="selectAll">
-                                </div>
-                            </th>
-                            <th class="border-0">Kişi</th>
-                            <th class="border-0">İletişim</th>
-                            <th class="border-0">Şirket</th>
-                            <th class="border-0">Durum</th>
-                            <th class="border-0">Son Aktivite</th>
-                            <th class="border-0">İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+
+    <!-- Bulk Actions Toolbar -->
+    <div id="bulk-actions-toolbar" class="bulk-actions-toolbar">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">
+                <span class="selected-count">0</span> kişi seçildi
+            </span>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" onclick="exportSelected('csv')">
+                    <i class="fas fa-file-csv me-1"></i>CSV
+                </button>
+                <button class="btn btn-sm btn-outline-success" onclick="exportSelected('excel')">
+                    <i class="fas fa-file-excel me-1"></i>Excel
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteSelected()">
+                    <i class="fas fa-trash me-1"></i>Sil
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if contacts %}
+        <div class="table-responsive">
+            <table class="table crm-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="selectAll">
+                            </div>
+                        </th>
+                        <th>Kişi</th>
+                        <th>İletişim</th>
+                        <th>Şirket</th>
+                        <th>Durum</th>
+                        <th>Son Aktivite</th>
+                        <th style="width: 120px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
                         {% for contact in contacts %}
                         <tr>
                             <td>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="{{ contact.id }}">
+                                    <input class="form-check-input contact-checkbox" type="checkbox" value="{{ contact.id }}">
                                 </div>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <div class="bg-primary bg-opacity-10 rounded-circle p-2">
-                                            <i class="fas fa-user text-primary"></i>
-                                        </div>
+                                    <div class="contact-avatar bg-primary text-white">
+                                        {{ contact.first_name[0] if contact.first_name else 'U' }}{{ contact.last_name[0] if contact.last_name else '' }}
                                     </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h6 class="mb-1">{{ contact.first_name }} {{ contact.last_name }}</h6>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}" class="text-decoration-none">
+                                                {{ contact.first_name }} {{ contact.last_name }}
+                                            </a>
+                                        </h6>
                                         <p class="text-muted small mb-0">{{ contact.title or 'Pozisyon belirtilmemiş' }}</p>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <div>
+                                <div class="contact-info">
                                     {% if contact.email %}
                                     <div class="mb-1">
-                                        <i class="fas fa-envelope text-muted me-1"></i>
-                                        <a href="mailto:{{ contact.email }}" class="text-decoration-none">{{ contact.email }}</a>
+                                        <i class="fas fa-envelope me-1"></i>
+                                        <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
                                     </div>
                                     {% endif %}
                                     {% if contact.phone %}
                                     <div>
-                                        <i class="fas fa-phone text-muted me-1"></i>
-                                        <a href="tel:{{ contact.phone }}" class="text-decoration-none">{{ contact.phone }}</a>
+                                        <i class="fas fa-phone me-1"></i>
+                                        <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>
                                     </div>
+                                    {% endif %}
+                                    {% if not contact.email and not contact.phone %}
+                                    <span class="text-muted">İletişim bilgisi yok</span>
                                     {% endif %}
                                 </div>
                             </td>
                             <td>
                                 {% if contact.company %}
-                                    <span class="badge bg-light text-dark">{{ contact.company }}</span>
+                                    <span class="badge bg-light text-dark">{{ contact.company.name }}</span>
                                 {% else %}
                                     <span class="text-muted">-</span>
                                 {% endif %}
                             </td>
                             <td>
-                                <span class="badge bg-{{ 'success' if contact.status == 'Müşteri' else 'warning' if contact.status == 'Potansiyel (Lead)' else 'info' if contact.status == 'Partner' else 'secondary' }}">
+                                <span class="status-badge bg-{{ 'success' if contact.status == 'Müşteri' else 'warning' if contact.status == 'Lead' else 'info' if contact.status == 'Partner' else 'secondary' }}">
                                     {{ contact.status }}
                                 </span>
                             </td>
@@ -218,22 +487,23 @@
                                 </span>
                             </td>
                             <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}"
+                                       class="action-btn btn-outline-primary"
+                                       title="Görüntüle">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('crm.crm_contact_edit', contact_id=contact.id) }}"
+                                       class="action-btn btn-outline-secondary"
+                                       title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button"
+                                            class="action-btn btn-outline-danger"
+                                            title="Sil"
+                                            onclick="deleteContact({{ contact.id }}, '{{ contact.first_name }} {{ contact.last_name }}')">
+                                        <i class="fas fa-trash"></i>
                                     </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#">
-                                            <i class="fas fa-eye me-2"></i>Görüntüle
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="#">
-                                            <i class="fas fa-edit me-2"></i>Düzenle
-                                        </a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteContact({{ contact.id }})">
-                                            <i class="fas fa-trash me-2"></i>Sil
-                                        </a></li>
-                                    </ul>
                                 </div>
                             </td>
                         </tr>
@@ -242,76 +512,241 @@
                 </table>
             </div>
         {% else %}
-            <div class="text-center py-5">
-                <i class="fas fa-users fa-4x text-muted mb-3"></i>
-                <h5 class="text-muted">Kişi bulunamadı</h5>
-                <p class="text-muted">Henüz hiç kişi eklenmemiş veya arama kriterlerinize uygun kişi bulunamadı.</p>
-                <a href="#" class="btn btn-primary">
-                    <i class="fas fa-user-plus me-1"></i>İlk Kişiyi Ekle
+            <div class="crm-empty-state">
+                <div class="crm-empty-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h5 class="mb-3">Henüz kişi eklenmemiş</h5>
+                <p class="text-muted mb-4">
+                    İlk kişinizi ekleyerek CRM sisteminizi kullanmaya başlayın.
+                </p>
+                <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>İlk Kişiyi Ekle
                 </a>
             </div>
         {% endif %}
     </div>
-</div>
 {% endblock %}
 
-{% block extra_js %}
+{% block crm_extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Select all checkbox functionality
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const contactCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-    
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            contactCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
+// Modern CRM Contacts Manager
+class ModernContactsManager {
+    constructor() {
+        this.init();
+    }
+
+    init() {
+        this.setupCheckboxes();
+        this.setupFilters();
+        this.setupSearch();
+        this.setupExport();
+        this.setupAnimations();
+    }
+
+    setupCheckboxes() {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const contactCheckboxes = document.querySelectorAll('.contact-checkbox');
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', (e) => {
+                contactCheckboxes.forEach(checkbox => {
+                    checkbox.checked = e.target.checked;
+                });
+                this.updateBulkActions();
+            });
+        }
+
+        contactCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const checkedCount = document.querySelectorAll('.contact-checkbox:checked').length;
+                selectAllCheckbox.checked = checkedCount === contactCheckboxes.length;
+                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < contactCheckboxes.length;
+                this.updateBulkActions();
             });
         });
     }
-    
-    // Update select all when individual checkboxes change
-    contactCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const checkedCount = document.querySelectorAll('tbody input[type="checkbox"]:checked').length;
-            selectAllCheckbox.checked = checkedCount === contactCheckboxes.length;
-            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < contactCheckboxes.length;
-        });
-    });
-    
-    // Auto-submit form on filter change
-    const filterSelects = document.querySelectorAll('select[name="status"], select[name="company"]');
-    filterSelects.forEach(select => {
-        select.addEventListener('change', function() {
-            this.closest('form').submit();
-        });
-    });
-});
 
-// Delete contact function
-function deleteContact(contactId) {
-    if (confirm('Bu kişiyi silmek istediğinizden emin misiniz?')) {
-        // Here you would typically make an AJAX request to delete the contact
+    setupFilters() {
+        const filterSelects = document.querySelectorAll('#statusFilter, #companyFilter');
+        filterSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                this.submitForm();
+            });
+        });
+    }
+
+    setupSearch() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.submitForm();
+                }, 500); // 500ms delay for better UX
+            });
+        }
+    }
+
+    setupExport() {
+        // Export functions will be handled by global functions
+    }
+
+    setupAnimations() {
+        // Add fade-in animation to table rows
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach((row, index) => {
+            row.style.animationDelay = `${index * 0.05}s`;
+            row.classList.add('fade-in-up');
+        });
+    }
+
+    updateBulkActions() {
+        const checkedCount = document.querySelectorAll('.contact-checkbox:checked').length;
+        const bulkActionsToolbar = document.getElementById('bulk-actions-toolbar');
+
+        if (bulkActionsToolbar) {
+            if (checkedCount > 0) {
+                bulkActionsToolbar.style.display = 'block';
+                bulkActionsToolbar.querySelector('.selected-count').textContent = checkedCount;
+            } else {
+                bulkActionsToolbar.style.display = 'none';
+            }
+        }
+    }
+
+    submitForm() {
+        const form = document.getElementById('searchForm');
+        if (form) {
+            form.submit();
+        }
+    }
+}
+
+// Global Functions
+function exportContacts(format) {
+    const selectedIds = Array.from(document.querySelectorAll('.contact-checkbox:checked'))
+        .map(cb => cb.value);
+
+    const exportData = {
+        export_type: selectedIds.length > 0 ? 'selected' : 'all',
+        contact_ids: selectedIds
+    };
+
+    // Show loading
+    const btn = event.target.closest('button') || event.target.closest('a');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Dışa aktarılıyor...';
+    btn.disabled = true;
+
+    fetch(`/crm/api/contacts/export/${format}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(exportData)
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.blob();
+        }
+        throw new Error('Export failed');
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `contacts_${new Date().toISOString().split('T')[0]}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        // Show success message
+        showNotification('Dosya başarıyla indirildi!', 'success');
+    })
+    .catch(error => {
+        console.error('Export error:', error);
+        showNotification('Dışa aktarma sırasında hata oluştu!', 'error');
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function deleteContact(contactId, contactName) {
+    if (confirm(`"${contactName}" kişisini silmek istediğinizden emin misiniz?`)) {
         fetch(`/crm/contact/${contactId}/delete`, {
-            method: 'DELETE',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                showNotification('Kişi başarıyla silindi!', 'success');
+                setTimeout(() => location.reload(), 1000);
             } else {
-                alert('Kişi silinirken bir hata oluştu.');
+                showNotification('Kişi silinirken hata oluştu!', 'error');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Kişi silinirken bir hata oluştu.');
+            console.error('Delete error:', error);
+            showNotification('Kişi silinirken hata oluştu!', 'error');
         });
     }
 }
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('companyFilter').value = '';
+    document.querySelector('select[name="date_range"]').value = '';
+    document.getElementById('searchForm').submit();
+}
+
+function setView(viewType) {
+    // View switching functionality
+    const buttons = document.querySelectorAll('.btn-group button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Here you could implement grid/table view switching
+    showNotification(`${viewType === 'grid' ? 'Grid' : 'Tablo'} görünümü aktif!`, 'info');
+}
+
+function changePageSize(size) {
+    const url = new URL(window.location);
+    url.searchParams.set('per_page', size);
+    window.location = url;
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    new ModernContactsManager();
+});
 </script>
 {% endblock %}

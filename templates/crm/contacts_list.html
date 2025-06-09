@@ -1,161 +1,209 @@
-{% extends "crm/crm_base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block crm_title %}Kişiler - CRM{% endblock %}
+{% block title %}Kişiler - CRM - Arsa Analiz Platformu{% endblock %}
 
-{% block crm_meta_description %}CRM kişiler listesi - Müşterilerinizi ve iletişim bilgilerini yönetin{% endblock %}
+{% block page_title %}CRM Sistemi{% endblock %}
+{% block page_description %}Müşteri ilişkileri yönetim sistemi{% endblock %}
 
-{% block crm_extra_css %}
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary">
+        <i class="fas fa-user-plus me-1"></i>Yeni Kişi
+    </a>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-download me-1"></i>Dışa Aktar
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" onclick="exportContacts('excel')">
+                <i class="fas fa-file-excel me-2 text-success"></i>Excel
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="exportContacts('csv')">
+                <i class="fas fa-file-csv me-2 text-info"></i>CSV
+            </a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
 <style>
-/* Pagination Styles */
-.pagination-btn {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #6b7280;
-  background-color: white;
-  border: 1px solid #d1d5db;
-  transition: all 0.2s;
+/* Dashboard Base Compatible Styles */
+.contacts-search-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
 }
 
-.pagination-btn:hover {
-  background-color: #f9fafb;
-  color: #374151;
+.contacts-table-card {
+    background: white;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
-.pagination-btn:first-child {
-  border-top-left-radius: 0.375rem;
-  border-bottom-left-radius: 0.375rem;
+.bulk-actions-toolbar {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    display: none;
 }
 
-.pagination-btn:last-child {
-  border-top-right-radius: 0.375rem;
-  border-bottom-right-radius: 0.375rem;
+.bulk-actions-toolbar.show {
+    display: block;
 }
 
-.pagination-btn.active {
-  background-color: #2563eb;
-  color: white;
-  border-color: #2563eb;
-}
-
-.pagination-btn.active:hover {
-  background-color: #1d4ed8;
-}
-
-.pagination-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination-dots {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-/* Responsive pagination */
-@media (max-width: 640px) {
-  .pagination-btn {
-    padding: 0.375rem 0.5rem;
-    font-size: 0.75rem;
-  }
-}
-
-/* Bulk Actions Styles */
-.contact-row.selected {
-  background-color: #eff6ff;
-}
-
-.contact-checkbox:checked + .contact-row {
-  background-color: #eff6ff;
-}
-
-.btn-sm {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.btn-outline-primary {
-  color: #2563eb;
-  border-color: #2563eb;
-  background-color: transparent;
-}
-
-.btn-outline-primary:hover {
-  color: white;
-  background-color: #2563eb;
-}
-
-.btn-outline-success {
-  color: #059669;
-  border-color: #059669;
-  background-color: transparent;
-}
-
-.btn-outline-success:hover {
-  color: white;
-  background-color: #059669;
-}
-
-.btn-outline-danger {
-  color: #dc2626;
-  border-color: #dc2626;
-  background-color: transparent;
-}
-
-.btn-outline-danger:hover {
-  color: white;
-  background-color: #dc2626;
-}
-
-/* Checkbox animations */
 .contact-checkbox {
-  transition: all 0.2s;
+    transition: all 0.2s;
 }
 
 .contact-checkbox:checked {
-  transform: scale(1.1);
+    transform: scale(1.05);
+}
+
+.contact-row.selected {
+    background-color: #f8f9fa;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #6c757d;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    margin: 0 2px;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    color: white;
+}
+
+.action-btn.btn-view:hover {
+    background: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.action-btn.btn-edit:hover {
+    background: #6c757d;
+    border-color: #6c757d;
+}
+
+.action-btn.btn-delete:hover {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.pagination-container {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #dee2e6;
+    background: #f8f9fa;
+}
+
+.empty-state {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: #adb5bd;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0d6efd;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .contacts-search-card {
+        padding: 1rem;
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
 }
 </style>
 {% endblock %}
 
-{% block crm_content %}
-<div class="mb-6">
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-    <div>
-      <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center">
-        <i class="fas fa-users mr-3 text-blue-600"></i>Kişiler
-      </h2>
-      <p class="text-gray-600">Müşterilerinizi ve iletişim bilgilerini yönetin</p>
+{% block dashboard_content %}
+
+<!-- Arama ve Filtreleme -->
+<div class="contacts-search-card">
+  <div class="row align-items-center mb-3">
+    <div class="col">
+      <h6 class="mb-0">
+        <i class="fas fa-search me-2"></i>Arama ve Filtreleme
+      </h6>
     </div>
-    <div class="mt-4 sm:mt-0">
-      <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary">
-        <i class="fas fa-plus mr-2"></i>Yeni Kişi Ekle
-      </a>
+    <div class="col-auto">
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-filters">
+        <i class="fas fa-times me-1"></i>Temizle
+      </button>
     </div>
   </div>
-</div>
 
-<!-- Arama ve Filtreleme Alanı -->
-<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <!-- Arama Kutusu -->
-    <div class="md:col-span-2">
-      <label for="search-input" class="block text-sm font-medium text-gray-700 mb-2">
-        <i class="fas fa-search mr-1"></i>Arama
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">
+        <i class="fas fa-search me-1"></i>Arama
       </label>
       <input type="text"
              id="search-input"
              class="form-control"
-             placeholder="Ad, soyad, email veya telefon ile arayın..."
+             placeholder="Ad, soyad, email veya telefon..."
              autocomplete="off">
     </div>
 
-    <!-- Durum Filtresi -->
-    <div>
-      <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-2">
-        <i class="fas fa-filter mr-1"></i>Durum
+    <div class="col-md-3">
+      <label class="form-label">
+        <i class="fas fa-filter me-1"></i>Durum
       </label>
       <select id="status-filter" class="form-select">
         <option value="">Tüm Durumlar</option>
@@ -167,215 +215,205 @@
       </select>
     </div>
 
-    <!-- Şirket Filtresi -->
-    <div>
-      <label for="company-filter" class="block text-sm font-medium text-gray-700 mb-2">
-        <i class="fas fa-building mr-1"></i>Şirket
+    <div class="col-md-3">
+      <label class="form-label">
+        <i class="fas fa-building me-1"></i>Şirket
       </label>
       <select id="company-filter" class="form-select">
         <option value="">Tüm Şirketler</option>
         <!-- Şirketler dinamik olarak yüklenecek -->
       </select>
     </div>
+
+    <div class="col-md-2">
+      <label class="form-label">&nbsp;</label>
+      <div class="d-grid">
+        <button type="button" class="btn btn-primary" onclick="performSearch()">
+          <i class="fas fa-search me-1"></i>Filtrele
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Sonuç Bilgisi ve Kontroller -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 pt-4 border-t border-gray-200 gap-4">
-    <div id="search-results-info" class="text-sm text-gray-600">
+  <!-- Sonuç Bilgisi -->
+  <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+    <div id="search-results-info" class="text-muted small">
       <span id="total-contacts">{{ contacts|length if contacts else 0 }}</span> kişi gösteriliyor
     </div>
-
-    <div class="flex items-center gap-4">
-      <!-- Sayfa Boyutu Seçici -->
-      <div class="flex items-center gap-2">
-        <label for="page-size" class="text-sm text-gray-600">Sayfa başına:</label>
-        <select id="page-size" class="form-select text-sm py-1 px-2 border border-gray-300 rounded">
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-      </div>
-
-      <button id="clear-filters" class="text-sm text-blue-600 hover:text-blue-800" style="display: none;">
-        <i class="fas fa-times mr-1"></i>Filtreleri Temizle
-      </button>
+    <div class="d-flex align-items-center gap-2">
+      <label class="form-label small mb-0">Sayfa başına:</label>
+      <select id="page-size" class="form-select form-select-sm" style="width: auto;">
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
     </div>
   </div>
 </div>
 
 <!-- Loading State -->
-<div id="loading-state" class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center" style="display: none;">
-  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-  <p class="text-gray-600">Kişiler yükleniyor...</p>
+<div id="loading-state" class="contacts-table-card text-center p-4" style="display: none;">
+  <div class="spinner-border text-primary mb-3" role="status">
+    <span class="visually-hidden">Yükleniyor...</span>
+  </div>
+  <p class="text-muted">Kişiler yükleniyor...</p>
 </div>
 
 <!-- Bulk Actions Toolbar -->
-<div id="bulk-actions-toolbar" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4" style="display: none;">
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div class="flex items-center gap-4">
-      <span id="selected-count" class="text-sm font-medium text-blue-900">
+<div id="bulk-actions-toolbar" class="bulk-actions-toolbar">
+  <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <span id="selected-count" class="fw-semibold">
         0 kişi seçildi
       </span>
-      <button id="clear-selection" class="text-sm text-blue-600 hover:text-blue-800">
-        <i class="fas fa-times mr-1"></i>Seçimi Temizle
+      <button id="clear-selection" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-times me-1"></i>Seçimi Temizle
       </button>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="d-flex align-items-center gap-2">
       <!-- Durum Güncelleme -->
-      <div class="flex items-center gap-2">
-        <select id="bulk-status-select" class="form-select text-sm py-1 px-2 border border-gray-300 rounded">
-          <option value="">Durum Seç</option>
-          <option value="Lead">Potansiyel (Lead)</option>
-          <option value="Müşteri">Müşteri</option>
-          <option value="Partner">Partner</option>
-          <option value="Eski Müşteri">Eski Müşteri</option>
-          <option value="Diğer">Diğer</option>
-        </select>
-        <button id="bulk-update-status" class="btn btn-sm btn-outline-primary">
-          <i class="fas fa-edit mr-1"></i>Durumu Güncelle
-        </button>
-      </div>
+      <select id="bulk-status-select" class="form-select form-select-sm" style="width: auto;">
+        <option value="">Durum Seç</option>
+        <option value="Lead">Potansiyel (Lead)</option>
+        <option value="Müşteri">Müşteri</option>
+        <option value="Partner">Partner</option>
+        <option value="Eski Müşteri">Eski Müşteri</option>
+        <option value="Diğer">Diğer</option>
+      </select>
+      <button id="bulk-update-status" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-edit me-1"></i>Güncelle
+      </button>
 
       <!-- Export Dropdown -->
-      <div class="relative">
-        <button id="export-dropdown-btn" class="btn btn-sm btn-outline-success">
-          <i class="fas fa-download mr-1"></i>Export <i class="fas fa-chevron-down ml-1"></i>
+      <div class="dropdown">
+        <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="fas fa-download me-1"></i>Export
         </button>
-        <div id="export-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10" style="display: none;">
-          <div class="py-1">
-            <button id="export-selected-csv" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-              <i class="fas fa-file-csv mr-2"></i>Seçili Kayıtlar (CSV)
-            </button>
-            <button id="export-selected-excel" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-              <i class="fas fa-file-excel mr-2"></i>Seçili Kayıtlar (Excel)
-            </button>
-            <hr class="my-1">
-            <button id="export-all-csv" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-              <i class="fas fa-file-csv mr-2"></i>Tüm Kayıtlar (CSV)
-            </button>
-            <button id="export-all-excel" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-              <i class="fas fa-file-excel mr-2"></i>Tüm Kayıtlar (Excel)
-            </button>
-            <button id="export-filtered-csv" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-              <i class="fas fa-file-csv mr-2"></i>Filtrelenmiş (CSV)
-            </button>
-            <button id="export-filtered-excel" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-              <i class="fas fa-file-excel mr-2"></i>Filtrelenmiş (Excel)
-            </button>
-          </div>
-        </div>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#" id="export-selected-csv">
+            <i class="fas fa-file-csv me-2"></i>Seçili (CSV)
+          </a></li>
+          <li><a class="dropdown-item" href="#" id="export-selected-excel">
+            <i class="fas fa-file-excel me-2"></i>Seçili (Excel)
+          </a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#" id="export-all-csv">
+            <i class="fas fa-file-csv me-2"></i>Tümü (CSV)
+          </a></li>
+          <li><a class="dropdown-item" href="#" id="export-all-excel">
+            <i class="fas fa-file-excel me-2"></i>Tümü (Excel)
+          </a></li>
+        </ul>
       </div>
 
       <!-- Delete -->
       <button id="bulk-delete" class="btn btn-sm btn-outline-danger">
-        <i class="fas fa-trash mr-1"></i>Sil
+        <i class="fas fa-trash me-1"></i>Sil
       </button>
     </div>
   </div>
 </div>
 
 <!-- Contacts Table -->
-<div id="contacts-table-container" class="bg-white rounded-lg shadow-sm border border-gray-200">
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
+<div id="contacts-table-container" class="contacts-table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            <div class="flex items-center">
-              <input type="checkbox"
-                     id="select-all-checkbox"
-                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-              <label for="select-all-checkbox" class="sr-only">Tümünü Seç</label>
+          <th style="width: 50px;">
+            <div class="form-check">
+              <input type="checkbox" id="select-all-checkbox" class="form-check-input">
             </div>
           </th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefon</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Şirket</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Eklenme Tarihi</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+          <th>Kişi</th>
+          <th>E-posta</th>
+          <th>Telefon</th>
+          <th>Şirket</th>
+          <th>Durum</th>
+          <th>Eklenme Tarihi</th>
+          <th style="width: 120px;">İşlemler</th>
         </tr>
       </thead>
-      <tbody id="contacts-table-body" class="bg-white divide-y divide-gray-200">
+      <tbody id="contacts-table-body">
         {% if contacts %}
         {% for contact in contacts %}
-        <tr class="hover:bg-gray-50">
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="flex items-center">
-              <div class="flex-shrink-0 h-10 w-10">
-                <img src="{{ get_contact_avatar_url(contact, 40) }}"
-                     alt="{{ contact.first_name }} {{ contact.last_name }}"
-                     class="h-10 w-10 rounded-full border-2 border-gray-200">
+        <tr class="contact-row">
+          <td>
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input contact-checkbox" value="{{ contact.id }}">
+            </div>
+          </td>
+          <td>
+            <div class="d-flex align-items-center">
+              <div class="contact-avatar bg-primary text-white me-3">
+                {{ contact.first_name[0] if contact.first_name else 'U' }}{{ contact.last_name[0] if contact.last_name else '' }}
               </div>
-              <div class="ml-4">
-                <div class="text-sm font-medium text-gray-900">
-                  <a href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}"
-                     class="hover:text-blue-600">
+              <div>
+                <h6 class="mb-1">
+                  <a href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}" class="text-decoration-none">
                     {{ contact.first_name }} {{ contact.last_name }}
                   </a>
-                </div>
+                </h6>
+                <p class="text-muted small mb-0">{{ contact.title or 'Pozisyon belirtilmemiş' }}</p>
               </div>
             </div>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {{ contact.email if contact.email else '-' }}
+          <td>
+            <span class="text-muted small">{{ contact.email if contact.email else '-' }}</span>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {{ contact.phone if contact.phone else '-' }}
+          <td>
+            <span class="text-muted small">{{ contact.phone if contact.phone else '-' }}</span>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          <td>
             {% if contact.company %}
-              {{ contact.company.name }}
+              <span class="badge bg-light text-dark">{{ contact.company.name }}</span>
             {% else %}
-              -
+              <span class="text-muted">-</span>
             {% endif %}
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+          <td>
+            <span class="badge bg-{{ 'success' if contact.status == 'Müşteri' else 'warning' if contact.status == 'Lead' else 'info' if contact.status == 'Partner' else 'secondary' }}">
               {{ contact.status }}
             </span>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-            {{ contact.created_at.strftime('%d.%m.%Y') }}
+          <td>
+            <span class="text-muted small">{{ contact.created_at.strftime('%d.%m.%Y') }}</span>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-            <div class="flex space-x-2">
+          <td>
+            <div class="d-flex gap-1">
               <a href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}"
-                 class="text-blue-600 hover:text-blue-900" title="Görüntüle">
+                 class="action-btn btn-view"
+                 title="Görüntüle">
                 <i class="fas fa-eye"></i>
               </a>
               <a href="{{ url_for('crm.crm_contact_edit', contact_id=contact.id) }}"
-                 class="text-gray-600 hover:text-gray-900" title="Düzenle">
+                 class="action-btn btn-edit"
+                 title="Düzenle">
                 <i class="fas fa-edit"></i>
               </a>
-              <form action="{{ url_for('crm.crm_contact_delete', contact_id=contact.id) }}"
-                    method="POST"
-                    class="inline"
-                    onsubmit="return confirm('Bu kişiyi ve ilişkili tüm verilerini (etkileşimler, fırsatlar, görevler) silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!');">
-                <button type="submit"
-                        class="text-red-600 hover:text-red-900"
-                        title="Sil">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </form>
+              <button type="button"
+                      class="action-btn btn-delete"
+                      title="Sil"
+                      onclick="deleteContact({{ contact.id }}, '{{ contact.first_name }} {{ contact.last_name }}')">
+                <i class="fas fa-trash"></i>
+              </button>
             </div>
           </td>
         </tr>
         {% endfor %}
         {% else %}
-        <!-- Empty State (when no contacts exist) -->
+        <!-- Empty State -->
         <tr id="no-contacts-row">
-          <td colspan="7" class="px-6 py-12 text-center">
-            <div class="max-w-md mx-auto">
-              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-users text-gray-400 text-2xl"></i>
+          <td colspan="8" class="text-center py-5">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <i class="fas fa-users"></i>
               </div>
-              <h3 class="text-lg font-medium text-gray-900 mb-2">Henüz kişi yok</h3>
-              <p class="text-gray-600 mb-6">İlk kişinizi ekleyerek başlayın.</p>
+              <h5 class="mb-3">Henüz kişi eklenmemiş</h5>
+              <p class="text-muted mb-4">İlk kişinizi ekleyerek CRM sisteminizi kullanmaya başlayın.</p>
               <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary">
-                <i class="fas fa-plus mr-2"></i>Yeni Kişi Ekle
+                <i class="fas fa-user-plus me-2"></i>İlk Kişiyi Ekle
               </a>
             </div>
           </td>
@@ -386,33 +424,34 @@
   </div>
 
   <!-- Pagination Controls -->
-  <div id="pagination-container" class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div id="pagination-info" class="text-sm text-gray-600">
-      <!-- Pagination bilgisi buraya gelecek -->
+  <div id="pagination-container" class="pagination-container">
+    <div class="d-flex justify-content-between align-items-center">
+      <div id="pagination-info" class="text-muted small">
+        <!-- Pagination bilgisi buraya gelecek -->
+      </div>
+      <nav id="pagination-nav">
+        <!-- Pagination butonları buraya gelecek -->
+      </nav>
     </div>
-
-    <nav id="pagination-nav" class="flex items-center gap-2">
-      <!-- Pagination butonları buraya gelecek -->
-    </nav>
   </div>
 </div>
 
 <!-- No Search Results State -->
-<div id="no-results-state" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center" style="display: none;">
-  <div class="max-w-md mx-auto">
-    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-      <i class="fas fa-search text-gray-400 text-2xl"></i>
+<div id="no-results-state" class="contacts-table-card text-center p-5" style="display: none;">
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <i class="fas fa-search"></i>
     </div>
-    <h3 class="text-lg font-medium text-gray-900 mb-2">Sonuç bulunamadı</h3>
-    <p class="text-gray-600 mb-6">Arama kriterlerinizi değiştirip tekrar deneyin.</p>
+    <h5 class="mb-3">Sonuç bulunamadı</h5>
+    <p class="text-muted mb-4">Arama kriterlerinizi değiştirip tekrar deneyin.</p>
     <button id="clear-search" class="btn btn-outline-secondary">
-      <i class="fas fa-times mr-2"></i>Aramayı Temizle
+      <i class="fas fa-times me-2"></i>Aramayı Temizle
     </button>
   </div>
 </div>
 {% endblock %}
 
-{% block crm_extra_js %}
+{% block extra_js %}
 <script>
 class ContactsSearchManager {
   constructor() {

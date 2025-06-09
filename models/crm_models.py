@@ -190,6 +190,25 @@ class Task(db.Model):
     deal = db.relationship("Deal", foreign_keys=[deal_id], backref=db.backref("tasks", lazy="dynamic"))
 
 
+    def is_overdue(self):
+        """Görevin süresi geçmiş mi kontrol et"""
+        if not self.due_date:
+            return False
+        from datetime import datetime
+        return datetime.utcnow() > self.due_date
+
+    def days_until_due(self):
+        """Görevin bitimine kaç gün kaldığını hesapla"""
+        if not self.due_date:
+            return None
+        from datetime import datetime
+        delta = self.due_date - datetime.utcnow()
+        return delta.days
+
+    def is_completed(self):
+        """Görev tamamlandı mı kontrol et"""
+        return self.status == 'Tamamlandı'
+
     def __repr__(self):
         return f"<Task {self.title}>"
 
