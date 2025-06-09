@@ -7,6 +7,10 @@ from concurrent_log_handler import ConcurrentRotatingFileHandler
 import logging
 import os
 from datetime import timedelta, datetime as dt_module # dt_module Jinja için
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 from flask_migrate import Migrate
 from models import db as application_db # db'yi modellerden al
 # Modelleri ve db nesnesini models paketinden import et
@@ -25,6 +29,12 @@ from blueprints.broker_bp import broker_bp # Broker blueprint'ini import et
 # API Blueprint'ini import et
 from blueprints.api.api_bp import api_bp, init_swagger
 
+# Security modules
+from security.headers import add_security_headers, configure_session_security, log_security_event
+
+# Performance modules
+from utils.cache import cache
+from utils.performance import setup_performance_monitoring
 
 # Jinja filtreleri ve global'leri için
 from markupsafe import Markup, escape
@@ -90,24 +100,44 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.register_blueprint(admin_bp) # Eğer admin_bp.py içinde url_prefix='/admin' tanımlıysa
 
     # --- CONFIGURATION ---
-    # Force MSSQL for testing
-    app.config["SQLALCHEMY_DATABASE_URI"] = "mssql+pyodbc://altan:Yxrkt2bb7q8.@46.221.49.106/arsa_db?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
-    print(f"DATABASE_URL: {os.environ.get('DATABASE_URL')}")
+    # Database configuration from environment
+    database_url = os.environ.get('DATABASE_URL')
+    if not database_url:
+        raise ValueError("DATABASE_URL environment variable is required!")
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    # SECRET_KEY'i daha güvenli bir yerden alın veya çok güçlü bir varsayılan kullanın
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "COK_GUCLU_VE_TAHMIN_EDILEMEZ_BIR_ANAHTAR_OLMALI_BURASI_dev_icin_degil!")
+
+    # Secret key from environment (required for security)
+    secret_key = os.environ.get("SECRET_KEY")
+    if not secret_key:
+        raise ValueError("SECRET_KEY environment variable is required!")
+
+    app.config["SECRET_KEY"] = secret_key
+
+    # Configure session security
+    configure_session_security(app)
+
+    # Initialize cache
+    cache.init_app(app)
 
     # JWT Configuration
-    app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", app.config["SECRET_KEY"])
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
-    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+    jwt_secret_key = os.environ.get("JWT_SECRET_KEY")
+    if not jwt_secret_key:
+        raise ValueError("JWT_SECRET_KEY environment variable is required!")
+
+    app.config["JWT_SECRET_KEY"] = jwt_secret_key
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(seconds=int(os.environ.get("JWT_ACCESS_TOKEN_EXPIRES", "3600")))
+    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(seconds=int(os.environ.get("JWT_REFRESH_TOKEN_EXPIRES", "604800")))
     app.config["JWT_CSRF_PROTECT"] = False  # CSRF korumasını devre dışı bırak
     app.config["JWT_IDENTITY_CLAIM"] = "sub"  # Subject claim'ini belirt
     
     # Medya yükleme ayarları
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "static", "uploads")
-    app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB
+    upload_folder = os.environ.get("UPLOAD_FOLDER", os.path.join(BASE_DIR, "static", "uploads"))
+    app.config["UPLOAD_FOLDER"] = upload_folder
+    max_content_length = int(os.environ.get("MAX_CONTENT_LENGTH", "16777216"))  # 16MB default
+    app.config["MAX_CONTENT_LENGTH"] = max_content_length
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     
     PRESENTATIONS_DIR = os.path.join(BASE_DIR, "static", "presentations")
@@ -210,6 +240,12 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
         app.logger.addHandler(console_handler)
         app.logger.setLevel(logging.INFO) # Flask'ın kendi logger'ının seviyesini de ayarla
 
+    # --- REQUEST LOGGING ---
+    @app.before_request
+    def log_request_info():
+        """Log request information for monitoring"""
+        app.logger.info(f'{request.method} {request.url} - {request.remote_addr}')
+
     # --- ERROR HANDLER ---
     @app.errorhandler(Exception)
     def handle_exception(e):
@@ -217,6 +253,10 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
         import traceback
         tb_str = traceback.format_exc()
         app.logger.error(f"Sunucu hatası oluştu: {str(e)}\nTraceback:\n{tb_str}")
+
+        # Security event logging
+        log_security_event('server_error', {'error': str(e)})
+
         # Kullanıcıya genel bir hata mesajı göster
         # Üretimde daha kullanıcı dostu bir hata sayfası göstermek daha iyi olur.
         # return render_template("error.html", error_message=str(e)), 500
@@ -239,6 +279,8 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     # --- SWAGGER DOCUMENTATION ---
     init_swagger(app) # Swagger dokümantasyonunu başlat
 
+
+
     # --- SESSION CONFIGURATION ---
     # app.permanent_session_lifetime = timedelta(days=30) # "Beni Hatırla" için
     # Flask-Login'in remember_me özelliği bunu zaten yönetir.
@@ -249,6 +291,20 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
         # Varsayılan permission template'lerini oluştur
         from blueprints.permission_helpers import initialize_default_permissions
         initialize_default_permissions()
+
+    # --- PERFORMANCE MONITORING ---
+    setup_performance_monitoring(app)
+
+    # --- SECURITY HEADERS (En son ekle) ---
+    @app.after_request
+    def add_security_headers(response):
+        """Add security headers to all responses"""
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: https:;"
+        return response
 
     app.logger.info("Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.")
     return app

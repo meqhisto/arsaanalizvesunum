@@ -19,21 +19,21 @@ broker_bp = Blueprint('broker', __name__, url_prefix='/broker', template_folder=
 @broker_or_admin_required
 def dashboard():
     """Broker Dashboard"""
-    
+
     # Broker'ın ofis bilgilerini al
     office = current_user.office if current_user.office_id else None
-    
+
     # Ofis istatistikleri
     office_consultants = 0
     monthly_analyses = 0
     active_customers = 0
     pending_tasks = 0
     team_members = []
-    
+
     if office:
         # Ofis danışmanları
         office_consultants = User.query.filter_by(office_id=office.id, role='danisman').count()
-        
+
         # Bu ay yapılan analizler (ofis bazlı)
         from models.arsa_models import ArsaAnaliz
         start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -43,7 +43,7 @@ def dashboard():
             ),
             ArsaAnaliz.created_at >= start_of_month
         ).count()
-        
+
         # Aktif müşteriler (ofis bazlı)
         from models.crm_models import Contact
         active_customers = Contact.query.filter(
@@ -51,7 +51,7 @@ def dashboard():
                 db.session.query(User.id).filter_by(office_id=office.id)
             )
         ).count()
-        
+
         # Bekleyen görevler (ofis bazlı)
         from models.crm_models import Task
         pending_tasks = Task.query.filter(
@@ -60,13 +60,13 @@ def dashboard():
             ),
             Task.status.in_(['pending', 'in_progress'])
         ).count()
-        
+
         # Ekip üyeleri
         team_members = User.query.filter(
             User.office_id == office.id,
             User.id != current_user.id
         ).limit(5).all()
-    
+
     return render_template('dashboard_base.html',
                          show_broker_content=True,
                          office=office,
@@ -77,6 +77,151 @@ def dashboard():
                              'pending_tasks': pending_tasks
                          },
                          team_members=team_members)
+
+
+    """Gelişmiş Broker Dashboard"""
+
+    # Broker'ın ofis bilgilerini al
+    office = current_user.office if current_user.office_id else None
+
+    # Temel istatistikler
+    stats = {
+        'office_consultants': 0,
+        'office_employees': 0,
+        'monthly_analyses': 0,
+        'weekly_analyses': 0,
+        'active_customers': 0,
+        'pending_tasks': 0,
+        'completed_tasks': 0,
+        'total_revenue': 0,
+        'monthly_revenue': 0
+    }
+
+    # Performans verileri
+    performance_data = {
+        'top_performers': [],
+        'recent_activities': [],
+        'monthly_trends': [],
+        'team_comparison': []
+    }
+
+    team_members = []
+    office_users = []
+
+    if office:
+        # Ofis kullanıcıları
+        office_users = User.query.filter_by(office_id=office.id).all()
+        office_user_ids = [user.id for user in office_users]
+
+        # Temel sayılar
+        stats['office_consultants'] = User.query.filter_by(office_id=office.id, role='danisman').count()
+        stats['office_employees'] = User.query.filter_by(office_id=office.id, role='calisan').count()
+
+        # Zaman aralıkları
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        start_of_week = now - timedelta(days=now.weekday())
+        start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # Analiz istatistikleri
+        from models.arsa_models import ArsaAnaliz
+        if office_user_ids:
+            stats['monthly_analyses'] = ArsaAnaliz.query.filter(
+                ArsaAnaliz.user_id.in_(office_user_ids),
+                ArsaAnaliz.created_at >= start_of_month
+            ).count()
+
+            stats['weekly_analyses'] = ArsaAnaliz.query.filter(
+                ArsaAnaliz.user_id.in_(office_user_ids),
+                ArsaAnaliz.created_at >= start_of_week
+            ).count()
+
+        # CRM istatistikleri
+        from models.crm_models import Contact, Task
+        if office_user_ids:
+            stats['active_customers'] = Contact.query.filter(
+                Contact.user_id.in_(office_user_ids)
+            ).count()
+
+            stats['pending_tasks'] = Task.query.filter(
+                Task.user_id.in_(office_user_ids),
+                Task.status.in_(['pending', 'in_progress'])
+            ).count()
+
+            stats['completed_tasks'] = Task.query.filter(
+                Task.user_id.in_(office_user_ids),
+                Task.status == 'completed',
+                Task.updated_at >= start_of_month
+            ).count()
+
+        # En iyi performans gösterenler
+        for user in office_users:
+            if user.id != current_user.id:
+                user_analyses = ArsaAnaliz.query.filter(
+                    ArsaAnaliz.user_id == user.id,
+                    ArsaAnaliz.created_at >= start_of_month
+                ).count()
+
+                user_customers = Contact.query.filter_by(user_id=user.id).count()
+
+                performance_data['top_performers'].append({
+                    'user': user,
+                    'monthly_analyses': user_analyses,
+                    'total_customers': user_customers,
+                    'score': user_analyses * 2 + user_customers  # Basit skor hesaplama
+                })
+
+        # Performansa göre sırala
+        performance_data['top_performers'].sort(key=lambda x: x['score'], reverse=True)
+        performance_data['top_performers'] = performance_data['top_performers'][:5]
+
+        # Son aktiviteler
+        recent_analyses = ArsaAnaliz.query.filter(
+            ArsaAnaliz.user_id.in_(office_user_ids)
+        ).order_by(ArsaAnaliz.created_at.desc()).limit(5).all()
+
+        for analysis in recent_analyses:
+            performance_data['recent_activities'].append({
+                'type': 'analysis',
+                'user': analysis.user,
+                'title': analysis.baslik,
+                'date': analysis.created_at,
+                'icon': 'fas fa-chart-line',
+                'color': 'primary'
+            })
+
+        # Son müşteriler
+        recent_contacts = Contact.query.filter(
+            Contact.user_id.in_(office_user_ids)
+        ).order_by(Contact.created_at.desc()).limit(3).all()
+
+        for contact in recent_contacts:
+            performance_data['recent_activities'].append({
+                'type': 'contact',
+                'user': contact.user,
+                'title': f"{contact.ad} {contact.soyad}",
+                'date': contact.created_at,
+                'icon': 'fas fa-user-plus',
+                'color': 'success'
+            })
+
+        # Aktiviteleri tarihe göre sırala
+        performance_data['recent_activities'].sort(key=lambda x: x['date'], reverse=True)
+        performance_data['recent_activities'] = performance_data['recent_activities'][:8]
+
+        # Ekip üyeleri (detaylı)
+        team_members = User.query.filter(
+            User.office_id == office.id,
+            User.id != current_user.id
+        ).all()
+
+    return render_template('broker_dashboard_enhanced.html',
+                         office=office,
+                         stats=stats,
+                         performance_data=performance_data,
+                         team_members=team_members,
+                         office_users=office_users)
 
 @broker_bp.route('/team')
 @login_required
