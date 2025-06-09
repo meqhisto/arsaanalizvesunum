@@ -13,6 +13,37 @@
 </div>
 {% endblock %}
 
+{% block page_nav %}
+<!-- CRM Navigation Tabs -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_new_contacts_list') }}">
+                    <i class="fas fa-users me-2"></i>Kişiler
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('crm.crm_companies_list') }}">
+                    <i class="fas fa-building me-2"></i>Şirketler
+                    <span class="badge bg-primary ms-2">{{ companies|length if companies else 0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_deals_list') }}">
+                    <i class="fas fa-handshake me-2"></i>Fırsatlar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_tasks_list') }}">
+                    <i class="fas fa-tasks me-2"></i>Görevler
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
 {% block dashboard_content %}
 
 {% if companies %}

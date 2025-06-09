@@ -6,27 +6,91 @@
 {% block page_description %}Müşteri ilişkileri yönetim sistemi{% endblock %}
 
 {% block page_actions %}
-<div class="d-flex gap-2">
+<div class="d-flex gap-2 flex-wrap">
+    <!-- Primary Action -->
     <a href="{{ url_for('crm.crm_contact_new') }}" class="btn btn-primary">
         <i class="fas fa-user-plus me-1"></i>Yeni Kişi
     </a>
-    <a href="{{ url_for('crm.crm_import_wizard') }}" class="btn btn-outline-primary">
-        <i class="fas fa-upload me-1"></i>İçe Aktar
-    </a>
+
+    <!-- All Actions Dropdown -->
     <div class="dropdown">
         <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            <i class="fas fa-download me-1"></i>Dışa Aktar
+            <i class="fas fa-ellipsis-h me-1"></i>Tüm İşlemler
         </button>
         <ul class="dropdown-menu">
+            <!-- Quick Add Section -->
+            <li><h6 class="dropdown-header">Hızlı Ekle</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('crm.crm_deal_new') }}">
+                <i class="fas fa-handshake me-2 text-success"></i>Yeni Fırsat
+            </a></li>
+            <li><a class="dropdown-item" href="{{ url_for('crm.crm_task_new') }}">
+                <i class="fas fa-tasks me-2 text-warning"></i>Yeni Görev
+            </a></li>
+            <li><a class="dropdown-item" href="{{ url_for('crm.crm_company_new') }}">
+                <i class="fas fa-building me-2 text-info"></i>Yeni Şirket
+            </a></li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <!-- Import/Export Section -->
+            <li><h6 class="dropdown-header">İçe/Dışa Aktar</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('crm.crm_import_wizard') }}">
+                <i class="fas fa-upload me-2 text-primary"></i>İçe Aktar
+            </a></li>
             <li><a class="dropdown-item" href="#" onclick="exportContacts('excel')">
-                <i class="fas fa-file-excel me-2 text-success"></i>Excel
+                <i class="fas fa-file-excel me-2 text-success"></i>Excel Dışa Aktar
             </a></li>
             <li><a class="dropdown-item" href="#" onclick="exportContacts('csv')">
-                <i class="fas fa-file-csv me-2 text-info"></i>CSV
+                <i class="fas fa-file-csv me-2 text-info"></i>CSV Dışa Aktar
             </a></li>
             <li><a class="dropdown-item" href="#" onclick="exportContacts('pdf')">
-                <i class="fas fa-file-pdf me-2 text-danger"></i>PDF
+                <i class="fas fa-file-pdf me-2 text-danger"></i>PDF Dışa Aktar
             </a></li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <!-- Navigation Section -->
+            <li><h6 class="dropdown-header">Hızlı Git</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('crm.crm_deals_list') }}">
+                <i class="fas fa-handshake me-2 text-success"></i>Fırsatlar Listesi
+            </a></li>
+            <li><a class="dropdown-item" href="{{ url_for('crm.crm_tasks_list') }}">
+                <i class="fas fa-tasks me-2 text-warning"></i>Görevler Listesi
+            </a></li>
+            <li><a class="dropdown-item" href="{{ url_for('crm.crm_companies_list') }}">
+                <i class="fas fa-building me-2 text-info"></i>Şirketler Listesi
+            </a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_nav %}
+<!-- CRM Navigation Tabs -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('crm.crm_new_contacts_list') }}">
+                    <i class="fas fa-users me-2"></i>Kişiler
+                    <span class="badge bg-primary ms-2">{{ contacts|length if contacts else 0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_companies_list') }}">
+                    <i class="fas fa-building me-2"></i>Şirketler
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_deals_list') }}">
+                    <i class="fas fa-handshake me-2"></i>Fırsatlar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_tasks_list') }}">
+                    <i class="fas fa-tasks me-2"></i>Görevler
+                </a>
+            </li>
         </ul>
     </div>
 </div>
@@ -182,6 +246,23 @@
     border-color: #dc3545;
 }
 
+.action-btn.btn-outline-success:hover {
+    background: #198754;
+    border-color: #198754;
+}
+
+.action-btn.btn-outline-warning:hover {
+    background: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+.action-btn.btn-outline-info:hover {
+    background: #0dcaf0;
+    border-color: #0dcaf0;
+    color: #000;
+}
+
 .crm-empty-state {
     padding: 3rem 2rem;
     text-align: center;
@@ -232,6 +313,20 @@
         width: 28px;
         height: 28px;
         font-size: 0.75rem;
+    }
+
+    /* Hide some columns on mobile */
+    .crm-table th:nth-child(4),
+    .crm-table td:nth-child(4),
+    .crm-table th:nth-child(5),
+    .crm-table td:nth-child(5) {
+        display: none;
+    }
+
+    /* Compact page actions on mobile */
+    .page-actions .btn {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
     }
 }
 
@@ -488,6 +583,7 @@
                             </td>
                             <td>
                                 <div class="action-buttons">
+                                    <!-- Primary Actions -->
                                     <a href="{{ url_for('crm.crm_contact_detail', contact_id=contact.id) }}"
                                        class="action-btn btn-outline-primary"
                                        title="Görüntüle">
@@ -498,12 +594,29 @@
                                        title="Düzenle">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button type="button"
-                                            class="action-btn btn-outline-danger"
-                                            title="Sil"
-                                            onclick="deleteContact({{ contact.id }}, '{{ contact.first_name }} {{ contact.last_name }}')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+
+                                    <!-- More Actions Dropdown -->
+                                    <div class="dropdown d-inline">
+                                        <button class="action-btn btn-outline-info dropdown-toggle"
+                                                type="button"
+                                                data-bs-toggle="dropdown"
+                                                title="Daha fazla işlem">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="{{ url_for('crm.crm_deal_new') }}?contact_id={{ contact.id }}">
+                                                <i class="fas fa-handshake me-2 text-success"></i>Fırsat Oluştur
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="{{ url_for('crm.crm_task_new') }}?contact_id={{ contact.id }}">
+                                                <i class="fas fa-tasks me-2 text-warning"></i>Görev Oluştur
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><button class="dropdown-item text-danger"
+                                                        onclick="deleteContact({{ contact.id }}, '{{ contact.first_name }} {{ contact.last_name }}')">
+                                                <i class="fas fa-trash me-2"></i>Sil
+                                            </button></li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
