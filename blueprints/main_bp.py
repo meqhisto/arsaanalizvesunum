@@ -221,14 +221,14 @@ def my_office():
     return render_template('my_office.html', office=office, team_members=team_members)
 
 @main_bp.route('/index')
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def index():
     # Bu fonksiyonun içeriği eski app.py'deki index() ile aynı olacak.
     # current_user Flask-Login tarafından sağlanır.
     # User, ArsaAnaliz, DashboardStats, BolgeDagilimi, Contact, Deal, Interaction, Task modelleri
     # yukarıda import edildi.
-    
-    user_id = 1 # Geçici olarak test için user_id = 1
+
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
     
     # --- Mevcut Arsa Analiz Verileri ve İstatistikler ---
     arsa_bolge_dagilimi = db.session.query(
@@ -370,10 +370,10 @@ def index():
     )
 
 @main_bp.route('/profile', methods=['GET', 'POST'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def profile():
-    # Geçici olarak test için user_id = 1
-    user = User.query.get(1)
+    # Giriş yapmış kullanıcının profili
+    user = current_user
     timezones_list = pytz.all_timezones # pytz.all_timezones bir liste döndürür
 
     if request.method == 'POST':
