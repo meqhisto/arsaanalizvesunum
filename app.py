@@ -295,16 +295,10 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     # --- PERFORMANCE MONITORING ---
     setup_performance_monitoring(app)
 
-    # --- SECURITY HEADERS (En son ekle) ---
+    # --- SECURITY HEADERS (tek kaynak: security.headers.add_security_headers) ---
     @app.after_request
-    def add_security_headers(response):
-        """Add security headers to all responses"""
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['X-Frame-Options'] = 'DENY'
-        response.headers['X-XSS-Protection'] = '1; mode=block'
-        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-        response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: https:;"
-        return response
+    def apply_security_headers(response):
+        return add_security_headers(response)
 
     app.logger.info("Flask uygulaması başarıyla oluşturuldu ve yapılandırıldı.")
     return app
