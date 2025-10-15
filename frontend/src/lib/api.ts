@@ -89,9 +89,11 @@ api.interceptors.request.use((config) => {
 let isRefreshing = false;
 let pendingRequests: Array<(token: string) => void> = [];
 
-async function refreshAccessToken(): Promise<string> {
+async function refreshAccessToken(): Promise<string | null> {
   const { refresh } = getTokens();
-  if (!refresh) throw new Error("No refresh token");
+  if (!refresh) {
+    return null;
+  }
 
   // Perform refresh with refresh token in Authorization header
   const res = await api.post(
@@ -136,6 +138,11 @@ api.interceptors.response.use(
       isRefreshing = true;
       try {
         const newToken = await refreshAccessToken();
+        if (!newToken) {
+          pendingRequests = [];
+          setTokens({ access: null, refresh: null });
+          return Promise.reject(error);
+        }
         // Replay queued requests
         pendingRequests.forEach((cb) => cb(newToken));
         pendingRequests = [];
