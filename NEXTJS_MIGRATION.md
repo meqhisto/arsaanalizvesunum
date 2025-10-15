@@ -28,10 +28,18 @@ npm run build
 npm run start
 ```
 
+## Dashboard Summary API
+
+- Backend endpoint: `GET /api/v1/dashboard/summary` (requires JWT)
+- Provides totals for analyses, contacts, deals, open tasks, plus aggregated portfolio stats
+- Next.js dashboard page consumes this via `/api/backend/v1/dashboard/summary`, which refreshes expired access tokens server-side when possible
+
 ## Structure
 
 - `frontend/src/app` – Next.js App Router pages
-- `frontend/src/lib/api.ts` – Axios client (uses `NEXT_PUBLIC_API_BASE_URL`, defaults to `/api`)
+- `frontend/src/app/api/backend/[...path]/route.ts` – Server-side proxy with automatic token refresh
+- `frontend/src/lib/api.ts` – Axios client (client-side fetches, cookie/localStorage token helpers)
+- `frontend/src/lib/dashboard.ts` – Helper to consume `/api/v1/dashboard/summary`
 - `frontend/next.config.ts` – Rewrites `/api/*` to Flask (`API_PROXY_TARGET`)
 
 ## Next Steps
@@ -39,4 +47,3 @@ npm run start
 - Port login and authenticated flows to Next.js (consume existing JWT/session endpoints)
 - Gradually migrate key views (dashboard, CRM, analysis)
 - Replace legacy webpack build once feature parity is achieved
-

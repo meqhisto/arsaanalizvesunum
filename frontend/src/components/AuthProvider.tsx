@@ -1,9 +1,9 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { getProfile, login as apiLogin, logout as apiLogout } from "@/lib/auth";
+import { AuthUser, getProfile, login as apiLogin, logout as apiLogout } from "@/lib/auth";
 
 type AuthContextType = {
-  user: any | null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
   login: (email: string, password: string, remember?: boolean) => Promise<void>;
   logout: () => void;
@@ -13,7 +13,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const isAuthenticated = !!user;
 
   const reload = useCallback(async () => {
@@ -49,4 +49,3 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }
-

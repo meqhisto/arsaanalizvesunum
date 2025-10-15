@@ -15,7 +15,7 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-Requests to `/api/*` are proxied to Flask via `next.config.ts` using `API_PROXY_TARGET` (defaults to http://localhost:5000). Client code should use `NEXT_PUBLIC_API_BASE_URL` (defaults to `/api`).
+Requests to `/api/*` are proxied to Flask via `next.config.ts` using `API_PROXY_TARGET` (defaults to http://localhost:5000). Server-side Route Handlers can use `/api/backend/*` to proxy requests with automatic token refresh, while client code should use `NEXT_PUBLIC_API_BASE_URL` (defaults to `/api`).
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
