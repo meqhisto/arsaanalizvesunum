@@ -173,20 +173,20 @@
         </div>
       </div>
 
-      <div class="space-y-3" id="stage-{{ stage|lower|replace(' ', '-') }}">
+      <div class="d-flex flex-column gap-3" id="stage-{{ stage|lower|replace(' ', '-') }}">
         {% if stage in deals_by_stage and deals_by_stage[stage] %}
           {% for deal in deals_by_stage[stage] %}
           <div class="kanban-deal-card" data-deal-id="{{ deal.id }}">
-            <div class="flex items-start justify-between mb-2">
+            <div class="d-flex align-items-start justify-content-between mb-2">
               <h4 class="deal-title">
                 <a href="{{ url_for('crm.crm_deal_detail', deal_id=deal.id) }}"
-                   class="hover:text-blue-600">
+                   class="text-decoration-none">
                   {{ deal.title }}
                 </a>
               </h4>
               <a href="{{ url_for('crm.crm_deal_edit', deal_id=deal.id) }}"
-                 class="text-gray-400 hover:text-gray-600" title="Düzenle">
-                <i class="fas fa-edit text-sm"></i>
+                 class="text-muted" title="Düzenle">
+                <i class="fas fa-edit"></i>
               </a>
             </div>
 

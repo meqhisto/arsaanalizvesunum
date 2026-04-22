@@ -1,24 +1,54 @@
-{% extends "crm/crm_base.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block crm_title %}Görev Detayı - {{ task.title }}{% endblock %}
+{% block title %}{{ task.title }} - Görev Detayı - CRM - Arsa Analiz Platformu{% endblock %}
 
-{% block crm_content %}
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Görev Detayı</h5>
-                    <div>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
-                            <i class="bi bi-printer"></i> Yazdır
-                        </button>
-                        <a href="{{ url_for('crm.crm_tasks_list') }}" class="btn btn-sm btn-primary ms-2">
-                            <i class="bi bi-arrow-left"></i> Görevlere Dön
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
+{% block page_title %}{{ task.title }}{% endblock %}
+{% block page_description %}Görev detay bilgileri ve durum takibi{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <button class="btn btn-outline-secondary" onclick="window.print()">
+        <i class="fas fa-print"></i> Yazdır
+    </button>
+    <a href="{{ url_for('crm.crm_tasks_list') }}" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Görevlere Dön
+    </a>
+</div>
+{% endblock %}
+
+{% block page_nav %}
+<!-- CRM Navigation Tabs -->
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_new_contacts_list') }}">
+                    <i class="fas fa-users me-2"></i>Kişiler
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_companies_list') }}">
+                    <i class="fas fa-building me-2"></i>Şirketler
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('crm.crm_deals_list') }}">
+                    <i class="fas fa-handshake me-2"></i>Fırsatlar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('crm.crm_tasks_list') }}">
+                    <i class="fas fa-tasks me-2"></i>Görevler
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
                     <!-- Görev Başlığı ve Durum -->
                     <div class="row mb-4">
                         <div class="col-md-8">

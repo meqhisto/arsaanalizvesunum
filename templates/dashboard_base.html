@@ -407,6 +407,48 @@
         background-color: #d1ecf1;
         border-left: 4px solid #0dcaf0;
     }
+
+    /* Rol bazlı navigation stilleri */
+    .nav-header {
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        border-bottom: 1px solid rgba(108, 117, 125, 0.2) !important;
+        margin-bottom: 0.5rem !important;
+        margin-top: 1rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+
+    /* Broker dashboard kartları */
+    .text-xs {
+        font-size: 0.7rem;
+    }
+
+    .text-gray-300 {
+        color: #dddfeb !important;
+    }
+
+    .text-gray-800 {
+        color: #5a5c69 !important;
+    }
+
+    .icon-circle {
+        height: 2.5rem;
+        width: 2.5rem;
+        border-radius: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Responsive navigation improvements */
+    @media (max-width: 991.98px) {
+        .nav-header {
+            font-size: 0.7rem !important;
+            padding: 0.25rem 1rem !important;
+        }
+    }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -426,12 +468,25 @@
                     <i class="fas fa-user"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#">
+                    <!-- Profil - Herkes için -->
+                    <li><a class="dropdown-item" href="/profile">
                         <i class="fas fa-user me-2"></i>Profil
                     </a></li>
-                    <li><a class="dropdown-item" href="#">
-                        <i class="fas fa-cog me-2"></i>Ayarlar
+
+                    <!-- Superadmin Özel -->
+                    {% if current_user.is_authenticated and current_user.role == 'superadmin' %}
+                    <li><a class="dropdown-item" href="/admin/dashboard">
+                        <i class="fas fa-crown me-2"></i>Admin Panel
                     </a></li>
+                    {% endif %}
+
+                    <!-- Broker Özel -->
+                    {% if current_user.is_authenticated and current_user.role == 'broker' %}
+                    <li><a class="dropdown-item" href="/broker/dashboard">
+                        <i class="fas fa-tachometer-alt me-2"></i>Broker Dashboard
+                    </a></li>
+                    {% endif %}
+
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="/auth/logout">
                         <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
@@ -454,47 +509,27 @@
         
         <nav class="sidebar-nav">
             <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link" href="/index">
-                        <i class="fas fa-home me-2"></i>
-                        <span>Ana Sayfa</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/analysis/list">
-                        <i class="fas fa-chart-line me-2"></i>
-                        <span>Analizlerim</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/crm/new_contacts_list">
-                        <i class="fas fa-users me-2"></i>
-                        <span>CRM</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/portfolio/portfolios">
-                        <i class="fas fa-briefcase me-2"></i>
-                        <span>Portföyler</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/profile">
-                        <i class="fas fa-user me-2"></i>
-                        <span>Profil</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/admin/dashboard">
-                        <i class="fas fa-cog me-2"></i>
-                        <span>Admin Panel</span>
-                    </a>
-                </li>
+                {% if current_user.is_authenticated %}
+                    {% set sidebar_menu = get_sidebar_menu(current_user) %}
+                    {% for menu_item in sidebar_menu %}
+                        {% if menu_item.active %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ menu_item.url }}">
+                                <i class="{{ menu_item.icon }} me-2"></i>
+                                <span>{{ menu_item.title }}</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <!-- Giriş yapmamış kullanıcılar için temel menü -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/login">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            <span>Giriş Yap</span>
+                        </a>
+                    </li>
+                {% endif %}
             </ul>
         </nav>
         
@@ -542,7 +577,360 @@
             {% endwith %}
             
             {% block dashboard_content %}
-            <!-- Dashboard page content goes here -->
+            <!-- ROL BAZLI İÇERİK ALANLARI -->
+
+            <!-- BROKER DASHBOARD İÇERİĞİ -->
+            {% if show_broker_content %}
+            <div class="row mb-4">
+                <!-- Broker Dashboard Kartları -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-start border-primary border-4 shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Toplam Danışman
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ stats.office_consultants or 0 }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-start border-success border-4 shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Bu Ay Analiz
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ stats.monthly_analyses or 0 }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-start border-info border-4 shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Aktif Müşteri
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ stats.active_customers or 0 }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-handshake fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-start border-warning border-4 shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Bekleyen Görev
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ stats.pending_tasks or 0 }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ofis ve Ekip Bilgileri -->
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Ofis Bilgileri</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if office %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Ofis Adı:</strong><br>
+                                        <span class="text-muted">{{ office.name }}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Adres:</strong><br>
+                                        <span class="text-muted">{{ office.address or 'Belirtilmemiş' }}</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <a href="/my_office" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit me-1"></i>Ofis Yönetimi
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-building fa-3x mb-3"></i>
+                                    <p>Henüz bir ofise atanmamışsınız.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-success">Son Ekip Üyeleri</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if team_members %}
+                                {% for member in team_members %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="me-3">
+                                        <div class="icon-circle bg-success">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="font-weight-bold">
+                                            {{ member.ad or 'İsim' }} {{ member.soyad or 'Soyisim' }}
+                                        </div>
+                                        <div class="text-muted small">{{ member.email }}</div>
+                                        <span class="badge bg-{{ 'primary' if member.role == 'danisman' else 'secondary' }}">
+                                            {{ member.role|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                <div class="text-center">
+                                    <a href="/broker/team" class="btn btn-outline-success btn-sm">
+                                        Tüm Ekibi Görüntüle
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <p>Henüz ekip üyesi bulunmuyor.</p>
+                                    <a href="/my_office" class="btn btn-success">
+                                        Ekip Üyesi Ekle
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- EKİP YÖNETİMİ İÇERİĞİ -->
+            {% if show_team_content %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Ekip Üyeleri</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if team_members %}
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Ad Soyad</th>
+                                                <th>E-posta</th>
+                                                <th>Rol</th>
+                                                <th>Durum</th>
+                                                <th>İşlemler</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for member in team_members %}
+                                            <tr>
+                                                <td>{{ member.ad or 'İsim' }} {{ member.soyad or 'Soyisim' }}</td>
+                                                <td>{{ member.email }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ 'primary' if member.role == 'danisman' else 'secondary' }}">
+                                                        {{ member.role|title }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-success">Aktif</span>
+                                                </td>
+                                                <td>
+                                                    <a href="/broker/permissions?user_id={{ member.id }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-key"></i> Yetki Ver
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <p>Henüz ekip üyesi bulunmuyor.</p>
+                                    <a href="/my_office" class="btn btn-success">
+                                        Ekip Üyesi Ekle
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- YETKİ YÖNETİMİ İÇERİĞİ -->
+            {% if show_permissions_content %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-warning">Yetki Yönetimi</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Ekip üyelerinizin hangi sayfalara erişebileceğini buradan yönetebilirsiniz.
+                            </div>
+
+                            {% if team_members %}
+                                {% for member in team_members %}
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">
+                                            {{ member.ad or 'İsim' }} {{ member.soyad or 'Soyisim' }}
+                                            <span class="badge bg-{{ 'primary' if member.role == 'danisman' else 'secondary' }} ms-2">
+                                                {{ member.role|title }}
+                                            </span>
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                    <label class="form-check-label">Analizler</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                    <label class="form-check-label">CRM</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" checked>
+                                                    <label class="form-check-label">Portföyler</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" {{ 'checked' if member.role == 'danisman' else '' }}>
+                                                    <label class="form-check-label">Raporlar</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <button class="btn btn-sm btn-success">
+                                                <i class="fas fa-save"></i> Kaydet
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <p>Henüz ekip üyesi bulunmuyor.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- PERFORMANS RAPORLARI İÇERİĞİ -->
+            {% if show_reports_content %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-info">Performans Raporları</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Ofis ve ekip performans raporları yakında eklenecek.
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white">
+                                            <h6 class="mb-0">Aylık Performans</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted">Bu ay yapılan analizler ve müşteri etkileşimleri</p>
+                                            <button class="btn btn-outline-primary" onclick="showToast('Rapor yakında hazır olacak', 'info')">
+                                                Raporu Görüntüle
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-success">
+                                        <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0">Ekip Karşılaştırması</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="text-muted">Ekip üyelerinin performans karşılaştırması</p>
+                                            <button class="btn btn-outline-success" onclick="showToast('Rapor yakında hazır olacak', 'info')">
+                                                Raporu Görüntüle
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- STANDART DASHBOARD İÇERİĞİ (Diğer sayfalar için) -->
+            {% if not (show_broker_content or show_team_content or show_permissions_content or show_reports_content) %}
+            <!-- Mevcut dashboard içeriği burada kalacak -->
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Standart dashboard içeriği burada görüntülenecek.
+            </div>
+            {% endif %}
             {% endblock %}
         </div>
     </div>

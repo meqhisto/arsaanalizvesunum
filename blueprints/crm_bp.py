@@ -51,18 +51,18 @@ TASK_PRIORITIES = ["Düşük", "Normal", "Yüksek", "Acil"]
 
 # --- KİŞİ (CONTACT) ROTALARI ---
 @crm_bp.route('/contacts')
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def crm_contacts_list():
-    user_id = 1 # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
     contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
     return render_template('crm/contacts_list.html', contacts=contacts, title="Kişiler")
 
 
 @crm_bp.route('/new_contacts_list')
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def crm_new_contacts_list():
     """Modern CRM Contacts List sayfası"""
-    user_id = 1 # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
     # Arama ve filtreleme parametreleri
     search = request.args.get('search', '')
@@ -191,9 +191,9 @@ def crm_contact_add():
 
 
 @crm_bp.route('/contact/new', methods=['GET', 'POST'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def crm_contact_new():
-    user_id = 1 # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
     companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
 
     if request.method == 'POST':

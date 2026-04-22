@@ -25,6 +25,7 @@ from .v1.users import users_v1
 from .v1.crm_minimal import crm_v1
 from .v1.analysis import analysis_v1
 from .v1.portfolio_minimal import portfolio_v1
+from .v1.dashboard import dashboard_v1
 # from .v1.media import media_v1
 
 # V1 endpoint'lerini kaydet
@@ -33,6 +34,7 @@ api_bp.register_blueprint(users_v1, url_prefix='/v1/users')
 api_bp.register_blueprint(crm_v1, url_prefix='/v1/crm')
 api_bp.register_blueprint(analysis_v1, url_prefix='/v1/analysis')
 api_bp.register_blueprint(portfolio_v1, url_prefix='/v1/portfolio')
+api_bp.register_blueprint(dashboard_v1, url_prefix='/v1/dashboard')
 # api_bp.register_blueprint(media_v1, url_prefix='/v1/media')
 
 
@@ -302,6 +304,15 @@ def health_check():
     return jsonify(health_status), status_code
 
 
+@api_bp.route('/health/detailed')
+def health_check_detailed():
+    """
+    Detaylı API sağlık kontrolü.
+    /api/health ile aynı işlevi görür ama daha detaylı bilgi verir.
+    """
+    return health_check()  # Aynı fonksiyonu kullan
+
+
 @api_bp.route('/v1')
 def api_v1_info():
     """API v1 bilgileri."""
@@ -413,6 +424,23 @@ def handle_unexpected_error(error):
 
 
 # JWT error handlers
+from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError, JWTDecodeError
+
+@api_bp.errorhandler(NoAuthorizationError)
+def handle_no_authorization_error(error):
+    """JWT authorization header eksik."""
+    return error_response("Missing Authorization Header", 401)
+
+@api_bp.errorhandler(InvalidHeaderError)
+def handle_invalid_header_error(error):
+    """JWT header geçersiz."""
+    return error_response("Invalid Authorization Header", 401)
+
+@api_bp.errorhandler(JWTDecodeError)
+def handle_jwt_decode_error(error):
+    """JWT decode hatası."""
+    return error_response("Invalid token", 401)
+
 @api_bp.errorhandler(422)
 def handle_jwt_exceptions(error):
     """JWT hatalarını yakalar."""

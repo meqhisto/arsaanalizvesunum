@@ -106,6 +106,11 @@ class User(UserMixin, db.Model):
     @is_active.setter
     def is_active(self, value):
         self._is_active = value
+
+    @property
+    def full_name(self):
+        """Return user's full name."""
+        return f"{self.ad} {self.soyad}"
     
 # class Portfolio(db.Model):
 #     __tablename__ = "portfolios"

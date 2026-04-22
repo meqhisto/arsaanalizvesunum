@@ -1,101 +1,400 @@
-{% extends "base_admin.html" %}
-{% block title %}{{ form_title }}{% endblock %}
-{% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow-lg">
-                <div class="card-header {% if user_data %}bg-warning{% else %}bg-primary{% endif %} text-white">
-                    <h3 class="mb-0"><i class="bi bi-person-gear me-2"></i>{{ form_title }}</h3>
-                </div>
-                <div class="card-body p-4">
-                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
-                         <input type="hidden" name="user_id" value="{{ user_data.id if user_data else '' }}">
-                        <h5 class="mb-3">Kişisel Bilgiler</h5>
-                        <div class="row g-3">
-                            <div class="col-md-6 mb-3">
-                                <label for="ad" class="form-label">Ad <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="ad" name="ad" required 
-                                       value="{{ form_data.get('ad', user_data.ad if user_data else '') }}">
-                                <div class="invalid-feedback">Lütfen ad giriniz.</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="soyad" class="form-label">Soyad <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="soyad" name="soyad" required
-                                       value="{{ form_data.get('soyad', user_data.soyad if user_data else '') }}">
-                                <div class="invalid-feedback">Lütfen soyad giriniz.</div>
-                            </div>
+{% extends "dashboard_base.html" %}
+
+{% block title %}{{ form_title }} - Arsa Analiz Platformu{% endblock %}
+
+{% block dashboard_content %}
+<!-- Broker Form Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-{{ 'user-edit' if user_data else 'user-plus' }} me-2"></i>{{ form_title }}
+            </h1>
+            <p class="page-subtitle text-muted">
+                {% if user_data %}
+                    Kullanıcı bilgilerini düzenleyin
+                {% else %}
+                    Sisteme yeni kullanıcı ekleyin
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-1"></i>Dashboard'a Dön
+            </a>
+            <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-primary">
+                <i class="fas fa-users me-1"></i>Kullanıcı Listesi
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Broker Form -->
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-{{ 'warning' if user_data else 'primary' }}">
+                    <i class="fas fa-{{ 'user-edit' if user_data else 'user-plus' }} me-2"></i>
+                    {% if user_data %}Kullanıcı Düzenleme{% else %}Yeni Kullanıcı Oluşturma{% endif %}
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <input type="hidden" name="user_id" value="{{ user_data.id if user_data else '' }}">
+
+                    <!-- Kişisel Bilgiler Bölümü -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-user me-2"></i>Kişisel Bilgiler
+                            </h6>
                         </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">E-posta <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="email" name="email" required
-                                   value="{{ form_data.get('email', user_data.email if user_data else '') }}"
-                                   {% if user_data %}readonly{% endif %}> {# Düzenlemede e-posta değişmesin #}
-                            <div class="invalid-feedback">Lütfen geçerli bir e-posta adresi giriniz.</div>
-                            {% if user_data %}<small class="form-text text-muted">E-posta adresi düzenlenemez.</small>{% endif %}
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Şifre {% if not user_data %}<span class="text-danger">*</span>{% else %}(Değiştirmek istemiyorsanız boş bırakın){% endif %}</label>
-                            <input type="password" class="form-control" id="password" name="password" 
-                                   {% if not user_data %}required minlength="6"{% else %}minlength="6"{% endif %}>
-                            <div class="invalid-feedback">Şifre en az 6 karakter olmalıdır.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="ad" class="form-label">
+                                <i class="fas fa-user me-1"></i>Ad <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="ad" name="ad" required
+                                   value="{{ form_data.get('ad', user_data.ad if user_data else '') }}"
+                                   placeholder="Adını giriniz">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen ad giriniz.
+                            </div>
                         </div>
 
-                        <h5 class="mt-4 mb-3">Firma ve Pozisyon Bilgileri</h5>
-                        <div class="mb-3">
-                            <label for="firma" class="form-label">Kullanıcının Çalıştığı Firma</label>
+                        <div class="col-md-6 mb-3">
+                            <label for="soyad" class="form-label">
+                                <i class="fas fa-user me-1"></i>Soyad <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="soyad" name="soyad" required
+                                   value="{{ form_data.get('soyad', user_data.soyad if user_data else '') }}"
+                                   placeholder="Soyadını giriniz">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen soyad giriniz.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>E-posta <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required
+                                   value="{{ form_data.get('email', user_data.email if user_data else '') }}"
+                                   {% if user_data %}readonly{% endif %}
+                                   placeholder="ornek@email.com">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen geçerli bir e-posta adresi giriniz.
+                            </div>
+                            {% if user_data %}
+                            <div class="form-text">
+                                <i class="fas fa-lock me-1"></i>E-posta adresi düzenlenemez.
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-1"></i>Şifre
+                                {% if not user_data %}
+                                    <span class="text-danger">*</span>
+                                {% else %}
+                                    <span class="badge bg-secondary ms-1">Opsiyonel</span>
+                                {% endif %}
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password"
+                                   {% if not user_data %}required minlength="6"{% else %}minlength="6"{% endif %}
+                                   placeholder="{% if user_data %}Değiştirmek için yeni şifre{% else %}En az 6 karakter{% endif %}">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Şifre en az 6 karakter olmalıdır.
+                            </div>
+                            <div class="form-text">
+                                {% if user_data %}
+                                    <i class="fas fa-info-circle me-1"></i>Değiştirmek istemiyorsanız boş bırakın
+                                {% else %}
+                                    <i class="fas fa-info-circle me-1"></i>Güvenli bir şifre oluşturun (en az 6 karakter)
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Firma ve Pozisyon Bilgileri Bölümü -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-success border-bottom pb-2 mb-3">
+                                <i class="fas fa-building me-2"></i>Firma ve Pozisyon Bilgileri
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firma" class="form-label">
+                                <i class="fas fa-building me-1"></i>Çalıştığı Firma
+                                <span class="badge bg-secondary ms-1">Opsiyonel</span>
+                            </label>
                             <input type="text" class="form-control" id="firma" name="firma"
-                                   value="{{ form_data.get('firma', user_data.firma if user_data else '') }}">
+                                   value="{{ form_data.get('firma', user_data.firma if user_data else '') }}"
+                                   placeholder="Firma adını giriniz">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Kullanıcının çalıştığı firma adı
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="unvan" class="form-label">Ünvan</label>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="unvan" class="form-label">
+                                <i class="fas fa-id-badge me-1"></i>Ünvan
+                                <span class="badge bg-secondary ms-1">Opsiyonel</span>
+                            </label>
                             <input type="text" class="form-control" id="unvan" name="unvan"
-                                   value="{{ form_data.get('unvan', user_data.unvan if user_data else '') }}">
+                                   value="{{ form_data.get('unvan', user_data.unvan if user_data else '') }}"
+                                   placeholder="Ünvanını giriniz">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Kullanıcının iş ünvanı
+                            </div>
                         </div>
-                         <div class="mb-3">
-                            <label for="role" class="form-label">Rol <span class="text-danger">*</span></label>
+                    </div>
+
+                    <!-- Rol ve Ofis Atama Bölümü -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-warning border-bottom pb-2 mb-3">
+                                <i class="fas fa-user-cog me-2"></i>Rol ve Ofis Atama
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="role" class="form-label">
+                                <i class="fas fa-user-tag me-1"></i>Rol <span class="text-danger">*</span>
+                            </label>
                             <select class="form-select" id="role" name="role" required>
                                 {% set current_role = form_data.get('role', user_data.role if user_data else 'broker') %}
-                                <option value="broker" {% if current_role == 'broker' %}selected{% endif %}>Broker</option>
-                                <option value="danisman" {% if current_role == 'danisman' %}selected{% endif %}>Danışman</option>
-                                <option value="calisan" {% if current_role == 'calisan' %}selected{% endif %}>Çalışan</option>
-                                <option value="superadmin" {% if current_role == 'superadmin' %}selected{% endif %}>Süper Admin</option>
+                                <option value="broker" {% if current_role == 'broker' %}selected{% endif %}>
+                                    <i class="fas fa-user-tie"></i> Broker
+                                </option>
+                                <option value="danisman" {% if current_role == 'danisman' %}selected{% endif %}>
+                                    <i class="fas fa-user-graduate"></i> Danışman
+                                </option>
+                                <option value="calisan" {% if current_role == 'calisan' %}selected{% endif %}>
+                                    <i class="fas fa-user"></i> Çalışan
+                                </option>
+                                <option value="superadmin" {% if current_role == 'superadmin' %}selected{% endif %}>
+                                    <i class="fas fa-crown"></i> Süper Admin
+                                </option>
                             </select>
-                            <div class="invalid-feedback">Lütfen bir rol seçiniz.</div>
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen bir rol seçiniz.
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Kullanıcının sistem içindeki rolü
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="office_id" class="form-label">Atanacak Ofis <span class="text-danger">*</span></label>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="office_id" class="form-label">
+                                <i class="fas fa-building me-1"></i>Atanacak Ofis <span class="text-danger">*</span>
+                            </label>
                             <select class="form-select" id="office_id" name="office_id" required>
-                                <option value="" disabled {% if not form_data.get('office_id', user_data.office_id if user_data else None) %}selected{% endif %}>Lütfen Bir Ofis Seçin...</option>
+                                <option value="" disabled {% if not form_data.get('office_id', user_data.office_id if user_data else None) %}selected{% endif %}>
+                                    Lütfen Bir Ofis Seçin...
+                                </option>
                                 {% for office_item in offices %}
-                                <option value="{{ office_item.id }}" 
+                                <option value="{{ office_item.id }}"
                                         {% if form_data.get('office_id')|string == office_item.id|string or (user_data and user_data.office_id == office_item.id and not form_data.get('office_id')) %}selected{% endif %}>
                                     {{ office_item.name }}
+                                    {% if office_item.address %} - {{ office_item.address }}{% endif %}
                                 </option>
                                 {% endfor %}
                             </select>
-                            <div class="invalid-feedback">Lütfen bir ofis seçiniz.</div>
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen bir ofis seçiniz.
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Kullanıcının atanacağı ofis
+                            </div>
                         </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
-                                   {% if (form_data and form_data.get('is_active') == 'on') or (user_data and user_data.is_active) or (not user_data and not form_data) %}checked{% endif %}>
-                            <label class="form-check-label" for="is_active">
-                                Kullanıcı Aktif Mi?
-                            </label>
+                    </div>
+
+                    <!-- Durum Ayarları -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-info border-bottom pb-2 mb-3">
+                                <i class="fas fa-toggle-on me-2"></i>Durum Ayarları
+                            </h6>
                         </div>
-                        <hr class="my-4">
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ url_for('admin.list_users') if 'broker' in request.endpoint or 'user' in request.endpoint else url_for('admin.dashboard') }}" class="btn btn-outline-secondary btn-lg">İptal</a>
-                            <button type="submit" class="btn {% if user_data %}btn-warning{% else %}btn-primary{% endif %} btn-lg">
-                                <i class="bi {% if user_data %}bi-save-fill{% else %}bi-person-check-fill{% endif %} me-2"></i>
-                                {% if user_data %}Kullanıcıyı Güncelle{% else %}Broker Oluştur{% endif %}
-                            </button>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
+                                       {% if (form_data and form_data.get('is_active') == 'on') or (user_data and user_data.is_active) or (not user_data and not form_data) %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">
+                                    <i class="fas fa-user-check me-1"></i>Kullanıcı Aktif Mi?
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Pasif kullanıcılar sisteme giriş yapamaz
+                            </div>
                         </div>
-                    </form>
+                    </div>
+                    <!-- Form Butonları -->
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <hr class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Zorunlu alanlar <span class="text-danger">*</span> ile işaretlenmiştir
+                                    </small>
+                                </div>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i>İptal
+                                    </a>
+                                    <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-info">
+                                        <i class="fas fa-list me-1"></i>Kullanıcı Listesi
+                                    </a>
+                                    <button type="submit" class="btn btn-{{ 'warning' if user_data else 'primary' }}">
+                                        <i class="fas fa-{{ 'save' if user_data else 'user-check' }} me-1"></i>
+                                        {% if user_data %}Kullanıcıyı Güncelle{% else %}Kullanıcı Oluştur{% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ek Bilgi Kartı -->
+<div class="row mt-4">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    {% if user_data %}Kullanıcı Düzenleme{% else %}Kullanıcı Oluşturma{% endif %} Hakkında
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">
+                            <i class="fas fa-user-shield me-1"></i>Rol Yetkileri
+                        </h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-crown text-warning me-1"></i> <strong>Superadmin:</strong> Tüm sistem yetkileri</li>
+                            <li><i class="fas fa-user-tie text-success me-1"></i> <strong>Broker:</strong> Ofis yönetimi, ekip yönetimi</li>
+                            <li><i class="fas fa-user-graduate text-primary me-1"></i> <strong>Danışman:</strong> Standart özellikler</li>
+                            <li><i class="fas fa-user text-secondary me-1"></i> <strong>Çalışan:</strong> Sınırlı erişim</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-warning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Önemli Notlar
+                        </h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-info text-info me-1"></i> E-posta adresi benzersiz olmalıdır</li>
+                            <li><i class="fas fa-info text-info me-1"></i> Güçlü şifre kullanılması önerilir</li>
+                            <li><i class="fas fa-info text-info me-1"></i> Pasif kullanıcılar sisteme giriş yapamaz</li>
+                            {% if user_data %}
+                            <li><i class="fas fa-info text-info me-1"></i> E-posta adresi düzenlenemez</li>
+                            {% endif %}
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<script> /* Bootstrap validation script */ (function(){'use strict';var forms=document.querySelectorAll('.needs-validation');Array.prototype.slice.call(forms).forEach(function(form){form.addEventListener('submit',function(event){if(!form.checkValidity()){event.preventDefault();event.stopPropagation();}form.classList.add('was-validated');},false);});})();</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Bootstrap 5 form validation
+(function() {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+
+// Form alanları için real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Email validation
+    const emailInput = document.getElementById('email');
+    if (emailInput && !emailInput.readOnly) {
+        emailInput.addEventListener('blur', function() {
+            const email = this.value;
+            if (email && !email.includes('@')) {
+                this.setCustomValidity('Geçerli bir e-posta adresi giriniz');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+
+    // Password strength indicator
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const helpText = this.parentNode.querySelector('.form-text');
+
+            if (password.length === 0 && {{ 'true' if user_data else 'false' }}) {
+                helpText.innerHTML = '<i class="fas fa-info-circle me-1"></i>Değiştirmek istemiyorsanız boş bırakın';
+            } else if (password.length > 0 && password.length < 6) {
+                helpText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-1"></i>Şifre çok kısa (en az 6 karakter)';
+            } else if (password.length >= 6 && password.length < 8) {
+                helpText.innerHTML = '<i class="fas fa-check text-warning me-1"></i>Orta güçlü şifre (8+ karakter önerilir)';
+            } else if (password.length >= 8) {
+                helpText.innerHTML = '<i class="fas fa-check text-success me-1"></i>Güçlü şifre';
+            }
+        });
+    }
+
+    // Role change handler
+    const roleSelect = document.getElementById('role');
+    if (roleSelect) {
+        roleSelect.addEventListener('change', function() {
+            const selectedRole = this.value;
+            const helpText = this.parentNode.querySelector('.form-text');
+
+            switch(selectedRole) {
+                case 'superadmin':
+                    helpText.innerHTML = '<i class="fas fa-crown text-warning me-1"></i>Tüm sistem yetkilerine sahip olacak';
+                    break;
+                case 'broker':
+                    helpText.innerHTML = '<i class="fas fa-user-tie text-success me-1"></i>Ofis yönetimi ve ekip yönetimi yapabilecek';
+                    break;
+                case 'danisman':
+                    helpText.innerHTML = '<i class="fas fa-user-graduate text-primary me-1"></i>Standart özellikleri kullanabilecek';
+                    break;
+                case 'calisan':
+                    helpText.innerHTML = '<i class="fas fa-user text-secondary me-1"></i>Sınırlı erişime sahip olacak';
+                    break;
+                default:
+                    helpText.innerHTML = '<i class="fas fa-info-circle me-1"></i>Kullanıcının sistem içindeki rolü';
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

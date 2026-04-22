@@ -42,16 +42,16 @@ def allowed_file(filename):
 # --- ROTALAR ---
 
 @analysis_bp.route('/new', methods=['GET'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def new_analysis():
     """Yeni analiz formu sayfası"""
     return render_template('analysis_form.html', title="Yeni Analiz")
 
 @analysis_bp.route('/list', methods=['GET'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def list_analyses():
     """Kullanıcının analizlerini listele ve filtrele"""
-    user_id = 1  # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
     # Base query
     query = ArsaAnaliz.query.filter_by(user_id=user_id)
@@ -97,7 +97,7 @@ def list_analyses():
     return render_template('analysis_list.html', analyses=analyses, title="Analizlerim")
 
 @analysis_bp.route('/export/excel', methods=['GET'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def export_excel():
     """Analizleri Excel formatında dışa aktar"""
     try:
@@ -106,7 +106,7 @@ def export_excel():
         from flask import make_response
         from datetime import datetime
 
-        user_id = 1  # Geçici olarak test için
+        user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
         # Apply same filters as list view
         query = ArsaAnaliz.query.filter_by(user_id=user_id)
@@ -212,7 +212,7 @@ def export_excel():
         return redirect(url_for('analysis.list_analyses'))
 
 @analysis_bp.route('/export/pdf', methods=['GET'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def export_pdf():
     """Analizleri PDF formatında dışa aktar"""
     try:
@@ -225,7 +225,7 @@ def export_pdf():
         from flask import make_response
         from datetime import datetime
 
-        user_id = 1  # Geçici olarak test için
+        user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
         # Apply same filters as list view
         query = ArsaAnaliz.query.filter_by(user_id=user_id)
@@ -367,10 +367,10 @@ def export_pdf():
         return redirect(url_for('analysis.list_analyses'))
 
 @analysis_bp.route('/<int:analysis_id>', methods=['GET'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def view_analysis(analysis_id):
     """Analiz detayını görüntüle"""
-    user_id = 1  # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
     try:
         analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
@@ -448,10 +448,10 @@ def view_analysis(analysis_id):
         return redirect(url_for('analysis.list_analyses'))
 
 @analysis_bp.route('/<int:analysis_id>/edit', methods=['GET', 'POST'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def edit_analysis(analysis_id):
     """Analizi düzenle"""
-    user_id = 1  # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
     try:
         analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
@@ -542,10 +542,10 @@ def edit_analysis(analysis_id):
         return redirect(url_for('analysis.list_analyses'))
 
 @analysis_bp.route('/<int:analysis_id>/delete', methods=['POST'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def delete_analysis(analysis_id):
     """Analizi sil"""
-    user_id = 1  # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
     try:
         analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
@@ -574,10 +574,10 @@ def delete_analysis(analysis_id):
         return jsonify({'success': False, 'message': 'Analiz silinirken bir hata oluştu.'}), 500
 
 @analysis_bp.route('/<int:analysis_id>/duplicate', methods=['POST'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def duplicate_analysis(analysis_id):
     """Analizi kopyala"""
-    user_id = 1  # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
     try:
         original = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
@@ -621,10 +621,10 @@ def duplicate_analysis(analysis_id):
         return jsonify({'success': False, 'message': 'Analiz kopyalanırken bir hata oluştu.'}), 500
 
 @analysis_bp.route('/<int:analysis_id>/share', methods=['GET'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def share_analysis(analysis_id):
     """Analiz paylaşım bilgilerini getir"""
-    user_id = 1  # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
     try:
         analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
@@ -643,10 +643,10 @@ def share_analysis(analysis_id):
         return jsonify({'success': False, 'message': 'Paylaşım bilgileri alınırken bir hata oluştu.'}), 500
 
 @analysis_bp.route('/<int:analysis_id>/report/word', methods=['GET'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def generate_word_report(analysis_id):
     """DocumentGenerator kullanarak Word raporu oluştur"""
-    user_id = 1  # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
     try:
         analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
@@ -771,10 +771,10 @@ def generate_word_report(analysis_id):
         return redirect(url_for('analysis.view_analysis', analysis_id=analysis_id))
 
 @analysis_bp.route('/<int:analysis_id>/report/pdf', methods=['GET'])
-# @login_required # Geçici olarak kaldırıldı
+@login_required
 def generate_pdf_report(analysis_id):
     """DocumentGenerator kullanarak PDF raporu oluştur"""
-    user_id = 1  # Geçici olarak test için
+    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
 
     try:
         analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()

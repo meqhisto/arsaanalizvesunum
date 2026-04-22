@@ -8,6 +8,7 @@ from .user_models import User, Portfolio
 from .arsa_models import ArsaAnaliz, BolgeDagilimi, YatirimPerformansi, DashboardStats, AnalizMedya
 from .crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam, crm_team_members
 from .office_models import Office
+from .permission_models import PermissionTemplate, UserPermission, OfficePermission, PermissionLog, PermissionManager
 
 def init_db_models(app):
     """Veritabanını uygulamaya bağlar ve tabloları oluşturur."""
@@ -19,6 +20,7 @@ def init_db_models(app):
     from . import arsa_models
     from . import crm_models
     from . import office_models
+    from . import permission_models
     # Bu importlar, user_models.py, arsa_models.py, crm_models.py dosyalarının
     # içindeki tüm model sınıflarını yükler.
 

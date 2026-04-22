@@ -1,134 +1,438 @@
-{% extends "base_admin.html" %}
+{% extends "dashboard_base.html" %}
 
-{% block title %}{{ office.name if office else 'Ofis Yönetimi' }} - Panel{% endblock %}
+{% block title %}{{ office.name if office else 'Ofis Bilgileri' }} - Arsa Analiz Platformu{% endblock %}
 
-{% block content %}
-<div class="container mt-5">
-    {% if office %}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1><i class="bi bi-briefcase-fill me-2"></i>{{ office.name }} - Ofis Yönetimi</h1>
-        <span class="badge bg-info p-2 fs-6">Broker: {{ current_user.ad }} {{ current_user.soyad }}</span>
-    </div>
-    <p class="lead">{{ office.address }} {% if office.phone %}- {{ office.phone }}{% endif %}</p>
-    {% else %}
-    <h1>Ofis Yönetimi</h1>
-    <p class="text-danger">Bu broker hesabına atanmış bir ofis bulunamadı. Lütfen süper admin ile iletişime geçin.</p>
-    <a href="{{ url_for('main.index') }}" class="btn btn-secondary mt-3">Ana Sayfaya Dön</a>
-    {% endif %}
-
-
-    {% if office %}
-    <hr class="my-4">
-
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <h4 class="mb-0"><i class="bi bi-person-plus me-2"></i>Yeni Ekip Üyesi Ekle (Danışman/Çalışan)</h4>
+{% block dashboard_content %}
+{% if office %}
+<!-- Ofis Bilgileri Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-building-user me-2"></i>{{ office.name }}
+            </h1>
+            <p class="page-subtitle text-muted">
+                {% if office.address %}{{ office.address }}{% endif %}
+                {% if office.phone %} • {{ office.phone }}{% endif %}
+            </p>
         </div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('main.my_office') }}" class="needs-validation" novalidate>
-                <div class="row g-3 mb-3">
-                    <div class="col-md-3">
-                        <label for="ad" class="form-label">Ad <span class="text-danger">*</span></label>
-                        <input type="text" name="ad" id="ad" class="form-control" required value="{{ request.form.ad if request.form.ad }}">
-                        <div class="invalid-feedback">Lütfen ad giriniz.</div>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="soyad" class="form-label">Soyad <span class="text-danger">*</span></label>
-                        <input type="text" name="soyad" id="soyad" class="form-control" required value="{{ request.form.soyad if request.form.soyad }}">
-                        <div class="invalid-feedback">Lütfen soyad giriniz.</div>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="email" class="form-label">E-posta <span class="text-danger">*</span></label>
-                        <input type="email" name="email" id="email" class="form-control" required value="{{ request.form.email if request.form.email }}">
-                        <div class="invalid-feedback">Lütfen geçerli bir e-posta giriniz.</div>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="password" class="form-label">Şifre <span class="text-danger">*</span></label>
-                        <input type="password" name="password" id="password" class="form-control" required minlength="6">
-                        <div class="invalid-feedback">Şifre en az 6 karakter olmalıdır.</div>
-                    </div>
-                </div>
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-3">
-                        <label for="role" class="form-label">Rol</label>
-                        <select name="role" id="role" class="form-select">
-                            <option value="danisman" {% if request.form.role == 'danisman' or not request.form.role %}selected{% endif %}>Danışman</option>
-                            <option value="calisan" {% if request.form.role == 'calisan' %}selected{% endif %}>Çalışan (Destek)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-person-plus-fill me-1"></i>Ekip Üyesi Ekle</button>
-                    </div>
-                </div>
-            </form>
+        <div>
+            <span class="badge bg-primary fs-6 px-3 py-2">
+                <i class="fas fa-user-tie me-1"></i>Broker: {{ current_user.ad }} {{ current_user.soyad }}
+            </span>
         </div>
     </div>
-
-    <hr class="my-4">
-
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h4 class="mb-0"><i class="bi bi-people me-2"></i>Mevcut Ekip Üyeleri ({{ team_members|length }})</h4>
-        </div>
-        <div class="card-body">
-            {% if team_members %}
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Ad Soyad</th>
-                                <th>E-posta</th>
-                                <th>Rol</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for member in team_members %}
-                            <tr>
-                                <td>{{ member.ad }} {{ member.soyad }}</td>
-                                <td>{{ member.email }}</td>
-                                <td><span class="badge bg-secondary">{{ member.role|title }}</span></td>
-                                <td>
-                                    {# <a href="{{ url_for('main.edit_team_member', user_id=member.id) }}" class="btn btn-sm btn-outline-warning me-1" title="Düzenle"><i class="bi bi-pencil-square"></i></a> #}
-                                    {# <form action="{{ url_for('main.remove_team_member', user_id=member.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bu üyeyi ekipten çıkarmak istediğinize emin misiniz?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Ekipten Çıkar"><i class="bi bi-person-x"></i></button>
-                                    </form> #}
-                                    <small class="text-muted">İşlemler yakında...</small>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <p class="text-muted text-center mt-3">Bu ofiste henüz başka ekip üyesi yok.</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="mt-4 text-center">
-        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-lg">
-            <i class="bi bi-arrow-left-circle me-2"></i>Ana Sayfaya Dön
-        </a>
-    </div>
-    {% endif %} {# if office end #}
 </div>
 
+<!-- Ofis İstatistikleri -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start border-primary border-4 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Toplam Ekip Üyesi
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ team_members|length or 0 }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start border-success border-4 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Danışman Sayısı
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ team_members|selectattr('role', 'equalto', 'danisman')|list|length or 0 }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start border-info border-4 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Çalışan Sayısı
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ team_members|selectattr('role', 'equalto', 'calisan')|list|length or 0 }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start border-warning border-4 shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Ofis Durumu
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% if office.is_active %}Aktif{% else %}Pasif{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-{{ 'check-circle' if office.is_active else 'times-circle' }} fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Ofis Bulunamadı -->
+<div class="page-header">
+    <div class="text-center">
+        <h1 class="page-title">
+            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Ofis Bulunamadı
+        </h1>
+        <p class="page-subtitle text-muted">Bu broker hesabına atanmış bir ofis bulunamadı</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-building fa-4x text-muted mb-3"></i>
+                <h5 class="text-danger">Ofis Ataması Bulunamadı</h5>
+                <p class="text-muted">Bu broker hesabına atanmış bir ofis bulunamadı. Lütfen sistem yöneticisi ile iletişime geçin.</p>
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                    <i class="fas fa-home me-1"></i>Ana Sayfaya Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+{% if office %}
+<!-- Yeni Ekip Üyesi Ekleme -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-user-plus me-2"></i>Yeni Ekip Üyesi Ekle
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('main.my_office') }}" class="needs-validation" novalidate>
+                    <!-- Kişisel Bilgiler -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-success border-bottom pb-2 mb-3">
+                                <i class="fas fa-user me-2"></i>Kişisel Bilgiler
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="ad" class="form-label">
+                                <i class="fas fa-user me-1"></i>Ad <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="ad" id="ad" class="form-control" required
+                                   value="{{ request.form.ad if request.form.ad }}"
+                                   placeholder="Adını giriniz">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen ad giriniz.
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label for="soyad" class="form-label">
+                                <i class="fas fa-user me-1"></i>Soyad <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="soyad" id="soyad" class="form-control" required
+                                   value="{{ request.form.soyad if request.form.soyad }}"
+                                   placeholder="Soyadını giriniz">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen soyad giriniz.
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>E-posta <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" name="email" id="email" class="form-control" required
+                                   value="{{ request.form.email if request.form.email }}"
+                                   placeholder="ornek@email.com">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Lütfen geçerli bir e-posta giriniz.
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-1"></i>Şifre <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" name="password" id="password" class="form-control" required
+                                   minlength="6" placeholder="En az 6 karakter">
+                            <div class="invalid-feedback">
+                                <i class="fas fa-exclamation-circle me-1"></i>Şifre en az 6 karakter olmalıdır.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rol ve İşlem -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-warning border-bottom pb-2 mb-3">
+                                <i class="fas fa-user-tag me-2"></i>Rol Atama
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-end">
+                        <div class="col-md-4 mb-3">
+                            <label for="role" class="form-label">
+                                <i class="fas fa-user-cog me-1"></i>Rol
+                            </label>
+                            <select name="role" id="role" class="form-select">
+                                <option value="danisman" {% if request.form.role == 'danisman' or not request.form.role %}selected{% endif %}>
+                                    <i class="fas fa-user-graduate"></i> Danışman
+                                </option>
+                                <option value="calisan" {% if request.form.role == 'calisan' %}selected{% endif %}>
+                                    <i class="fas fa-user"></i> Çalışan (Destek)
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>Kullanıcının ofisteki rolü
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-user-plus me-1"></i>Ekip Üyesi Ekle
+                            </button>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="alert alert-info mb-0 py-2">
+                                <small>
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Yeni üye otomatik olarak bu ofise atanacak
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mevcut Ekip Üyeleri -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-success">
+                    <i class="fas fa-users me-2"></i>Mevcut Ekip Üyeleri
+                    {% if team_members %}
+                        <span class="badge bg-success ms-2">{{ team_members|length }} Üye</span>
+                    {% endif %}
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if team_members %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Kullanıcı</th>
+                                    <th>E-posta</th>
+                                    <th>Rol</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in team_members %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">
+                                                <div class="icon-circle bg-{{ 'primary' if member.role == 'danisman' else 'secondary' }}">
+                                                    <i class="fas fa-{{ 'user-graduate' if member.role == 'danisman' else 'user' }} text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="font-weight-bold">{{ member.ad or 'İsim' }} {{ member.soyad or 'Soyisim' }}</div>
+                                                <div class="text-muted small">{{ member.role|title }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ member.email }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if member.role == 'danisman' else 'secondary' }}">
+                                            {{ member.role|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if member.is_active %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Aktif
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times me-1"></i>Pasif
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-warning" title="Düzenle" disabled>
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Ekipten Çıkar" disabled>
+                                                <i class="fas fa-user-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-muted">İşlemler yakında...</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-users fa-4x mb-3"></i>
+                        <h5>Henüz ekip üyesi yok</h5>
+                        <p>Bu ofiste henüz başka ekip üyesi bulunmuyor. Yukarıdaki formu kullanarak yeni üye ekleyebilirsiniz.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-home me-1"></i>Ana Sayfaya Dön
+        </a>
+        <a href="{{ url_for('main.broker_dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-tachometer-alt me-1"></i>Broker Dashboard
+        </a>
+    </div>
+</div>
+{% endif %} {# if office end #}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
 <script>
 // Bootstrap 5 form validation
-(function () {
-  'use strict'
-  var forms = document.querySelectorAll('.needs-validation')
-  Array.prototype.slice.call(forms)
-    .forEach(function (form) {
-      form.addEventListener('submit', function (event) {
-        if (!form.checkValidity()) {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-        form.classList.add('was-validated')
-      }, false)
-    })
-})()
+(function() {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+
+// Form alanları için real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Email validation
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+            const email = this.value;
+            if (email && !email.includes('@')) {
+                this.setCustomValidity('Geçerli bir e-posta adresi giriniz');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+
+    // Password strength indicator
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const parentDiv = this.parentNode;
+            let helpText = parentDiv.querySelector('.password-help');
+
+            if (!helpText) {
+                helpText = document.createElement('div');
+                helpText.className = 'form-text password-help';
+                parentDiv.appendChild(helpText);
+            }
+
+            if (password.length === 0) {
+                helpText.innerHTML = '<i class="fas fa-info-circle me-1"></i>Güvenli bir şifre oluşturun';
+            } else if (password.length < 6) {
+                helpText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-1"></i>Şifre çok kısa (en az 6 karakter)';
+            } else if (password.length < 8) {
+                helpText.innerHTML = '<i class="fas fa-check text-warning me-1"></i>Orta güçlü şifre (8+ karakter önerilir)';
+            } else {
+                helpText.innerHTML = '<i class="fas fa-check text-success me-1"></i>Güçlü şifre';
+            }
+        });
+    }
+
+    // Role change handler
+    const roleSelect = document.getElementById('role');
+    if (roleSelect) {
+        roleSelect.addEventListener('change', function() {
+            const selectedRole = this.value;
+            const helpText = this.parentNode.querySelector('.form-text');
+
+            switch(selectedRole) {
+                case 'danisman':
+                    helpText.innerHTML = '<i class="fas fa-user-graduate text-primary me-1"></i>Danışman: Standart özellikleri kullanabilir';
+                    break;
+                case 'calisan':
+                    helpText.innerHTML = '<i class="fas fa-user text-secondary me-1"></i>Çalışan: Sınırlı erişime sahip olur';
+                    break;
+                default:
+                    helpText.innerHTML = '<i class="fas fa-info-circle me-1"></i>Kullanıcının ofisteki rolü';
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

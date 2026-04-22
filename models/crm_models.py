@@ -39,6 +39,39 @@ class Contact(db.Model):
     def __repr__(self):
         return f"<Contact {self.first_name} {self.last_name}>"
 
+    @property
+    def full_name(self):
+        """Return contact's full name."""
+        return f"{self.first_name} {self.last_name}"
+
+    # Backward compatibility properties for tests
+    @property
+    def ad(self):
+        """Alias for first_name for backward compatibility."""
+        return self.first_name
+
+    @ad.setter
+    def ad(self, value):
+        self.first_name = value
+
+    @property
+    def soyad(self):
+        """Alias for last_name for backward compatibility."""
+        return self.last_name
+
+    @soyad.setter
+    def soyad(self, value):
+        self.last_name = value
+
+    @property
+    def telefon(self):
+        """Alias for phone for backward compatibility."""
+        return self.phone
+
+    @telefon.setter
+    def telefon(self, value):
+        self.phone = value
+
     def to_dict(self):
         """Contact nesnesini dictionary'ye dönüştürür"""
         return {
