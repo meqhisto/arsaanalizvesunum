@@ -23,14 +23,14 @@
         </div>
         <div class="flex items-center space-x-3">
           <!-- Theme Toggle -->
-          <button id="theme-toggle" class="btn-secondary text-sm" title="Tema değiştir">
+          <button id="theme-toggle" class="btn-secondary text-sm" title="Tema değiştir" aria-label="Tema değiştir">
             <i class="fas fa-moon"></i>
           </button>
 
           <!-- Notifications -->
           {% if bildirimler and bildirimler|length > 0 %}
           <div class="relative group">
-            <button class="btn-primary relative" type="button">
+            <button class="btn-primary relative" type="button" aria-label="Bildirimler">
               <i class="fas fa-bell"></i>
               <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 {{ bildirimler|length }}
