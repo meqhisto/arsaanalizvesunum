@@ -11,7 +11,7 @@ from sqlalchemy import text, cast, Date, or_ # Sorgular için
 # Modelleri ve db nesnesini models paketinden import et
 from models import db
 from models.user_models import User
-from models.crm_models import Contact, Company, Interaction, Deal, Task
+from models.crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam
 
 # Flask uygulamasının yapılandırmasına erişmek için current_app
 from flask import current_app
