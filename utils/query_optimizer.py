@@ -109,11 +109,11 @@ class QueryOptimizer:
         """Get office users with their statistics"""
         from sqlalchemy import func
         
-        # Get users with analysis and contact counts
+        # Get users with analysis and contact counts (use distinct to avoid cartesian product)
         users_with_stats = db.session.query(
             User,
-            func.count(ArsaAnaliz.id).label('analysis_count'),
-            func.count(Contact.id).label('contact_count')
+            func.count(func.distinct(ArsaAnaliz.id)).label('analysis_count'),
+            func.count(func.distinct(Contact.id)).label('contact_count')
         ).outerjoin(
             ArsaAnaliz, User.id == ArsaAnaliz.user_id
         ).outerjoin(
@@ -136,33 +136,24 @@ class QueryOptimizer:
         
         stats = {}
         
-        # User's own stats
-        user_stats = db.session.query(
-            func.count(ArsaAnaliz.id).label('total_analyses'),
-            func.count(Contact.id).label('total_contacts'),
-            func.count(Deal.id).label('total_deals'),
-            func.count(Task.id).label('total_tasks')
-        ).select_from(User).outerjoin(
-            ArsaAnaliz, User.id == ArsaAnaliz.user_id
-        ).outerjoin(
-            Contact, User.id == Contact.user_id
-        ).outerjoin(
-            Deal, User.id == Deal.user_id
-        ).outerjoin(
-            Task, User.id == Task.user_id
-        ).filter(User.id == user_id).first()
+        # User's own stats - Use separate queries to avoid massive cartesian products
+        # that multiply rows when a user has many of each type (n*m*o*p rows).
+        total_analyses = db.session.query(func.count(ArsaAnaliz.id)).filter(ArsaAnaliz.user_id == user_id).scalar()
+        total_contacts = db.session.query(func.count(Contact.id)).filter(Contact.user_id == user_id).scalar()
+        total_deals = db.session.query(func.count(Deal.id)).filter(Deal.user_id == user_id).scalar()
+        total_tasks = db.session.query(func.count(Task.id)).filter(Task.user_id == user_id).scalar()
         
         stats['user'] = {
-            'total_analyses': user_stats.total_analyses or 0,
-            'total_contacts': user_stats.total_contacts or 0,
-            'total_deals': user_stats.total_deals or 0,
-            'total_tasks': user_stats.total_tasks or 0
+            'total_analyses': total_analyses or 0,
+            'total_contacts': total_contacts or 0,
+            'total_deals': total_deals or 0,
+            'total_tasks': total_tasks or 0
         }
         
-        # Monthly stats
+        # Monthly stats - Use distinct counts to prevent cartesian products
         monthly_stats = db.session.query(
-            func.count(ArsaAnaliz.id).label('monthly_analyses'),
-            func.count(Contact.id).label('monthly_contacts')
+            func.count(func.distinct(ArsaAnaliz.id)).label('monthly_analyses'),
+            func.count(func.distinct(Contact.id)).label('monthly_contacts')
         ).select_from(User).outerjoin(
             ArsaAnaliz, (User.id == ArsaAnaliz.user_id) & (ArsaAnaliz.created_at >= start_of_month)
         ).outerjoin(
@@ -177,9 +168,9 @@ class QueryOptimizer:
         # Office stats (if office_id provided)
         if office_id:
             office_stats = db.session.query(
-                func.count(User.id).label('office_users'),
-                func.count(ArsaAnaliz.id).label('office_analyses'),
-                func.count(Contact.id).label('office_contacts')
+                func.count(func.distinct(User.id)).label('office_users'),
+                func.count(func.distinct(ArsaAnaliz.id)).label('office_analyses'),
+                func.count(func.distinct(Contact.id)).label('office_contacts')
             ).select_from(Office).join(
                 User, Office.id == User.office_id
             ).outerjoin(
