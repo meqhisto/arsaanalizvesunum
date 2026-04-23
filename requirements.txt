@@ -43,7 +43,7 @@ python-docx==1.1.2
 python-dotenv==1.0.0
 python-pptx==1.0.2
 pytz==2025.2
-pywin32==310; sys_platform == "win32"; sys_platform == "win32"
+pywin32==310; sys_platform == 'win32'
 PyYAML==6.0.2
 qrcode==8.2
 referencing==0.36.2
