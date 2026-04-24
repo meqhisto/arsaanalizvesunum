@@ -72,6 +72,8 @@ def list_contacts():
     search = request.args.get('search', '').strip()
     status = request.args.get('status', '').strip()
     company_id = request.args.get('company_id', type=int)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
     # Base query
     query = Contact.query.filter_by(user_id=current_user.id)
@@ -442,6 +444,8 @@ def list_companies_disabled(page, per_page):
     
     # Filtreleme parametreleri
     search = request.args.get('search', '').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
     # Base query
     query = Company.query.filter_by(user_id=current_user.id)
@@ -577,6 +581,8 @@ def list_deals(page, per_page):
     # Filtreleme parametreleri
     stage = request.args.get('stage', '').strip()
     contact_id = request.args.get('contact_id', type=int)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
     # Base query
     query = Deal.query.filter_by(user_id=current_user.id)
