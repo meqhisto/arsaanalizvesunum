@@ -6,6 +6,7 @@ Bu modül, arsa verilerini analiz etmek ve potansiyel getiri hesaplamak için ku
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List
+import json
 
 @dataclass
 class AnalizMetrikleri:

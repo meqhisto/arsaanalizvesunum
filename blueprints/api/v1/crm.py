@@ -29,7 +29,8 @@ crm_v1 = Blueprint('crm_v1', __name__)
 @crm_v1.route('/contacts', methods=['GET'])
 @jwt_required()
 @log_api_call
-def list_contacts():
+@paginate_query()
+def list_contacts(page, per_page):
     """
     Kişi listesi
     ---
