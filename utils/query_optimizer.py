@@ -106,27 +106,32 @@ class QueryOptimizer:
     
     @staticmethod
     def get_office_users_with_stats(office_id):
-        """Get office users with their statistics"""
-        from sqlalchemy import func
+        """Get office users with their statistics using efficient subqueries"""
+        from sqlalchemy import func, select
+
+        # Correlated scalar subqueries to prevent Cartesian product when joining multiple one-to-many relationships
+        analysis_subq = select(func.count(ArsaAnaliz.id)).where(
+            ArsaAnaliz.user_id == User.id
+        ).correlate(User).scalar_subquery()
+
+        contact_subq = select(func.count(Contact.id)).where(
+            Contact.user_id == User.id
+        ).correlate(User).scalar_subquery()
         
-        # Get users with analysis and contact counts
+        # Get users with analysis and contact counts efficiently
         users_with_stats = db.session.query(
             User,
-            func.count(ArsaAnaliz.id).label('analysis_count'),
-            func.count(Contact.id).label('contact_count')
-        ).outerjoin(
-            ArsaAnaliz, User.id == ArsaAnaliz.user_id
-        ).outerjoin(
-            Contact, User.id == Contact.user_id
+            analysis_subq.label('analysis_count'),
+            contact_subq.label('contact_count')
         ).filter(
             User.office_id == office_id
-        ).group_by(User.id).all()
+        ).all()
         
         return users_with_stats
     
     @staticmethod
     def get_dashboard_stats(user_id, office_id=None):
-        """Get optimized dashboard statistics"""
+        """Get optimized dashboard statistics using separate queries to avoid Cartesian products"""
         from sqlalchemy import func
         from datetime import datetime, timedelta
         
@@ -137,61 +142,52 @@ class QueryOptimizer:
         stats = {}
         
         # User's own stats
-        user_stats = db.session.query(
-            func.count(ArsaAnaliz.id).label('total_analyses'),
-            func.count(Contact.id).label('total_contacts'),
-            func.count(Deal.id).label('total_deals'),
-            func.count(Task.id).label('total_tasks')
-        ).select_from(User).outerjoin(
-            ArsaAnaliz, User.id == ArsaAnaliz.user_id
-        ).outerjoin(
-            Contact, User.id == Contact.user_id
-        ).outerjoin(
-            Deal, User.id == Deal.user_id
-        ).outerjoin(
-            Task, User.id == Task.user_id
-        ).filter(User.id == user_id).first()
+        total_analyses = db.session.query(func.count(ArsaAnaliz.id)).filter(ArsaAnaliz.user_id == user_id).scalar() or 0
+        total_contacts = db.session.query(func.count(Contact.id)).filter(Contact.user_id == user_id).scalar() or 0
+        total_deals = db.session.query(func.count(Deal.id)).filter(Deal.user_id == user_id).scalar() or 0
+        total_tasks = db.session.query(func.count(Task.id)).filter(Task.user_id == user_id).scalar() or 0
         
         stats['user'] = {
-            'total_analyses': user_stats.total_analyses or 0,
-            'total_contacts': user_stats.total_contacts or 0,
-            'total_deals': user_stats.total_deals or 0,
-            'total_tasks': user_stats.total_tasks or 0
+            'total_analyses': total_analyses,
+            'total_contacts': total_contacts,
+            'total_deals': total_deals,
+            'total_tasks': total_tasks
         }
         
         # Monthly stats
-        monthly_stats = db.session.query(
-            func.count(ArsaAnaliz.id).label('monthly_analyses'),
-            func.count(Contact.id).label('monthly_contacts')
-        ).select_from(User).outerjoin(
-            ArsaAnaliz, (User.id == ArsaAnaliz.user_id) & (ArsaAnaliz.created_at >= start_of_month)
-        ).outerjoin(
-            Contact, (User.id == Contact.user_id) & (Contact.created_at >= start_of_month)
-        ).filter(User.id == user_id).first()
+        monthly_analyses = db.session.query(func.count(ArsaAnaliz.id)).filter(
+            ArsaAnaliz.user_id == user_id,
+            ArsaAnaliz.created_at >= start_of_month
+        ).scalar() or 0
+
+        monthly_contacts = db.session.query(func.count(Contact.id)).filter(
+            Contact.user_id == user_id,
+            Contact.created_at >= start_of_month
+        ).scalar() or 0
         
         stats['monthly'] = {
-            'analyses': monthly_stats.monthly_analyses or 0,
-            'contacts': monthly_stats.monthly_contacts or 0
+            'analyses': monthly_analyses,
+            'contacts': monthly_contacts
         }
         
         # Office stats (if office_id provided)
         if office_id:
-            office_stats = db.session.query(
-                func.count(User.id).label('office_users'),
-                func.count(ArsaAnaliz.id).label('office_analyses'),
-                func.count(Contact.id).label('office_contacts')
-            ).select_from(Office).join(
-                User, Office.id == User.office_id
-            ).outerjoin(
-                ArsaAnaliz, User.id == ArsaAnaliz.user_id
-            ).outerjoin(
-                Contact, User.id == Contact.user_id
-            ).filter(Office.id == office_id).first()
+            # We need to count users in office, and total analyses/contacts across those users
+            # Subqueries for users in this office are faster than joining directly
+            office_users = db.session.query(func.count(User.id)).filter(User.office_id == office_id).scalar() or 0
+
+            office_analyses = db.session.query(func.count(ArsaAnaliz.id)).join(
+                User, User.id == ArsaAnaliz.user_id
+            ).filter(User.office_id == office_id).scalar() or 0
+
+            office_contacts = db.session.query(func.count(Contact.id)).join(
+                User, User.id == Contact.user_id
+            ).filter(User.office_id == office_id).scalar() or 0
             
             stats['office'] = {
-                'users': office_stats.office_users or 0,
-                'analyses': office_stats.office_analyses or 0,
-                'contacts': office_stats.office_contacts or 0
+                'users': office_users,
+                'analyses': office_analyses,
+                'contacts': office_contacts
             }
         
         return stats
