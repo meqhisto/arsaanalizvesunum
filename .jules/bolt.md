@@ -1,0 +1,3 @@
+## 2024-05-24 - Avoid Cartesian Products in SQLAlchemy Aggregations
+**Learning:** When querying aggregated statistics (like `func.count()`) in SQLAlchemy, using multiple `.outerjoin()`s on one-to-many relationships (e.g., joining a `User` to their `Analyses` and `Contacts` simultaneously) creates a Cartesian product. This duplicates rows before aggregation, causing wildly inflated and incorrect counts, and scales poorly (O(N*M)).
+**Action:** Replace multiple `.outerjoin()`s with separate `.count()` queries for distinct entities or use correlated scalar subqueries (`select(func.count(Model.id)).where(Model.user_id == User.id).scalar_subquery()`) to calculate the counts accurately and efficiently.
