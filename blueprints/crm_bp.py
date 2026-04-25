@@ -2022,6 +2022,7 @@ def crm_team_management():
     # Broker'ın mevcut ekibi
     # CrmTeam modeli ve ilişkileri üzerinden çekilecek.
     # Varsayalım ki bir broker sadece bir takıma sahip olabilir (şimdilik)
+    from models.crm_models import CrmTeam
     team = CrmTeam.query.filter_by(broker_id=current_user.id).first()
     team_members = []
     if team:
@@ -2038,6 +2039,7 @@ def crm_team_management():
 @crm_bp.route('/team/add_member/<int:user_id_to_add>', methods=['POST'])
 @login_required
 def crm_team_add_member(user_id_to_add):
+    from models.crm_models import CrmTeam
     if current_user.role != 'broker':
         return jsonify(success=False, message="Yetkisiz işlem."), 403
     
@@ -2066,6 +2068,7 @@ def crm_team_add_member(user_id_to_add):
 @crm_bp.route('/team/remove_member/<int:user_id_to_remove>', methods=['POST'])
 @login_required
 def crm_team_remove_member(user_id_to_remove):
+    from models.crm_models import CrmTeam
     if current_user.role != 'broker':
         return jsonify(success=False, message="Yetkisiz işlem."), 403
 
