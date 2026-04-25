@@ -239,6 +239,7 @@ class ArsaAnalizci:
         # Altyapı katkısı (Örnek: Her altyapı için sabit puan)
         altyapi = arsa_data.get('altyapi', {})
         if isinstance(altyapi, str):
+             import json
              try:
                  altyapi = json.loads(altyapi)
              except json.JSONDecodeError:
