@@ -1,0 +1,3 @@
+## 2024-04-23 - Cartesian Product in Dashboard Stats
+**Learning:** The dashboard statistics query was doing multiple outer joins (`ArsaAnaliz`, `Contact`, `Deal`, `Task`) on `User.id` in a single query. This creates an enormous intermediate Cartesian product (N^4 combinations if the user has records in all tables), leading to severe performance bottlenecks and incorrect multiplication of counts.
+**Action:** Always replace multiple one-to-many left/outer joins in aggregation queries with either multiple separate scalar count queries, or use `func.count(func.distinct(Model.id))` to avoid cartesian products multiplying the row sets.

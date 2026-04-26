@@ -97,6 +97,10 @@ def list_contacts():
     # Sıralama
     query = query.order_by(Contact.created_at.desc())
     
+    # Sayfalama parametreleri
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
     # Sayfalama
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)

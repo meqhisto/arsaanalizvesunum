@@ -4,6 +4,7 @@ Arsa Yatırım Danışmanlığı - Analiz Modülü
 Bu modül, arsa verilerini analiz etmek ve potansiyel getiri hesaplamak için kullanılır.
 """
 
+import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List

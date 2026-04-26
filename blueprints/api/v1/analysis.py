@@ -401,6 +401,10 @@ def update_analysis(analysis_id):
     if not analysis:
         return not_found_response("Analysis not found")
     
+    data = request.get_json()
+    if not data:
+        return error_response("Geçersiz veri", 400)
+
     # Analizi güncelle
     for field, value in request.get_json().items():
         if hasattr(analysis, field):
@@ -600,8 +604,12 @@ def bulk_create_analyses():
     if not current_user:
         return not_found_response("User not found")
     
-    analyses_data = request.get_json().get('analyses', [])
-    portfolio_id = request.get_json().get('portfolio_id')
+    data = request.get_json()
+    if not data or 'analyses' not in data:
+        return error_response("Analiz verisi bulunamadı", 400)
+
+    analyses_data = data['analyses']
+    portfolio_id = data.get('portfolio_id')
     
     # Portfolio kontrolü
     portfolio = None
