@@ -1,0 +1,3 @@
+## 2025-05-19 - [Cartesian Products with SQLAlchemy Aggregations]
+**Learning:** Using multiple `outerjoin`s to one-to-many relationships combined with `func.count()` causes massive Cartesian products, resulting in radically incorrect aggregation counts and terribly slow performance in Postgres. SQLAlchemy generates a huge cross-product intermediate table before counting, breaking the counts on both related models.
+**Action:** When querying multiple aggregated statistics on the same base model (like `User`), I must always use separate, individual `.count()` scalar queries, or isolated `select(func.count(Model.id)).where(...).scalar_subquery()` fields. Never combine multiple `outerjoin`s when counting related rows.

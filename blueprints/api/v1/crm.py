@@ -98,6 +98,8 @@ def list_contacts():
     query = query.order_by(Contact.created_at.desc())
     
     # Sayfalama
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     
     # Serialize
