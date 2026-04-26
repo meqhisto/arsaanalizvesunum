@@ -569,7 +569,7 @@
                         {% for category, message in messages %}
                             <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
                                 {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         {% endfor %}
                     </div>
@@ -1078,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="toast-header">
                     <i class="fas fa-${getToastIcon(type)} me-2"></i>
                     <strong class="me-auto">${getToastTitle(type)}</strong>
-                    <button type="button" class="btn-close" onclick="hideToast('${toastId}')"></button>
+                    <button type="button" class="btn-close" onclick="hideToast('${toastId}')" aria-label="Close"></button>
                 </div>
                 <div class="toast-body">
                     ${message}

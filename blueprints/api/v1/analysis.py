@@ -392,6 +392,7 @@ def update_analysis(analysis_id):
         description: Analysis not found
     """
     current_user = ()
+    data = request.get_json()
     analysis = ArsaAnaliz.query.filter_by(
         id=analysis_id,
         user_id=current_user.id
@@ -446,6 +447,7 @@ def delete_analysis(analysis_id):
         description: Analysis not found
     """
     current_user = ()
+    data = request.get_json()
     analysis = ArsaAnaliz.query.filter_by(
         id=analysis_id,
         user_id=current_user.id
@@ -594,6 +596,7 @@ def bulk_create_analyses():
         description: Unauthorized
     """
     current_user = ()
+    data = request.get_json()
     if not current_user:
         return not_found_response("User not found")
     
