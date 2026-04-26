@@ -392,6 +392,7 @@ def update_analysis(analysis_id):
         description: Analysis not found
     """
     current_user = ()
+    data = request.get_json()
     analysis = ArsaAnaliz.query.filter_by(
         id=analysis_id,
         user_id=current_user.id
@@ -405,7 +406,7 @@ def update_analysis(analysis_id):
         return error_response("Geçersiz veri", 400)
 
     # Analizi güncelle
-    for field, value in data.items():
+    for field, value in request.get_json().items():
         if hasattr(analysis, field):
             setattr(analysis, field, value)
     
@@ -450,6 +451,7 @@ def delete_analysis(analysis_id):
         description: Analysis not found
     """
     current_user = ()
+    data = request.get_json()
     analysis = ArsaAnaliz.query.filter_by(
         id=analysis_id,
         user_id=current_user.id
@@ -598,6 +600,7 @@ def bulk_create_analyses():
         description: Unauthorized
     """
     current_user = ()
+    data = request.get_json()
     if not current_user:
         return not_found_response("User not found")
     

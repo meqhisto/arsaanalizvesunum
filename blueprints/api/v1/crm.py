@@ -102,6 +102,8 @@ def list_contacts():
     per_page = request.args.get('per_page', 10, type=int)
 
     # Sayfalama
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     
     # Serialize
@@ -462,6 +464,8 @@ def list_companies_disabled(page, per_page):
     query = query.order_by(Company.created_at.desc())
     
     # Sayfalama
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     
     # Serialize
@@ -597,6 +601,8 @@ def list_deals(page, per_page):
     query = query.order_by(Deal.created_at.desc())
     
     # Sayfalama
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     
     # Serialize

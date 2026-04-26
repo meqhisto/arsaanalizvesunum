@@ -141,7 +141,7 @@
         <main id="main-content" class="main-content {% block main_class %}{% if current_user.is_authenticated and (request.endpoint in ['main.index', 'analysis.analizler', 'analysis.analiz_detay', 'portfolio.portfolios_list', 'main.profile'] or 'crm.' in request.endpoint) %}with-sidebar{% else %}w-full{% endif %}{% endblock %} p-6">
             <!-- Mobile sidebar toggle -->
             {% if current_user.is_authenticated and (request.endpoint in ['main.index', 'analysis.analizler', 'analysis.analiz_detay', 'portfolio.portfolios_list', 'main.profile'] or 'crm.' in request.endpoint) %}
-            <button id="sidebar-toggle" class="lg:hidden fixed top-4 left-4 z-50 text-white p-2 rounded-lg shadow-lg" style="background-color: var(--primary-color);">
+            <button id="sidebar-toggle" class="lg:hidden fixed top-4 left-4 z-50 text-white p-2 rounded-lg shadow-lg" style="background-color: var(--primary-color);" aria-label="Menüyü aç">
                 <i class="fas fa-bars"></i>
             </button>
             {% endif %}
