@@ -260,7 +260,7 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
         # Kullanıcıya genel bir hata mesajı göster
         # Üretimde daha kullanıcı dostu bir hata sayfası göstermek daha iyi olur.
         # return render_template("error.html", error_message=str(e)), 500
-        return f"Bir sunucu hatası oluştu: {str(e)}. Detaylar loglandı.", 500
+        return "Bir sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.", 500
 
 
     # --- BLUEPRINT REGISTRATION ---
