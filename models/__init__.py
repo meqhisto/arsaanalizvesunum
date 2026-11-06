@@ -10,7 +10,7 @@ from .crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam, crm_
 from .office_models import Office
 from .permission_models import PermissionTemplate, UserPermission, OfficePermission, PermissionLog, PermissionManager
 from .is_takip_models import IsSablonu, IsSablonAdimi, Is, IsBelgesi, IsMasrafi, IsAktivitesi, Bildirim
-from .ilan_models import GayrimenkulSahibi, Ilan, IlanGayrimenkul, IlanEmsal
+from .ilan_models import KurulumIsareti, GayrimenkulSahibi, Ilan, IlanGayrimenkul, IlanEmsal
 
 def _ensure_columns():
     """Sonradan eklenen sütunları mevcut tablolara ekler (create_all bunu yapmaz)."""

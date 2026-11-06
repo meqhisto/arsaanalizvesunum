@@ -2,7 +2,11 @@
 """Gayrimenkul/ilan yapısı için açılışta çalışan, tekrar çalıştırılabilir kurulum ve geçiş (spec §7).
 
 1. arsa_analizleri'ne yeni sütunlar ve crm_deals.ilan_id `IF NOT EXISTS` ile eklenir
-   (yeni tablolar `db.create_all()` ile kurulur).
+   (yeni tablolar `db.create_all()` ile kurulur). Her açılışta çalışır.
+
+2-5. veri geçişi yalnız BİR KEZ çalışır: `kurulum_isaretleri`'nde 'ilan_gecisi_v1' satırı yoksa
+   çalıştırılır ve satır aynı işlemde eklenir. (Sonradan ilansız gayrimenkul olabilir, portföyden
+   ilan çıkarılabilir; geçiş bunları geri almamalı.)
 2. tur boş kayıtlar 'arsa' yapılır.
 3. altyapi, ozellikler.altyapi'ya kopyalanır (altyapi sütunu silinmez).
 4. Hiç ilanı olmayan her gayrimenkul için tek gayrimenkullü satılık/pazarlamada ilan açılır.
@@ -18,10 +22,12 @@ from sqlalchemy import Text, cast, or_, text
 
 from models import db
 from models.arsa_models import ArsaAnaliz
-from models.ilan_models import Ilan, IlanGayrimenkul
+from models.ilan_models import Ilan, IlanGayrimenkul, KurulumIsareti
 from modules.rapor.model import parse_altyapi
 
 log = logging.getLogger(__name__)
+
+GECIS_ISARETI = 'ilan_gecisi_v1'
 
 ARSA_SUTUNLARI = [
     ('tur', "VARCHAR(20) DEFAULT 'arsa'"),
@@ -120,10 +126,13 @@ def _portfoyleri_kopyala():
 def kur():
     try:
         _sutunlari_ekle()
-        db.session.execute(text("UPDATE arsa_analizleri SET tur = 'arsa' WHERE tur IS NULL"))
-        _ozellikleri_doldur()
-        _ilanlari_olustur()
-        _portfoyleri_kopyala()
+        if db.session.get(KurulumIsareti, GECIS_ISARETI) is None:
+            db.session.execute(text("UPDATE arsa_analizleri SET tur = 'arsa' WHERE tur IS NULL"))
+            _ozellikleri_doldur()
+            _ilanlari_olustur()
+            _portfoyleri_kopyala()
+            db.session.add(KurulumIsareti(ad=GECIS_ISARETI))
+            log.info("İlan kurulumu: veri geçişi tamamlandı (%s).", GECIS_ISARETI)
         db.session.commit()
     except Exception:
         db.session.rollback()

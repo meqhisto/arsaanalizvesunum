@@ -5,6 +5,13 @@ from datetime import datetime
 from . import db
 
 
+class KurulumIsareti(db.Model):
+    """Bir kez çalışması gereken veri geçişlerinin işareti (ör. 'ilan_gecisi_v1')."""
+    __tablename__ = 'kurulum_isaretleri'
+    ad = db.Column(db.String(100), primary_key=True)
+    tarih = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
 class GayrimenkulSahibi(db.Model):
     __tablename__ = 'gayrimenkul_sahipleri'
     id = db.Column(db.Integer, primary_key=True)

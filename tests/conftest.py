@@ -35,13 +35,21 @@ def app():
         db.session.remove()
 
 
-@pytest.fixture
-def db_session(app):
-    yield db.session
+def _tablolari_bosalt():
+    """Tüm tabloları (kurulum_isaretleri dahil) boşaltır ve oturumun kimlik haritasını temizler."""
     db.session.rollback()
     tablolar = ', '.join(f'"{t.name}"' for t in db.metadata.sorted_tables)
     db.session.execute(db.text(f'TRUNCATE {tablolar} RESTART IDENTITY CASCADE'))
     db.session.commit()
+    db.session.expunge_all()
+
+
+@pytest.fixture
+def db_session(app):
+    # Öncesinde de boşalt: app fixture'ındaki ilan_kur() geçiş işaretini yazmış olabilir
+    _tablolari_bosalt()
+    yield db.session
+    _tablolari_bosalt()
 
 
 @pytest.fixture

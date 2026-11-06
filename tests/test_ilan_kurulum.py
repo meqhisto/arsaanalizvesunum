@@ -85,3 +85,21 @@ def test_kur_eski_semaya_eksik_sutunlari_ekler(db_session, kullanicilar):
     a = ArsaAnaliz.query.one()
     assert a.tur == 'arsa' and a.ozellikler == {'altyapi': ['yol']}
     assert Ilan.query.one().ana_gayrimenkul.id == a.id
+
+
+def test_gecis_bir_kez_calisir_sonradan_ilansiz_gayrimenkule_ilan_acmaz(db_session, kullanicilar):
+    eski_analiz(kullanicilar['broker']); kur()
+    yeni = ArsaAnaliz(user_id=kullanicilar['broker'], il='Çanakkale', ilce='Merkez', mahalle='Esenler',
+                      ada='7', parsel='8', metrekare=600, fiyat=900_000)
+    db.session.add(yeni); db.session.commit()
+    kur()
+    db.session.refresh(yeni)
+    assert yeni.ilan_baglari == [] and Ilan.query.count() == 1
+
+
+def test_portfoyden_cikarilan_ilan_geri_eklenmez(db_session, kullanicilar):
+    a = eski_analiz(kullanicilar['broker']); p = portfoy(kullanicilar['broker'], [a])
+    kur()
+    p.ilanlar.remove(Ilan.query.one()); db.session.commit()
+    kur()
+    assert p.ilanlar.count() == 0
