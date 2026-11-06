@@ -35,7 +35,6 @@ DEFAULT_MODEL_PATH = os.path.join(MODEL_SAVE_PATH, 'xgboost_model.joblib')
 
 # Veritabanı URL'si burada tanımlanmış ama FiyatTahminModeli'ne engine olarak verilecek.
 # Bu global engine'i FiyatTahminModeli içinde kullanmak yerine, instance'a enjekte etmek daha iyi.
-# DATABASE_URL = "mssql+pyodbc://altan:Yxrkt2bb7q8.@46.221.49.106/arsa_db?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
 # engine = create_engine(DATABASE_URL) # Bu global engine'i burada oluşturmak yerine, FiyatTahminModeli'ne dışarıdan verin.
 
 class ModelBase(ABC):
