@@ -1,3 +1,4 @@
+import os
 # blueprints/api/v1/auth.py
 from flask import Blueprint, request, current_app
 from flask_jwt_extended import (
@@ -24,30 +25,6 @@ from ..utils.responses import (
 
 auth_v1 = Blueprint('auth_v1', __name__)
 
-
-@auth_v1.route('/test-token', methods=['POST'])
-@log_api_call
-def test_token():
-    """Test token creation with string identity"""
-    try:
-        # Test kullanıcısı
-        user = User.query.filter_by(email='apitest@example.com').first()
-        if not user:
-            return error_response("Test user not found", 404)
-
-        # String identity ile token oluştur
-        test_token = create_access_token(identity=str(user.id))
-
-        return success_response(
-            data={
-                'token': test_token,
-                'user_id': str(user.id),
-                'message': 'Token created with string identity'
-            },
-            message="Test token created successfully"
-        )
-    except Exception as e:
-        return error_response(f"Token creation failed: {str(e)}", 500)
 
 # Token blacklist (production'da Redis kullanılmalı)
 blacklisted_tokens = set()
@@ -111,6 +88,10 @@ def register():
       409:
         description: Email already exists
     """
+    # Herkese açık kayıt kapalı: hesapları superadmin / broker oluşturur.
+    # Gerekirse API_REGISTRATION_ENABLED=true ortam değişkeniyle açılabilir.
+    if os.environ.get('API_REGISTRATION_ENABLED', 'false').lower() != 'true':
+        return error_response("Kayıt kapalı. Hesap için sistem yöneticinize başvurun.", 403)
     try:
         # JSON verilerini al
         data = request.get_json()

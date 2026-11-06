@@ -44,7 +44,7 @@
                 Beni hatırla
             </label>
         </div>
-        <a href="#" class="btn btn-link p-0">
+        <a href="{{ url_for('auth.forgot_password') }}" class="btn btn-link p-0">
             Şifremi unuttum
         </a>
     </div>
@@ -56,29 +56,9 @@
         </button>
     </div>
     
-    <!-- Divider -->
-    <div class="auth-divider">
-        <span>veya</span>
-    </div>
-    
-    <!-- Social Login Buttons -->
-    <div class="d-grid gap-2 mb-4">
-        <button type="button" class="btn btn-social btn-google">
-            <i class="fab fa-google me-2"></i>Google ile Giriş Yap
-        </button>
-        <button type="button" class="btn btn-social btn-facebook">
-            <i class="fab fa-facebook me-2"></i>Facebook ile Giriş Yap
-        </button>
-    </div>
-    
-    <!-- Register Link -->
+    <!-- Hesap bilgisi: kayıt herkese açık değil -->
     <div class="text-center">
-        <p class="text-muted small mb-0">
-            Hesabınız yok mu? 
-            <a href="#" class="btn btn-link p-0">
-                Kayıt olun
-            </a>
-        </p>
+        <p class="text-muted small mb-0">Hesabınız yoksa ofis yöneticinizden hesap açmasını isteyin.</p>
     </div>
 </form>
 {% endblock %}
@@ -102,29 +82,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Demo credentials button (for testing)
     const emailField = document.getElementById('email');
     const passwordField = document.getElementById('password');
-    
-    // Add demo button for testing
-    const demoButton = document.createElement('button');
-    demoButton.type = 'button';
-    demoButton.className = 'btn btn-outline-secondary btn-sm mt-2';
-    demoButton.innerHTML = '<i class="fas fa-flask me-1"></i>Demo Hesap';
-    demoButton.onclick = function() {
-        emailField.value = 'demo@arsaanaliz.com';
-        passwordField.value = 'demo123';
-    };
-    
-    // Insert demo button after the form
-    const form = document.querySelector('form');
-    form.appendChild(demoButton);
-    
-    // Social login handlers (placeholder)
-    document.querySelector('.btn-google').addEventListener('click', function() {
-        alert('Google ile giriş özelliği yakında eklenecek!');
-    });
-    
-    document.querySelector('.btn-facebook').addEventListener('click', function() {
-        alert('Facebook ile giriş özelliği yakında eklenecek!');
-    });
     
     // Auto-focus on email field
     emailField.focus();

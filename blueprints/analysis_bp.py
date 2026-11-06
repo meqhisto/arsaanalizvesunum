@@ -542,33 +542,55 @@ def edit_analysis(analysis_id):
         flash('Analiz düzenleme sayfası yüklenirken bir hata oluştu.', 'error')
         return redirect(url_for('analysis.list_analyses'))
 
+def _analizi_sil(analiz):
+    """Analizi bağlı kayıtları ve dosyalarıyla siler, panel istatistiklerini günceller (commit etmez)."""
+    from models.user_models import portfolio_arsalar
+    stats = DashboardStats.query.filter_by(user_id=analiz.user_id).first()
+    if stats:
+        stats.toplam_arsa_sayisi = max(0, (stats.toplam_arsa_sayisi or 0) - 1)
+        stats.toplam_deger = max(Decimal("0.00"), (stats.toplam_deger or Decimal(0)) - (analiz.fiyat or Decimal(0)))
+        if stats.toplam_arsa_sayisi == 0:
+            stats.ortalama_fiyat = stats.en_yuksek_fiyat = stats.en_dusuk_fiyat = 0.0
+    bolge = BolgeDagilimi.query.filter_by(user_id=analiz.user_id, il=analiz.il).first()
+    if bolge:
+        bolge.analiz_sayisi = max(0, (bolge.analiz_sayisi or 0) - 1)
+        bolge.toplam_deger = max(Decimal("0.00"), (bolge.toplam_deger or Decimal(0)) - (analiz.fiyat or Decimal(0)))
+        if bolge.analiz_sayisi == 0:
+            db.session.delete(bolge)
+    # Fotoğraflar: veritabanında 'analiz_id/dosya' biçiminde, UPLOAD_FOLDER altında
+    upload = current_app.config['UPLOAD_FOLDER']
+    for medya in AnalizMedya.query.filter_by(analiz_id=analiz.id).all():
+        yol = os.path.join(upload, medya.filename or '')
+        try:
+            if medya.filename and os.path.isfile(yol):
+                os.remove(yol)
+        except OSError:
+            current_app.logger.warning(f"Medya dosyası silinemedi: {yol}")
+        db.session.delete(medya)
+    klasor = os.path.join(upload, str(analiz.id))
+    try:
+        if os.path.isdir(klasor) and not os.listdir(klasor):
+            os.rmdir(klasor)
+    except OSError:
+        pass
+    # Portföy bağlantıları (iş takip kayıtlarındaki bağlantı veritabanında SET NULL olur)
+    db.session.execute(portfolio_arsalar.delete().where(portfolio_arsalar.c.arsa_id == analiz.id))
+    db.session.delete(analiz)
+
+
 @analysis_bp.route('/<int:analysis_id>/delete', methods=['POST'])
 @login_required
 def delete_analysis(analysis_id):
-    """Analizi sil"""
-    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
-
+    """Analizi sil (JSON)"""
+    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+    if not analysis:
+        return jsonify({'success': False, 'message': 'Analiz bulunamadı.'}), 404
     try:
-        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
-
-        # İlgili medya dosyalarını da sil
-        media_files = AnalizMedya.query.filter_by(analiz_id=analysis_id).all()
-        for media in media_files:
-            # Dosyayı fiziksel olarak sil (eğer varsa)
-            if media.filename and os.path.exists(media.filename):
-                try:
-                    os.remove(media.filename)
-                except OSError:
-                    pass
-            db.session.delete(media)
-
-        # Analizi sil
-        db.session.delete(analysis)
+        il, ilce = analysis.il, analysis.ilce
+        _analizi_sil(analysis)
         db.session.commit()
-
-        flash(f'{analysis.il} {analysis.ilce} analizi başarıyla silindi.', 'success')
+        flash(f'{il} {ilce} analizi başarıyla silindi.', 'success')
         return jsonify({'success': True, 'message': 'Analiz başarıyla silindi.'})
-
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Analysis delete error: {str(e)}", exc_info=True)
@@ -1004,53 +1026,12 @@ def analizler():
 @analysis_bp.route('/delete/<int:analiz_id>', methods=['POST']) # Eski /analiz/sil/...
 @login_required
 def analiz_sil(analiz_id):
+    analiz = ArsaAnaliz.query.get_or_404(analiz_id)
+    if analiz.user_id != current_user.id:
+        flash("Bu analizi silme yetkiniz yok.", "danger")
+        return redirect(url_for('analysis.analizler'))
     try:
-        analiz = ArsaAnaliz.query.get_or_404(analiz_id)
-        if analiz.user_id != current_user.id:
-            flash("Bu analizi silme yetkiniz yok.", "danger")
-            return redirect(url_for('analysis.analizler'))
-
-        # İstatistikleri güncelle
-        stats = DashboardStats.query.filter_by(user_id=current_user.id).first()
-        if stats:
-            stats.toplam_arsa_sayisi = max(0, (stats.toplam_arsa_sayisi or 0) - 1)
-            stats.toplam_deger = max(Decimal("0.00"), (stats.toplam_deger or Decimal(0)) - (analiz.fiyat or Decimal(0)))
-            # Ortalama, min, max fiyatları yeniden hesaplamak gerekebilir veya en azından None kontrolü yapılmalı
-            if stats.toplam_arsa_sayisi == 0:
-                stats.ortalama_fiyat = 0.0
-                stats.en_yuksek_fiyat = 0.0
-                stats.en_dusuk_fiyat = 0.0
-            # else: Daha karmaşık bir yeniden hesaplama gerekebilir tüm analizleri çekerek.
-            # Şimdilik basit bir çıkarma yapıyoruz, bu ortalamayı bozabilir.
-            # Doğru bir ortalama için tüm kalan analizlerin ortalaması alınmalı.
-
-        bolge = BolgeDagilimi.query.filter_by(user_id=current_user.id, il=analiz.il).first()
-        if bolge:
-            bolge.analiz_sayisi = max(0, (bolge.analiz_sayisi or 0) - 1)
-            bolge.toplam_deger = max(Decimal("0.00"), (bolge.toplam_deger or Decimal(0)) - (analiz.fiyat or Decimal(0)))
-            if bolge.analiz_sayisi == 0:
-                db.session.delete(bolge)
-        
-        # İlişkili medyaları ve dosyaları sil
-        for medya in analiz.medyalar: # AnalizMedya modelinde cascade delete varsa bu gerekmeyebilir
-            try:
-                # medya.filename 'analiz_id/dosya_adi' formatında olmalı
-                filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], medya.filename)
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-                db.session.delete(medya) # Veritabanından da sil
-            except Exception as e_media_delete:
-                current_app.logger.error(f"Medya silinirken hata ({medya.filename}): {e_media_delete}")
-        
-        # Analize özel klasörü sil (içi boşsa)
-        analiz_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], str(analiz_id))
-        try:
-            if os.path.exists(analiz_folder) and not os.listdir(analiz_folder):
-                os.rmdir(analiz_folder)
-        except Exception as e_folder_delete:
-            current_app.logger.error(f"Analiz klasörü silinirken hata ({analiz_folder}): {e_folder_delete}")
-
-        db.session.delete(analiz)
+        _analizi_sil(analiz)
         db.session.commit()
         flash("Analiz ve ilişkili medyalar başarıyla silindi.", "success")
     except Exception as e:

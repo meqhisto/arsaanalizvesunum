@@ -175,6 +175,13 @@ def my_office():
             'soyad': request.form.get('soyad'),
             'role': request.form.get('role', 'danisman')
         }
+        # Broker yalnızca kendi ekibine danışman/çalışan ekleyebilir (rol formdan serbestçe alınmaz)
+        if form_data['role'] not in ('danisman', 'calisan'):
+            flash('Geçersiz rol seçimi.', 'danger')
+            return render_template('my_office.html',
+                                office=office,
+                                team_members=team_members,
+                                form_data=form_data), 400
 
         # Validate required fields
         if not all([form_data['email'], form_data['password'], 

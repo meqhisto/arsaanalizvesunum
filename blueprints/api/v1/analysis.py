@@ -19,7 +19,7 @@ from ..utils.decorators import (
     paginate_query, )
 from ..utils.responses import (
     success_response, error_response, not_found_response,
-    paginated_response
+    paginated_response, unauthorized_response
 )
 
 analysis_v1 = Blueprint('analysis_v1', __name__)
@@ -391,7 +391,9 @@ def update_analysis(analysis_id):
       404:
         description: Analysis not found
     """
-    current_user = ()
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user:
+        return unauthorized_response("Kullanıcı bulunamadı")
     data = request.get_json()
     analysis = ArsaAnaliz.query.filter_by(
         id=analysis_id,
@@ -405,12 +407,14 @@ def update_analysis(analysis_id):
     if not data:
         return error_response("Geçersiz veri", 400)
 
-    # Analizi güncelle
-    for field, value in request.get_json().items():
-        if hasattr(analysis, field):
-            setattr(analysis, field, value)
-    
-    analysis.updated_at = datetime.utcnow()
+    # Analizi güncelle: yalnızca izinli alanlar (id, user_id, office_id gibi alanlar değiştirilemez)
+    GUNCELLENEBILIR = {'il', 'ilce', 'mahalle', 'ada', 'parsel', 'pafta', 'koordinatlar', 'metrekare', 'imar_durumu',
+                       'taks', 'kaks', 'fiyat', 'bolge_fiyat', 'altyapi', 'swot_analizi', 'notlar', 'deger_artis_orani'}
+    reddedilen = sorted(set(data) - GUNCELLENEBILIR)
+    if reddedilen:
+        return error_response(f"Bu alanlar güncellenemez: {', '.join(reddedilen)}", 400)
+    for field, value in data.items():
+        setattr(analysis, field, value)
     db.session.commit()
     
     # Dashboard istatistiklerini güncelle
@@ -450,8 +454,9 @@ def delete_analysis(analysis_id):
       404:
         description: Analysis not found
     """
-    current_user = ()
-    data = request.get_json()
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user:
+        return unauthorized_response("Kullanıcı bulunamadı")
     analysis = ArsaAnaliz.query.filter_by(
         id=analysis_id,
         user_id=current_user.id
@@ -460,13 +465,17 @@ def delete_analysis(analysis_id):
     if not analysis:
         return not_found_response("Analysis not found")
     
+    # Bağlı kayıtlar: fotoğraflar ve portföy bağlantıları (iş takip bağlantısı DB'de SET NULL)
+    AnalizMedya.query.filter_by(analiz_id=analysis.id).delete(synchronize_session=False)
+    db.session.execute(portfolio_arsalar.delete().where(portfolio_arsalar.c.arsa_id == analysis.id))
+    il, ilce = analysis.il, analysis.ilce
     db.session.delete(analysis)
     db.session.commit()
     
     # Dashboard istatistiklerini güncelle
     update_dashboard_stats(current_user.id)
     
-    current_app.logger.info(f"Analysis deleted: {analysis.il}/{analysis.ilce}")
+    current_app.logger.info(f"Analysis deleted: {il}/{ilce}")
     return success_response(message="Analysis deleted successfully")
 
 
@@ -599,7 +608,9 @@ def bulk_create_analyses():
       401:
         description: Unauthorized
     """
-    current_user = ()
+    current_user = User.query.get(get_jwt_identity())
+    if not current_user:
+        return unauthorized_response("Kullanıcı bulunamadı")
     data = request.get_json()
     if not current_user:
         return not_found_response("User not found")
@@ -670,8 +681,9 @@ def update_dashboard_stats(user_id):
             return
         
         total_count = len(analyses)
-        total_value = sum(float(a.yaklasik_deger or 0) for a in analyses)
-        prices = [float(a.tahmini_deger_m2 or 0) for a in analyses if a.tahmini_deger_m2]
+        # Web tarafıyla aynı: istatistikler arsa satış fiyatı (fiyat) üzerinden
+        prices = [float(a.fiyat) for a in analyses if a.fiyat]
+        total_value = sum(prices)
         
         avg_price = sum(prices) / len(prices) if prices else 0
         max_price = max(prices) if prices else 0
