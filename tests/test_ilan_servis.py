@@ -316,3 +316,48 @@ def test_dort_parselli_ilan_kalan_uc_ile_yeni_ana_kayit(db_session, kullanicilar
     assert [b.gayrimenkul_id for b in ilan.baglar] == [g.id for g in gler[1:]]
     assert [b.ana_kayit for b in ilan.baglar] == [True, False, False]
     assert ilan.ana_gayrimenkul.id == gler[1].id
+
+
+def test_sorumlu_ilani_kaydedebilir_ama_yeni_gayrimenkul_ve_sorumlu_kisitli(db_session, kullanicilar):
+    k = kullanicilar
+    br, d1 = kul(k['broker']), kul(k['d1'])
+    g_br = gayrimenkul(br.id, parsel='2')
+    g_br2 = gayrimenkul(br.id, parsel='3')
+    ilan = ilan_kaydet(None, br, veri([g_br], sorumlu_user_id=d1.id)); db.session.commit()
+    assert ilan_or_404(ilan.id, d1).id == ilan.id
+
+    # d1 yalnız sorumlu: durumunu değiştirerek kaydedebilir (mevcut gayrimenkul, değişmeyen sorumlu)
+    ilan_kaydet(ilan, d1, veri([g_br], durum='pazarlamada', sorumlu_user_id=d1.id)); db.session.commit()
+    assert ilan.durum == 'pazarlamada' and ilan.sorumlu_user_id == d1.id
+
+    # bağlı olmayan broker gayrimenkulü eklenemez
+    with pytest.raises(IlanHatasi):
+        ilan_kaydet(ilan, d1, veri([g_br, g_br2], sorumlu_user_id=d1.id))
+    db.session.rollback()
+
+    # sorumlu görünmeyen bir kullanıcıya değiştirilemez
+    with pytest.raises(IlanHatasi):
+        ilan_kaydet(ilan, d1, veri([g_br], sorumlu_user_id=k['d2']))
+    db.session.rollback()
+
+
+def test_degismeyen_gorunmez_sorumlu_korunur(db_session, kullanicilar):
+    k = kullanicilar
+    d1 = kul(k['d1'])
+    g = gayrimenkul(d1.id)
+    ilan = ilan_kaydet(None, d1, veri([g])); db.session.commit()
+    ilan.sorumlu_user_id = k['dx']; db.session.commit()  # ör. superadmin atadı; dx d1'e görünmez
+    ilan_kaydet(ilan, d1, veri([g], durum='opsiyonlu', sorumlu_user_id=k['dx'])); db.session.commit()
+    assert ilan.durum == 'opsiyonlu' and ilan.sorumlu_user_id == k['dx']
+
+
+def test_ana_kayit_tasininca_office_guncellenir(db_session, kullanicilar):
+    br = kul(kullanicilar['broker'])
+    g1 = gayrimenkul(br.id, parsel='1'); g2 = gayrimenkul(br.id, parsel='2')
+    g2.office_id = kullanicilar['ofis']; db.session.commit()
+    ilan = ilan_kaydet(None, br, veri([g1, g2])); db.session.commit()
+    assert ilan.office_id is None
+    ilan_id = ilan.id
+    gayrimenkul_silinirken(g1); db.session.delete(g1); db.session.commit()
+    db.session.expire_all()
+    assert db.session.get(Ilan, ilan_id).office_id == kullanicilar['ofis']

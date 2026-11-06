@@ -171,7 +171,13 @@ def ilan_kaydet(ilan, user, veri):
             gm_satirlari.append((gid, _sayi(satir.get('parsel_fiyati'), 'Parsel fiyatı')))
     if not gm_satirlari:
         raise IlanHatasi("İlana en az bir gayrimenkul eklenmelidir.")
-    gorunurler = {g.id: g for g in gorunur_gayrimenkuller(user).filter(ArsaAnaliz.id.in_(gorulen))}
+    # Düzenlemede ilana zaten bağlı gayrimenkuller görünürlük şartı olmadan kabul edilir
+    # (ör. ilanı yalnız sorumlu olarak gören danışman); yeni eklenenler görünür olmalı.
+    gorunurler = {b.gayrimenkul_id: b.gayrimenkul for b in ilan.baglar
+                  if b.gayrimenkul_id in gorulen} if ilan is not None else {}
+    yeniler = gorulen - set(gorunurler)
+    if yeniler:
+        gorunurler.update({g.id: g for g in gorunur_gayrimenkuller(user).filter(ArsaAnaliz.id.in_(yeniler))})
     if len(gorunurler) != len(gorulen):
         raise IlanHatasi("Seçilen gayrimenkul bulunamadı.")
 
@@ -204,7 +210,8 @@ def ilan_kaydet(ilan, user, veri):
             sorumlu_id = int(sorumlu_id)
         except (TypeError, ValueError):
             raise IlanHatasi("Seçilen sorumlu bulunamadı.")
-        if not _kullanici_gorunur_mu(user, sorumlu_id):
+        degismedi = ilan is not None and sorumlu_id == ilan.sorumlu_user_id
+        if not degismedi and not _kullanici_gorunur_mu(user, sorumlu_id):
             raise IlanHatasi("Seçilen sorumlu bulunamadı.")
 
     ana_id = veri.get('ana_gayrimenkul_id')
@@ -331,5 +338,6 @@ def gayrimenkul_silinirken(gayrimenkul):
             if ana_miydi:
                 sonraki = min(ilan.baglar, key=lambda b: b.sira)
                 sonraki.ana_kayit = True
+                ilan.office_id = sonraki.gayrimenkul.office_id
     db.session.flush()
     db.session.expire(gayrimenkul, ['ilan_baglari'])
