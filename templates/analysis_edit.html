@@ -120,6 +120,11 @@
                             <label for="bolge_fiyat" class="form-label">Bölge Fiyatı (₺)</label>
                             <input type="number" class="form-control" id="bolge_fiyat" name="bolge_fiyat" value="{{ analysis.bolge_fiyat or '' }}" step="0.01" min="0">
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="deger_artis_orani" class="form-label">Yıllık Değer Artış Oranı (%)</label>
+                            <input type="number" class="form-control" id="deger_artis_orani" name="deger_artis_orani" value="{{ analysis.deger_artis_orani if analysis.deger_artis_orani is not none else '' }}" step="0.1" min="0" max="100">
+                            <div class="form-text">Raporlardaki değer projeksiyonu bu orana göre hesaplanır.</div>
+                        </div>
                     </div>
                 </div>
             </div>

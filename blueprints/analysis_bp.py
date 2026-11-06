@@ -1,5 +1,4 @@
 # blueprints/analysis_bp.py
-import re
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_file, send_from_directory, make_response
 )
@@ -24,7 +23,6 @@ from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats, Analiz
 # Bu import yolları, projenizin klasör yapısına göre ayarlanmalıdır.
 # Eğer blueprints klasörü, modules klasörü ile aynı seviyedeyse:
 from modules.analiz import ArsaAnalizci
-from modules.document_generator import DocumentGenerator
 from modules.fiyat_tahmini import FiyatTahminModeli # FiyatTahminModeli'ne engine geçilecek
 
 # Flask uygulamasının yapılandırmasına erişmek için current_app
@@ -474,6 +472,8 @@ def edit_analysis(analysis_id):
                 analysis.bolge_fiyat = float(request.form.get('bolge_fiyat', 0)) if request.form.get('bolge_fiyat') else None
                 analysis.taks = float(request.form.get('taks', 0)) if request.form.get('taks') else None
                 analysis.kaks = float(request.form.get('kaks', 0)) if request.form.get('kaks') else None
+                oran = request.form.get('deger_artis_orani', '').replace(',', '.').strip()
+                analysis.deger_artis_orani = min(max(float(oran), 0), 100) if oran else None
             except ValueError:
                 flash('Sayısal değerlerde hata var. Lütfen kontrol edin.', 'error')
                 return render_template('analysis_edit.html', analysis=analysis, title="Analizi Düzenle")
@@ -642,41 +642,24 @@ def share_analysis(analysis_id):
         current_app.logger.error(f"Analysis share error: {str(e)}", exc_info=True)
         return jsonify({'success': False, 'message': 'Paylaşım bilgileri alınırken bir hata oluştu.'}), 500
 
-REPORT_MIMETYPES = {
-    'pdf': 'application/pdf',
-    'word': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-}
-REPORT_EXTENSIONS = {'pdf': 'pdf', 'word': 'docx', 'pptx': 'pptx'}
-
-
-def _ascii_slug(text):
-    table = str.maketrans('çğıöşüÇĞİÖŞÜ', 'cgiosuCGIOSU')
-    return re.sub(r'[^A-Za-z0-9]+', '_', (text or '').translate(table)).strip('_') or 'rapor'
-
-
 def _build_report(analiz, fmt, settings=None):
-    """Analiz için istenen formatta rapor üretir ve indirilebilir yanıt döndürür."""
+    """Analiz için istenen formatta (pdf / word / pptx) rapor üretir ve indirilebilir yanıt döndürür."""
     import tempfile, shutil
-    from modules.report_context import build_report_inputs
+    from modules.rapor import MIMETYPES, EXTENSIONS, ascii_slug, build_report_model, generate_report
     detail_url = request.url_root.rstrip('/') + url_for('analysis.view_analysis', analysis_id=analiz.id)
-    arsa_data, analiz_ozeti, profile_info = build_report_inputs(analiz, current_user, detail_url=detail_url)
+    model = build_report_model(analiz, current_user, detail_url=detail_url,
+                               upload_folder=current_app.config.get('UPLOAD_FOLDER'))
     output_dir = tempfile.mkdtemp(prefix='rapor_')
     try:
-        generator = DocumentGenerator(arsa_data=arsa_data, analiz_ozeti=analiz_ozeti,
-                                      file_id=f"analiz_{analiz.id}", output_dir=output_dir,
-                                      profile_info=profile_info, settings=settings)
-        path = {'pdf': generator.create_pdf, 'word': generator.create_word, 'pptx': generator.create_pptx}[fmt]()
-        if not path or not os.path.exists(path):
-            raise RuntimeError(f"{fmt} dosyası oluşturulamadı")
+        path = generate_report(model, fmt, output_dir)
         with open(path, 'rb') as f:
             data = f.read()
     finally:
         shutil.rmtree(output_dir, ignore_errors=True)
-    filename = (f"arsa_analiz_{_ascii_slug(analiz.il)}_{_ascii_slug(analiz.ilce)}_{analiz.id}_"
-                f"{datetime.now().strftime('%Y%m%d')}.{REPORT_EXTENSIONS[fmt]}")
+    filename = (f"arsa_analiz_{ascii_slug(analiz.il)}_{ascii_slug(analiz.ilce)}_{analiz.id}_"
+                f"{datetime.now().strftime('%Y%m%d')}.{EXTENSIONS[fmt]}")
     response = make_response(data)
-    response.headers['Content-Type'] = REPORT_MIMETYPES[fmt]
+    response.headers['Content-Type'] = MIMETYPES[fmt]
     response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
@@ -810,8 +793,8 @@ def create_analysis(): # Fonksiyon adı değişti
         yeni_analiz.altyapi = json.dumps(altyapi_list)
         yeni_analiz.swot_analizi = json.dumps(swot_data_from_form)
         yeni_analiz.notlar = form_data_dict.get("notlar")
-        # yeni_analiz.alim_tarihi = ... (varsa)
-        # yeni_analiz.deger_artis_orani = ... (varsa)
+        if form_data_dict.get("deger_artis_orani", "").strip():
+            yeni_analiz.deger_artis_orani = Decimal(str(converted_data.get("deger_artis_orani", 15)))
 
         db.session.add(yeni_analiz)
         

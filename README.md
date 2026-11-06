@@ -78,3 +78,20 @@ Geciken ve yaklaşan adımlar için bildirimler günde bir kez üretilir. Sunucu
 ```
 0 8 * * * cd /opt/arsaanalizvesunum && docker compose -f docker-compose.server.yml exec -T web flask --app "app:create_app()" is-takip hatirlat >> /var/log/is-takip-hatirlat.log 2>&1
 ```
+
+## Raporlar (PDF / Word / PowerPoint)
+
+Rapor üretimi `modules/rapor/` paketindedir: `model.py` tüm hesapları bir kez yapar, `assets.py` grafik, konum haritası
+(OpenStreetMap) ve QR kodları üretir, `pdf.py`, `word.py` ve `pptx_.py` aynı içeriği üç formatta çizer.
+
+Marka bilgileri `.env` üzerinden ayarlanır; boş bırakılırsa raporu indiren kullanıcının profilindeki firma adı kullanılır:
+
+| Değişken | Açıklama |
+| --- | --- |
+| `REPORT_BRAND_NAME` | Üst bilgi ve kapakta görünen marka adı |
+| `REPORT_BRAND_WEB` | Alt bilgideki web adresi (isteğe bağlı) |
+| `REPORT_LOGO_PATH` | Logo dosyası (varsayılan `static/logo.png`) |
+| `REPORT_PRIMARY_COLOR`, `REPORT_ACCENT_COLOR` | Ana ve vurgu rengi |
+| `REPORT_TILE_URL` | Harita karo sunucusu (varsayılan OpenStreetMap) |
+
+Değer projeksiyonu analizdeki "Yıllık Değer Artış Oranı" alanını kullanır; boşsa model tahmini kullanılır.

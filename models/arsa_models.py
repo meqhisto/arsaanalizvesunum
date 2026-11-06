@@ -31,6 +31,7 @@ class ArsaAnaliz(db.Model):
     altyapi = db.Column(db.JSON)
     swot_analizi = db.Column(db.JSON)
     notlar = db.Column(db.Text)
+    deger_artis_orani = db.Column(db.Numeric(5, 2))  # Yıllık beklenen değer artışı (%)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     __table_args__ = (

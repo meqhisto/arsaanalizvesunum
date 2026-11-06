@@ -206,57 +206,75 @@ class ArsaAnalizci:
             "yatirim_suresi_aciklama": f"Bu arsa için tavsiye edilen minimum yatırım süresi {arsa_data['yatirim_suresi']} yıldır."
         }
     
-    def _hesapla_uygunluk_puani(self, arsa_data):
-        """
-        Arsa uygunluk puanını hesaplar (0-100 arası).
-        
-        Args:
-            arsa_data (dict): Arsa verileri
-            
+    # Uygunluk puanı bileşenleri ve en yüksek puanları (toplam 100)
+    UYGUNLUK_AGIRLIKLARI = {'imar': 30, 'buyukluk': 15, 'fiyat': 35, 'altyapi': 20}
+    ALTYAPI_KALEMLERI = ('yol', 'elektrik', 'su', 'dogalgaz', 'kanalizasyon')
+
+    def uygunluk_detay(self, arsa_data):
+        """Uygunluk puanının bileşenlerini gerekçeleriyle döndürür.
+
         Returns:
-            float: Uygunluk puanı (0-100)
+            list[dict]: [{'kod', 'baslik', 'puan', 'max', 'aciklama'}, ...]
         """
-        puan = 0
-        
-        # İmar durumu katkısı
-        imar_durumu = arsa_data.get('imar_durumu', '').lower()
-        puan += self.imar_uygunluk_katsayilari.get(imar_durumu, 0.5) * 30 # İmar durumu %30 etkili (Örnek ağırlık)
-        
-        # Metrekare katkısı (Örnek: Belirli aralıklarda daha yüksek puan)
-        metrekare = arsa_data.get('metrekare', 0)
-        if 500 <= metrekare <= 5000:
-            puan += 25 # Metrekare %25 etkili (Örnek ağırlık)
-        elif metrekare > 5000:
-             puan += 20
-        elif metrekare < 500 and metrekare > 0:
-             puan += 15
+        w = self.UYGUNLUK_AGIRLIKLARI
+        detay = []
 
-        # Bölge karşılaştırması katkısı (Örnek: Bölge ortalamasına yakın veya altında olması pozitif)
-        bolge_karsilastirma = arsa_data.get('bolge_karsilastirma', 0)
-        if bolge_karsilastirma <= 0:
-            puan += 20 # Bölge karşılaştırması %20 etkili (Örnek ağırlık)
-        elif bolge_karsilastirma > 0 and bolge_karsilastirma <= 10:
-            puan += 10
-        
-        # Altyapı katkısı (Örnek: Her altyapı için sabit puan)
-        altyapi = arsa_data.get('altyapi', {})
+        # 1) İmar durumu: yapılaşma hakkı ve talep
+        imar = (arsa_data.get('imar_durumu') or '').strip().lower()
+        imar_oran = self.imar_uygunluk_katsayilari.get(imar, 0.5)
+        if imar in ('konut', 'ticari', 'karma'):
+            imar_oran = {'konut': 0.9, 'ticari': 1.0, 'karma': 1.0}[imar]
+        detay.append({'kod': 'imar', 'baslik': 'İmar durumu', 'max': w['imar'],
+                      'puan': round(w['imar'] * imar_oran, 1),
+                      'aciklama': f"{imar.capitalize() or 'Belirtilmemiş'} imar"})
+
+        # 2) Büyüklük: 500-5.000 m² en likit aralık
+        m2 = float(arsa_data.get('metrekare') or 0)
+        if 500 <= m2 <= 5000:
+            oran, not_ = 1.0, 'En likit büyüklük aralığında (500-5.000 m²)'
+        elif 5000 < m2 <= 20000:
+            oran, not_ = 0.8, 'Büyük parsel, alıcı kitlesi daha dar'
+        elif m2 > 20000:
+            oran, not_ = 0.6, 'Çok büyük parsel, satış süresi uzayabilir'
+        elif 200 <= m2 < 500:
+            oran, not_ = 0.7, 'Küçük parsel'
+        else:
+            oran, not_ = 0.4, 'Çok küçük parsel'
+        detay.append({'kod': 'buyukluk', 'baslik': 'Büyüklük', 'max': w['buyukluk'],
+                      'puan': round(w['buyukluk'] * oran, 1), 'aciklama': not_})
+
+        # 3) Fiyat: bölge ortalamasına göre (ucuz olan daha yüksek puan)
+        fark = arsa_data.get('bolge_karsilastirma')
+        if fark is None or not arsa_data.get('bolge_fiyat_girildi', True):
+            oran, not_ = 0.5, 'Bölge fiyatı girilmediği için nötr kabul edildi'
+        else:
+            # -20% ve altı tam puan, +20% ve üstü sıfır, arası doğrusal
+            oran = max(0.0, min(1.0, (20 - fark) / 40))
+            yon = 'altında' if fark < 0 else 'üzerinde'
+            not_ = f"Bölge ortalamasının %{abs(fark):.1f} {yon}".replace('.', ',')
+        detay.append({'kod': 'fiyat', 'baslik': 'Fiyat / bölge', 'max': w['fiyat'],
+                      'puan': round(w['fiyat'] * oran, 1), 'aciklama': not_})
+
+        # 4) Altyapı: her kalem eşit ağırlıkta
+        altyapi = arsa_data.get('altyapi') or []
         if isinstance(altyapi, str):
-             try:
-                 altyapi = json.loads(altyapi)
-             except json.JSONDecodeError:
-                 altyapi = {}
+            try:
+                altyapi = json.loads(altyapi)
+            except json.JSONDecodeError:
+                altyapi = []
+        if isinstance(altyapi, dict):
+            altyapi = [k for k, v in altyapi.items() if v]
+        mevcut = {str(a).lower() for a in altyapi} & set(self.ALTYAPI_KALEMLERI)
+        detay.append({'kod': 'altyapi', 'baslik': 'Altyapı', 'max': w['altyapi'],
+                      'puan': round(w['altyapi'] * len(mevcut) / len(self.ALTYAPI_KALEMLERI), 1),
+                      'aciklama': f"{len(mevcut)}/{len(self.ALTYAPI_KALEMLERI)} altyapı kalemi mevcut"})
+        return detay
 
-        if isinstance(altyapi, list):
-            for item in altyapi:
-                puan += self.altyapi_uygunluk_puanlari.get(item.lower(), 0) * 10 # Altyapı %10 etkili (Örnek ağırlık)
-        
-        # Puanı 0-100 arasına ölçeklendirme (Basit bir ölçeklendirme, daha karmaşık olabilir)
-        # Maksimum olası puanı tahmin et (Örnek ağırlıklara göre)
-        max_puan = (1.0 * 30) + 25 + 20 + (0.1 * 5 * 10) # En iyi imar, ideal metrekare, en iyi bölge, tüm altyapılar
-        olcekli_puan = (puan / max_puan) * 100 if max_puan > 0 else 0
-
-        # Puanı 0-100 arasına sabitleme
-        return round(max(0, min(100, olcekli_puan)), 2)
+    def _hesapla_uygunluk_puani(self, arsa_data):
+        """Arsa uygunluk puanını hesaplar (0-100). Bileşenler için uygunluk_detay'a bakın."""
+        detay = self.uygunluk_detay(arsa_data)
+        arsa_data['uygunluk_detay'] = detay
+        return round(max(0, min(100, sum(d['puan'] for d in detay))), 1)
 
 
     def ozetle(self, arsa_data):
