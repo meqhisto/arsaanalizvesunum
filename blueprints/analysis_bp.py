@@ -368,17 +368,21 @@ def view_analysis(analysis_id):
     """Gayrimenkul detayı (sahibi, ekibinin broker'ı, superadmin)"""
     from modules import gayrimenkul_sabitleri as sabit
     from modules.gayrimenkul_form import detay_bilgileri, ozellik_gruplari
-    from modules.ilan_servis import gayrimenkul_or_404
+    from models.ilan_models import Ilan
+    from modules.ilan_servis import gayrimenkul_or_404, gorunur_ilanlar
     from modules.rapor.model import SWOT_KEYS, SWOT_TITLES, parse_swot
     gayrimenkul = gayrimenkul_or_404(analysis_id, current_user)
     ilanlar = sorted((bag.ilan for bag in gayrimenkul.ilan_baglari if bag.ilan is not None),
                      key=lambda i: i.created_at or datetime.min, reverse=True)
+    gorunur_ilan_idleri = {iid for (iid,) in gorunur_ilanlar(current_user)
+                           .filter(Ilan.id.in_([i.id for i in ilanlar])).with_entities(Ilan.id)} if ilanlar else set()
     sahiplikler = sorted(gayrimenkul.sahiplikler, key=lambda s: (not s.irtibat, s.id))
     medyalar = (AnalizMedya.query.filter_by(analiz_id=gayrimenkul.id)
                 .order_by(AnalizMedya.uploaded_at.asc()).all())
     return render_template('gayrimenkul/detay.html', g=gayrimenkul, bilgiler=detay_bilgileri(gayrimenkul),
                            ozellik_gruplari=ozellik_gruplari(gayrimenkul), swot=parse_swot(gayrimenkul.swot_analizi),
-                           swot_basliklari=[(k, SWOT_TITLES[k]) for k in SWOT_KEYS], ilanlar=ilanlar, sahiplikler=sahiplikler,
+                           swot_basliklari=[(k, SWOT_TITLES[k]) for k in SWOT_KEYS], ilanlar=ilanlar,
+                           gorunur_ilan_idleri=gorunur_ilan_idleri, sahiplikler=sahiplikler,
                            medyalar=medyalar, sabit=sabit, title=gayrimenkul.baslik_metni)
 
 @analysis_bp.route('/<int:analysis_id>/edit', methods=['GET', 'POST'])

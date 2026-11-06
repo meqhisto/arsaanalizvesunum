@@ -87,14 +87,15 @@ def konumlandirma(teklif_tipi, fark):
 
 
 def sayi_metni(deger, ondalik=2):
-    """Türkçe sayı yazımı: 12000 -> '12.000', 1.5 -> '1,5'; gereksiz sıfırlar atılır. None -> ''."""
+    """Türkçe sayı yazımı (rapor tr_number + gereksiz ondalık sıfırlar atılır): 12000 -> '12.000', 1.5 -> '1,5'; gereksiz sıfırlar atılır. None -> ''."""
     if deger is None or deger == '':
         return ''
+    from modules.rapor.model import tr_number
     try:
-        sayi = float(deger)
+        float(deger)
     except (TypeError, ValueError):
         return str(deger)
-    metin = f"{sayi:,.{ondalik}f}"
-    if '.' in metin:
-        metin = metin.rstrip('0').rstrip('.')
-    return metin.replace(',', '\0').replace('.', ',').replace('\0', '.')
+    metin = tr_number(deger, ondalik)
+    if ',' in metin:
+        metin = metin.rstrip('0').rstrip(',')
+    return metin

@@ -79,7 +79,7 @@ def test_liste_aktif_ilan_filtresi(app, kullanicilar):
 
     var = html(c.get('/analysis/list?aktif_ilan=var'))
     assert 'İlandaki arsa' in var and 'Boştaki arsa' not in var
-    assert 'Satılık' in var and '1.250.000' in var
+    assert 'Satılık' in var and '1.250.000 TL' in var and '₺' not in var
 
     yok = html(c.get('/analysis/list?aktif_ilan=yok'))
     assert 'Boştaki arsa' in yok and 'İlandaki arsa' not in yok
@@ -205,3 +205,18 @@ def test_menude_gayrimenkuller_ve_ilanlar(app, kullanicilar):
     assert 'Gayrimenkuller' in sayfa
     assert 'Analizlerim' not in sayfa
     assert 'İlanlar' in sayfa and '/ilanlar/' in sayfa
+
+
+def test_detay_para_tr_currency_ve_gorunmeyen_ilan_linksiz(app, kullanicilar):
+    d = daire(kullanicilar['d1'], aidat=1500)
+    gorunur = ilan(d, kod='ILN-2026-0001', durum='anlasildi')
+    baskasi = Ilan(kod='ILN-2026-0002', user_id=kullanicilar['dx'], sorumlu_user_id=kullanicilar['dx'],
+                   teklif_tipi='kiralik', durum='geri_cekildi', kira=15000)
+    baskasi.baglar.append(IlanGayrimenkul(gayrimenkul=d, ana_kayit=True, sira=1))
+    db.session.add(baskasi)
+    db.session.commit()
+
+    sayfa = html(istemci(app, kullanicilar['d1']).get(f'/analysis/{d.id}'))
+    assert '1.500 TL' in sayfa and '₺' not in sayfa
+    assert f'/ilanlar/{gorunur.id}"' in sayfa
+    assert 'ILN-2026-0002' in sayfa and f'/ilanlar/{baskasi.id}"' not in sayfa

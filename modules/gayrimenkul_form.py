@@ -328,7 +328,9 @@ def detay_bilgileri(g):
         ekle('Eşyalı', g.esyali)
         ekle('Site içinde', g.site_icinde)
         ekle('Balkon', g.balkon)
-        ekle('Aidat', g.aidat, '₺')
+        if g.aidat is not None:
+            from modules.rapor.model import tr_currency
+            satirlar.append(('Aidat', tr_currency(g.aidat)))
     ekle('Koordinatlar', g.koordinatlar)
     ekle('Tapu durumu', g.tapu_durumu)
     ekle('Kimden', g.kimden)

@@ -166,7 +166,7 @@
                         <tbody>
                             {% for i in ilanlar %}
                             <tr>
-                                <td class="text-nowrap"><a href="/ilanlar/{{ i.id }}" class="text-decoration-none">{{ i.kod }}</a></td>
+                                <td class="text-nowrap">{% if i.id in gorunur_ilan_idleri %}<a href="/ilanlar/{{ i.id }}" class="text-decoration-none">{{ i.kod }}</a>{% else %}{{ i.kod }}{% endif %}</td>
                                 <td class="small">{{ sabit.etiket(sabit.TEKLIF_TIPLERI, i.teklif_tipi) }}</td>
                                 <td><span class="badge text-bg-{{ DURUM_RENK.get(i.durum, 'secondary') }}">{{ sabit.etiket(sabit.DURUMLAR, i.durum) }}</span></td>
                                 <td class="small text-nowrap">{{ i.created_at.strftime('%d.%m.%Y') if i.created_at else '' }}</td>
