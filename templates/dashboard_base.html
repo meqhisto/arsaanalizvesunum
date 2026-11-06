@@ -463,6 +463,7 @@
             <a class="navbar-brand" href="/index">
                 <i class="fas fa-map-marked-alt me-2"></i>Arsa Panel
             </a>
+            <div class="ms-auto me-2">{% with zil_sinif='btn-outline-light' %}{% include "is_takip/_zil.html" %}{% endwith %}</div>
             <div class="dropdown">
                 <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
                     <i class="fas fa-user"></i>
@@ -500,11 +501,12 @@
 <div class="dashboard-layout">
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-            <h5 class="sidebar-title">
+        <div class="sidebar-header d-flex justify-content-between align-items-center">
+            <h5 class="sidebar-title mb-0">
                 <i class="fas fa-map-marked-alt me-2"></i>
                 Arsa Panel
             </h5>
+            <div class="d-none d-lg-block">{% include "is_takip/_zil.html" %}</div>
         </div>
         
         <nav class="sidebar-nav">
@@ -943,6 +945,33 @@
 <div id="toast-container" class="toast-container"></div>
 {% endblock %}
 
+<script>
+/* İş takip bildirim zili: açılınca son bildirimleri getirir */
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.is-zil').forEach(function (zil) {
+    const dugme = zil.querySelector('[data-zil]'), liste = zil.querySelector('[data-zil-liste]');
+    const rozet = zil.querySelector('[data-zil-sayi]');
+    let yuklendi = false;
+    dugme.addEventListener('click', yukle);
+    async function yukle() {
+      if (yuklendi) return; yuklendi = true;
+      try {
+        const r = await fetch('/isler/bildirimler/ozet', {headers: {'Accept': 'application/json'}});
+        const v = await r.json();
+        rozet.textContent = v.sayi; rozet.classList.toggle('d-none', !v.sayi);
+        liste.innerHTML = '';
+        if (!v.son.length) { liste.innerHTML = '<div class="list-group-item text-muted">Okunmamış bildirim yok.</div>'; return; }
+        v.son.forEach(function (b) {
+          const a = document.createElement('a'); a.className = 'list-group-item list-group-item-action'; a.href = b.url;
+          const m = document.createElement('div'); m.textContent = b.mesaj;
+          const t = document.createElement('div'); t.className = 'text-muted'; t.style.fontSize = '.75rem'; t.textContent = b.tarih;
+          a.append(m, t); liste.appendChild(a);
+        });
+      } catch (e) { liste.innerHTML = '<div class="list-group-item text-danger">Bildirimler yüklenemedi.</div>'; yuklendi = false; }
+    }
+  });
+});
+</script>
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {

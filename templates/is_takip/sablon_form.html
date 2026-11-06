@@ -1,0 +1,68 @@
+{% extends "dashboard_base.html" %}
+{% block title %}{{ 'Yeni Şablon' if yeni else sablon.ad }} - İş Şablonları{% endblock %}
+{% block page_title %}{{ 'Yeni Şablon' if yeni else sablon.ad }}{% endblock %}
+{% block page_description %}{% if salt_okunur %}Hazır şablonlar sadece sistem yöneticisi tarafından düzenlenir; kopyalayarak ofisinize özel şablon oluşturabilirsiniz.{% else %}Adımlar ve her adımın önceki adımdan kaç gün sonra bitmesi gerektiği{% endif %}{% endblock %}
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('is_takip.sablonlar') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Şablonlar</a>
+    {% if salt_okunur %}<a href="{{ url_for('is_takip.sablon_yeni', kopya=sablon.id) }}" class="btn btn-primary"><i class="far fa-copy me-1"></i>Kopyala</a>{% endif %}
+</div>
+{% endblock %}
+{% block dashboard_content %}
+<form method="POST">
+<fieldset {% if salt_okunur %}disabled{% endif %}>
+<div class="card border-0 shadow-sm mb-3"><div class="card-body row g-3">
+    <div class="col-md-6"><label class="form-label" for="ad">Şablon adı</label>
+        <input class="form-control" id="ad" name="ad" value="{{ sablon.ad or '' }}" required maxlength="120"></div>
+    <div class="col-md-6"><label class="form-label" for="is_turu">İş türü</label>
+        <select class="form-select" id="is_turu" name="is_turu">{% for t in turler %}<option {% if t == sablon.is_turu %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="col-12"><label class="form-label" for="aciklama">Açıklama</label>
+        <textarea class="form-control" id="aciklama" name="aciklama" rows="2">{{ sablon.aciklama or '' }}</textarea></div>
+</div></div>
+<div class="card border-0 shadow-sm"><div class="card-body">
+    <div class="table-responsive"><table class="table align-middle mb-2">
+        <thead class="table-light"><tr><th style="width:2rem">#</th><th>Adım</th><th style="width:110px">+ Gün</th><th style="width:140px">Önerilen rol</th><th style="width:170px">Beklenen belge</th><th style="width:2.5rem"></th></tr></thead>
+        <tbody id="adimlar">
+        {% for a in adimlar %}
+        <tr><td class="sira text-muted">{{ loop.index }}</td>
+            <td><input class="form-control form-control-sm" name="adim_baslik" value="{{ a.baslik }}" maxlength="200" aria-label="Adım"></td>
+            <td><input class="form-control form-control-sm" type="number" min="0" name="adim_gun" value="{{ a.varsayilan_sure_gun }}" aria-label="Gün"></td>
+            <td><select class="form-select form-select-sm" name="adim_rol" aria-label="Rol"><option value="">-</option>
+                <option value="danisman" {% if a.sorumlu_rol == 'danisman' %}selected{% endif %}>Danışman</option>
+                <option value="broker" {% if a.sorumlu_rol == 'broker' %}selected{% endif %}>Broker</option></select></td>
+            <td><select class="form-select form-select-sm" name="adim_belge" aria-label="Belge"><option value="">-</option>
+                {% for b in belge_turleri %}<option {% if a.gerekli_belge_turu == b %}selected{% endif %}>{{ b }}</option>{% endfor %}</select></td>
+            <td><button type="button" class="btn btn-sm btn-link text-danger sil" aria-label="Kaldır"><i class="fas fa-times"></i></button></td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+    {% if not salt_okunur %}
+    <button type="button" class="btn btn-sm btn-outline-primary" id="adimEkle"><i class="fas fa-plus me-1"></i>Adım ekle</button>
+    <hr><button class="btn btn-primary"><i class="fas fa-save me-1"></i>Kaydet</button>
+    {% endif %}
+</div></div>
+</fieldset>
+</form>
+{% endblock %}
+{% block extra_js %}
+{{ super() }}
+<script>
+(function () {
+  const govde = document.getElementById('adimlar'), ekle = document.getElementById('adimEkle');
+  const numarala = () => [...govde.rows].forEach((r, i) => r.querySelector('.sira').textContent = i + 1);
+  govde.addEventListener('click', e => { const b = e.target.closest('.sil'); if (b) { b.closest('tr').remove(); numarala(); } });
+  if (ekle) ekle.addEventListener('click', () => {
+    const ornek = govde.rows[0];
+    let tr;
+    if (ornek) { tr = ornek.cloneNode(true); tr.querySelectorAll('input').forEach(i => i.value = i.type === 'number' ? 0 : '');
+                 tr.querySelectorAll('select').forEach(s => s.selectedIndex = 0); }
+    else { tr = document.createElement('tr'); tr.innerHTML = `<td class="sira text-muted"></td><td><input class="form-control form-control-sm" name="adim_baslik" maxlength="200"></td>
+      <td><input class="form-control form-control-sm" type="number" min="0" name="adim_gun" value="0"></td>
+      <td><select class="form-select form-select-sm" name="adim_rol"><option value="">-</option><option value="danisman">Danışman</option><option value="broker">Broker</option></select></td>
+      <td><select class="form-select form-select-sm" name="adim_belge"><option value="">-</option>{% for b in belge_turleri %}<option>{{ b }}</option>{% endfor %}</select></td>
+      <td><button type="button" class="btn btn-sm btn-link text-danger sil"><i class="fas fa-times"></i></button></td>`; }
+    govde.appendChild(tr); numarala(); tr.querySelector('input').focus();
+  });
+})();
+</script>
+{% endblock %}

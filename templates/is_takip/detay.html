@@ -1,0 +1,306 @@
+{% extends "dashboard_base.html" %}
+{% from "is_takip/_makrolar.html" import durum_rozeti, oncelik_rozeti, ilerleme, tl, kisi %}
+
+{% block title %}{{ is_kaydi.kod }} – {{ is_kaydi.baslik }}{% endblock %}
+{% block page_title %}{{ is_kaydi.baslik }}{% endblock %}
+{% block page_description %}<span class="font-monospace">{{ is_kaydi.kod }}</span> · {{ is_kaydi.is_turu }}{% endblock %}
+{% block extra_css %}{% include "is_takip/_stil.html" %}{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('is_takip.pano') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>İşler</a>
+    {% if yonetici %}
+    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#duzenleModal"><i class="fas fa-pen me-1"></i>Düzenle</button>
+    {% if current_user.role in ('superadmin', 'broker') or is_kaydi.olusturan_user_id == current_user.id %}
+    <form method="POST" action="{{ url_for('is_takip.sil', is_id=is_kaydi.id) }}" onsubmit="return confirm('Bu iş, adımları, belgeleri ve masraflarıyla birlikte kalıcı olarak silinecek. Emin misiniz?');">
+        <button class="btn btn-outline-danger"><i class="fas fa-trash me-1"></i>Sil</button>
+    </form>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Özet -->
+<div class="card border-0 shadow-sm mb-4"><div class="card-body">
+    <div class="row g-3 align-items-center">
+        <div class="col-lg-4">
+            <div class="d-flex gap-2 mb-2">{{ durum_rozeti(is_kaydi.durum) }} {{ oncelik_rozeti(is_kaydi.oncelik) }}
+                {% if ozet.geciken and is_kaydi.acik_mi %}<span class="badge bg-danger">{{ ozet.geciken }} adım gecikti</span>{% endif %}</div>
+            {{ ilerleme(ozet) }}
+            <small class="text-muted">{{ ozet.tamam }} / {{ ozet.toplam }} adım tamamlandı (%{{ ozet.yuzde }})</small>
+            {% if yonetici and is_kaydi.acik_mi %}
+            <form method="POST" action="{{ url_for('is_takip.guncelle', is_id=is_kaydi.id) }}" class="d-flex gap-2 mt-2">
+                <select name="durum" class="form-select form-select-sm" aria-label="Durum">
+                    {% for d in durumlar %}<option {% if d == is_kaydi.durum %}selected{% endif %}>{{ d }}</option>{% endfor %}
+                </select>
+                <button class="btn btn-sm btn-outline-primary text-nowrap">Durumu kaydet</button>
+            </form>
+            {% elif yonetici %}
+            <form method="POST" action="{{ url_for('is_takip.guncelle', is_id=is_kaydi.id) }}" class="mt-2">
+                <input type="hidden" name="durum" value="Devam ediyor">
+                <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-undo me-1"></i>İşi yeniden aç</button>
+            </form>
+            {% endif %}
+        </div>
+        <div class="col-lg-8">
+            <div class="row g-3 small">
+                <div class="col-6 col-md-3"><div class="text-muted">Sorumlu</div><div class="fw-semibold">{{ kisi(is_kaydi.sorumlu) }}</div></div>
+                <div class="col-6 col-md-3"><div class="text-muted">Başlangıç</div><div class="fw-semibold">{{ is_kaydi.baslangic_tarihi.strftime('%d.%m.%Y') if is_kaydi.baslangic_tarihi else '-' }}</div></div>
+                <div class="col-6 col-md-3"><div class="text-muted">Hedef bitiş</div><div class="fw-semibold">{{ is_kaydi.hedef_bitis_tarihi.strftime('%d.%m.%Y') if is_kaydi.hedef_bitis_tarihi else '-' }}</div></div>
+                <div class="col-6 col-md-3"><div class="text-muted">Masraf / bütçe</div><div class="fw-semibold">{{ tl(masraf.toplam) }}{% if is_kaydi.butce %} <span class="text-muted fw-normal">/ {{ tl(is_kaydi.butce) }}</span>{% endif %}</div></div>
+                {% if is_kaydi.contact %}<div class="col-6 col-md-3"><div class="text-muted">Müşteri</div><a href="{{ url_for('crm.crm_contact_detail', contact_id=is_kaydi.contact.id) }}">{{ is_kaydi.contact.first_name }} {{ is_kaydi.contact.last_name }}</a></div>{% endif %}
+                {% if is_kaydi.deal %}<div class="col-6 col-md-3"><div class="text-muted">Satış fırsatı</div><a href="{{ url_for('crm.crm_deal_detail', deal_id=is_kaydi.deal.id) }}">{{ is_kaydi.deal.title }}</a></div>{% endif %}
+                {% if is_kaydi.analiz %}<div class="col-6 col-md-3"><div class="text-muted">Arsa analizi</div><a href="{{ url_for('analysis.view_analysis', analysis_id=is_kaydi.analiz.id) }}">{{ is_kaydi.analiz.mahalle }} {{ is_kaydi.analiz.ada or '' }}/{{ is_kaydi.analiz.parsel or '' }}</a></div>{% endif %}
+                {% if is_kaydi.portfolio %}<div class="col-6 col-md-3"><div class="text-muted">Portföy</div><a href="{{ url_for('portfolio.portfolio_detail', portfolio_id=is_kaydi.portfolio.id) }}">{{ is_kaydi.portfolio.title }}</a></div>{% endif %}
+            </div>
+            {% if is_kaydi.aciklama %}<p class="small text-muted mb-0 mt-3">{{ is_kaydi.aciklama }}</p>{% endif %}
+        </div>
+    </div>
+</div></div>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+    {% for key, ad, sayi in [('adimlar', 'Adımlar', ozet.toplam), ('belgeler', 'Belgeler', belgeler|length), ('masraflar', 'Masraflar', masraflar|length), ('aktivite', 'Aktivite', none)] %}
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if aktif_sekme == key %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#sekme-{{ key }}" type="button" role="tab">
+            {{ ad }}{% if sayi is not none %} <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ sayi }}</span>{% endif %}</button>
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="tab-content">
+<!-- ADIMLAR -->
+<div class="tab-pane fade {% if aktif_sekme == 'adimlar' %}show active{% endif %}" id="sekme-adimlar" role="tabpanel">
+    <div class="card border-0 shadow-sm"><div class="list-group list-group-flush">
+        {% for a in adimlar %}
+        {% set tamam = a.status == GOREV_TAMAMLANDI %}
+        {% set gecikti = (not tamam) and a.due_date and a.due_date < simdi %}
+        {% set duzenlenebilir = adimi_guncelleyebilir(a) %}
+        <div class="list-group-item is-adim {% if tamam %}tamam{% endif %} py-3">
+            <div class="d-flex align-items-start gap-3">
+                <form method="POST" action="{{ url_for('is_takip.adim_tamamla', is_id=is_kaydi.id, task_id=a.id) }}">
+                    <button class="btn btn-sm {{ 'btn-success' if tamam else 'btn-outline-secondary' }} rounded-circle" style="width:2rem;height:2rem"
+                            {% if not duzenlenebilir %}disabled{% endif %} title="{{ 'Geri al' if tamam else 'Tamamlandı olarak işaretle' }}" aria-label="{{ 'Geri al' if tamam else 'Tamamla' }}">
+                        <i class="fas fa-check"></i></button>
+                </form>
+                <div class="flex-grow-1">
+                    <div class="adim-baslik fw-semibold">{{ loop.index }}. {{ a.title }}</div>
+                    <div class="small text-muted d-flex flex-wrap gap-3 mt-1">
+                        <span><i class="fas fa-user me-1"></i>{{ kisi(a.assigned_user) }}</span>
+                        {% if a.due_date %}<span class="{{ 'geciken-tarih' if gecikti else '' }}"><i class="far fa-calendar me-1"></i>{{ a.due_date.strftime('%d.%m.%Y') }}{% if gecikti %} · gecikti{% endif %}</span>{% endif %}
+                        {% if tamam and a.completed_at %}<span class="text-success"><i class="fas fa-check-circle me-1"></i>{{ a.completed_at.strftime('%d.%m.%Y') }}</span>{% endif %}
+                    </div>
+                    {% if a.description %}<div class="small mt-1">{{ a.description }}</div>{% endif %}
+                </div>
+                {% if duzenlenebilir %}
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-link text-secondary" data-bs-toggle="collapse" data-bs-target="#adimDuzenle{{ a.id }}" aria-label="Düzenle"><i class="fas fa-pen"></i></button>
+                    {% if yonetici %}
+                    <form method="POST" action="{{ url_for('is_takip.adim_tasi', is_id=is_kaydi.id, task_id=a.id, yon='yukari') }}"><button class="btn btn-sm btn-link text-secondary" {% if loop.first %}disabled{% endif %} aria-label="Yukarı taşı"><i class="fas fa-arrow-up"></i></button></form>
+                    <form method="POST" action="{{ url_for('is_takip.adim_tasi', is_id=is_kaydi.id, task_id=a.id, yon='asagi') }}"><button class="btn btn-sm btn-link text-secondary" {% if loop.last %}disabled{% endif %} aria-label="Aşağı taşı"><i class="fas fa-arrow-down"></i></button></form>
+                    <form method="POST" action="{{ url_for('is_takip.adim_sil', is_id=is_kaydi.id, task_id=a.id) }}" onsubmit="return confirm('Adım silinsin mi?');"><button class="btn btn-sm btn-link text-danger" aria-label="Sil"><i class="fas fa-trash"></i></button></form>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% if duzenlenebilir %}
+            <form method="POST" action="{{ url_for('is_takip.adim_guncelle', is_id=is_kaydi.id, task_id=a.id) }}" class="collapse mt-3 ms-5" id="adimDuzenle{{ a.id }}">
+                <div class="row g-2">
+                    {% if yonetici %}
+                    <div class="col-md-5"><input class="form-control form-control-sm" name="baslik" value="{{ a.title }}" maxlength="200" aria-label="Adım başlığı"></div>
+                    <div class="col-md-3"><select class="form-select form-select-sm" name="sorumlu_user_id" aria-label="Sorumlu">
+                        {% for u in kullanicilar %}<option value="{{ u.id }}" {% if u.id == a.assigned_to_user_id %}selected{% endif %}>{{ kisi(u) }}</option>{% endfor %}</select></div>
+                    {% endif %}
+                    <div class="col-md-2"><input class="form-control form-control-sm" type="date" name="son_tarih" value="{{ a.due_date.strftime('%Y-%m-%d') if a.due_date else '' }}" aria-label="Son tarih"></div>
+                    <div class="col-md-{{ 2 if yonetici else 8 }}"><button class="btn btn-sm btn-primary w-100">Kaydet</button></div>
+                    <div class="col-12"><textarea class="form-control form-control-sm" name="aciklama" rows="2" placeholder="Not / açıklama">{{ a.description or '' }}</textarea></div>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="list-group-item text-muted py-4 text-center">Bu işte henüz adım yok.</div>
+        {% endfor %}
+    </div>
+    {% if yonetici %}
+    <div class="card-footer bg-transparent">
+        <form method="POST" action="{{ url_for('is_takip.adim_ekle', is_id=is_kaydi.id) }}" class="row g-2 align-items-center">
+            <div class="col-md-5"><input class="form-control form-control-sm" name="baslik" required maxlength="200" placeholder="Yeni adım" aria-label="Yeni adım"></div>
+            <div class="col-md-3"><select class="form-select form-select-sm" name="sorumlu_user_id" aria-label="Sorumlu">
+                {% for u in kullanicilar %}<option value="{{ u.id }}" {% if u.id == is_kaydi.sorumlu_user_id %}selected{% endif %}>{{ kisi(u) }}</option>{% endfor %}</select></div>
+            <div class="col-md-2"><input class="form-control form-control-sm" type="date" name="son_tarih" aria-label="Son tarih"></div>
+            <div class="col-md-2"><button class="btn btn-sm btn-outline-primary w-100"><i class="fas fa-plus me-1"></i>Ekle</button></div>
+        </form>
+    </div>
+    {% endif %}
+    </div>
+</div>
+
+<!-- BELGELER -->
+<div class="tab-pane fade {% if aktif_sekme == 'belgeler' %}show active{% endif %}" id="sekme-belgeler" role="tabpanel">
+    <div class="card border-0 shadow-sm mb-3"><div class="card-body">
+        <form method="POST" action="{{ url_for('is_takip.belge_yukle', is_id=is_kaydi.id) }}" enctype="multipart/form-data" class="row g-2 align-items-end">
+            <div class="col-md-4"><label class="form-label small" for="dosya">Dosya(lar)</label>
+                <input class="form-control form-control-sm" type="file" id="dosya" name="dosya" multiple required
+                       accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.xls,.xlsx,.txt,.zip"></div>
+            <div class="col-md-2"><label class="form-label small" for="belge_turu">Tür</label>
+                <select class="form-select form-select-sm" id="belge_turu" name="belge_turu">{% for t in belge_turleri %}<option>{{ t }}</option>{% endfor %}</select></div>
+            <div class="col-md-3"><label class="form-label small" for="belge_adim">İlgili adım</label>
+                <select class="form-select form-select-sm" id="belge_adim" name="task_id"><option value="">-</option>
+                    {% for a in adimlar %}<option value="{{ a.id }}">{{ loop.index }}. {{ a.title|truncate(40) }}</option>{% endfor %}</select></div>
+            <div class="col-md-3"><button class="btn btn-sm btn-primary w-100"><i class="fas fa-upload me-1"></i>Yükle</button></div>
+            <div class="col-12"><small class="text-muted">PDF, resim, Word, Excel, TXT veya ZIP · dosya başına en fazla 16 MB</small></div>
+        </form>
+    </div></div>
+    <div class="card border-0 shadow-sm">
+        {% if belgeler %}
+        <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Belge</th><th>Tür</th><th>Adım</th><th>Yükleyen</th><th class="text-end">Boyut</th><th></th></tr></thead>
+            <tbody>
+            {% for b in belgeler %}
+            <tr>
+                <td><i class="far {{ 'fa-file-pdf text-danger' if b.mime_type == 'application/pdf' else ('fa-file-image text-info' if (b.mime_type or '').startswith('image/') else 'fa-file') }} me-2"></i>
+                    <a href="{{ url_for('is_takip.belge_indir', is_id=is_kaydi.id, belge_id=b.id, goster=1) }}" target="_blank" rel="noopener">{{ b.dosya_adi }}</a></td>
+                <td><span class="badge bg-light text-dark border">{{ b.belge_turu }}</span></td>
+                <td class="small">{{ b.adim.title|truncate(30) if b.adim else '-' }}</td>
+                <td class="small">{{ kisi(b.yukleyen) }}<br><span class="text-muted">{{ b.created_at.strftime('%d.%m.%Y %H:%M') }}</span></td>
+                <td class="text-end small text-nowrap">{{ '%.1f'|format((b.boyut or 0) / 1024 / 1024) if (b.boyut or 0) >= 1048576 else ((b.boyut or 0) // 1024) }} {{ 'MB' if (b.boyut or 0) >= 1048576 else 'KB' }}</td>
+                <td class="text-end text-nowrap">
+                    <a class="btn btn-sm btn-link" href="{{ url_for('is_takip.belge_indir', is_id=is_kaydi.id, belge_id=b.id) }}" aria-label="İndir"><i class="fas fa-download"></i></a>
+                    {% if yonetici or b.yukleyen_user_id == current_user.id %}
+                    <form method="POST" action="{{ url_for('is_takip.belge_sil', is_id=is_kaydi.id, belge_id=b.id) }}" class="d-inline" onsubmit="return confirm('Belge silinsin mi?');">
+                        <button class="btn btn-sm btn-link text-danger" aria-label="Sil"><i class="fas fa-trash"></i></button></form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+        {% else %}<div class="card-body text-muted text-center py-4">Henüz belge yüklenmedi.</div>{% endif %}
+    </div>
+</div>
+
+<!-- MASRAFLAR -->
+<div class="tab-pane fade {% if aktif_sekme == 'masraflar' %}show active{% endif %}" id="sekme-masraflar" role="tabpanel">
+    <div class="row g-3 mb-3">
+        {% for etiket, deger, renk in [('Toplam', masraf.toplam, 'primary'), ('Ödenen', masraf.odenen, 'success'), ('Bekleyen', masraf.bekleyen, 'warning'), ('Müşteriye yansıtılan', masraf.musteriye, 'info')] %}
+        <div class="col-6 col-md-3"><div class="card border-0 shadow-sm"><div class="card-body py-3">
+            <div class="small text-muted">{{ etiket }}</div><div class="fs-5 fw-semibold text-{{ renk }}">{{ tl(deger) }}</div>
+        </div></div></div>
+        {% endfor %}
+    </div>
+    {% if is_kaydi.butce and masraf.toplam > is_kaydi.butce|float %}
+    <div class="alert alert-warning py-2"><i class="fas fa-exclamation-triangle me-1"></i>Masraflar öngörülen bütçeyi ({{ tl(is_kaydi.butce) }}) aştı.</div>
+    {% endif %}
+    <div class="card border-0 shadow-sm mb-3"><div class="card-body">
+        <form method="POST" action="{{ url_for('is_takip.masraf_ekle', is_id=is_kaydi.id) }}" class="row g-2 align-items-end">
+            <div class="col-md-2"><label class="form-label small" for="kalem">Kalem</label>
+                <select class="form-select form-select-sm" id="kalem" name="kalem">{% for k in masraf_kalemleri %}<option>{{ k }}</option>{% endfor %}</select></div>
+            <div class="col-md-2"><label class="form-label small" for="tutar">Tutar (TL)</label>
+                <input class="form-control form-control-sm" id="tutar" name="tutar" inputmode="decimal" required placeholder="1.250,50"></div>
+            <div class="col-md-2"><label class="form-label small" for="tarih">Tarih</label>
+                <input class="form-control form-control-sm" type="date" id="tarih" name="tarih" value="{{ bugun.isoformat() }}"></div>
+            <div class="col-md-2"><label class="form-label small" for="odeme_durumu">Ödeme</label>
+                <select class="form-select form-select-sm" id="odeme_durumu" name="odeme_durumu">{% for o in odeme_durumlari %}<option>{{ o }}</option>{% endfor %}</select></div>
+            <div class="col-md-2"><label class="form-label small" for="masraf_belge">Makbuz</label>
+                <select class="form-select form-select-sm" id="masraf_belge" name="belge_id"><option value="">-</option>
+                    {% for b in belgeler %}<option value="{{ b.id }}">{{ b.dosya_adi|truncate(25) }}</option>{% endfor %}</select></div>
+            <div class="col-md-2"><div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="musteriye_yansit" name="musteriye_yansit" value="1">
+                <label class="form-check-label small" for="musteriye_yansit">Müşteriye yansıt</label></div></div>
+            <div class="col-md-10"><input class="form-control form-control-sm" name="aciklama" maxlength="500" placeholder="Açıklama (isteğe bağlı)" aria-label="Açıklama"></div>
+            <div class="col-md-2"><button class="btn btn-sm btn-primary w-100"><i class="fas fa-plus me-1"></i>Ekle</button></div>
+        </form>
+    </div></div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">Masraf kalemleri</span>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('is_takip.masraf_excel', is_id=is_kaydi.id) }}"><i class="fas fa-file-excel me-1"></i>Excel döküm</a>
+        </div>
+        {% if masraflar %}
+        <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Tarih</th><th>Kalem</th><th>Açıklama</th><th class="text-end">Tutar</th><th>Ödeme</th><th>Müşteriye</th><th></th></tr></thead>
+            <tbody>
+            {% for m in masraflar %}
+            <tr>
+                <td class="text-nowrap small">{{ m.tarih.strftime('%d.%m.%Y') }}</td>
+                <td>{{ m.kalem }}</td>
+                <td class="small">{{ m.aciklama or '' }}{% if m.belge %} <a href="{{ url_for('is_takip.belge_indir', is_id=is_kaydi.id, belge_id=m.belge.id, goster=1) }}" target="_blank" rel="noopener" title="Makbuz"><i class="fas fa-paperclip"></i></a>{% endif %}</td>
+                <td class="text-end text-nowrap fw-semibold">{{ tl(m.tutar) }}</td>
+                <td><form method="POST" action="{{ url_for('is_takip.masraf_odeme', is_id=is_kaydi.id, masraf_id=m.id) }}">
+                    <button class="badge border-0 {{ 'bg-success' if m.odeme_durumu == 'Ödendi' else 'bg-warning text-dark' }}" title="Durumu değiştir">{{ m.odeme_durumu }}</button></form></td>
+                <td>{{ 'Evet' if m.musteriye_yansit else '-' }}</td>
+                <td class="text-end">{% if yonetici or m.ekleyen_user_id == current_user.id %}
+                    <form method="POST" action="{{ url_for('is_takip.masraf_sil', is_id=is_kaydi.id, masraf_id=m.id) }}" onsubmit="return confirm('Masraf silinsin mi?');">
+                        <button class="btn btn-sm btn-link text-danger" aria-label="Sil"><i class="fas fa-trash"></i></button></form>{% endif %}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+        {% else %}<div class="card-body text-muted text-center py-4">Henüz masraf kaydı yok.</div>{% endif %}
+    </div>
+</div>
+
+<!-- AKTİVİTE -->
+<div class="tab-pane fade {% if aktif_sekme == 'aktivite' %}show active{% endif %}" id="sekme-aktivite" role="tabpanel">
+    <div class="card border-0 shadow-sm"><div class="card-body">
+        <form method="POST" action="{{ url_for('is_takip.not_ekle', is_id=is_kaydi.id) }}" class="d-flex gap-2 mb-4">
+            <input class="form-control" name="not" maxlength="2000" required placeholder="Not ekleyin (görüşme, gelişme, hatırlatma…)" aria-label="Not">
+            <button class="btn btn-primary text-nowrap"><i class="fas fa-comment me-1"></i>Ekle</button>
+        </form>
+        <div class="is-zaman-akisi">
+            {% for o in aktiviteler %}
+            <div class="olay {{ 'not' if o.eylem == 'not' else '' }}">
+                <div class="small text-muted">{{ o.created_at.strftime('%d.%m.%Y %H:%M') }} · {{ kisi(o.user) }}</div>
+                <div class="{{ 'fw-semibold' if o.eylem == 'not' else '' }}">{{ o.detay }}</div>
+            </div>
+            {% else %}<p class="text-muted">Henüz aktivite yok.</p>{% endfor %}
+        </div>
+    </div></div>
+</div>
+</div>
+
+{% if yonetici %}
+<div class="modal fade" id="duzenleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <form class="modal-content" method="POST" action="{{ url_for('is_takip.guncelle', is_id=is_kaydi.id) }}">
+            <div class="modal-header"><h5 class="modal-title">İşi düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button></div>
+            <div class="modal-body row g-3">
+                <div class="col-12"><label class="form-label" for="d_baslik">Başlık</label>
+                    <input class="form-control" id="d_baslik" name="baslik" value="{{ is_kaydi.baslik }}" required maxlength="200"></div>
+                <div class="col-md-4"><label class="form-label" for="d_tur">Tür</label>
+                    <select class="form-select" id="d_tur" name="is_turu">{% for t in turler %}<option {% if t == is_kaydi.is_turu %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+                <div class="col-md-4"><label class="form-label" for="d_oncelik">Öncelik</label>
+                    <select class="form-select" id="d_oncelik" name="oncelik">{% for o in oncelikler %}<option {% if o == is_kaydi.oncelik %}selected{% endif %}>{{ o }}</option>{% endfor %}</select></div>
+                <div class="col-md-4"><label class="form-label" for="d_sorumlu">Sorumlu</label>
+                    <select class="form-select" id="d_sorumlu" name="sorumlu_user_id">{% for u in kullanicilar %}<option value="{{ u.id }}" {% if u.id == is_kaydi.sorumlu_user_id %}selected{% endif %}>{{ kisi(u) }}</option>{% endfor %}</select></div>
+                <div class="col-md-4"><label class="form-label" for="d_bas">Başlangıç</label>
+                    <input class="form-control" type="date" id="d_bas" name="baslangic_tarihi" value="{{ is_kaydi.baslangic_tarihi.isoformat() if is_kaydi.baslangic_tarihi else '' }}"></div>
+                <div class="col-md-4"><label class="form-label" for="d_bit">Hedef bitiş</label>
+                    <input class="form-control" type="date" id="d_bit" name="hedef_bitis_tarihi" value="{{ is_kaydi.hedef_bitis_tarihi.isoformat() if is_kaydi.hedef_bitis_tarihi else '' }}"></div>
+                <div class="col-md-4"><label class="form-label" for="d_butce">Bütçe (TL)</label>
+                    <input class="form-control" id="d_butce" name="butce" inputmode="decimal" value="{{ ('%.2f'|format(is_kaydi.butce)).replace('.', ',') if is_kaydi.butce else '' }}"></div>
+                <div class="col-12"><label class="form-label" for="d_aciklama">Açıklama</label>
+                    <textarea class="form-control" id="d_aciklama" name="aciklama" rows="3">{{ is_kaydi.aciklama or '' }}</textarea></div>
+                <div class="col-md-6"><label class="form-label small" for="d_contact">Müşteri</label>
+                    <select class="form-select form-select-sm" id="d_contact" name="contact_id"><option value="">-</option>
+                        {% for c in contacts %}<option value="{{ c.id }}" {% if c.id == is_kaydi.contact_id %}selected{% endif %}>{{ c.first_name }} {{ c.last_name }}</option>{% endfor %}
+                        {% if is_kaydi.contact and is_kaydi.contact not in contacts %}<option value="{{ is_kaydi.contact_id }}" selected>{{ is_kaydi.contact.first_name }} {{ is_kaydi.contact.last_name }}</option>{% endif %}</select></div>
+                <div class="col-md-6"><label class="form-label small" for="d_deal">Satış fırsatı</label>
+                    <select class="form-select form-select-sm" id="d_deal" name="deal_id"><option value="">-</option>
+                        {% for d in deals %}<option value="{{ d.id }}" {% if d.id == is_kaydi.deal_id %}selected{% endif %}>{{ d.title }}</option>{% endfor %}
+                        {% if is_kaydi.deal and is_kaydi.deal not in deals %}<option value="{{ is_kaydi.deal_id }}" selected>{{ is_kaydi.deal.title }}</option>{% endif %}</select></div>
+                <div class="col-md-6"><label class="form-label small" for="d_analiz">Arsa analizi</label>
+                    <select class="form-select form-select-sm" id="d_analiz" name="analiz_id"><option value="">-</option>
+                        {% for a in analizler %}<option value="{{ a.id }}" {% if a.id == is_kaydi.analiz_id %}selected{% endif %}>{{ a.il }}/{{ a.ilce }} – {{ a.mahalle }} {{ a.ada or '' }}/{{ a.parsel or '' }}</option>{% endfor %}
+                        {% if is_kaydi.analiz and is_kaydi.analiz not in analizler %}<option value="{{ is_kaydi.analiz_id }}" selected>{{ is_kaydi.analiz.mahalle }}</option>{% endif %}</select></div>
+                <div class="col-md-6"><label class="form-label small" for="d_portfoy">Portföy</label>
+                    <select class="form-select form-select-sm" id="d_portfoy" name="portfolio_id"><option value="">-</option>
+                        {% for p in portfoyler %}<option value="{{ p.id }}" {% if p.id == is_kaydi.portfolio_id %}selected{% endif %}>{{ p.title }}</option>{% endfor %}
+                        {% if is_kaydi.portfolio and is_kaydi.portfolio not in portfoyler %}<option value="{{ is_kaydi.portfolio_id }}" selected>{{ is_kaydi.portfolio.title }}</option>{% endif %}</select></div>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button><button class="btn btn-primary">Kaydet</button></div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

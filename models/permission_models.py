@@ -234,6 +234,14 @@ class PermissionManager:
                 'active': True
             })
         
+        # İş Takibi - giriş yapmış herkes (görünürlük kuralları modülün içinde)
+        menu_items.append({
+            'title': 'İş Takibi',
+            'icon': 'fas fa-tasks',
+            'url': '/isler/',
+            'active': True
+        })
+
         # Portföyler
         if any(p.startswith('portfolio.') for p in permissions):
             menu_items.append({

@@ -1,0 +1,20 @@
+{# Bildirim zili: sidebar başlığında ve mobil üst menüde kullanılır #}
+{% if current_user.is_authenticated and okunmamis_bildirim_sayisi is defined %}
+{% set sayi = okunmamis_bildirim_sayisi() %}
+<div class="dropdown is-zil">
+    <button class="btn btn-sm {{ zil_sinif|default('btn-outline-secondary') }} position-relative" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false" aria-label="Bildirimler" data-zil>
+        <i class="fas fa-bell"></i>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {% if not sayi %}d-none{% endif %}" data-zil-sayi>{{ sayi }}</span>
+    </button>
+    <div class="dropdown-menu dropdown-menu-end shadow p-0" style="width: 340px; max-width: 90vw;">
+        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+            <strong class="small">Bildirimler</strong>
+            <a class="small" href="{{ url_for('is_takip.bildirimler') }}">Tümü</a>
+        </div>
+        <div data-zil-liste class="list-group list-group-flush small" style="max-height: 360px; overflow-y: auto;">
+            <div class="list-group-item text-muted">Yükleniyor…</div>
+        </div>
+    </div>
+</div>
+{% endif %}

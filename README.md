@@ -62,3 +62,19 @@ Geliştirme için olan `docker-compose.yml` yerine `docker-compose.server.yml` k
 
 Kayıt sayfası kapalı olduğundan ilk yönetici hesabı uygulama konteyneri içinden oluşturulur
 (`User(email=..., role='superadmin')` + `set_password(...)`).
+
+## İş takip modülü
+
+`/isler` altında ofisin yürüttüğü işler (arsa satışı, alım öncesi inceleme, imar/ruhsat, kat karşılığı) adım adım takip edilir.
+
+- İşin adımları CRM görevleridir (`crm_tasks.is_id`). Bu yüzden görev listesi ve hatırlatmalar adımlar için de çalışır.
+- Tablolar ve görev tablosuna eklenen `is_id` / `sira` sütunları açılışta otomatik oluşturulur (`modules/is_takip_kurulum.py`). Hazır şablonlar da yalnızca yoksa eklenir.
+- Belgeler `private_uploads/isler/` altında tutulur ve yalnızca yetki kontrolü yapan indirme adresinden açılır. Docker'da bu klasör `is_belgeleri` volume'ündedir.
+
+### Günlük hatırlatma
+
+Geciken ve yaklaşan adımlar için bildirimler günde bir kez üretilir. Sunucuda örnek cron satırı (her sabah 08:00):
+
+```
+0 8 * * * cd /opt/arsaanalizvesunum && docker compose -f docker-compose.server.yml exec -T web flask --app "app:create_app()" is-takip hatirlat >> /var/log/is-takip-hatirlat.log 2>&1
+```

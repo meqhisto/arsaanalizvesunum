@@ -46,6 +46,7 @@ logs/
 # Uploads
 static/uploads/
 static/presentations/
+private_uploads/
 
 # OS
 .DS_Store

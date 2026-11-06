@@ -47,6 +47,7 @@
 {% endblock %}
 
 {% block dashboard_content %}
+{% with alan='contact', kayit_id=contact.id, baslat_parametre={'contact_id': contact.id} %}{% include "is_takip/_bagli_isler.html" %}{% endwith %}
 
 <div class="card mb-4">
     <div class="card-header">

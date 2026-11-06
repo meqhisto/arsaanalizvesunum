@@ -1,0 +1,160 @@
+{% extends "dashboard_base.html" %}
+{% from "is_takip/_makrolar.html" import durum_rozeti, oncelik_rozeti, ilerleme, kisi %}
+
+{% block title %}İş Takibi - Arsa Analiz Platformu{% endblock %}
+{% block page_title %}İş Takibi{% endblock %}
+{% block page_description %}Ofisin yürüttüğü işler, adımları ve gecikmeler{% endblock %}
+{% block extra_css %}{% include "is_takip/_stil.html" %}{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('is_takip.yeni') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Yeni İş</a>
+    {% if yonetici %}
+    <a href="{{ url_for('is_takip.sablonlar') }}" class="btn btn-outline-secondary"><i class="fas fa-layer-group me-1"></i>Şablonlar</a>
+    {% endif %}
+    <a href="{{ url_for('is_takip.excel', **filtre) }}" class="btn btn-outline-secondary"><i class="fas fa-file-excel me-1"></i>Excel</a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<form method="GET" class="card border-0 shadow-sm mb-3">
+    <div class="card-body row g-2 align-items-end">
+        <input type="hidden" name="gorunum" value="{{ gorunum }}">
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label small mb-1" for="q">Ara</label>
+            <input class="form-control" id="q" name="q" value="{{ filtre.q }}" placeholder="Kod, başlık, açıklama">
+        </div>
+        <div class="col-lg-2 col-md-6">
+            <label class="form-label small mb-1" for="tur">Tür</label>
+            <select class="form-select" id="tur" name="tur"><option value="">Tümü</option>
+                {% for t in turler %}<option {% if filtre.tur == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-lg-2 col-md-4">
+            <label class="form-label small mb-1" for="sorumlu">Sorumlu</label>
+            <select class="form-select" id="sorumlu" name="sorumlu"><option value="">Tümü</option>
+                {% for u in kullanicilar %}<option value="{{ u.id }}" {% if filtre.sorumlu == u.id|string %}selected{% endif %}>{{ kisi(u) }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-lg-2 col-md-4">
+            <label class="form-label small mb-1" for="oncelik">Öncelik</label>
+            <select class="form-select" id="oncelik" name="oncelik"><option value="">Tümü</option>
+                {% for o in oncelikler %}<option {% if filtre.oncelik == o %}selected{% endif %}>{{ o }}</option>{% endfor %}</select>
+        </div>
+        <div class="col-lg-1 col-md-4">
+            <div class="form-check mt-4">
+                <input class="form-check-input" type="checkbox" id="geciken" name="geciken" value="1" {% if filtre.geciken %}checked{% endif %}>
+                <label class="form-check-label small" for="geciken">Geciken</label>
+            </div>
+        </div>
+        <div class="col-lg-2 d-flex gap-2">
+            <button class="btn btn-primary flex-grow-1" type="submit"><i class="fas fa-filter me-1"></i>Filtrele</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('is_takip.pano', gorunum=gorunum) }}" title="Temizle"><i class="fas fa-times"></i></a>
+        </div>
+    </div>
+</form>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="btn-group" role="group" aria-label="Görünüm">
+        <a class="btn btn-sm {{ 'btn-primary' if gorunum != 'liste' else 'btn-outline-primary' }}" href="{{ url_for('is_takip.pano', **dict(filtre, gorunum='pano')) }}"><i class="fas fa-columns me-1"></i>Pano</a>
+        <a class="btn btn-sm {{ 'btn-primary' if gorunum == 'liste' else 'btn-outline-primary' }}" href="{{ url_for('is_takip.pano', **dict(filtre, gorunum='liste')) }}"><i class="fas fa-list me-1"></i>Liste</a>
+    </div>
+    <span class="text-muted small">{{ isler|length }} iş{% if iptal_sayisi %} · {{ iptal_sayisi }} iptal (listede){% endif %}</span>
+</div>
+
+{% if not isler %}
+<div class="card border-0 shadow-sm"><div class="card-body text-center py-5">
+    <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+    <h5>{{ 'Filtreye uygun iş bulunamadı' if filtre.values()|select|list else 'Henüz iş yok' }}</h5>
+    <p class="text-muted">Bir şablon seçerek ilk işinizi birkaç saniyede açabilirsiniz.</p>
+    <a href="{{ url_for('is_takip.yeni') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Yeni İş</a>
+</div></div>
+
+{% elif gorunum == 'liste' %}
+<div class="card border-0 shadow-sm"><div class="table-responsive">
+<table class="table table-hover align-middle mb-0">
+    <thead class="table-light"><tr><th>Kod</th><th>İş</th><th>Durum</th><th>Öncelik</th><th>Sorumlu</th><th style="min-width:140px">İlerleme</th><th>Sıradaki adım</th></tr></thead>
+    <tbody>
+    {% for i in isler %}{% set o = ozetler[i.id] %}
+    <tr>
+        <td class="text-nowrap font-monospace small">{{ i.kod }}</td>
+        <td><a href="{{ url_for('is_takip.detay', is_id=i.id) }}" class="fw-semibold">{{ i.baslik }}</a>
+            <small class="d-block text-muted">{{ i.is_turu }}{% if i.contact %} · {{ i.contact.first_name }} {{ i.contact.last_name }}{% endif %}</small></td>
+        <td>{{ durum_rozeti(i.durum) }}</td>
+        <td>{{ oncelik_rozeti(i.oncelik) }}</td>
+        <td class="text-nowrap">{{ kisi(i.sorumlu) }}</td>
+        <td>{{ ilerleme(o, ince=True) }}<small class="text-muted">{{ o.tamam }}/{{ o.toplam }} adım</small></td>
+        <td class="small">{% if o.geciken %}<span class="badge bg-danger me-1">{{ o.geciken }} geciken</span>{% endif %}
+            {% if o.siradaki %}{{ o.siradaki.title }} <span class="text-muted">({{ o.siradaki.due_date.strftime('%d.%m.%Y') }})</span>{% elif i.acik_mi %}<span class="text-muted">-</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table></div></div>
+
+{% else %}
+<div class="is-kanban" id="kanban">
+    {% for d in pano_durumlari %}
+    <section class="is-kolon" data-durum="{{ d }}" aria-label="{{ d }}">
+        <div class="is-kolon-baslik"><span>{{ durum_rozeti(d) }}</span><span class="badge bg-light text-dark border sayac">{{ sutunlar[d]|length }}</span></div>
+        {% for i in sutunlar[d] %}{% set o = ozetler[i.id] %}
+        <article class="is-kart{% if o.geciken and i.acik_mi %} geciken{% endif %}" draggable="{{ 'true' if yonetici or i.sorumlu_user_id == current_user.id or i.olusturan_user_id == current_user.id else 'false' }}" data-id="{{ i.id }}">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <span class="kod">{{ i.kod }}</span>{{ oncelik_rozeti(i.oncelik) }}
+            </div>
+            <a class="stretched fw-semibold d-block mb-1" href="{{ url_for('is_takip.detay', is_id=i.id) }}">{{ i.baslik }}</a>
+            <div class="small text-muted mb-2">{{ i.is_turu }}{% if i.contact %} · {{ i.contact.first_name }} {{ i.contact.last_name }}{% endif %}</div>
+            {{ ilerleme(o, ince=True) }}
+            <div class="d-flex justify-content-between small mt-2">
+                <span class="text-muted"><i class="fas fa-user me-1"></i>{{ kisi(i.sorumlu) }}</span>
+                <span>{{ o.tamam }}/{{ o.toplam }}</span>
+            </div>
+            {% if i.acik_mi and (o.geciken or o.siradaki) %}
+            <div class="small mt-1">
+                {% if o.geciken %}<span class="text-danger fw-semibold"><i class="fas fa-exclamation-circle me-1"></i>{{ o.geciken }} adım gecikti</span>
+                {% else %}<span class="text-muted"><i class="far fa-clock me-1"></i>{{ o.siradaki.due_date.strftime('%d.%m.%Y') }} · {{ o.siradaki.title|truncate(28) }}</span>{% endif %}
+            </div>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </section>
+    {% endfor %}
+</div>
+<p class="text-muted small mt-2"><i class="fas fa-hand-pointer me-1"></i>Kartları sürükleyerek durumunu değiştirebilirsiniz. İptal edilen işler liste görünümünde yer alır.</p>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+(function () {
+  const kanban = document.getElementById('kanban');
+  if (!kanban) return;
+  let surukle = null;
+  kanban.addEventListener('dragstart', e => {
+    const kart = e.target.closest('.is-kart');
+    if (!kart || kart.getAttribute('draggable') !== 'true') { e.preventDefault(); return; }
+    surukle = kart; e.dataTransfer.effectAllowed = 'move';
+  });
+  kanban.querySelectorAll('.is-kolon').forEach(kolon => {
+    kolon.addEventListener('dragover', e => { if (surukle) { e.preventDefault(); kolon.classList.add('surukle-ustunde'); } });
+    kolon.addEventListener('dragleave', () => kolon.classList.remove('surukle-ustunde'));
+    kolon.addEventListener('drop', async e => {
+      e.preventDefault(); kolon.classList.remove('surukle-ustunde');
+      if (!surukle || surukle.parentElement === kolon) return;
+      const kart = surukle, eski = kart.parentElement; surukle = null;
+      kolon.appendChild(kart); sayaclariGuncelle();
+      try {
+        const r = await fetch(`{{ url_for('is_takip.pano') }}${kart.dataset.id}/durum`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({durum: kolon.dataset.durum})});
+        const veri = await r.json();
+        if (!r.ok || !veri.ok) throw new Error(veri.hata || 'Kaydedilemedi');
+      } catch (err) {
+        eski.appendChild(kart); sayaclariGuncelle(); alert('Durum değiştirilemedi: ' + err.message);
+      }
+    });
+  });
+  function sayaclariGuncelle() {
+    kanban.querySelectorAll('.is-kolon').forEach(k => k.querySelector('.sayac').textContent = k.querySelectorAll('.is-kart').length);
+  }
+})();
+</script>
+{% endblock %}

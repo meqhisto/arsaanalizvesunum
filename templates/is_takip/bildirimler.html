@@ -1,0 +1,21 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Bildirimler - Arsa Analiz Platformu{% endblock %}
+{% block page_title %}Bildirimler{% endblock %}
+{% block page_description %}İş takip modülünden gelen atama, gecikme ve hatırlatmalar{% endblock %}
+{% block page_actions %}
+<form method="POST" action="{{ url_for('is_takip.bildirim_tumunu_oku') }}"><button class="btn btn-outline-secondary"><i class="fas fa-check-double me-1"></i>Tümünü okundu yap</button></form>
+{% endblock %}
+{% block dashboard_content %}
+{% set ikon = {'geciken': 'fa-exclamation-circle text-danger', 'yaklasan': 'fa-clock text-warning', 'atandi': 'fa-user-plus text-primary', 'tamamlandi': 'fa-check-circle text-success'} %}
+<div class="card border-0 shadow-sm"><div class="list-group list-group-flush">
+    {% for b in bildirimler %}
+    <a href="{{ url_for('is_takip.bildirim_ac', bildirim_id=b.id) }}" class="list-group-item list-group-item-action d-flex gap-3 py-3 {% if not b.okundu %}fw-semibold{% endif %}">
+        <i class="fas {{ ikon.get(b.tur, 'fa-bell text-secondary') }} mt-1"></i>
+        <div class="flex-grow-1">{{ b.mesaj }}<div class="small text-muted fw-normal">{{ b.created_at.strftime('%d.%m.%Y %H:%M') }}</div></div>
+        {% if not b.okundu %}<span class="badge bg-primary align-self-center">Yeni</span>{% endif %}
+    </a>
+    {% else %}
+    <div class="list-group-item text-center text-muted py-5"><i class="far fa-bell fa-2x mb-2 d-block"></i>Bildiriminiz yok.</div>
+    {% endfor %}
+</div></div>
+{% endblock %}

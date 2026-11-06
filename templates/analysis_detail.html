@@ -32,6 +32,7 @@
 {% endblock %}
 
 {% block dashboard_content %}
+{% with alan='analiz', kayit_id=analysis.id, baslat_parametre={'analiz_id': analysis.id} %}{% include "is_takip/_bagli_isler.html" %}{% endwith %}
 <div class="row">
     <!-- Ana Bilgiler -->
     <div class="col-lg-8">
