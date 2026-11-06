@@ -10,6 +10,7 @@ from .crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam, crm_
 from .office_models import Office
 from .permission_models import PermissionTemplate, UserPermission, OfficePermission, PermissionLog, PermissionManager
 from .is_takip_models import IsSablonu, IsSablonAdimi, Is, IsBelgesi, IsMasrafi, IsAktivitesi, Bildirim
+from .ilan_models import GayrimenkulSahibi, Ilan, IlanGayrimenkul, IlanEmsal
 
 def _ensure_columns():
     """Sonradan eklenen sütunları mevcut tablolara ekler (create_all bunu yapmaz)."""
@@ -41,6 +42,7 @@ def init_db_models(app):
     from . import office_models
     from . import permission_models
     from . import is_takip_models
+    from . import ilan_models
     # Bu importlar, user_models.py, arsa_models.py, crm_models.py dosyalarının
     # içindeki tüm model sınıflarını yükler.
 
@@ -51,6 +53,8 @@ def init_db_models(app):
         print("Veritabanı tabloları (models/__init__.py üzerinden) başarıyla oluşturuldu!")
         from modules.is_takip_kurulum import kur as is_takip_kur
         is_takip_kur()
+        from modules.ilan_kurulum import kur as ilan_kur
+        ilan_kur()
         # gunicorn --preload: açılışta ana süreçte açılan bağlantılar worker'lara kopyalanmasın
         # (SSL'li uzak bağlantılarda "decryption failed or bad record mac" hatasına yol açar)
         db.engine.dispose()

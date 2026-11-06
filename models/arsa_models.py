@@ -32,12 +32,59 @@ class ArsaAnaliz(db.Model):
     swot_analizi = db.Column(db.JSON)
     notlar = db.Column(db.Text)
     deger_artis_orani = db.Column(db.Numeric(5, 2))  # Yıllık beklenen değer artışı (%)
+    # Gayrimenkul türü ve tür bazlı alanlar (spec §3.1); mevcut tabloya ilan_kurulum ekler
+    tur = db.Column(db.String(20), default='arsa', server_default='arsa')
+    alt_tur = db.Column(db.String(30))
+    baslik = db.Column(db.String(200))
+    brut_m2 = db.Column(db.Numeric(10, 2))
+    net_m2 = db.Column(db.Numeric(10, 2))
+    oda_sayisi = db.Column(db.String(10))
+    banyo_sayisi = db.Column(db.Integer)
+    bulundugu_kat = db.Column(db.String(10))
+    toplam_kat = db.Column(db.Integer)
+    bina_yasi = db.Column(db.Integer)
+    isinma = db.Column(db.String(30))
+    esyali = db.Column(db.Boolean)
+    site_icinde = db.Column(db.Boolean)
+    balkon = db.Column(db.Boolean)
+    aidat = db.Column(db.Numeric(10, 2))
+    tapu_durumu = db.Column(db.String(30))
+    krediye_uygun = db.Column(db.Boolean)
+    takasli = db.Column(db.Boolean)
+    kimden = db.Column(db.String(20))
+    ozellikler = db.Column(db.JSON(none_as_null=True))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     __table_args__ = (
         Index("ix_user_il", "user_id", "il"),
         Index("ix_created_at", "created_at"),
     )
+
+    sahiplikler = db.relationship("GayrimenkulSahibi", back_populates="gayrimenkul",
+                                  cascade="all, delete-orphan", passive_deletes=True)
+    ilan_baglari = db.relationship("IlanGayrimenkul", back_populates="gayrimenkul",
+                                   cascade="all, delete-orphan", passive_deletes=True)
+
+    @property
+    def baslik_metni(self):
+        """Başlık; boşsa tür/alt tür etiketi ve konumdan üretilir."""
+        if self.baslik:
+            return self.baslik
+        from modules.gayrimenkul_sabitleri import ALT_TURLER, TURLER, etiket
+        tur = self.tur or 'arsa'
+        tur_etiketi = etiket(ALT_TURLER.get(tur, []), self.alt_tur) if self.alt_tur else etiket(TURLER, tur)
+        metin = f"{tur_etiketi} · {self.mahalle}, {self.ilce}"
+        if tur in ('arsa', 'tarla') and (self.ada or self.parsel):
+            metin += f" · Ada {self.ada or '-'} / Parsel {self.parsel or '-'}"
+        return metin
+
+    @property
+    def aktif_ilan(self):
+        from modules.gayrimenkul_sabitleri import AKTIF_DURUMLAR
+        for bag in self.ilan_baglari:
+            if bag.ilan is not None and bag.ilan.durum in AKTIF_DURUMLAR:
+                return bag.ilan
+        return None
 
     user = db.relationship("User", backref=db.backref("analizler_olusturdugu", lazy="dynamic")) # backref adı değişti
     office = db.relationship("Office", backref=db.backref("analizler_ofisin", lazy="dynamic")) # Yeni ilişki    # Portfolio ile çoktan çoğa ilişki (portfolio_arsalar üzerinden)

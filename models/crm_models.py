@@ -173,6 +173,8 @@ class Deal(db.Model):
     user = db.relationship("User", backref=db.backref("crm_deals_owned", lazy="dynamic")) # backref
     # contact ve company ilişkileri ilgili modellerde backref ile tanımlı
     interactions = db.relationship("Interaction", backref="deal", lazy="dynamic", cascade="all, delete-orphan")
+    ilan_id = db.Column(db.Integer, db.ForeignKey("ilanlar.id", ondelete="SET NULL"), nullable=True, index=True)
+    ilan = db.relationship("Ilan", backref=db.backref("firsatlar", lazy="dynamic"))
     # tasks ilişkisi Task modelinde tanımlanacak
 
     def __repr__(self):

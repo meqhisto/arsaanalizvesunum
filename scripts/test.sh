@@ -5,7 +5,12 @@ set -e
 COMPOSE=/opt/arsaanalizvesunum/docker-compose.server.yml
 cd /opt/arsaanalizvesunum
 set -a; . ./.env; set +a
-docker compose -f "$COMPOSE" up -d db >/dev/null 2>&1 || true
+# Üretim compose projesinde hiçbir servisi başlatma/yeniden oluşturma; db yalnızca çalışıyorsa kullan
+if ! docker compose -f "$COMPOSE" ps --status running --services 2>/dev/null | grep -qx db; then
+  echo "HATA: '$COMPOSE' içindeki db servisi çalışmıyor. Testler db konteyneri çalışırken yürütülebilir;" >&2
+  echo "      üretim ortamını bu betik başlatmaz, lütfen durumu kontrol edin." >&2
+  exit 1
+fi
 docker compose -f "$COMPOSE" exec -T db createdb -U "$POSTGRES_USER" arsa_ilan_test 2>/dev/null || true
 TEST_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/arsa_ilan_test"
 docker compose -f "$COMPOSE" run --rm --no-deps \

@@ -2,8 +2,19 @@ import os
 
 import pytest
 
+from sqlalchemy.engine import make_url
+
+TEST_VERITABANI_ADI = 'arsa_ilan_test'
+
 if not os.environ.get('TEST_VERITABANI') or 'supabase' in os.environ.get('DATABASE_URL', ''):
     pytest.exit("Testler yalnız yerel test veritabanında çalışır")
+try:
+    _vt_adi = make_url(os.environ.get('DATABASE_URL', '')).database
+except Exception:
+    _vt_adi = None
+if _vt_adi != TEST_VERITABANI_ADI:
+    # drop_all() başka bir veritabanına asla dokunmamalı
+    pytest.exit(f"Testler yalnız '{TEST_VERITABANI_ADI}' veritabanında çalışır (DATABASE_URL: {_vt_adi!r})")
 
 from app import create_app  # noqa: E402
 from models import db  # noqa: E402
@@ -18,6 +29,8 @@ def app():
     with app.app_context():
         db.drop_all()
         db.create_all()
+        from modules.ilan_kurulum import kur as ilan_kur
+        ilan_kur()
         yield app
         db.session.remove()
 
