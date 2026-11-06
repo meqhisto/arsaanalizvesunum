@@ -95,3 +95,21 @@ Marka bilgileri `.env` üzerinden ayarlanır; boş bırakılırsa raporu indiren
 | `REPORT_TILE_URL` | Harita karo sunucusu (varsayılan OpenStreetMap) |
 
 Değer projeksiyonu analizdeki "Yıllık Değer Artış Oranı" alanını kullanır; boşsa model tahmini kullanılır.
+
+## Veritabanı: Supabase
+
+Canlı ortam veritabanı olarak Supabase (PostgreSQL 17, Frankfurt) kullanır. Sunucunun IPv6 bağlantısı olmadığından doğrudan bağlantı yerine IPv4 **pooler (session modu, port 5432)** kullanılır:
+
+```
+DATABASE_URL=postgresql://<rol>.<proje-ref>:<şifre>@aws-1-eu-central-1.pooler.supabase.com:5432/postgres?sslmode=require&keepalives=1&keepalives_idle=30
+```
+
+- Uygulama `postgres` süper kullanıcısıyla değil, yalnızca `public` şemasında yetkili ayrı bir rolle (`arsa_app`) bağlanır.
+- Supabase `public` şemasını REST API ile dışa açtığı için tüm tablolarda RLS açıktır ve `anon` / `authenticated` rollerinin tablo yetkileri kaldırılmıştır. Uygulama tabloların sahibi olduğu için RLS'den etkilenmez. Yeni tablo eklenirse aynı işlem yapılmalıdır:
+  ```sql
+  ALTER TABLE public.<tablo> ENABLE ROW LEVEL SECURITY;
+  REVOKE ALL ON TABLE public.<tablo> FROM anon, authenticated;
+  ```
+- Bağlantı havuzu `DB_POOL_SIZE` (varsayılan 3), `DB_MAX_OVERFLOW` (2) ve `DB_POOL_RECYCLE` (280 sn) ortam değişkenleriyle ayarlanır. `pool_pre_ping` açıktır.
+- Ücretsiz planda Supabase yedekleri indirilemez. Yedek, PostgreSQL 17 istemcisiyle `pg_dump` alınarak sunucuda tutulur.
+- Ücretsiz plan projeleri 7 gün düşük aktivitede duraklatılabilir. Duraklatılırsa Supabase panelinden "Resume project" ile açılır.
