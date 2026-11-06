@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     unixodbc-dev \
     curl \
     gnupg \
+    fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
 # Node.js kurulumu (Frontend derlemesi için)

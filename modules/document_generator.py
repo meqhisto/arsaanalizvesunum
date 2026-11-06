@@ -23,6 +23,7 @@ from PIL import Image
 import traceback
 import logging # Logging modülünü import et
 import qrcode
+from xml.sax.saxutils import escape as xml_escape
 from pptx import Presentation
 from pptx.util import Inches as PPTXInches, Pt as PPTXPt # pptx için Inches ve Pt import et (docx ile çakışmaması için alias)
 from pptx.dml.color import RGBColor as PPTXRGBColor # PowerPoint için RGBColor import et (docx ile çakışmaması için alias)
@@ -123,6 +124,15 @@ class DocumentGenerator:
         return True # Tüm bölümleri her zaman dahil et
 
 
+    @staticmethod
+    def _tr_num(value, decimals=2):
+        """Sayıyı Türkçe biçimde yazar (1.234,56). Sayı değilse olduğu gibi döndürür."""
+        try:
+            text = f"{float(value):,.{decimals}f}"
+        except (TypeError, ValueError):
+            return str(value) if value not in (None, '') else '-'
+        return text.replace(',', 'X').replace('.', ',').replace('X', '.')
+
     def _format_currency(self, value):
         """Para birimini formatlayan yardımcı metod."""
         try:
@@ -173,7 +183,7 @@ class DocumentGenerator:
             ['Ada/Parsel', f"{ada}/{parsel}"],
             ['Alan', self._format_area(metrekare)],
             ['İmar Durumu', imar_durumu],
-            ['TAKS/KAKS', f"{taks}/{kaks}"],
+            ['TAKS / KAKS', f"{self._tr_num(taks, 2)} / {self._tr_num(kaks, 2)}"],
             ['Toplam Fiyat', self._format_currency(fiyat)],
             ['m² Fiyatı', self._format_currency(metrekare_fiyati)],
         ]
@@ -367,7 +377,7 @@ class DocumentGenerator:
         """PDF için footer fonksiyonu."""
         try:
             canvas.saveState()
-            canvas.setFont('Helvetica', 9) # PDF footer için sabit font
+            canvas.setFont(getattr(self, '_pdf_font', 'Helvetica'), 9)
             canvas.setFillColor(colors.HexColor('#888888'))
             canvas.drawString(2*cm, 1*cm, "Gayrimenkul Analiz Sistemi - www.invecoproje.com")
             canvas.drawRightString(A4[0]-2*cm, 1*cm, f"Sayfa {doc.page}")
@@ -381,7 +391,7 @@ class DocumentGenerator:
         swot = self._get_swot_analizi()
         # Her maddeyi ayrı bir satır/paragraf yapmak için formatla
         formatted_swot = {
-            key: [f"• {item}" for item in items] if items else ["- Yok -"]
+            key: list(items) if items else ["- Yok -"]
             for key, items in swot.items()
         }
         return [
@@ -436,9 +446,9 @@ class DocumentGenerator:
 
 
         return [
-            ['Taban Alanı (m²)', f"{hesap.get('taban_alani', 0):.2f}"],
-            ['Toplam İnşaat Alanı (m²)', f"{hesap.get('toplam_insaat_alani', 0):.2f}"],
-            ['Teorik Kat Sayısı', f"{hesap.get('teorik_kat_sayisi', 0):.2f}"],
+            ['Taban Alanı (m²)', self._tr_num(hesap.get('taban_alani', 0), 2)],
+            ['Toplam İnşaat Alanı (m²)', self._tr_num(hesap.get('toplam_insaat_alani', 0), 2)],
+            ['Teorik Kat Sayısı', self._tr_num(hesap.get('teorik_kat_sayisi', 0), 2)],
             ['Tam Kat Sayısı', f"{hesap.get('tam_kat_sayisi', 0)}"]
         ]
 
@@ -448,8 +458,8 @@ class DocumentGenerator:
             # QR kodun içeriği - analiz detay sayfasının URL'i
             # URL'i yapılandırmadan veya dinamik olarak almak daha iyi olabilir.
             # Şimdilik sabit IP kullanılıyor, bu prod ortamında değişmeli.
-            qr_data = f"http://192.168.2.14:5000/analiz/{self.arsa_data.get('id')}"
-            if not self.arsa_data.get('id'):
+            qr_data = self.arsa_data.get('detail_url') or ''
+            if not qr_data:
                  logging.warning("Analiz ID olmadığı için QR kod içeriği eksik olacak.")
                  qr_data = "Analiz ID bulunamadı."
 
@@ -1233,6 +1243,9 @@ class DocumentGenerator:
 
                 # Hem normal hem kalın bulunduysa bu font setini kullan ve çık
                 if found_base and found_bold:
+                    # <b> etiketlerinin kalın varyanta eşlenmesi için aile olarak kaydet
+                    pdfmetrics.registerFontFamily(registered_base, normal=registered_base, bold=registered_bold,
+                                                  italic=registered_base, boldItalic=registered_bold)
                     logging.info(f"PDF için kullanılacak font seti: {registered_base}, {registered_bold}")
                     return registered_base, registered_bold
 
@@ -1246,6 +1259,7 @@ class DocumentGenerator:
         # Font ayarları
         print("\nDEBUG [Create PDF]: PDF belgesi oluşturma başladı.", flush=True) # Flush
         base_font, base_font_bold = self._register_fonts()
+        self._pdf_font = base_font
 
         from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame
 
@@ -1472,7 +1486,8 @@ class DocumentGenerator:
                 title = f"<b>{swot_titles[idx]}</b><br/>"
                 items = swot_data[i][j]
                 if items:
-                    text = title + "<br/>".join(f"• {madde}" for madde in items)
+                    text = title + "<br/>".join(
+                        xml_escape(madde) if madde == "- Yok -" else f"• {xml_escape(madde)}" for madde in items)
                 else:
                     text = title + " - Yok -"
                 row.append(Paragraph(text, styles['CustomNormal']))
@@ -1505,7 +1520,7 @@ class DocumentGenerator:
         }
         for title, text in ozet_sections_pdf.items():
              elements.append(Paragraph(title, styles['CustomHeading2']))
-             elements.append(Paragraph(text.replace('\n', '<br/>'), styles['CustomNormal'])) # Satır sonlarını <br/> ile değiştir
+             elements.append(Paragraph(xml_escape(str(text)).replace('\n', '<br/>'), styles['CustomNormal']))
              elements.append(Spacer(1, 0.4*cm))
 
 
@@ -1845,6 +1860,7 @@ class DocumentGenerator:
 
 
             prs = Presentation(template_path)
+            self._remove_template_slides(prs)
 
             # İlk slayt (Başlık Slaytı)
             # Şablondaki layout'ları kontrol etmek gerekebilir. Genellikle 0 indexindedir.
@@ -1980,6 +1996,14 @@ class DocumentGenerator:
             traceback.print_exc(file=sys.stdout)
             sys.stdout.flush()
             return None
+
+    @staticmethod
+    def _remove_template_slides(prs):
+        """Şablon dosyasında hazır duran örnek slaytları ({konum} gibi yer tutucularla) siler."""
+        sld_id_lst = prs.slides._sldIdLst
+        for sld_id in list(sld_id_lst):
+            prs.part.drop_rel(sld_id.rId)
+            sld_id_lst.remove(sld_id)
 
     def _add_pptx_slide_with_title(self, prs, title_text, layout_index=1):
         """PPTX'e başlık içeren yeni bir slayt ekler ve slayt nesnesini döndürür."""

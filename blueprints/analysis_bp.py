@@ -1,4 +1,5 @@
 # blueprints/analysis_bp.py
+import re
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_file, send_from_directory, make_response
 )
@@ -641,268 +642,69 @@ def share_analysis(analysis_id):
         current_app.logger.error(f"Analysis share error: {str(e)}", exc_info=True)
         return jsonify({'success': False, 'message': 'Paylaşım bilgileri alınırken bir hata oluştu.'}), 500
 
+REPORT_MIMETYPES = {
+    'pdf': 'application/pdf',
+    'word': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+}
+REPORT_EXTENSIONS = {'pdf': 'pdf', 'word': 'docx', 'pptx': 'pptx'}
+
+
+def _ascii_slug(text):
+    table = str.maketrans('çğıöşüÇĞİÖŞÜ', 'cgiosuCGIOSU')
+    return re.sub(r'[^A-Za-z0-9]+', '_', (text or '').translate(table)).strip('_') or 'rapor'
+
+
+def _build_report(analiz, fmt, settings=None):
+    """Analiz için istenen formatta rapor üretir ve indirilebilir yanıt döndürür."""
+    import tempfile, shutil
+    from modules.report_context import build_report_inputs
+    detail_url = request.url_root.rstrip('/') + url_for('analysis.view_analysis', analysis_id=analiz.id)
+    arsa_data, analiz_ozeti, profile_info = build_report_inputs(analiz, current_user, detail_url=detail_url)
+    output_dir = tempfile.mkdtemp(prefix='rapor_')
+    try:
+        generator = DocumentGenerator(arsa_data=arsa_data, analiz_ozeti=analiz_ozeti,
+                                      file_id=f"analiz_{analiz.id}", output_dir=output_dir,
+                                      profile_info=profile_info, settings=settings)
+        path = {'pdf': generator.create_pdf, 'word': generator.create_word, 'pptx': generator.create_pptx}[fmt]()
+        if not path or not os.path.exists(path):
+            raise RuntimeError(f"{fmt} dosyası oluşturulamadı")
+        with open(path, 'rb') as f:
+            data = f.read()
+    finally:
+        shutil.rmtree(output_dir, ignore_errors=True)
+    filename = (f"arsa_analiz_{_ascii_slug(analiz.il)}_{_ascii_slug(analiz.ilce)}_{analiz.id}_"
+                f"{datetime.now().strftime('%Y%m%d')}.{REPORT_EXTENSIONS[fmt]}")
+    response = make_response(data)
+    response.headers['Content-Type'] = REPORT_MIMETYPES[fmt]
+    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+def _report_or_redirect(analiz, fmt, settings=None):
+    try:
+        return _build_report(analiz, fmt, settings)
+    except Exception as e:
+        current_app.logger.error(f"Rapor oluşturma hatası ({fmt}, ID: {analiz.id}): {e}", exc_info=True)
+        flash('Rapor oluşturulurken bir hata oluştu.', 'danger')
+        return redirect(url_for('analysis.view_analysis', analysis_id=analiz.id))
+
+
 @analysis_bp.route('/<int:analysis_id>/report/word', methods=['GET'])
 @login_required
 def generate_word_report(analysis_id):
-    """DocumentGenerator kullanarak Word raporu oluştur"""
-    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
+    """Word raporu indir."""
+    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=current_user.id).first_or_404()
+    return _report_or_redirect(analysis, 'word')
 
-    try:
-        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
-
-        # Analysis verisini DocumentGenerator formatına çevir
-        arsa_data = {
-            'id': analysis.id,
-            'il': analysis.il,
-            'ilce': analysis.ilce,
-            'mahalle': analysis.mahalle,
-            'ada': analysis.ada,
-            'parsel': analysis.parsel,
-            'koordinatlar': analysis.koordinatlar,
-            'pafta': analysis.pafta,
-            'metrekare': analysis.metrekare,
-            'imar_durumu': analysis.imar_durumu,
-            'taks': analysis.taks,
-            'kaks': analysis.kaks,
-            'fiyat': analysis.fiyat,
-            'bolge_fiyat': analysis.bolge_fiyat,
-            'notlar': analysis.notlar
-        }
-
-        # Altyapı verilerini parse et
-        if analysis.altyapi:
-            try:
-                altyapi_data = json.loads(analysis.altyapi)
-                if isinstance(altyapi_data, list):
-                    arsa_data['altyapi[]'] = [item.lower() for item in altyapi_data]
-                else:
-                    arsa_data['altyapi[]'] = []
-            except json.JSONDecodeError:
-                arsa_data['altyapi[]'] = []
-        else:
-            arsa_data['altyapi[]'] = []
-
-        # SWOT verilerini parse et
-        if analysis.swot_analizi:
-            try:
-                swot_data = json.loads(analysis.swot_analizi)
-                if isinstance(swot_data, dict):
-                    arsa_data['strengths'] = swot_data.get('strengths', [])
-                    arsa_data['weaknesses'] = swot_data.get('weaknesses', [])
-                    arsa_data['opportunities'] = swot_data.get('opportunities', [])
-                    arsa_data['threats'] = swot_data.get('threats', [])
-                else:
-                    arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
-            except json.JSONDecodeError:
-                arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
-        else:
-            arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
-
-        # Analiz özeti (basit)
-        analiz_ozeti = {
-            'temel_ozet': f"{analysis.il} {analysis.ilce} bölgesinde bulunan {analysis.metrekare} m² arsa analizi.",
-            'yatirim_ozet': f"Toplam maliyet: ₺{float(analysis.fiyat):,.0f}" if analysis.fiyat else "Maliyet bilgisi mevcut değil.",
-            'uygunluk_ozet': "Detaylı analiz sonuçları raporda yer almaktadır.",
-            'tavsiyeler': analysis.notlar or "Özel tavsiye bulunmamaktadır."
-        }
-
-        # Profil bilgileri (basit)
-        profile_info = {
-            'ad': 'Sistem',
-            'soyad': 'Kullanıcısı',
-            'unvan': 'Analiz Uzmanı',
-            'firma': 'Arsa Analiz Platformu',
-            'email': 'info@arsaanaliz.com',
-            'telefon': '-',
-            'adres': '-',
-            'created_at': analysis.created_at
-        }
-
-        # Geçici dosya ID'si
-        file_id = f"analiz_{analysis_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-
-        # Geçici output directory
-        import tempfile
-        output_dir = tempfile.mkdtemp()
-
-        # DocumentGenerator oluştur
-        doc_generator = DocumentGenerator(
-            arsa_data=arsa_data,
-            analiz_ozeti=analiz_ozeti,
-            file_id=file_id,
-            output_dir=output_dir,
-            profile_info=profile_info
-        )
-
-        # Word dosyası oluştur
-        word_file_path = doc_generator.create_word()
-
-        if word_file_path and os.path.exists(word_file_path):
-            # Dosyayı oku
-            with open(word_file_path, 'rb') as f:
-                file_data = f.read()
-
-            # Geçici dosyaları temizle
-            import shutil
-            shutil.rmtree(output_dir, ignore_errors=True)
-
-            # Response oluştur
-            response = make_response(file_data)
-            response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-
-            # Safe filename
-            safe_il = analysis.il.replace('İ', 'I').replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c') if analysis.il else 'analiz'
-            safe_ilce = analysis.ilce.replace('İ', 'I').replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c') if analysis.ilce else 'rapor'
-            filename = f'analiz_raporu_{safe_il}_{safe_ilce}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx'
-            response.headers['Content-Disposition'] = f'attachment; filename={filename}'
-
-            return response
-        else:
-            # Geçici dosyaları temizle
-            import shutil
-            shutil.rmtree(output_dir, ignore_errors=True)
-            flash('Word raporu oluşturulamadı.', 'error')
-            return redirect(url_for('analysis.view_analysis', analysis_id=analysis_id))
-
-    except Exception as e:
-        current_app.logger.error(f"Word report error: {str(e)}", exc_info=True)
-        flash('Word raporu oluşturulurken bir hata oluştu.', 'error')
-        return redirect(url_for('analysis.view_analysis', analysis_id=analysis_id))
 
 @analysis_bp.route('/<int:analysis_id>/report/pdf', methods=['GET'])
 @login_required
 def generate_pdf_report(analysis_id):
-    """DocumentGenerator kullanarak PDF raporu oluştur"""
-    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
+    """PDF raporu indir."""
+    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=current_user.id).first_or_404()
+    return _report_or_redirect(analysis, 'pdf')
 
-    try:
-        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
-
-        # Analysis verisini DocumentGenerator formatına çevir (Word ile aynı)
-        arsa_data = {
-            'id': analysis.id,
-            'il': analysis.il,
-            'ilce': analysis.ilce,
-            'mahalle': analysis.mahalle,
-            'ada': analysis.ada,
-            'parsel': analysis.parsel,
-            'koordinatlar': analysis.koordinatlar,
-            'pafta': analysis.pafta,
-            'metrekare': analysis.metrekare,
-            'imar_durumu': analysis.imar_durumu,
-            'taks': analysis.taks,
-            'kaks': analysis.kaks,
-            'fiyat': analysis.fiyat,
-            'bolge_fiyat': analysis.bolge_fiyat,
-            'notlar': analysis.notlar
-        }
-
-        # Altyapı verilerini parse et
-        if analysis.altyapi:
-            try:
-                altyapi_data = json.loads(analysis.altyapi)
-                if isinstance(altyapi_data, list):
-                    arsa_data['altyapi[]'] = [item.lower() for item in altyapi_data]
-                else:
-                    arsa_data['altyapi[]'] = []
-            except json.JSONDecodeError:
-                arsa_data['altyapi[]'] = []
-        else:
-            arsa_data['altyapi[]'] = []
-
-        # SWOT verilerini parse et
-        if analysis.swot_analizi:
-            try:
-                swot_data = json.loads(analysis.swot_analizi)
-                if isinstance(swot_data, dict):
-                    arsa_data['strengths'] = swot_data.get('strengths', [])
-                    arsa_data['weaknesses'] = swot_data.get('weaknesses', [])
-                    arsa_data['opportunities'] = swot_data.get('opportunities', [])
-                    arsa_data['threats'] = swot_data.get('threats', [])
-                else:
-                    arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
-            except json.JSONDecodeError:
-                arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
-        else:
-            arsa_data.update({'strengths': [], 'weaknesses': [], 'opportunities': [], 'threats': []})
-
-        # Analiz özeti (basit)
-        analiz_ozeti = {
-            'temel_ozet': f"{analysis.il} {analysis.ilce} bölgesinde bulunan {analysis.metrekare} m² arsa analizi.",
-            'yatirim_ozet': f"Toplam maliyet: ₺{float(analysis.fiyat):,.0f}" if analysis.fiyat else "Maliyet bilgisi mevcut değil.",
-            'uygunluk_ozet': "Detaylı analiz sonuçları raporda yer almaktadır.",
-            'tavsiyeler': analysis.notlar or "Özel tavsiye bulunmamaktadır."
-        }
-
-        # Profil bilgileri (basit)
-        profile_info = {
-            'ad': 'Sistem',
-            'soyad': 'Kullanıcısı',
-            'unvan': 'Analiz Uzmanı',
-            'firma': 'Arsa Analiz Platformu',
-            'email': 'info@arsaanaliz.com',
-            'telefon': '-',
-            'adres': '-',
-            'created_at': analysis.created_at
-        }
-
-        # Geçici dosya ID'si
-        file_id = f"analiz_{analysis_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-
-        # Geçici output directory
-        import tempfile
-        output_dir = tempfile.mkdtemp()
-
-        # DocumentGenerator oluştur
-        doc_generator = DocumentGenerator(
-            arsa_data=arsa_data,
-            analiz_ozeti=analiz_ozeti,
-            file_id=file_id,
-            output_dir=output_dir,
-            profile_info=profile_info
-        )
-
-        # PDF dosyası oluştur
-        pdf_file_path = doc_generator.create_pdf()
-
-        if pdf_file_path and os.path.exists(pdf_file_path):
-            # Dosyayı oku
-            with open(pdf_file_path, 'rb') as f:
-                file_data = f.read()
-
-            # Geçici dosyaları temizle
-            import shutil
-            shutil.rmtree(output_dir, ignore_errors=True)
-
-            # Response oluştur
-            response = make_response(file_data)
-            response.headers['Content-Type'] = 'application/pdf'
-
-            # Safe filename
-            safe_il = analysis.il.replace('İ', 'I').replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c') if analysis.il else 'analiz'
-            safe_ilce = analysis.ilce.replace('İ', 'I').replace('ı', 'i').replace('ğ', 'g').replace('ü', 'u').replace('ş', 's').replace('ö', 'o').replace('ç', 'c') if analysis.ilce else 'rapor'
-            filename = f'analiz_raporu_{safe_il}_{safe_ilce}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'
-            response.headers['Content-Disposition'] = f'attachment; filename={filename}'
-
-            return response
-        else:
-            # Geçici dosyaları temizle
-            import shutil
-            shutil.rmtree(output_dir, ignore_errors=True)
-            flash('PDF raporu oluşturulamadı.', 'error')
-            return redirect(url_for('analysis.view_analysis', analysis_id=analysis_id))
-
-    except Exception as e:
-        current_app.logger.error(f"PDF report error: {str(e)}", exc_info=True)
-        flash('PDF raporu oluşturulurken bir hata oluştu.', 'error')
-        return redirect(url_for('analysis.view_analysis', analysis_id=analysis_id))
-
-# ÖNEMLİ NOT: Eski app.py'de iki adet analiz submit rotası vardı: /submit ve /submit_analysis.
-# /submit_analysis daha yeni ve daha detaylı validasyon içeriyor gibi duruyor.
-# İkisini birleştirip tek bir ana analiz oluşturma rotası yapmak en iyisi.
-# Şimdilik /submit_analysis rotasını alıyorum ve adını /create olarak değiştirebiliriz.
-# Eski /submit rotasındaki Arsa sınıfı ve ArsaAnalizci kullanımı,
-# yeni /create rotası içinde veya ArsaAnaliz modelinin metotları olarak entegre edilebilir.
 
 @analysis_bp.route('/create', methods=['POST']) # Eski /submit_analysis
 @login_required
@@ -1358,106 +1160,15 @@ def medya_sil(analiz_id, medya_id):
 @analysis_bp.route('/report/generate/<string:format_type>/<int:analiz_id_param>')
 @login_required
 def generate_report(format_type, analiz_id_param):
-    try:
-        # Session yerine veritabanından analiz verilerini al
-        analiz = ArsaAnaliz.query.get_or_404(analiz_id_param)
-        if analiz.user_id != current_user.id: # Sadece kendi analizleri için rapor
-            flash("Bu analiz için rapor oluşturma yetkiniz yok.", "warning")
-            return redirect(url_for('analysis.analiz_detay', analiz_id=analiz_id_param))
-
-        user = User.query.get(analiz.user_id) # Zaten current_user
-
-        # DocumentGenerator için arsa_data ve analiz_ozeti oluştur
-        altyapi_parsed = []
-        if analiz.altyapi:
-            try: altyapi_parsed = json.loads(analiz.altyapi)
-            except: pass
-            if not isinstance(altyapi_parsed, list): altyapi_parsed = [k for k,v in (altyapi_parsed if isinstance(altyapi_parsed, dict) else {}).items() if v]
-
-
-        swot_parsed = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
-        if analiz.swot_analizi:
-            try: swot_parsed = json.loads(analiz.swot_analizi)
-            except: pass
-            if not isinstance(swot_parsed, dict): swot_parsed = {} # Hatalıysa boş dict
-
-        # ArsaAnalizci'den hesaplamaları al
-        analizci = ArsaAnalizci()
-        arsa_data_for_analizci = {
-            "metrekare": float(analiz.metrekare or 0), "fiyat": float(analiz.fiyat or 0),
-            "bolge_fiyat": float(analiz.bolge_fiyat or 0), "taks": float(analiz.taks or 0.3),
-            "kaks": float(analiz.kaks or 1.5), "imar_durumu": analiz.imar_durumu or "",
-            "altyapi": altyapi_parsed,
-            "konum": {"il": analiz.il, "ilce": analiz.ilce, "mahalle": analiz.mahalle}
-        }
-        analiz_sonuclari = analizci.analiz_et(arsa_data_for_analizci.copy())
-        analiz_ozeti_calculated = analizci.ozetle(analiz_sonuclari.copy())
-
-        # DocumentGenerator'a gönderilecek arsa_data
-        doc_arsa_data = {
-            "id": analiz.id, "il": analiz.il, "ilce": analiz.ilce, "mahalle": analiz.mahalle,
-            "ada": analiz.ada, "parsel": analiz.parsel, "koordinatlar": analiz.koordinatlar,
-            "pafta": analiz.pafta, "metrekare": float(analiz.metrekare or 0),
-            "imar_durumu": analiz.imar_durumu or "", "taks": float(analiz.taks or 0.3),
-            "kaks": float(analiz.kaks or 1.5), "fiyat": float(analiz.fiyat or 0),
-            "bolge_fiyat": float(analiz.bolge_fiyat or 0),
-            "altyapi[]": altyapi_parsed, # DocumentGenerator bu anahtarı bekliyor olabilir, kontrol edin
-            "strengths": swot_parsed.get("strengths", []), "weaknesses": swot_parsed.get("weaknesses", []),
-            "opportunities": swot_parsed.get("opportunities", []), "threats": swot_parsed.get("threats", []),
-            "insaat_hesaplama": analiz_sonuclari.get("insaat_hesaplama", {}) # İnşaat hesaplamalarını da ekle
-        }
-
-        profile_info = {
-            "ad": current_user.ad, "soyad": current_user.soyad, "email": current_user.email,
-            "telefon": current_user.telefon, "firma": current_user.firma, "unvan": current_user.unvan,
-            "adres": current_user.adres, "profil_foto": current_user.profil_foto,
-            "created_at": analiz.created_at # Analizin oluşturulma tarihi
-        }
-
-        # Rapor ayarları (URL'den veya varsayılan)
-        theme = request.args.get("theme", "classic")
-        color_scheme = request.args.get("color_scheme", "blue")
-        sections_str = request.args.get("sections")
-        sections_list = [s.strip() for s in sections_str.split(',') if s.strip()] if sections_str else None
-
-        doc_gen_settings: dict[str, Any] = {"theme": theme, "color_scheme": color_scheme}
-        if sections_list is not None:
-            doc_gen_settings["sections"] = sections_list
-
-        # file_id olarak analiz_id'yi kullanalım, output_dir PRESENTATIONS_DIR olmalı
-        doc_generator = DocumentGenerator(
-            doc_arsa_data,
-            analiz_ozeti_calculated,
-            str(analiz.id), # file_id olarak analiz ID'si
-            current_app.config["PRESENTATIONS_DIR"], # Ana app config'den al
-            profile_info=profile_info,
-            settings=doc_gen_settings
-        )
-
-        filepath = None
-        download_name = None
-
-        if format_type == "word":
-            filepath = doc_generator.create_word()
-            download_name = f"arsa_analiz_{analiz.id}.docx"
-        elif format_type == "pdf":
-            filepath = doc_generator.create_pdf()
-            download_name = f"arsa_analiz_{analiz.id}.pdf"
-        else:
-            flash("Geçersiz rapor formatı.", "danger")
-            return redirect(url_for('analysis.analiz_detay', analiz_id=analiz.id))
-
-        if filepath and os.path.exists(filepath):
-            return send_file(filepath, as_attachment=True, download_name=download_name)
-        else:
-            current_app.logger.error(f"{format_type.upper()} rapor dosyası oluşturulamadı veya bulunamadı: {filepath}")
-            flash(f"{format_type.upper()} raporu oluşturulamadı.", "danger")
-            return redirect(url_for('analysis.analiz_detay', analiz_id=analiz.id))
-
-    except Exception as e:
-        current_app.logger.error(f"Rapor oluşturma hatası ({format_type}, ID: {analiz_id_param}): {str(e)}", exc_info=True)
-        flash("Rapor oluşturulurken beklenmedik bir hata oluştu.", "danger")
-        return redirect(url_for('analysis.analiz_detay', analiz_id=analiz_id_param))
+    """Eski rapor rotası: /report/generate/<word|pdf>/<id> (tema/renk ayarlarıyla)."""
+    analiz = ArsaAnaliz.query.filter_by(id=analiz_id_param, user_id=current_user.id).first_or_404()
+    fmt = {'word': 'word', 'docx': 'word', 'pdf': 'pdf', 'pptx': 'pptx'}.get(format_type)
+    if not fmt:
+        flash("Geçersiz rapor formatı.", "danger")
+        return redirect(url_for('analysis.view_analysis', analysis_id=analiz.id))
+    settings = {"theme": request.args.get("theme", "classic"),
+                "color_scheme": request.args.get("color_scheme", "blue")}
+    return _report_or_redirect(analiz, fmt, settings)
 
 
 # Sunum Oluşturma Rotası (PPTX)
@@ -1465,85 +1176,13 @@ def generate_report(format_type, analiz_id_param):
 @analysis_bp.route('/report/generate_pptx/<int:analiz_id>', methods=['POST']) # POST olmalı, formdan veri alacak
 @login_required
 def generate_pptx(analiz_id):
+    """PowerPoint sunumu indir."""
+    analiz = ArsaAnaliz.query.filter_by(id=analiz_id, user_id=current_user.id).first_or_404()
+    settings = {"color_scheme": request.form.get("color_scheme", "blue")}
     try:
-        analiz = ArsaAnaliz.query.get_or_404(analiz_id)
-        if analiz.user_id != current_user.id:
-            return jsonify({"error": "Yetkisiz işlem"}), 403
-
-        sections_json = request.form.get("sections", "[]") # Varsayılan boş JSON dizisi
-        try:
-            sections = json.loads(sections_json)
-            if not isinstance(sections, list): sections = []
-        except json.JSONDecodeError:
-            sections = []
-        
-        color_scheme = request.form.get("color_scheme", "blue")
-
-        # DocumentGenerator için veri hazırlama (generate_report'takine benzer)
-        altyapi_parsed = []
-        if analiz.altyapi:
-            try: altyapi_parsed = json.loads(analiz.altyapi)
-            except: pass
-            if not isinstance(altyapi_parsed, list): altyapi_parsed = [k for k,v in (altyapi_parsed if isinstance(altyapi_parsed, dict) else {}).items() if v]
-
-        swot_parsed = {}
-        if analiz.swot_analizi:
-            try: swot_parsed = json.loads(analiz.swot_analizi)
-            except: pass
-            if not isinstance(swot_parsed, dict): swot_parsed = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
-
-
-        # ArsaAnalizci'den hesaplamaları al
-        analizci = ArsaAnalizci()
-        arsa_data_for_analizci = {
-            "metrekare": float(analiz.metrekare or 0), "fiyat": float(analiz.fiyat or 0),
-            "bolge_fiyat": float(analiz.bolge_fiyat or 0), "taks": float(analiz.taks or 0.3),
-            "kaks": float(analiz.kaks or 1.5), "imar_durumu": analiz.imar_durumu or "",
-            "altyapi": altyapi_parsed,
-            "konum": {"il": analiz.il, "ilce": analiz.ilce, "mahalle": analiz.mahalle}
-        }
-        analiz_sonuclari = analizci.analiz_et(arsa_data_for_analizci.copy())
-        # PPTX için analiz_ozeti'ne şimdilik ihtiyaç yok gibi, DocumentGenerator ona göre ayarlanmalı
-        
-        doc_arsa_data = {
-            "id": analiz.id, "il": analiz.il, "ilce": analiz.ilce, "mahalle": analiz.mahalle,
-            "ada": analiz.ada, "parsel": analiz.parsel,
-            "metrekare": float(analiz.metrekare or 0), "imar_durumu": analiz.imar_durumu or "",
-            "taks": float(analiz.taks or 0.3), "kaks": float(analiz.kaks or 1.5),
-            "fiyat": float(analiz.fiyat or 0), "bolge_fiyat": float(analiz.bolge_fiyat or 0),
-            "altyapi[]": altyapi_parsed, # DocumentGenerator'ın altyapi için beklediği anahtar
-            "swot": swot_parsed, # DocumentGenerator swot için bu anahtarı bekliyor olabilir
-            "created_at": analiz.created_at.strftime("%d.%m.%Y %H:%M"), # DocumentGenerator için eklendi
-            "insaat_hesaplama": analiz_sonuclari.get("insaat_hesaplama", {})
-        }
-        
-        user_profile_info = {
-            "ad": current_user.ad, "soyad": current_user.soyad, "email": current_user.email,
-            "telefon": current_user.telefon, "firma": current_user.firma, "unvan": current_user.unvan,
-            "adres": current_user.adres, "profil_foto": current_user.profil_foto
-        }
-        
-        # file_id olarak benzersiz bir ID veya analiz ID'si kullanılabilir.
-        # output_dir olarak PRESENTATIONS_DIR kullanılmalı.
-        temp_file_id = str(uuid.uuid4()) # Her sunum için benzersiz klasör ve dosya adı
-        
-        doc_gen = DocumentGenerator(
-            arsa_data=doc_arsa_data, # Tüm arsa verilerini gönder
-            analiz_ozeti=None, # PPTX için özet gerekmiyorsa
-            file_id=temp_file_id,
-            output_dir=current_app.config["PRESENTATIONS_DIR"],
-            profile_info=user_profile_info,
-            settings={"sections": sections, "color_scheme": color_scheme}
-        )
-
-        pptx_path = doc_gen.create_pptx()
-
-        if pptx_path and os.path.exists(pptx_path):
-            return send_file(pptx_path, as_attachment=True, download_name=f"analiz_sunum_{analiz.id}_{temp_file_id[:8]}.pptx")
-        else:
-            current_app.logger.error(f"PPTX sunum dosyası oluşturulamadı: {pptx_path}")
-            return jsonify({"error": "Sunum oluşturulamadı"}), 500
-
+        return _build_report(analiz, 'pptx', settings)
     except Exception as e:
-        current_app.logger.error(f"PPTX oluşturma hatası (ID: {analiz_id}): {str(e)}", exc_info=True)
-        return jsonify({"error": f"Sunum oluşturulurken bir hata oluştu: {str(e)}"}), 500
+        current_app.logger.error(f"PPTX oluşturma hatası (ID: {analiz_id}): {e}", exc_info=True)
+        return jsonify({"error": "Sunum oluşturulurken bir hata oluştu."}), 500
+
+
