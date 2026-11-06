@@ -79,6 +79,33 @@ class ArsaAnaliz(db.Model):
         return metin
 
     @property
+    def ozet(self):
+        """Liste kartı için kısa özet: konutta '3+1 · 120 m² · 4. kat', arsada '800 m² · Konut imarlı · KAKS 1,5'."""
+        from modules.ilan_hesap import sayi_metni
+        parcalar = []
+        if (self.tur or 'arsa') in ('arsa', 'tarla'):
+            if self.metrekare is not None:
+                parcalar.append(f"{sayi_metni(self.metrekare)} m²")
+            imar = (self.imar_durumu or '').strip()
+            if imar:
+                sade = imar == 'İmarsız' or imar.endswith('imarlı') or imar.endswith('İmarlı')
+                parcalar.append(imar if sade else f"{imar} imarlı")
+            if self.kaks is not None:
+                parcalar.append(f"KAKS {sayi_metni(self.kaks)}")
+        else:
+            if self.oda_sayisi:
+                parcalar.append(self.oda_sayisi)
+            m2 = self.brut_m2 if self.brut_m2 is not None else self.metrekare
+            if m2 is not None:
+                parcalar.append(f"{sayi_metni(m2)} m²")
+            kat = (self.bulundugu_kat or '').strip()
+            if kat:
+                parcalar.append(f"{kat}. kat" if kat.lstrip('-').isdigit() else kat)
+            elif self.toplam_kat:
+                parcalar.append(f"{self.toplam_kat} katlı")
+        return ' · '.join(parcalar)
+
+    @property
     def aktif_ilan(self):
         from modules.gayrimenkul_sabitleri import AKTIF_DURUMLAR
         for bag in self.ilan_baglari:

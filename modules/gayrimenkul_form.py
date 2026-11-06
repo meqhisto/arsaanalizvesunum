@@ -279,3 +279,78 @@ def sahip_satirlari(veri, user, gayrimenkul=None):
         satir.update(hisse=s['hisse'] or '', irtibat=s['irtibat'], salt_okunur=cid not in gorunur)
         satirlar.append(satir)
     return satirlar
+
+
+# ---------------------------------------------------------------- detay sayfası (spec §5.3)
+
+ALTYAPI_ADLARI = {'yol': 'Yol', 'elektrik': 'Elektrik', 'su': 'Su', 'dogalgaz': 'Doğalgaz',
+                  'kanalizasyon': 'Kanalizasyon', 'telefon': 'Telefon', 'internet': 'İnternet'}
+
+
+def detay_bilgileri(g):
+    """Türe özel bilgi satırları [(etiket, metin)]; yalnız dolu alanlar."""
+    from modules.gayrimenkul_sabitleri import etiket
+    from modules.ilan_hesap import sayi_metni
+    tur = g.tur or 'arsa'
+    satirlar = [('Tür', etiket(TURLER, tur))]
+    if g.alt_tur:
+        satirlar.append(('Alt tür', etiket(ALT_TURLER.get(tur, []), g.alt_tur)))
+    satirlar.append(('Konum', ' / '.join(p for p in (g.il, g.ilce, g.mahalle) if p)))
+
+    def ekle(etiket_, deger, birim=''):
+        if deger is None or deger == '':
+            return
+        if isinstance(deger, bool):
+            if deger:
+                satirlar.append((etiket_, 'Evet'))
+            return
+        if isinstance(deger, (int, float, Decimal)):
+            deger = sayi_metni(deger)
+        satirlar.append((etiket_, f"{deger} {birim}".strip()))
+
+    if tur in ARSA_TURLERI:
+        ekle('Ada', g.ada)
+        ekle('Parsel', g.parsel)
+        ekle('Pafta', g.pafta)
+        ekle('Yüzölçümü', g.metrekare, 'm²')
+        ekle('İmar durumu', g.imar_durumu)
+        ekle('TAKS', g.taks)
+        ekle('KAKS', g.kaks)
+    else:
+        ekle('Brüt alan', g.brut_m2 if g.brut_m2 is not None else g.metrekare, 'm²')
+        ekle('Net alan', g.net_m2, 'm²')
+        ekle('Oda sayısı', g.oda_sayisi)
+        ekle('Banyo sayısı', g.banyo_sayisi)
+        ekle('Bulunduğu kat', g.bulundugu_kat)
+        ekle('Toplam kat', g.toplam_kat)
+        ekle('Bina yaşı', g.bina_yasi)
+        ekle('Isınma', g.isinma)
+        ekle('Eşyalı', g.esyali)
+        ekle('Site içinde', g.site_icinde)
+        ekle('Balkon', g.balkon)
+        ekle('Aidat', g.aidat, '₺')
+    ekle('Koordinatlar', g.koordinatlar)
+    ekle('Tapu durumu', g.tapu_durumu)
+    ekle('Kimden', g.kimden)
+    ekle('Krediye uygun', g.krediye_uygun)
+    ekle('Takaslı', g.takasli)
+    return satirlar
+
+
+def ozellik_gruplari(g):
+    """[(başlık, [etiket, ...])] — yalnız seçimi olan gruplar; altyapı eski sütundan da okunur."""
+    from modules.gayrimenkul_sabitleri import OZELLIK_BASLIKLARI
+    from modules.rapor.model import parse_altyapi
+    ozellikler = _json(g.ozellikler, {})
+    if not isinstance(ozellikler, dict):
+        ozellikler = {}
+    gruplar = []
+    for anahtar in OZELLIKLER:
+        secilen = list(ozellikler.get(anahtar) or [])
+        if anahtar == 'altyapi':
+            if not secilen and g.altyapi:
+                secilen = parse_altyapi(g.altyapi)
+            secilen = [ALTYAPI_ADLARI.get(s, s) for s in secilen]
+        if secilen:
+            gruplar.append((OZELLIK_BASLIKLARI[anahtar], secilen))
+    return gruplar

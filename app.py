@@ -202,6 +202,8 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.jinja_env.filters['nl2br'] = nl2br_filter
     app.jinja_env.filters['format_currency'] = format_currency_filter
     app.jinja_env.filters['format_number'] = format_number_filter
+    from modules.ilan_hesap import sayi_metni
+    app.jinja_env.filters['tr_sayi'] = sayi_metni
     # current_user'ı tüm şablonlara global olarak eklemek için (Flask-Login bunu zaten yapar ama explicit olabilir)
     @app.context_processor
     def inject_current_user():

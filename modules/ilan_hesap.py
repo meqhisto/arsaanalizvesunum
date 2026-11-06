@@ -84,3 +84,17 @@ def konumlandirma(teklif_tipi, fark):
     if fark <= 5:
         return 'Piyasa seviyesinde'
     return 'Talep bölge ortalamasının üstünde' if teklif_tipi == 'kat_karsiligi' else 'Bölgenin üstünde'
+
+
+def sayi_metni(deger, ondalik=2):
+    """Türkçe sayı yazımı: 12000 -> '12.000', 1.5 -> '1,5'; gereksiz sıfırlar atılır. None -> ''."""
+    if deger is None or deger == '':
+        return ''
+    try:
+        sayi = float(deger)
+    except (TypeError, ValueError):
+        return str(deger)
+    metin = f"{sayi:,.{ondalik}f}"
+    if '.' in metin:
+        metin = metin.rstrip('0').rstrip('.')
+    return metin.replace(',', '\0').replace('.', ',').replace('\0', '.')

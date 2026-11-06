@@ -37,7 +37,7 @@
 
 {% block page_actions %}
 <div class="d-flex gap-2">
-    <a href="{{ url_for('analysis.view_analysis', analysis_id=gayrimenkul.id) if gayrimenkul else url_for('analysis.list_analyses') }}"
+    <a href="{{ url_for('analysis.view_analysis', analysis_id=gayrimenkul.id) if gayrimenkul else url_for('analysis.analizler') }}"
        class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Geri</a>
     <button type="submit" form="gayrimenkulForm" class="btn btn-primary"><i class="fas fa-save me-1"></i>Kaydet</button>
 </div>

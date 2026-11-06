@@ -285,7 +285,7 @@ def index():
             {
                 "tarih": analiz.created_at,
                 "mesaj": f"{analiz.il}, {analiz.ilce} bölgesinde yeni arsa analizi oluşturuldu.",
-                "url": url_for('analysis.analiz_detay', analiz_id=analiz.id), # 'analysis' blueprint'i
+                "url": url_for('analysis.view_analysis', analysis_id=analiz.id), # 'analysis' blueprint'i
                 "tip": "analiz" 
             }
         )

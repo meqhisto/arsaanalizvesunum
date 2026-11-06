@@ -1,5 +1,6 @@
 from modules.ilan_hesap import (bolge_ortalamasi, fark_yuzde, insaat_hakki, istenen_deger,
-                                konumlandirma, sahibe_dusen_m2, toplam_m2, tutar_ayristir)
+                                konumlandirma, sahibe_dusen_m2, toplam_m2, tutar_ayristir,
+                                sayi_metni)
 
 
 def test_tutar_ayristir_turkce():
@@ -64,3 +65,11 @@ def test_istenen_deger():
     assert istenen_deger('kiralik', None, 30_000, None, 150) == 200
     assert istenen_deger('kat_karsiligi', None, None, 50, 3200) == 50
     assert istenen_deger('satilik', 4_000_000, None, None, 0) is None
+
+
+def test_sayi_metni_turkce():
+    assert sayi_metni(12000) == "12.000"
+    assert sayi_metni(1.5) == "1,5"
+    assert sayi_metni("800.00") == "800"
+    assert sayi_metni(1250000.25) == "1.250.000,25"
+    assert sayi_metni(None) == ""

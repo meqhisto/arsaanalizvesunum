@@ -1,0 +1,202 @@
+{% extends "dashboard_base.html" %}
+
+{% macro csrf() -%}
+{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+{%- endmacro %}
+
+{% block title %}{{ g.baslik_metni }} - Arsa Analiz Platformu{% endblock %}
+{% block page_title %}{{ g.baslik_metni }}{% endblock %}
+{% block page_description %}{{ g.il }} / {{ g.ilce }}{% if g.mahalle %} / {{ g.mahalle }}{% endif %}{% if g.ozet %} · {{ g.ozet }}{% endif %}{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('analysis.analizler') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Liste</a>
+    <a href="{{ url_for('analysis.edit_analysis', analysis_id=g.id) }}" class="btn btn-outline-primary"><i class="fas fa-pen me-1"></i>Düzenle</a>
+    <a href="/ilanlar/yeni?gayrimenkul={{ g.id }}" class="btn btn-primary"><i class="fas fa-bullhorn me-1"></i>Yeni ilan oluştur</a>
+    <form method="post" action="{{ url_for('analysis.analiz_sil', analiz_id=g.id) }}" class="d-inline"
+          onsubmit="return confirm('Bu gayrimenkul, fotoğrafları ve yalnız bu kaydı içeren ilanlarıyla birlikte silinecek. Emin misiniz?');">
+        {{ csrf() }}
+        <button type="submit" class="btn btn-outline-danger"><i class="fas fa-trash me-1"></i>Sil</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+{% set DURUM_RENK = {'hazirlaniyor': 'secondary', 'pazarlamada': 'success', 'opsiyonlu': 'warning',
+                     'anlasildi': 'primary', 'geri_cekildi': 'dark'} %}
+{% set SWOT_RENK = {'strengths': 'success', 'weaknesses': 'danger', 'opportunities': 'primary', 'threats': 'warning'} %}
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <!-- Bilgiler -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Bilgiler</h6>
+                <div class="row g-0">
+                    {% for etiket, deger in bilgiler %}
+                    <div class="col-12 col-sm-6 d-flex justify-content-between gap-2 border-bottom py-2 px-sm-2">
+                        <span class="text-muted small">{{ etiket }}</span>
+                        <span class="fw-semibold text-end text-break">{{ deger }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if g.notlar %}
+                <div class="mt-3">
+                    <div class="text-muted small mb-1">Notlar</div>
+                    <div class="text-break">{{ g.notlar|nl2br }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if ozellik_gruplari %}
+        <!-- Özellikler -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-list-check me-2 text-primary"></i>Özellikler</h6>
+                {% for baslik, secilenler in ozellik_gruplari %}
+                <div class="mb-2">
+                    <div class="small text-muted mb-1">{{ baslik }}</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for s in secilenler %}<span class="badge text-bg-light border fw-normal">{{ s }}</span>{% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if swot.values()|select|list %}
+        <!-- SWOT -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-th-large me-2 text-primary"></i>SWOT analizi</h6>
+                <div class="row g-3">
+                    {% for anahtar, baslik in swot_basliklari %}
+                    <div class="col-12 col-md-6">
+                        <div class="border-start border-3 border-{{ SWOT_RENK[anahtar] }} ps-2 h-100">
+                            <div class="fw-semibold small mb-1">{{ baslik }}</div>
+                            {% if swot[anahtar] %}
+                            <ul class="small mb-0 ps-3">{% for m in swot[anahtar] %}<li class="text-break">{{ m }}</li>{% endfor %}</ul>
+                            {% else %}<div class="small text-muted">—</div>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Fotoğraflar -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-images me-2 text-primary"></i>Fotoğraflar</h6>
+                <form method="post" action="{{ url_for('analysis.medya_yukle', analiz_id=g.id) }}" enctype="multipart/form-data" class="mb-3">
+                    {{ csrf() }}
+                    <div class="input-group">
+                        <input type="file" name="medya" accept="image/*,video/*" class="form-control" multiple required aria-label="Fotoğraf veya video seç">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-upload me-1"></i>Yükle</button>
+                    </div>
+                </form>
+                {% if medyalar %}
+                <div class="row g-2">
+                    {% for medya in medyalar %}
+                    {% set yol = ['uploads', medya.filename.strip().lstrip('/')]|join('/') %}
+                    <div class="col-6 col-md-4">
+                        <div class="position-relative">
+                            {% if medya.type == 'image' %}
+                            <a href="{{ url_for('static', filename=yol) }}" target="_blank" rel="noopener">
+                                <img src="{{ url_for('static', filename=yol) }}" class="img-fluid rounded w-100" style="aspect-ratio: 4 / 3; object-fit: cover;" alt="Fotoğraf {{ loop.index }}" loading="lazy">
+                            </a>
+                            {% else %}
+                            <video class="w-100 rounded" controls preload="metadata"><source src="{{ url_for('static', filename=yol) }}"></video>
+                            {% endif %}
+                            <form method="post" action="{{ url_for('analysis.medya_sil', analiz_id=g.id, medya_id=medya.id) }}"
+                                  class="position-absolute top-0 end-0 m-1" onsubmit="return confirm('Bu dosya silinsin mi?');">
+                                {{ csrf() }}
+                                <button type="submit" class="btn btn-sm btn-light border" title="Sil" aria-label="Sil"><i class="fas fa-trash text-danger"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="small text-muted">Henüz fotoğraf yok.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <!-- Sahipler -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-user-tie me-2 text-primary"></i>Mal sahipleri</h6>
+                {% if sahiplikler %}
+                <ul class="list-unstyled mb-0">
+                    {% for s in sahiplikler %}
+                    <li class="d-flex justify-content-between align-items-start gap-2 py-2 {% if not loop.last %}border-bottom{% endif %}">
+                        <div class="text-break">
+                            {% if s.contact.user_id == current_user.id %}
+                            <a href="{{ url_for('crm.crm_contact_detail', contact_id=s.contact_id) }}" class="text-decoration-none">{{ s.contact.full_name }}</a>
+                            {% else %}{{ s.contact.full_name }}{% endif %}
+                            {% if s.irtibat %}<span class="badge text-bg-info ms-1">İrtibat</span>{% endif %}
+                            {% if s.contact.phone %}<div class="small"><a href="tel:{{ s.contact.phone }}" class="text-muted text-decoration-none"><i class="fas fa-phone me-1"></i>{{ s.contact.phone }}</a></div>{% endif %}
+                        </div>
+                        {% if s.hisse %}<span class="badge text-bg-light border" title="Hisse">{{ s.hisse }}</span>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="small text-muted">Mal sahibi eklenmemiş. <a href="{{ url_for('analysis.edit_analysis', analysis_id=g.id) }}">Ekle</a></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Yer aldığı ilanlar -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
+                    <h6 class="mb-0"><i class="fas fa-bullhorn me-2 text-primary"></i>Yer aldığı ilanlar</h6>
+                    <a href="/ilanlar/yeni?gayrimenkul={{ g.id }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-plus"></i><span class="ms-1">Yeni ilan</span></a>
+                </div>
+                {% if ilanlar %}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="small text-muted"><tr><th>Kod</th><th>Tip</th><th>Durum</th><th>Tarih</th></tr></thead>
+                        <tbody>
+                            {% for i in ilanlar %}
+                            <tr>
+                                <td class="text-nowrap"><a href="/ilanlar/{{ i.id }}" class="text-decoration-none">{{ i.kod }}</a></td>
+                                <td class="small">{{ sabit.etiket(sabit.TEKLIF_TIPLERI, i.teklif_tipi) }}</td>
+                                <td><span class="badge text-bg-{{ DURUM_RENK.get(i.durum, 'secondary') }}">{{ sabit.etiket(sabit.DURUMLAR, i.durum) }}</span></td>
+                                <td class="small text-nowrap">{{ i.created_at.strftime('%d.%m.%Y') if i.created_at else '' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="small text-muted">Bu gayrimenkul henüz bir ilanda yer almıyor.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if g.user_id == current_user.id %}
+        <!-- Raporlar (tanıtım raporu Task 8'de yenilenecek) -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-file-alt me-2 text-primary"></i>Raporlar</h6>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('analysis.generate_pdf_report', analysis_id=g.id) }}" class="btn btn-outline-secondary"><i class="fas fa-file-pdf me-1"></i>PDF raporu</a>
+                    <a href="{{ url_for('analysis.generate_word_report', analysis_id=g.id) }}" class="btn btn-outline-secondary"><i class="fas fa-file-word me-1"></i>Word raporu</a>
+                    <form method="post" action="{{ url_for('analysis.generate_pptx', analiz_id=g.id) }}" class="d-grid">
+                        {{ csrf() }}
+                        <button type="submit" class="btn btn-outline-secondary"><i class="fas fa-file-powerpoint me-1"></i>Sunum (PowerPoint)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

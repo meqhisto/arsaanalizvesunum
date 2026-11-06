@@ -7,7 +7,6 @@ from datetime import datetime
 import uuid # Rapor ID'leri için
 import tempfile # Kullanılmıyorsa kaldırılabilir
 import traceback
-import json
 from decimal import Decimal # Sayısal dönüşümler için
 from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename # Dosya yükleme için
@@ -17,14 +16,7 @@ from typing import Any # For type hinting
 
 # Modelleri ve db nesnesini models paketinden import et
 from models import db
-from models.user_models import User
 from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats, AnalizMedya
-
-# Özel modüllerinizi import edin
-# Bu import yolları, projenizin klasör yapısına göre ayarlanmalıdır.
-# Eğer blueprints klasörü, modules klasörü ile aynı seviyedeyse:
-from modules.analiz import ArsaAnalizci
-from modules.fiyat_tahmini import FiyatTahminModeli # FiyatTahminModeli'ne engine geçilecek
 
 # Flask uygulamasının yapılandırmasına erişmek için current_app
 from flask import current_app
@@ -99,55 +91,6 @@ def _medya_sonrasi(gayrimenkul):
         current_app.logger.error(f"Medya kaydetme hatası (ID: {gayrimenkul.id}): {e}", exc_info=True)
         flash('Gayrimenkul kaydedildi ancak bazı fotoğraflar yüklenemedi.', 'warning')
 
-
-@analysis_bp.route('/list', methods=['GET'])
-@login_required
-def list_analyses():
-    """Kullanıcının analizlerini listele ve filtrele"""
-    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
-
-    # Base query
-    query = ArsaAnaliz.query.filter_by(user_id=user_id)
-
-    # Search filter
-    search = request.args.get('search', '').strip()
-    if search:
-        search_filter = db.or_(
-            ArsaAnaliz.il.ilike(f'%{search}%'),
-            ArsaAnaliz.ilce.ilike(f'%{search}%'),
-            ArsaAnaliz.mahalle.ilike(f'%{search}%')
-        )
-        query = query.filter(search_filter)
-
-    # Location filter
-    il_filter = request.args.get('il', '').strip()
-    if il_filter:
-        query = query.filter(ArsaAnaliz.il == il_filter)
-
-    # Date filter
-    date_filter = request.args.get('date_filter', '').strip()
-    if date_filter:
-        from datetime import datetime, timedelta
-        today = datetime.now().date()
-
-        if date_filter == 'today':
-            # SQL Server compatible date filtering
-            start_of_day = datetime.combine(today, datetime.min.time())
-            end_of_day = datetime.combine(today, datetime.max.time())
-            query = query.filter(ArsaAnaliz.created_at.between(start_of_day, end_of_day))
-        elif date_filter == 'week':
-            week_ago = today - timedelta(days=7)
-            start_of_week = datetime.combine(week_ago, datetime.min.time())
-            query = query.filter(ArsaAnaliz.created_at >= start_of_week)
-        elif date_filter == 'month':
-            month_ago = today - timedelta(days=30)
-            start_of_month = datetime.combine(month_ago, datetime.min.time())
-            query = query.filter(ArsaAnaliz.created_at >= start_of_month)
-
-    # Execute query with ordering
-    analyses = query.order_by(ArsaAnaliz.created_at.desc()).all()
-
-    return render_template('analysis_list.html', analyses=analyses, title="Analizlerim")
 
 @analysis_bp.route('/export/excel', methods=['GET'])
 @login_required
@@ -258,11 +201,11 @@ def export_excel():
 
     except ImportError:
         flash('Excel dışa aktarma için pandas kütüphanesi gerekli. Lütfen sistem yöneticisine başvurun.', 'error')
-        return redirect(url_for('analysis.list_analyses'))
+        return redirect(url_for('analysis.analizler'))
     except Exception as e:
         current_app.logger.error(f"Excel export error: {str(e)}", exc_info=True)
         flash('Excel dosyası oluşturulurken bir hata oluştu.', 'error')
-        return redirect(url_for('analysis.list_analyses'))
+        return redirect(url_for('analysis.analizler'))
 
 @analysis_bp.route('/export/pdf', methods=['GET'])
 @login_required
@@ -413,92 +356,30 @@ def export_pdf():
 
     except ImportError:
         flash('PDF dışa aktarma için reportlab kütüphanesi gerekli. Lütfen sistem yöneticisine başvurun.', 'error')
-        return redirect(url_for('analysis.list_analyses'))
+        return redirect(url_for('analysis.analizler'))
     except Exception as e:
         current_app.logger.error(f"PDF export error: {str(e)}", exc_info=True)
         flash('PDF dosyası oluşturulurken bir hata oluştu.', 'error')
-        return redirect(url_for('analysis.list_analyses'))
+        return redirect(url_for('analysis.analizler'))
 
 @analysis_bp.route('/<int:analysis_id>', methods=['GET'])
 @login_required
 def view_analysis(analysis_id):
-    """Analiz detayını görüntüle"""
-    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
-
-    try:
-        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
-
-        # Parse JSON fields
-        altyapi_parsed = []
-        if analysis.altyapi:
-            try:
-                altyapi_data = json.loads(analysis.altyapi)
-                if isinstance(altyapi_data, list):
-                    altyapi_parsed = altyapi_data
-                elif isinstance(altyapi_data, dict):
-                    altyapi_parsed = [key for key, value in altyapi_data.items() if value]
-            except json.JSONDecodeError:
-                current_app.logger.warning(f"Invalid altyapi JSON for analysis {analysis_id}")
-
-        swot_parsed = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
-        if analysis.swot_analizi:
-            try:
-                swot_data = json.loads(analysis.swot_analizi)
-                if isinstance(swot_data, dict):
-                    swot_parsed.update(swot_data)
-            except json.JSONDecodeError:
-                current_app.logger.warning(f"Invalid SWOT JSON for analysis {analysis_id}")
-
-        # Calculate additional metrics
-        calculations = {}
-        try:
-            metrekare = float(analysis.metrekare) if analysis.metrekare else 0
-            fiyat = float(analysis.fiyat) if analysis.fiyat else 0
-            bolge_fiyat = float(analysis.bolge_fiyat) if analysis.bolge_fiyat else 0
-            taks = float(analysis.taks) if analysis.taks else 0
-            kaks = float(analysis.kaks) if analysis.kaks else 0
-
-            if metrekare and fiyat:
-                calculations['unit_price'] = fiyat / metrekare
-            if metrekare and bolge_fiyat:
-                calculations['unit_market_price'] = bolge_fiyat / metrekare
-            if fiyat and bolge_fiyat:
-                calculations['price_difference'] = bolge_fiyat - fiyat
-                calculations['price_difference_percent'] = (calculations['price_difference'] / fiyat) * 100
-            if taks and metrekare:
-                calculations['buildable_area'] = taks * metrekare
-            if kaks and metrekare:
-                calculations['total_construction_area'] = kaks * metrekare
-        except (ValueError, TypeError, ZeroDivisionError) as e:
-            current_app.logger.warning(f"Calculation error for analysis {analysis_id}: {str(e)}")
-            calculations = {}
-
-        # Get related analyses in same location
-        related_analyses = ArsaAnaliz.query.filter(
-            ArsaAnaliz.user_id == user_id,
-            ArsaAnaliz.id != analysis_id,
-            db.or_(
-                db.and_(ArsaAnaliz.il == analysis.il, ArsaAnaliz.ilce == analysis.ilce),
-                ArsaAnaliz.il == analysis.il
-            )
-        ).order_by(ArsaAnaliz.created_at.desc()).limit(5).all()
-
-        # Get analysis media files
-        media_files = AnalizMedya.query.filter_by(analiz_id=analysis_id).order_by(AnalizMedya.uploaded_at.desc()).all()
-
-        return render_template('analysis_detail.html',
-                             analysis=analysis,
-                             altyapi=altyapi_parsed,
-                             swot=swot_parsed,
-                             calculations=calculations,
-                             related_analyses=related_analyses,
-                             media_files=media_files,
-                             title=f"Analiz Detayı - {analysis.il} {analysis.ilce}")
-
-    except Exception as e:
-        current_app.logger.error(f"Analysis detail error: {str(e)}", exc_info=True)
-        flash('Analiz detayları yüklenirken bir hata oluştu.', 'error')
-        return redirect(url_for('analysis.list_analyses'))
+    """Gayrimenkul detayı (sahibi, ekibinin broker'ı, superadmin)"""
+    from modules import gayrimenkul_sabitleri as sabit
+    from modules.gayrimenkul_form import detay_bilgileri, ozellik_gruplari
+    from modules.ilan_servis import gayrimenkul_or_404
+    from modules.rapor.model import SWOT_KEYS, SWOT_TITLES, parse_swot
+    gayrimenkul = gayrimenkul_or_404(analysis_id, current_user)
+    ilanlar = sorted((bag.ilan for bag in gayrimenkul.ilan_baglari if bag.ilan is not None),
+                     key=lambda i: i.created_at or datetime.min, reverse=True)
+    sahiplikler = sorted(gayrimenkul.sahiplikler, key=lambda s: (not s.irtibat, s.id))
+    medyalar = (AnalizMedya.query.filter_by(analiz_id=gayrimenkul.id)
+                .order_by(AnalizMedya.uploaded_at.asc()).all())
+    return render_template('gayrimenkul/detay.html', g=gayrimenkul, bilgiler=detay_bilgileri(gayrimenkul),
+                           ozellik_gruplari=ozellik_gruplari(gayrimenkul), swot=parse_swot(gayrimenkul.swot_analizi),
+                           swot_basliklari=[(k, SWOT_TITLES[k]) for k in SWOT_KEYS], ilanlar=ilanlar, sahiplikler=sahiplikler,
+                           medyalar=medyalar, sabit=sabit, title=gayrimenkul.baslik_metni)
 
 @analysis_bp.route('/<int:analysis_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -572,7 +453,8 @@ def _analizi_sil(analiz):
 @login_required
 def delete_analysis(analysis_id):
     """Analizi sil (JSON)"""
-    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=current_user.id).first()
+    from modules.ilan_servis import gorunur_gayrimenkuller
+    analysis = gorunur_gayrimenkuller(current_user).filter(ArsaAnaliz.id == analysis_id).first()
     if not analysis:
         return jsonify({'success': False, 'message': 'Analiz bulunamadı.'}), 404
     try:
@@ -816,248 +698,108 @@ def kontak_ekle():
     return jsonify(kontak_json(kontak))
 
 
-@analysis_bp.route('/<int:analiz_id>')
-@login_required
-def analiz_detay(analiz_id):
-    try:
-        analiz = ArsaAnaliz.query.get_or_404(analiz_id)
-        analiz_sahibi_user = User.query.get(analiz.user_id)
-
-        if not analiz_sahibi_user:
-            flash("Analize ait kullanıcı bulunamadı.", "danger")
-            return redirect(url_for('analysis.analizler'))
-
-        read_only_mode = (current_user.id != analiz.user_id)
-        
-        altyapi_parsed = []
-        if analiz.altyapi:
-            try:
-                altyapi_data = json.loads(analiz.altyapi)
-                if isinstance(altyapi_data, list):
-                    altyapi_parsed = altyapi_data
-                elif isinstance(altyapi_data, dict): # Eski format {yol:true, su:false} ise listeye çevir
-                    altyapi_parsed = [key for key, value in altyapi_data.items() if value]
-                else:
-                    current_app.logger.warning(f"Analiz ID {analiz_id} altyapı verisi beklenmedik format: {analiz.altyapi}")
-            except json.JSONDecodeError:
-                current_app.logger.error(f"Analiz ID {analiz_id} altyapı JSON parse hatası.")
-        
-        swot_analizi_parsed = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
-        if analiz.swot_analizi:
-            try:
-                swot_data = json.loads(analiz.swot_analizi)
-                if isinstance(swot_data, dict):
-                    swot_analizi_parsed = {k: (v if isinstance(v, list) else [v] if v else []) for k, v in swot_data.items()}
-                else: # Eğer direkt liste ise (eski bir format olabilir)
-                    current_app.logger.warning(f"Analiz ID {analiz_id} SWOT verisi beklenmedik format: {analiz.swot_analizi}")
-            except json.JSONDecodeError:
-                current_app.logger.error(f"Analiz ID {analiz_id} SWOT JSON parse hatası.")
-
-        # ArsaAnalizci ve FiyatTahminModeli kullanımı
-        analizci = ArsaAnalizci() # Strateji default SwotAnalizi olacak
-        # ArsaAnalizci'nin beklediği veri formatını kontrol et
-        # Genellikle bir dict bekler: {'metrekare': ..., 'fiyat': ..., 'imar_durumu': ...}
-        arsa_data_for_analizci = {
-            "metrekare": float(analiz.metrekare or 0),
-            "fiyat": float(analiz.fiyat or 0),
-            "bolge_fiyat": float(analiz.bolge_fiyat or 0),
-            "taks": float(analiz.taks or 0.3), # Varsayılan değerler
-            "kaks": float(analiz.kaks or 1.5), # Varsayılan değerler
-            "imar_durumu": analiz.imar_durumu or "",
-            "altyapi": altyapi_parsed, # Parse edilmiş liste
-            "konum": {"il": analiz.il, "ilce": analiz.ilce, "mahalle": analiz.mahalle}
-        }
-        analiz_sonuclari_data = analizci.analiz_et(arsa_data_for_analizci.copy()) # Kopyasını gönder
-        ozet = analizci.ozetle(analiz_sonuclari_data.copy())
-
-        tahmin_sonucu = None
-        try:
-            # db.engine'e create_app içinde erişim sağlanmalı veya FiyatTahminModeli'ne app context'i verilmeli.
-            # Şimdilik db.engine'in erişilebilir olduğunu varsayıyorum.
-            tahmin_modeli = FiyatTahminModeli(db.engine)
-            prediction_input_data = {
-                "il": analiz.il, "ilce": analiz.ilce, "mahalle": analiz.mahalle,
-                "metrekare": float(analiz.metrekare or 0),
-                "imar_durumu": analiz.imar_durumu or "",
-                "taks": float(analiz.taks or 0.3),
-                "kaks": float(analiz.kaks or 1.5),
-                "bolge_fiyat": float(analiz.bolge_fiyat or 0)
-            }
-            tahmin_sonucu = tahmin_modeli.tahmin_yap(prediction_input_data)
-        except Exception as e_tahmin:
-            current_app.logger.error(f"Fiyat tahmini hatası (ID: {analiz_id}): {e_tahmin}", exc_info=False)
-
-        medyalar = AnalizMedya.query.filter_by(analiz_id=analiz_id).order_by(AnalizMedya.uploaded_at.asc()).all()
-        
-        # Rapor için session verilerini ayarla (sadece sahibi ise)
-        if not read_only_mode:
-            session_arsa_data = {
-                "id": analiz.id, "il": analiz.il, "ilce": analiz.ilce, "mahalle": analiz.mahalle,
-                "ada": analiz.ada, "parsel": analiz.parsel, "koordinatlar": analiz.koordinatlar,
-                "pafta": analiz.pafta, "metrekare": float(analiz.metrekare or 0), "imar_durumu": analiz.imar_durumu or "",
-                "taks": float(analiz.taks or 0.3), "kaks": float(analiz.kaks or 1.5), 
-                "fiyat": float(analiz.fiyat or 0), "bolge_fiyat": float(analiz.bolge_fiyat or 0),
-                "altyapi[]": altyapi_parsed, # Bu anahtarın DocumentGenerator tarafından doğru okunması lazım
-                "strengths": swot_analizi_parsed.get("strengths", []), 
-                "weaknesses": swot_analizi_parsed.get("weaknesses", []),
-                "opportunities": swot_analizi_parsed.get("opportunities", []), 
-                "threats": swot_analizi_parsed.get("threats", []),
-                # İnşaat hesaplama verisi DocumentGenerator'a gönderilecek arsa_data'ya eklenebilir
-                "insaat_hesaplama": analiz_sonuclari_data.get("insaat_hesaplama", {}) # ArsaAnalizci'den gelen veri
-            }
-            session["arsa_data"] = session_arsa_data # DocumentGenerator için
-            session["analiz_ozeti"] = ozet
-        elif "arsa_data" in session: # Başkasının analizine bakarken kendi session'ımızı temizleyelim
-            session.pop("arsa_data", None)
-            session.pop("analiz_ozeti", None)
-
-        return render_template(
-            "analiz_detay.html", # templates/analiz_detay.html (veya templates/analysis/analiz_detay.html)
-            analiz=analiz,
-            altyapi=altyapi_parsed, # Şablona parse edilmiş altyapı listesini gönder
-            swot=swot_analizi_parsed,
-            sonuc=analiz_sonuclari_data, # ArsaAnalizci'den gelen tüm sonuçlar
-            ozet=ozet,
-            user=analiz_sahibi_user,
-            medyalar=medyalar,
-            file_id=str(analiz.id), # Rapor linkleri için
-            tahmin=tahmin_sonucu,
-            read_only_mode=read_only_mode
-        )
-    except Exception as e:
-        current_app.logger.error(f"Analiz Detay Sayfası Hatası (ID: {analiz_id}): {str(e)}", exc_info=True)
-        flash("Analiz görüntülenirken beklenmedik bir hata oluştu.", "danger")
-        return redirect(url_for('analysis.analizler'))
-
-
-@analysis_bp.route('/list') # Eski /analizler
+@analysis_bp.route('/list')
 @login_required
 def analizler():
-    user_id = current_user.id
-    iller = (
-        db.session.query(ArsaAnaliz.il)
-        .filter_by(user_id=user_id)
-        .distinct()
-        .order_by(ArsaAnaliz.il)
-        .all()
-    )
-    iller_list = [il[0] for il in iller] # Tuple listesinden string listesine
+    """Gayrimenkul listesi: tür, il/ilçe, aktif ilan (var/yok) ve metin filtreleri"""
+    from sqlalchemy.orm import selectinload
+    from models.ilan_models import Ilan, IlanGayrimenkul
+    from modules import gayrimenkul_sabitleri as sabit
+    from modules.ilan_servis import gorunur_gayrimenkuller
+    f = {k: (request.args.get(k) or '').strip() for k in ('tur', 'il', 'ilce', 'aktif_ilan', 'q')}
+    temel = gorunur_gayrimenkuller(current_user)
+    sorgu = temel
+    if f['tur'] in dict(sabit.TURLER):
+        sorgu = sorgu.filter(ArsaAnaliz.tur == f['tur'])
+    else:
+        f['tur'] = ''
+    if f['il']:
+        sorgu = sorgu.filter(ArsaAnaliz.il == f['il'])
+    if f['ilce']:
+        sorgu = sorgu.filter(ArsaAnaliz.ilce == f['ilce'])
+    aktif = ArsaAnaliz.ilan_baglari.any(IlanGayrimenkul.ilan.has(Ilan.durum.in_(sabit.AKTIF_DURUMLAR)))
+    if f['aktif_ilan'] == 'var':
+        sorgu = sorgu.filter(aktif)
+    elif f['aktif_ilan'] == 'yok':
+        sorgu = sorgu.filter(~aktif)
+    else:
+        f['aktif_ilan'] = ''
+    if f['q']:
+        desen = f"%{f['q']}%"
+        sorgu = sorgu.filter(db.or_(*(sutun.ilike(desen) for sutun in (
+            ArsaAnaliz.il, ArsaAnaliz.ilce, ArsaAnaliz.mahalle, ArsaAnaliz.ada, ArsaAnaliz.baslik))))
+    gayrimenkuller = (sorgu.options(selectinload(ArsaAnaliz.ilan_baglari).selectinload(IlanGayrimenkul.ilan))
+                      .order_by(ArsaAnaliz.created_at.desc(), ArsaAnaliz.id.desc()).all())
 
-    all_analizler = (
-        ArsaAnaliz.query.filter_by(user_id=user_id)
-        .order_by(ArsaAnaliz.created_at.desc())
-        .all()
-    )
+    iller = [il for (il,) in temel.with_entities(ArsaAnaliz.il).distinct().order_by(ArsaAnaliz.il) if il]
+    ilce_sorgu = temel.filter(ArsaAnaliz.il == f['il']) if f['il'] else temel
+    ilceler = [ilce for (ilce,) in ilce_sorgu.with_entities(ArsaAnaliz.ilce).distinct().order_by(ArsaAnaliz.ilce)
+               if ilce]
+    return render_template('gayrimenkul/liste.html', gayrimenkuller=gayrimenkuller, f=f, iller=iller,
+                           ilceler=ilceler, sabit=sabit, title='Gayrimenkuller')
 
-    grouped_analizler = {}
-    ay_isimleri_tr = {1: "Ocak", 2: "Şubat", 3: "Mart", 4: "Nisan", 5: "Mayıs", 6: "Haziran", 7: "Temmuz", 8: "Ağustos", 9: "Eylül", 10: "Ekim", 11: "Kasım", 12: "Aralık"}
-    for analiz_item in all_analizler:
-        key = f"{ay_isimleri_tr[analiz_item.created_at.month]} {analiz_item.created_at.year}"
-        if key not in grouped_analizler:
-            grouped_analizler[key] = []
-        grouped_analizler[key].append(analiz_item)
-
-    return render_template(
-        "analizler.html", # templates/analizler.html
-        grouped_analizler=grouped_analizler,
-        total_count=len(all_analizler),
-        iller=iller_list
-    )
 
 @analysis_bp.route('/delete/<int:analiz_id>', methods=['POST']) # Eski /analiz/sil/...
 @login_required
 def analiz_sil(analiz_id):
-    analiz = ArsaAnaliz.query.get_or_404(analiz_id)
-    if analiz.user_id != current_user.id:
-        flash("Bu analizi silme yetkiniz yok.", "danger")
-        return redirect(url_for('analysis.analizler'))
+    """Gayrimenkulü sil (form) — sahibi, ekibinin broker'ı, superadmin"""
+    from modules.ilan_servis import gayrimenkul_or_404
+    analiz = gayrimenkul_or_404(analiz_id, current_user)
     try:
         _analizi_sil(analiz)
         db.session.commit()
-        flash("Analiz ve ilişkili medyalar başarıyla silindi.", "success")
+        flash("Gayrimenkul ve ilişkili medyalar silindi.", "success")
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Analiz silme hatası: {str(e)}", exc_info=True)
-        flash("Analiz silinirken bir hata oluştu.", "danger")
+        current_app.logger.error(f"Gayrimenkul silme hatası: {str(e)}", exc_info=True)
+        flash("Gayrimenkul silinirken bir hata oluştu.", "danger")
     return redirect(url_for('analysis.analizler'))
 
 
 @analysis_bp.route('/<int:analiz_id>/media_upload', methods=['POST']) # Eski /analiz/.../medya_yukle
 @login_required
 def medya_yukle(analiz_id):
-    analiz = ArsaAnaliz.query.get_or_404(analiz_id)
-    if analiz.user_id != current_user.id:
-        flash("Bu analize medya yükleme yetkiniz yok.", "danger")
-        return redirect(url_for('analysis.analizler'))
-
-    if 'medya' not in request.files:
+    """Detay sayfasından fotoğraf/video yükle (bir veya birden çok dosya)"""
+    from modules.ilan_servis import gayrimenkul_or_404
+    gayrimenkul = gayrimenkul_or_404(analiz_id, current_user)
+    hedef = url_for('analysis.view_analysis', analysis_id=gayrimenkul.id)
+    dosyalar = [d for d in request.files.getlist('medya') if d and d.filename]
+    if not dosyalar:
         flash('Dosya seçilmedi.', 'warning')
-        return redirect(url_for('analysis.analiz_detay', analiz_id=analiz_id))
-    
-    file = request.files['medya']
-    if file.filename == '':
-        flash('Dosya seçilmedi.', 'warning')
-        return redirect(url_for('analysis.analiz_detay', analiz_id=analiz_id))
-
-    if file and file.filename and allowed_file(file.filename): # allowed_file bu BP içinde tanımlı
-        filename = secure_filename(file.filename)
-        ext = filename.rsplit('.', 1)[1].lower()
-        medya_type = 'image' if ext in {'jpg', 'jpeg', 'png', 'gif'} else 'video'
-        
-        # Analize özel klasör oluştur
-        analiz_upload_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], str(analiz_id))
-        os.makedirs(analiz_upload_folder, exist_ok=True)
-        
-        # Benzersiz dosya adı oluşturma (aynı isimde dosya yüklenirse üzerine yazmasın diye)
-        # unique_filename = f"{uuid.uuid4().hex[:8]}_{filename}" 
-        # Veya basitçe mevcut dosya adını kullanıp üzerine yazsın:
-        unique_filename = filename
-        filepath = os.path.join(analiz_upload_folder, unique_filename)
-        
-        try:
-            file.save(filepath)
-            # Veritabanına göreceli yolu kaydet (örn: "123/resim.jpg")
-            db_filename = os.path.join(str(analiz_id), unique_filename).replace(os.sep, '/')
-            medya_kaydi = AnalizMedya()
-            medya_kaydi.analiz_id = analiz_id
-            medya_kaydi.filename = db_filename
-            medya_kaydi.type = medya_type
-            db.session.add(medya_kaydi)
+        return redirect(hedef)
+    try:
+        sayi = _medyalari_kaydet(gayrimenkul, dosyalar)
+        if sayi:
             db.session.commit()
-            flash('Medya başarıyla yüklendi.', 'success')
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Medya kaydetme hatası: {e}", exc_info=True)
-            flash('Medya yüklenirken bir hata oluştu.', 'danger')
-    else:
-        flash('Geçersiz dosya türü.', 'danger')
-    return redirect(url_for('analysis.analiz_detay', analiz_id=analiz_id))
+            flash(f'{sayi} dosya yüklendi.', 'success')
+        else:
+            flash('Geçersiz dosya türü.', 'danger')
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Medya kaydetme hatası (ID: {gayrimenkul.id}): {e}", exc_info=True)
+        flash('Medya yüklenirken bir hata oluştu.', 'danger')
+    return redirect(hedef)
 
 
 @analysis_bp.route('/<int:analiz_id>/media_delete/<int:medya_id>', methods=['POST']) # Eski /analiz/.../medya_sil/...
 @login_required
 def medya_sil(analiz_id, medya_id):
-    medya = AnalizMedya.query.get_or_404(medya_id)
-    analiz = ArsaAnaliz.query.get_or_404(analiz_id) # Medyanın analizini de alalım
-    
-    if analiz.user_id != current_user.id or medya.analiz_id != analiz_id:
-        flash('Yetkisiz işlem.', 'danger')
-        return redirect(url_for('analysis.analiz_detay', analiz_id=analiz_id))
-
+    """Fotoğraf/video sil — sahibi, ekibinin broker'ı, superadmin"""
+    from modules.ilan_servis import gayrimenkul_or_404
+    gayrimenkul = gayrimenkul_or_404(analiz_id, current_user)
+    medya = AnalizMedya.query.filter_by(id=medya_id, analiz_id=gayrimenkul.id).first_or_404()
     try:
-        # medya.filename 'analiz_id/dosyaadi' formatında
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], medya.filename)
-        if os.path.exists(filepath):
+        if os.path.isfile(filepath):
             os.remove(filepath)
-        
         db.session.delete(medya)
         db.session.commit()
-        flash('Medya başarıyla silindi.', 'success')
+        flash('Medya silindi.', 'success')
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Medya silme hatası: {e}", exc_info=True)
         flash('Medya silinirken bir hata oluştu.', 'danger')
-    return redirect(url_for('analysis.analiz_detay', analiz_id=analiz_id))
+    return redirect(url_for('analysis.view_analysis', analysis_id=gayrimenkul.id))
 
 
 # Rapor Oluşturma Rotası (Word, PDF)
