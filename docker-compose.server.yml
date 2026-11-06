@@ -1,0 +1,32 @@
+# Sunucu (production) kurulumu: docker compose -f docker-compose.server.yml up -d --build
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    command: ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--timeout", "120", "--preload", "app:create_app()"]
+    ports:
+      - "5000:5000"
+    volumes:
+      - uploads:/app/static/uploads
+      - presentations:/app/static/presentations
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  uploads:
+  presentations:

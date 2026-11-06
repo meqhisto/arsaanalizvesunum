@@ -62,3 +62,11 @@ Werkzeug==3.1.3
 
 psycopg2-binary==2.9.9
 gunicorn==21.2.0
+
+# Kodda kullanilan ama eksik olan paketler
+xgboost-cpu==2.1.4
+folium==0.18.0
+fpdf2==2.8.1
+plotly==5.24.1
+psutil==6.1.0
+aiofiles==24.1.0
