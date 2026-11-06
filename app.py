@@ -276,6 +276,57 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     # --- API BLUEPRINT REGISTRATION ---
     app.register_blueprint(api_bp) # API blueprint'ini kaydet (/api prefix'i ile)
 
+    # İş takip modülü
+    from blueprints.is_takip_bp import is_takip_bp
+    app.register_blueprint(is_takip_bp, url_prefix='/isler')
+
+    @app.cli.group('is-takip')
+    def is_takip_cli():
+        """İş takip modülü komutları."""
+
+    @is_takip_cli.command('hatirlat')
+    def is_takip_hatirlat():
+        """Geciken ve yaklaşan iş adımları için bildirim üretir (günde bir kez çalıştırın)."""
+        from modules.is_takip_servis import hatirlatmalari_uret
+        sonuc = hatirlatmalari_uret()
+        print(f"Bildirim üretildi: {sonuc['geciken']} geciken, {sonuc['yaklasan']} yaklaşan adım.")
+
+    @app.context_processor
+    def inject_is_takip_bildirim():
+        if not current_user.is_authenticated:
+            return {}
+        def okunmamis_bildirim_sayisi():
+            from models.is_takip_models import Bildirim
+            try:
+                return Bildirim.query.filter_by(user_id=current_user.id, okundu=False).count()
+            except Exception:
+                application_db.session.rollback()
+                return 0
+        def bagli_isler(alan, kayit_id):
+            """Analiz / müşteri / fırsat sayfalarındaki 'Bağlı işler' kutusu için."""
+            from models.is_takip_models import Is
+            from modules.is_takip_servis import gorunur_isler
+            sutun = {'analiz': Is.analiz_id, 'contact': Is.contact_id, 'deal': Is.deal_id,
+                     'portfolio': Is.portfolio_id}.get(alan)
+            if sutun is None or not kayit_id:
+                return []
+            try:
+                return gorunur_isler(current_user).filter(sutun == kayit_id).order_by(Is.created_at.desc()).all()
+            except Exception:
+                application_db.session.rollback()
+                return []
+
+        def is_takip_panel():
+            from modules.is_takip_servis import panel_ozeti
+            try:
+                return panel_ozeti(current_user)
+            except Exception:
+                application_db.session.rollback()
+                return {'geciken': [], 'yaklasan': [], 'acik_is': 0}
+
+        return dict(okunmamis_bildirim_sayisi=okunmamis_bildirim_sayisi, bagli_isler=bagli_isler,
+                    is_takip_panel=is_takip_panel)
+
     # --- SWAGGER DOCUMENTATION ---
     init_swagger(app) # Swagger dokümantasyonunu başlat
 

@@ -52,6 +52,7 @@
 {% endblock %}
 
 {% block dashboard_content %}
+{% with alan='deal', kayit_id=deal.id, baslat_parametre={'deal_id': deal.id, 'contact_id': deal.contact_id} %}{% include "is_takip/_bagli_isler.html" %}{% endwith %}
 
 <div class="card mb-4">
     <div class="card-header">

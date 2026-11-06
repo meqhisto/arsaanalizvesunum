@@ -209,6 +209,9 @@ class Task(db.Model):
     reassigned_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # Yeniden atayan kişi
     reassignment_reason = db.Column(db.Text, nullable=True) # Yeniden atama sebebi
     task_type = db.Column(db.String(50), default='personal') # personal, team, supervised
+    # İş takip modülü: doluysa bu görev bir işin adımıdır
+    is_id = db.Column(db.Integer, db.ForeignKey('isler.id', ondelete='CASCADE'), nullable=True, index=True)
+    sira = db.Column(db.Integer, nullable=True)  # iş içindeki adım sırası
     office_id = db.Column(db.Integer, db.ForeignKey('offices.id', ondelete='SET NULL'), nullable=True)
     office = db.relationship('Office', backref=db.backref('tasks', lazy='dynamic'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

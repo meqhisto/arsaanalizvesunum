@@ -1,0 +1,172 @@
+{% extends "dashboard_base.html" %}
+{% from "is_takip/_makrolar.html" import kisi %}
+
+{% block title %}Yeni İş - Arsa Analiz Platformu{% endblock %}
+{% block page_title %}Yeni İş{% endblock %}
+{% block page_description %}Şablon seçin, adımları kontrol edin ve işi başlatın{% endblock %}
+{% block extra_css %}{% include "is_takip/_stil.html" %}{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('is_takip.pano') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>İşler</a>
+{% endblock %}
+
+{% block dashboard_content %}
+{% set fget = form.get %}
+<form method="POST" action="{{ url_for('is_takip.yeni') }}" id="yeniIsForm">
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+            <h6 class="mb-3">1. Şablon</h6>
+            <select class="form-select" name="sablon_id" id="sablon_id">
+                <option value="">Şablonsuz (adımları kendim ekleyeceğim)</option>
+                {% for s in sablonlar %}
+                <option value="{{ s.id }}" {% if fget('sablon_id') == s.id|string %}selected{% endif %}>{{ s.ad }} ({{ s.adimlar|length }} adım)</option>
+                {% endfor %}
+            </select>
+            <div class="form-text">Şablon seçilince adımlar ve son tarihleri sağda oluşur; dilediğiniz gibi düzenleyebilirsiniz.</div>
+        </div></div>
+
+        <div class="card border-0 shadow-sm"><div class="card-body">
+            <h6 class="mb-3">2. İş bilgileri</h6>
+            <div class="mb-3">
+                <label class="form-label" for="baslik">Başlık <span class="text-danger">*</span></label>
+                <input class="form-control" id="baslik" name="baslik" required maxlength="200" value="{{ fget('baslik', '') }}"
+                       placeholder="Örn. Kepez 1245/18 arsa satışı">
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label" for="is_turu">Tür</label>
+                    <select class="form-select" id="is_turu" name="is_turu">
+                        {% for t in turler %}<option {% if fget('is_turu') == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="form-label" for="oncelik">Öncelik</label>
+                    <select class="form-select" id="oncelik" name="oncelik">
+                        {% for o in oncelikler %}<option {% if (fget('oncelik') or 'Normal') == o %}selected{% endif %}>{{ o }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label" for="sorumlu_user_id">Sorumlu</label>
+                    <select class="form-select" id="sorumlu_user_id" name="sorumlu_user_id">
+                        {% for u in kullanicilar %}<option value="{{ u.id }}" {% if fget('sorumlu_user_id', current_user.id|string) == u.id|string %}selected{% endif %}>{{ kisi(u) }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="form-label" for="baslangic_tarihi">Başlangıç</label>
+                    <input class="form-control" type="date" id="baslangic_tarihi" name="baslangic_tarihi" value="{{ fget('baslangic_tarihi', '') }}">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="butce">Öngörülen masraf / bütçe (TL)</label>
+                <input class="form-control" id="butce" name="butce" inputmode="decimal" value="{{ fget('butce', '') }}" placeholder="Örn. 25.000">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="aciklama">Açıklama</label>
+                <textarea class="form-control" id="aciklama" name="aciklama" rows="3">{{ fget('aciklama', '') }}</textarea>
+            </div>
+
+            <h6 class="mt-4 mb-2">Bağlantılar <small class="text-muted fw-normal">(isteğe bağlı)</small></h6>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label class="form-label small" for="contact_id">Müşteri</label>
+                    <select class="form-select form-select-sm" id="contact_id" name="contact_id"><option value="">-</option>
+                        {% for c in contacts %}<option value="{{ c.id }}" {% if fget('contact_id') == c.id|string %}selected{% endif %}>{{ c.first_name }} {{ c.last_name }}</option>{% endfor %}</select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small" for="deal_id">Satış fırsatı</label>
+                    <select class="form-select form-select-sm" id="deal_id" name="deal_id"><option value="">-</option>
+                        {% for d in deals %}<option value="{{ d.id }}" {% if fget('deal_id') == d.id|string %}selected{% endif %}>{{ d.title }}</option>{% endfor %}</select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small" for="analiz_id">Arsa analizi</label>
+                    <select class="form-select form-select-sm" id="analiz_id" name="analiz_id"><option value="">-</option>
+                        {% for a in analizler %}<option value="{{ a.id }}" {% if fget('analiz_id') == a.id|string %}selected{% endif %}>{{ a.il }}/{{ a.ilce }} – {{ a.mahalle }} {{ a.ada or '' }}/{{ a.parsel or '' }}</option>{% endfor %}</select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small" for="portfolio_id">Portföy</label>
+                    <select class="form-select form-select-sm" id="portfolio_id" name="portfolio_id"><option value="">-</option>
+                        {% for p in portfoyler %}<option value="{{ p.id }}" {% if fget('portfolio_id') == p.id|string %}selected{% endif %}>{{ p.title }}</option>{% endfor %}</select>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">3. Adımlar</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="adimEkleBtn"><i class="fas fa-plus me-1"></i>Adım ekle</button>
+            </div>
+            <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light"><tr><th style="width:2rem">#</th><th>Adım</th><th style="width:150px">Son tarih</th><th style="width:170px">Sorumlu</th><th style="width:2.5rem"></th></tr></thead>
+                <tbody id="adimlar"></tbody>
+            </table>
+            </div>
+            <p class="text-muted small mt-2 mb-0" id="adimBos">Şablon seçin ya da "Adım ekle" ile adımları kendiniz oluşturun.</p>
+        </div></div>
+        <div class="d-grid mt-3">
+            <button class="btn btn-primary btn-lg" type="submit"><i class="fas fa-play me-1"></i>İşi başlat</button>
+        </div>
+    </div>
+</div>
+</form>
+
+<template id="adimSatiri">
+    <tr>
+        <td class="text-muted sira"></td>
+        <td><input class="form-control form-control-sm" name="adim_baslik" required maxlength="200">
+            <small class="text-muted belge-notu"></small></td>
+        <td><input class="form-control form-control-sm" type="date" name="adim_tarih"></td>
+        <td><select class="form-select form-select-sm" name="adim_sorumlu">
+            {% for u in kullanicilar %}<option value="{{ u.id }}">{{ kisi(u) }}</option>{% endfor %}</select></td>
+        <td><button type="button" class="btn btn-sm btn-link text-danger sil" aria-label="Adımı kaldır"><i class="fas fa-times"></i></button></td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+(function () {
+  const sablonAdimlari = {{ (sablon_adimlari or {})|tojson }};
+  const sablonTurleri = {{ (sablon_turleri or {})|tojson }};
+  const govde = document.getElementById('adimlar'), sablonSec = document.getElementById('sablon_id');
+  const baslangic = document.getElementById('baslangic_tarihi'), sorumlu = document.getElementById('sorumlu_user_id');
+  const sablonSatir = document.getElementById('adimSatiri'), bos = document.getElementById('adimBos');
+
+  function isoGun(d) { return d.toISOString().slice(0, 10); }
+  function numarala() {
+    [...govde.rows].forEach((r, i) => r.querySelector('.sira').textContent = i + 1);
+    bos.classList.toggle('d-none', govde.rows.length > 0);
+  }
+  function satirEkle(baslik = '', tarih = '', belge = '') {
+    const tr = sablonSatir.content.firstElementChild.cloneNode(true);
+    tr.querySelector('[name=adim_baslik]').value = baslik;
+    tr.querySelector('[name=adim_tarih]').value = tarih;
+    tr.querySelector('[name=adim_sorumlu]').value = sorumlu.value;
+    if (belge) tr.querySelector('.belge-notu').innerHTML = '<i class="fas fa-paperclip me-1"></i>Beklenen belge: ' + belge;
+    tr.querySelector('.sil').addEventListener('click', () => { tr.remove(); numarala(); });
+    govde.appendChild(tr); numarala();
+  }
+  function sablonuUygula() {
+    const adimlar = sablonAdimlari[sablonSec.value];
+    if (!adimlar) return;
+    if (govde.rows.length && !confirm('Mevcut adımlar şablon adımlarıyla değiştirilsin mi?')) return;
+    govde.innerHTML = '';
+    let gun = new Date((baslangic.value || isoGun(new Date())) + 'T12:00:00');
+    adimlar.forEach(a => { gun = new Date(gun.getTime() + (a.gun || 0) * 86400000); satirEkle(a.baslik, isoGun(gun), a.belge); });
+    const tur = sablonTurleri[sablonSec.value];
+    if (tur) document.getElementById('is_turu').value = tur;
+  }
+  sablonSec.addEventListener('change', sablonuUygula);
+  baslangic.addEventListener('change', () => { if (sablonSec.value && govde.rows.length) { govde.innerHTML = ''; sablonuUygula(); } });
+  sorumlu.addEventListener('change', () => govde.querySelectorAll('[name=adim_sorumlu]').forEach(s => s.value = sorumlu.value));
+  document.getElementById('adimEkleBtn').addEventListener('click', () => satirEkle());
+  if (sablonSec.value) sablonuUygula(); else numarala();
+})();
+</script>
+{% endblock %}

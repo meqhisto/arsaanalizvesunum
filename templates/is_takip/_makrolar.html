@@ -1,0 +1,21 @@
+{# İş takip modülü ortak parçaları #}
+{% macro durum_rozeti(durum) -%}
+{%- set renk = {'Açık': 'secondary', 'Devam ediyor': 'primary', 'Beklemede': 'warning', 'Tamamlandı': 'success', 'İptal': 'dark'} -%}
+<span class="badge bg-{{ renk.get(durum, 'secondary') }}{% if durum == 'Beklemede' %} text-dark{% endif %}">{{ durum }}</span>
+{%- endmacro %}
+
+{% macro oncelik_rozeti(oncelik) -%}
+{%- set renk = {'Düşük': 'light text-dark border', 'Normal': 'info text-dark', 'Yüksek': 'warning text-dark', 'Acil': 'danger'} -%}
+<span class="badge bg-{{ renk.get(oncelik, 'secondary') }}">{{ oncelik }}</span>
+{%- endmacro %}
+
+{% macro ilerleme(ozet, ince=False) -%}
+<div class="progress{% if ince %} is-progress-thin{% endif %}" role="progressbar" aria-label="İlerleme"
+     aria-valuenow="{{ ozet.yuzde }}" aria-valuemin="0" aria-valuemax="100">
+  <div class="progress-bar {{ 'bg-success' if ozet.yuzde == 100 else '' }}" style="width: {{ ozet.yuzde }}%"></div>
+</div>
+{%- endmacro %}
+
+{% macro tl(deger) -%}{{ '{:,.2f}'.format(deger or 0).replace(',', 'X').replace('.', ',').replace('X', '.') }} TL{%- endmacro %}
+
+{% macro kisi(user) -%}{% if user %}{{ ((user.ad or '') ~ ' ' ~ (user.soyad or '')).strip() or user.email }}{% else %}-{% endif %}{%- endmacro %}

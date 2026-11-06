@@ -10,6 +10,7 @@ services:
     volumes:
       - uploads:/app/static/uploads
       - presentations:/app/static/presentations
+      - is_belgeleri:/app/private_uploads
     depends_on:
       db:
         condition: service_healthy
@@ -30,3 +31,4 @@ volumes:
   postgres_data:
   uploads:
   presentations:
+  is_belgeleri:

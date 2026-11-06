@@ -1,0 +1,30 @@
+{# Ana panel: geciken ve bu hafta bitecek iş adımları #}
+{% if is_takip_panel is defined %}
+{% set p = is_takip_panel() %}
+{% if p.acik_is %}
+<div class="row g-3 mb-4">
+    {% for baslik, liste, renk, ikon, bos in [('Geciken adımlar', p.geciken, 'danger', 'fa-exclamation-circle', 'Geciken adım yok. 👍'),
+                                            ('Bu hafta bitecekler', p.yaklasan, 'warning', 'fa-clock', 'Bu hafta bitecek adım yok.')] %}
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100 border-start border-4 border-{{ renk }}">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <span class="fw-semibold"><i class="fas {{ ikon }} text-{{ renk }} me-2"></i>{{ baslik }}
+                    <span class="badge bg-{{ renk }}{% if renk == 'warning' %} text-dark{% endif %}">{{ liste|length }}</span></span>
+                <a class="small" href="{{ url_for('is_takip.pano', geciken=1) if renk == 'danger' else url_for('is_takip.pano') }}">İş takibi →</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for a in liste %}
+                <a class="list-group-item list-group-item-action d-flex justify-content-between gap-2 small" href="{{ url_for('is_takip.detay', is_id=a.is_id) }}">
+                    <span><span class="text-muted font-monospace me-1">{{ a.is_kaydi.kod }}</span>{{ a.title }}</span>
+                    <span class="text-nowrap {{ 'text-danger fw-semibold' if renk == 'danger' else 'text-muted' }}">{{ a.due_date.strftime('%d.%m') }}</span>
+                </a>
+                {% else %}
+                <div class="list-group-item small text-muted">{{ bos }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endif %}

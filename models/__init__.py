@@ -9,6 +9,7 @@ from .arsa_models import ArsaAnaliz, BolgeDagilimi, YatirimPerformansi, Dashboar
 from .crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam, crm_team_members
 from .office_models import Office
 from .permission_models import PermissionTemplate, UserPermission, OfficePermission, PermissionLog, PermissionManager
+from .is_takip_models import IsSablonu, IsSablonAdimi, Is, IsBelgesi, IsMasrafi, IsAktivitesi, Bildirim
 
 def init_db_models(app):
     """Veritabanını uygulamaya bağlar ve tabloları oluşturur."""
@@ -21,6 +22,7 @@ def init_db_models(app):
     from . import crm_models
     from . import office_models
     from . import permission_models
+    from . import is_takip_models
     # Bu importlar, user_models.py, arsa_models.py, crm_models.py dosyalarının
     # içindeki tüm model sınıflarını yükler.
 
@@ -28,3 +30,5 @@ def init_db_models(app):
         print("Veritabanı tabloları oluşturuluyor...")
         db.create_all()
         print("Veritabanı tabloları (models/__init__.py üzerinden) başarıyla oluşturuldu!")
+        from modules.is_takip_kurulum import kur as is_takip_kur
+        is_takip_kur()
