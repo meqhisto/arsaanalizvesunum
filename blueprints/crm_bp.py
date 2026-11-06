@@ -45,6 +45,21 @@ def crm_import_wizard():
     return render_template('crm/import_wizard.html', title="Import Wizard")
 
 # --- SABİTLER (Eski app.py'den taşındı, bir constants.py dosyasına da alınabilir) ---
+def ekip_kullanicilari_sorgusu(broker):
+    """Broker'ın ekibi: astları ve (varsa) aynı ofisteki diğer aktif kullanıcılar."""
+    kosul = User.manager_id == broker.id
+    if broker.office_id:
+        kosul = or_(kosul, User.office_id == broker.office_id)
+    return User.query.filter(kosul, User.id != broker.id, User._is_active.is_(True))
+
+
+def ayni_ekipte(broker, user):
+    """Kullanıcı bu broker'ın ekibinde mi? (astı ya da aynı ofiste)"""
+    if not user or user.id == broker.id:
+        return bool(user)
+    return user.manager_id == broker.id or (broker.office_id is not None and user.office_id == broker.office_id)
+
+
 DEAL_STAGES = ["Potansiyel", "Görüşme Planlandı", "Teklif Sunuldu", "Müzakere", "Kazanıldı", "Kaybedildi", "Beklemede"]
 TASK_STATUSES = ["Beklemede", "Devam Ediyor", "Tamamlandı", "İptal Edildi", "Ertelendi"]
 TASK_PRIORITIES = ["Düşük", "Normal", "Yüksek", "Acil"]
@@ -887,7 +902,7 @@ def crm_task_new(related_contact_id=None, related_deal_id=None): # Değişken ad
             flash(f'Görev eklenirken bir hata oluştu: {str(e)}', 'danger')
             return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task=request.form)
 
-    return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task={}, current_user=current_user, users_for_assignment=User.query.filter(User.id != current_user.id, User.firma == current_user.firma).all() if current_user.role == 'broker' else [])
+    return render_template('task_form.html', title="Yeni Görev Ekle", contacts=contacts, deals=deals, statuses=TASK_STATUSES, priorities=TASK_PRIORITIES, preselected_contact=preselected_contact, preselected_deal=preselected_deal, task={}, current_user=current_user, users_for_assignment=ekip_kullanicilari_sorgusu(current_user).all() if current_user.role == 'broker' else [])
 
 
 @crm_bp.route('/task/<int:task_id>')
@@ -901,7 +916,7 @@ def crm_task_detail(task_id):
     can_view = False
     if task.user_id == user_id or task.assigned_to_user_id == user_id:
         can_view = True
-    elif current_user.role == 'broker' and task.owner_user.firma == current_user.firma:
+    elif current_user.role == 'broker' and ayni_ekipte(current_user, task.owner_user):
         can_view = True
 
     if not can_view:
@@ -935,7 +950,7 @@ def crm_task_edit(task_id):
     can_edit = False
     if task_to_edit.user_id == user_id or task_to_edit.assigned_to_user_id == user_id:
         can_edit = True
-    elif current_user.role == 'broker' and task_to_edit.owner_user.firma == current_user.firma: # Broker kendi firmasındaki görevleri düzenleyebilir
+    elif current_user.role == 'broker' and ayni_ekipte(current_user, task_to_edit.owner_user): # Broker kendi firmasındaki görevleri düzenleyebilir
         can_edit = True
     
     if not can_edit:
@@ -948,7 +963,7 @@ def crm_task_edit(task_id):
     # users_for_assignment: Broker ise kendi firmasındaki diğerleri, değilse sadece kendisi
     users_for_assignment = []
     if current_user.role == 'broker':
-        users_for_assignment = User.query.filter(User.id != current_user.id, User.firma == current_user.firma).all()
+        users_for_assignment = ekip_kullanicilari_sorgusu(current_user).all()
     users_for_assignment.insert(0, current_user) # Kendisini de ekle
 
 
@@ -1033,7 +1048,7 @@ def crm_task_delete(task_id):
     can_delete = False
     if task_to_delete.user_id == user_id or task_to_delete.assigned_to_user_id == user_id:
         can_delete = True
-    elif current_user.role == 'broker' and task_to_delete.owner_user.firma == current_user.firma:
+    elif current_user.role == 'broker' and ayni_ekipte(current_user, task_to_delete.owner_user):
         can_delete = True
     
     if not can_delete:
@@ -1064,7 +1079,7 @@ def crm_task_toggle_status(task_id):
     can_toggle = False
     if task.user_id == user_id or task.assigned_to_user_id == user_id:
         can_toggle = True
-    elif current_user.role == 'broker' and task.owner_user.firma == current_user.firma:
+    elif current_user.role == 'broker' and ayni_ekipte(current_user, task.owner_user):
         can_toggle = True
 
     if not can_toggle:
@@ -1187,7 +1202,8 @@ def api_companies():
             or_(
                 Company.name.ilike(f'%{search_term}%'),
                 Company.industry.ilike(f'%{search_term}%'),
-                Company.email.ilike(f'%{search_term}%'),
+                Company.website.ilike(f'%{search_term}%'),
+                Company.address.ilike(f'%{search_term}%'),
                 Company.phone.ilike(f'%{search_term}%')
             )
         ).order_by(Company.name).all()
@@ -2013,11 +2029,7 @@ def crm_team_management():
         return redirect(url_for('crm.crm_contacts_list')) # Veya ana sayfaya
 
     # Broker'ın kendi firmasındaki tüm kullanıcıları (potansiyel ekip üyeleri)
-    potential_members = User.query.filter(
-        User.firma == current_user.firma,
-        User.id != current_user.id, # Kendisi hariç
-        User.is_active == True
-    ).all()
+    potential_members = ekip_kullanicilari_sorgusu(current_user).all()
     
     # Broker'ın mevcut ekibi
     # CrmTeam modeli ve ilişkileri üzerinden çekilecek.
@@ -2035,55 +2047,61 @@ def crm_team_management():
                            potential_members=potential_members,
                            current_team=team)
 
+def _ekip_yaniti(basarili, mesaj, kod=200):
+    """Ekip işlemleri: JSON isteğe JSON, form gönderimine mesaj + ekip sayfasına yönlendirme."""
+    if request.is_json or request.headers.get('X-Requested-With') in ('XMLHttpRequest', 'fetch'):
+        return jsonify(success=basarili, message=mesaj), kod
+    flash(mesaj, 'success' if basarili else 'danger')
+    return redirect(url_for('crm.crm_team_management'))
+
+
 @crm_bp.route('/team/add_member/<int:user_id_to_add>', methods=['POST'])
 @login_required
 def crm_team_add_member(user_id_to_add):
     if current_user.role != 'broker':
-        return jsonify(success=False, message="Yetkisiz işlem."), 403
+        return _ekip_yaniti(False, "Yetkisiz işlem.", 403)
     
     team = CrmTeam.query.filter_by(broker_id=current_user.id).first()
     if not team: # Eğer broker'ın takımı yoksa oluştur
-        team = CrmTeam(broker_id=current_user.id, name=f"{current_user.firma} Ekibi")
+        team = CrmTeam(broker_id=current_user.id, name=f"{current_user.firma or current_user.ad} Ekibi")
         db.session.add(team)
     
     member_to_add = User.query.get(user_id_to_add)
-    if not member_to_add or member_to_add.firma != current_user.firma:
-        return jsonify(success=False, message="Kullanıcı bulunamadı veya farklı firmada."), 404
+    if not member_to_add or member_to_add.id == current_user.id or not ayni_ekipte(current_user, member_to_add):
+        return _ekip_yaniti(False, "Kullanıcı bulunamadı veya ekibinizde değil.", 404)
     
     if member_to_add in team.members:
-        return jsonify(success=False, message="Kullanıcı zaten ekipte."), 400
+        return _ekip_yaniti(False, "Kullanıcı zaten ekipte.", 400)
         
     team.members.append(member_to_add)
     try:
         db.session.commit()
-        flash(f"{member_to_add.ad} {member_to_add.soyad} ekibe eklendi.", "success")
-        return jsonify(success=True, message="Kullanıcı ekibe eklendi.")
+        return _ekip_yaniti(True, "Kullanıcı ekibe eklendi.", 200)
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Ekibe üye ekleme hatası: {e}", exc_info=True)
-        return jsonify(success=False, message=f"Hata: {str(e)}"), 500
+        return _ekip_yaniti(False, f"Hata: {str(e)}", 500)
 
 @crm_bp.route('/team/remove_member/<int:user_id_to_remove>', methods=['POST'])
 @login_required
 def crm_team_remove_member(user_id_to_remove):
     if current_user.role != 'broker':
-        return jsonify(success=False, message="Yetkisiz işlem."), 403
+        return _ekip_yaniti(False, "Yetkisiz işlem.", 403)
 
     team = CrmTeam.query.filter_by(broker_id=current_user.id).first()
     member_to_remove = User.query.get(user_id_to_remove)
 
     if not team or not member_to_remove or member_to_remove not in team.members:
-        return jsonify(success=False, message="Kullanıcı ekipte bulunamadı."), 404
+        return _ekip_yaniti(False, "Kullanıcı ekipte bulunamadı.", 404)
         
     team.members.remove(member_to_remove)
     try:
         db.session.commit()
-        flash(f"{member_to_remove.ad} {member_to_remove.soyad} ekipten çıkarıldı.", "success")
-        return jsonify(success=True, message="Kullanıcı ekipten çıkarıldı.")
+        return _ekip_yaniti(True, "Kullanıcı ekipten çıkarıldı.", 200)
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Ekipten üye çıkarma hatası: {e}", exc_info=True)
-        return jsonify(success=False, message=f"Hata: {str(e)}"), 500
+        return _ekip_yaniti(False, f"Hata: {str(e)}", 500)
 
 # --- CRM Raporlama/Dashboard Rotaları ---
 @crm_bp.route('/task-performance')

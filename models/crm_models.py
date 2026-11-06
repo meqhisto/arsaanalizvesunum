@@ -241,6 +241,19 @@ class Task(db.Model):
         delta = self.due_date - datetime.utcnow()
         return delta.days
 
+    def get_days_until_due(self):
+        """Son tarihe kalan süre (gün, ondalıklı). Geçmişse negatif; son tarih yoksa None."""
+        if not self.due_date:
+            return None
+        from datetime import datetime
+        return (self.due_date - datetime.utcnow()).total_seconds() / 86400
+
+    def get_completion_time(self):
+        """Görevin oluşturulmasından tamamlanmasına kadar geçen süre (gün, ondalıklı)."""
+        if not (self.completed_at and self.created_at):
+            return None
+        return max(0.0, (self.completed_at - self.created_at).total_seconds() / 86400)
+
     def is_completed(self):
         """Görev tamamlandı mı kontrol et"""
         return self.status == 'Tamamlandı'

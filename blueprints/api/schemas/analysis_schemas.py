@@ -23,15 +23,18 @@ class ArsaAnalizSchema(SQLAlchemyAutoSchema):
     roi_percentage = fields.Method("get_roi_percentage")
     
     def get_total_value(self, obj):
-        if obj.metrekare and obj.tahmini_deger_m2:
-            return float(obj.metrekare * obj.tahmini_deger_m2)
-        return None
-    
+        # Bölge m² fiyatına göre tahmini piyasa değeri; bölge fiyatı yoksa satış fiyatı
+        if obj.metrekare and obj.bolge_fiyat:
+            return float(obj.metrekare * obj.bolge_fiyat)
+        return float(obj.fiyat) if obj.fiyat else None
+
     def get_price_per_sqm(self, obj):
-        return float(obj.tahmini_deger_m2) if obj.tahmini_deger_m2 else None
-    
+        return float(obj.fiyat / obj.metrekare) if obj.fiyat and obj.metrekare else None
+
     def get_roi_percentage(self, obj):
-        return float(obj.yatirim_getirisi) if obj.yatirim_getirisi else None
+        # Yıllık beklenen değer artışı (%)
+        oran = getattr(obj, 'deger_artis_orani', None)
+        return float(oran) if oran is not None else None
 
 
 class ArsaAnalizCreateSchema(Schema):
