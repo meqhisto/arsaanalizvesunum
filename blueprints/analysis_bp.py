@@ -625,10 +625,9 @@ def duplicate_analysis(analysis_id):
 def share_analysis(analysis_id):
     """Analiz paylaşım bilgilerini getir"""
     user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
+    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
 
     try:
-        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
-
         share_data = {
             'title': f'Arsa Analizi - {analysis.il} {analysis.ilce}',
             'description': f'{analysis.metrekare} m² arsa analizi. Fiyat: ₺{analysis.fiyat:,.0f}' if analysis.metrekare and analysis.fiyat else f'{analysis.il} {analysis.ilce} arsa analizi',

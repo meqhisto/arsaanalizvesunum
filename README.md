@@ -41,3 +41,24 @@ The `docker-compose.yml` uses the following environment variables for configurat
 
 If you are running in production, please make sure to override the `SECRET_KEY` and use a secure one.
 
+
+## Sunucuya (production) kurulum
+
+Geliştirme için olan `docker-compose.yml` yerine `docker-compose.server.yml` kullanılır. Bu dosya gizli bilgileri `.env` dosyasından okur, veritabanı portunu dışarı açmaz ve yüklenen dosyaları kalıcı volume'lerde saklar.
+
+1. `.env` dosyasını oluşturun (değerleri rastgele ve güçlü seçin):
+   ```
+   POSTGRES_USER=arsa
+   POSTGRES_PASSWORD=<guclu-sifre>
+   POSTGRES_DB=arsa_analiz
+   DATABASE_URL=postgresql://arsa:<guclu-sifre>@db:5432/arsa_analiz
+   SECRET_KEY=<rastgele-anahtar>
+   JWT_SECRET_KEY=<rastgele-anahtar>
+   FLASK_ENV=production
+   FLASK_DEBUG=False
+   ```
+2. Başlatın: `docker compose -f docker-compose.server.yml up -d --build`
+3. Güncelleme: `git pull && docker compose -f docker-compose.server.yml up -d --build`
+
+Kayıt sayfası kapalı olduğundan ilk yönetici hesabı uygulama konteyneri içinden oluşturulur
+(`User(email=..., role='superadmin')` + `set_password(...)`).

@@ -1,199 +1,184 @@
 # blueprints/portfolio_bp.py
-from flask import (
-    Blueprint, render_template, request, redirect, url_for, flash, session
-)
+"""Portföy yönetimi: kullanıcının analizlerini ve analizlerden oluşan portföy (koleksiyon) kayıtlarını yönetir."""
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, current_app
 from flask_login import login_required, current_user
 
-# Modelleri ve db nesnesini models paketinden import et
 from models import db
-from models.user_models import User, Portfolio # Portfolio modelini de import et
-from models.arsa_models import ArsaAnaliz # ArsaAnaliz de portfolyo sayfasında kullanılıyor
-
-# Flask uygulamasının yapılandırmasına erişmek için current_app
-from flask import current_app
+from models.user_models import Portfolio
+from models.arsa_models import ArsaAnaliz
 
 portfolio_bp = Blueprint('portfolio', __name__, template_folder='../templates')
- 
-# Eğer portfolyo şablonları templates/portfolio/ altındaysa, template_folder='../templates/portfolio' yapın.
 
-@portfolio_bp.route('/portfolios') # url_prefix ana app.py'de /portfolio olarak ayarlanacak
+VISIBILITY_CHOICES = {'public': 'Herkese açık', 'private': 'Özel'}
+
+
+def _own_portfolio_or_404(portfolio_id):
+    portfolio = Portfolio.query.get_or_404(portfolio_id)
+    if portfolio.user_id != current_user.id:
+        abort(404)
+    return portfolio
+
+
+def _portfolio_totals(analyses):
+    toplam_fiyat = sum(float(a.fiyat or 0) for a in analyses)
+    toplam_m2 = sum(float(a.metrekare or 0) for a in analyses)
+    return {
+        'adet': len(analyses),
+        'toplam_fiyat': toplam_fiyat,
+        'toplam_m2': toplam_m2,
+        'ort_m2_fiyat': (toplam_fiyat / toplam_m2) if toplam_m2 else 0,
+    }
+
+
+@portfolio_bp.route('/portfolios')
 @login_required
-def portfolios_list(): # Fonksiyon adını endpoint ile eşleşmesi için değiştirdim (eski portfolios)
+def portfolios_list():
     page = request.args.get('page', 1, type=int)
     search_term = request.args.get('search', '').strip()
-    per_page = 15
+    il_filter = request.args.get('il', '').strip()
 
-    # Sadece giriş yapmış kullanıcının analizlerini göster
-    user_id = current_user.id
-
-    query = ArsaAnaliz.query.join(ArsaAnaliz.user).filter(
-        User.is_active == True,
-        ArsaAnaliz.user_id == user_id  # Kullanıcı bazlı filtreleme
-    )
-
+    base = ArsaAnaliz.query.filter(ArsaAnaliz.user_id == current_user.id)
+    query = base
     if search_term:
-        search_like = f"%{search_term}%"
-        query = query.filter(
-            db.or_(
-                ArsaAnaliz.il.ilike(search_like),
-                ArsaAnaliz.ilce.ilike(search_like),
-                ArsaAnaliz.mahalle.ilike(search_like),
-                User.ad.ilike(search_like),
-                User.soyad.ilike(search_like),
-                ArsaAnaliz.imar_durumu.ilike(search_like)
-            )
-        )
-    
-    # `paginated_analyses` artık doğrudan ArsaAnaliz nesnelerinin bir listesini içeren bir Pagination objesi.
-    # Şablonda `analiz.il`, `analiz.user.ad`, `analiz.user.profil_foto` gibi erişimler kullanılabilir.
-    paginated_analyses = query.order_by(ArsaAnaliz.created_at.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
-    
-    # Şablona gönderilecek veri, doğrudan paginated_analyses.items olabilir.
-    # Eski kodda results_for_template diye bir dönüşüm vardı,
-    # eğer şablonunuz (portfolios.html) analiz_data.ArsaAnaliz.il ve analiz_data.ad
-    # gibi bir yapı bekliyorsa, o dönüşümü korumanız gerekir.
-    # Ancak `ArsaAnaliz.user` ilişkisiyle bu daha temiz olur.
-    # Şimdilik şablonun `analiz.ArsaAnaliz.il` ve `analiz.ad` beklediğini varsayarak
-    # eski yapıya benzer bir veri hazırlayalım.
-    # AMA TAVSİYEM: Şablonu `paginated_analyses.items` listesindeki ArsaAnaliz objelerini
-    # ve `analiz.user` ilişkisini kullanacak şekilde güncellemek olur.
+        like = f"%{search_term}%"
+        query = query.filter(db.or_(
+            ArsaAnaliz.il.ilike(like), ArsaAnaliz.ilce.ilike(like), ArsaAnaliz.mahalle.ilike(like),
+            ArsaAnaliz.ada.ilike(like), ArsaAnaliz.parsel.ilike(like), ArsaAnaliz.imar_durumu.ilike(like),
+        ))
+    if il_filter:
+        query = query.filter(ArsaAnaliz.il == il_filter)
 
-    # portfolios.html şablonu `analiz.ArsaAnaliz.il` ve `analiz.ad` şeklinde kullanıyor.
-    # Bu, `ArsaAnaliz` ve `User` objelerini ayrı ayrı alıp bir sözlükte birleştirmeyi gerektirir.
-    # Bu durum, sorguyu `db.session.query(ArsaAnaliz, User)` ile yapıp,
-    # sonra şablonda `item.ArsaAnaliz` ve `item.User` olarak erişmekle benzer.
-    # Şablonunuzu doğrudan ArsaAnaliz objeleriyle çalışacak şekilde güncellemek en iyisi.
-    # Şimdilik eski `portfolios.html` şablonuna uyum sağlamak için sorguyu query(ArsaAnaliz, User) yapalım.
+    pagination = query.order_by(ArsaAnaliz.created_at.desc()).paginate(page=page, per_page=12, error_out=False)
 
-    final_query = db.session.query(ArsaAnaliz, User).join(User, ArsaAnaliz.user_id == User.id).filter(
-        User.is_active == True,
-        ArsaAnaliz.user_id == user_id  # Kullanıcı bazlı filtreleme
-    )
-    if search_term:
-        search_like = f"%{search_term}%"
-        final_query = final_query.filter(
-            db.or_(
-                ArsaAnaliz.il.ilike(search_like),
-                ArsaAnaliz.ilce.ilike(search_like),
-                ArsaAnaliz.mahalle.ilike(search_like),
-                User.ad.ilike(search_like),
-                User.soyad.ilike(search_like)
-            )
-        )
-    
-    paginated_results_tuples = final_query.order_by(ArsaAnaliz.created_at.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
-    
-    results_for_template = []
-    for arsa_analiz_obj, user_obj in paginated_results_tuples.items:
-        results_for_template.append({
-            "ArsaAnaliz": arsa_analiz_obj, # Şablonda analiz_data.ArsaAnaliz.il
-            "ad": user_obj.ad,             # Şablonda analiz_data.ad
-            "soyad": user_obj.soyad,         # Şablonda analiz_data.soyad
-            "profil_foto": user_obj.profil_foto # Şablonda analiz_data.profil_foto
-        })
+    # İstatistikler tüm analizler üzerinden (sayfadan bağımsız)
+    stats_row = base.with_entities(
+        db.func.count(ArsaAnaliz.id), db.func.coalesce(db.func.sum(ArsaAnaliz.fiyat), 0),
+        db.func.coalesce(db.func.sum(ArsaAnaliz.metrekare), 0),
+        db.func.count(db.distinct(db.func.concat(ArsaAnaliz.il, '/', ArsaAnaliz.ilce))),
+    ).one()
+    stats = {
+        'toplam_analiz': stats_row[0],
+        'toplam_deger': float(stats_row[1]),
+        'toplam_m2': float(stats_row[2]),
+        'lokasyon': stats_row[3],
+    }
+    unique_ils = [r[0] for r in base.with_entities(ArsaAnaliz.il).distinct().order_by(ArsaAnaliz.il).all() if r[0]]
+    portfolios = Portfolio.query.filter_by(user_id=current_user.id).order_by(Portfolio.created_at.desc()).all()
 
     return render_template(
-        "new_portfolios.html", # Yeni template kullan
-        analyses=results_for_template, # Şablona uygun hale getirilmiş veri
-        pagination=paginated_results_tuples, # Sayfalama için Pagination objesi
-        title="Analizlerim", # Kullanıcının kendi analizleri
-        search_term=search_term,
-        unique_locations=len(set([(item["ArsaAnaliz"].il, item["ArsaAnaliz"].ilce) for item in results_for_template])),
-        average_value=sum([item["ArsaAnaliz"].toplam_deger or 0 for item in results_for_template]) / len(results_for_template) if results_for_template else 0,
-        active_users=len(set([item["ad"] + " " + item["soyad"] for item in results_for_template])),
-        unique_ils=list(set([item["ArsaAnaliz"].il for item in results_for_template if item["ArsaAnaliz"].il]))
+        'new_portfolios.html',
+        analyses=pagination.items, pagination=pagination, stats=stats, portfolios=portfolios,
+        search_term=search_term, il_filter=il_filter, unique_ils=unique_ils, title='Portföy',
     )
 
-@portfolio_bp.route('/create', methods=['GET', 'POST']) # url_prefix ile /portfolio/create olacak
+
+@portfolio_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def portfolio_create():
+    user_analyses = ArsaAnaliz.query.filter_by(user_id=current_user.id).order_by(ArsaAnaliz.created_at.desc()).all()
     if request.method == 'POST':
+        title = (request.form.get('title') or '').strip()
+        visibility = request.form.get('visibility', 'private')
+        if not title:
+            flash('Portföy adı zorunludur.', 'danger')
+            return render_template('portfolio_create.html', form_data=request.form, analyses=user_analyses,
+                                   visibility_choices=VISIBILITY_CHOICES), 400
+        if visibility not in VISIBILITY_CHOICES:
+            visibility = 'private'
         try:
-            new_portfolio = Portfolio(
-                user_id=current_user.id, # session['user_id'] yerine current_user.id
-                title=request.form.get('title'),
-                description=request.form.get('description'),
-                visibility=request.form.get('visibility', 'public')
-            )
-            db.session.add(new_portfolio)
+            portfolio = Portfolio(user_id=current_user.id, title=title[:200],
+                                  description=(request.form.get('description') or '').strip(), visibility=visibility)
+            selected_ids = {int(i) for i in request.form.getlist('analiz_ids') if i.isdigit()}
+            for analiz in user_analyses:
+                if analiz.id in selected_ids:
+                    portfolio.analizler.append(analiz)
+            db.session.add(portfolio)
             db.session.commit()
             flash('Portföy başarıyla oluşturuldu.', 'success')
-            # Nereye yönlendirileceğine karar verin:
-            # Belki yeni oluşturulan portföyün detayına veya portföy listesine
-            return redirect(url_for('portfolio.portfolios_list')) # Portföy listesine yönlendir
+            return redirect(url_for('portfolio.portfolio_detail', portfolio_id=portfolio.id))
         except Exception as e:
             db.session.rollback()
-            current_app.logger.error(f"Portfolio creation error: {str(e)}", exc_info=True)
+            current_app.logger.error(f"Portfolio creation error: {e}", exc_info=True)
             flash('Portföy oluşturulurken bir hata oluştu.', 'danger')
-            # Hata durumunda formu tekrar göster, girilen verilerle
-            return render_template('portfolio_create.html', form_data=request.form)
+            return render_template('portfolio_create.html', form_data=request.form, analyses=user_analyses,
+                                   visibility_choices=VISIBILITY_CHOICES), 500
 
-    return render_template('portfolio_create.html', form_data={}) # templates/portfolio_create.html
+    preselected = request.args.get('analiz_id', type=int)
+    return render_template('portfolio_create.html', form_data={}, analyses=user_analyses,
+                           preselected=preselected, visibility_choices=VISIBILITY_CHOICES)
 
-@portfolio_bp.route('/<int:portfolio_id>') # url_prefix ile /portfolio/<id> olacak
+
+@portfolio_bp.route('/<int:portfolio_id>')
 @login_required
-def portfolio_detail(portfolio_id): # Fonksiyon adı id yerine portfolio_id aldı
+def portfolio_detail(portfolio_id):
     portfolio = Portfolio.query.get_or_404(portfolio_id)
+    is_owner = portfolio.user_id == current_user.id
+    if portfolio.visibility == 'private' and not is_owner and current_user.role != 'superadmin':
+        abort(404)
+    analyses = portfolio.analizler.order_by(ArsaAnaliz.created_at.desc()).all()
+    available = []
+    if is_owner:
+        in_ids = {a.id for a in analyses}
+        available = [a for a in ArsaAnaliz.query.filter_by(user_id=current_user.id)
+                     .order_by(ArsaAnaliz.created_at.desc()).all() if a.id not in in_ids]
+    return render_template('portfolio_detail.html', portfolio=portfolio, analyses=analyses, available=available,
+                           totals=_portfolio_totals(analyses), is_owner=is_owner,
+                           visibility_choices=VISIBILITY_CHOICES)
 
-    # Portföy private ise ve kullanıcının kendi portföyü değilse erişimi engelle
-    if portfolio.visibility == 'private' and portfolio.user_id != current_user.id:
-        # Eğer başkalarının private portföylerini adminler görebilecekse burada ek kontrol
-        # if not current_user.is_admin: # Varsayımsal bir is_admin özelliği
-        flash('Bu portföye erişim yetkiniz yok.', 'danger')
-        return redirect(url_for('portfolio.portfolios_list')) # Veya ana sayfaya
 
-    # portfolio_detail.html şablonu, portfolio nesnesini ve içindeki analizleri (portfolio.analizler) kullanır.
-    # portfolio.analizler, Portfolio modelindeki ilişki sayesinde ArsaAnaliz nesnelerini içerir.
-    return render_template('portfolio_detail.html', portfolio=portfolio) # templates/portfolio_detail.html
+@portfolio_bp.route('/<int:portfolio_id>/edit', methods=['POST'])
+@login_required
+def portfolio_edit(portfolio_id):
+    portfolio = _own_portfolio_or_404(portfolio_id)
+    title = (request.form.get('title') or '').strip()
+    if not title:
+        flash('Portföy adı zorunludur.', 'danger')
+    else:
+        portfolio.title = title[:200]
+        portfolio.description = (request.form.get('description') or '').strip()
+        vis = request.form.get('visibility')
+        if vis in VISIBILITY_CHOICES:
+            portfolio.visibility = vis
+        db.session.commit()
+        flash('Portföy güncellendi.', 'success')
+    return redirect(url_for('portfolio.portfolio_detail', portfolio_id=portfolio.id))
 
-# --- Portföye Analiz Ekleme/Çıkarma (Opsiyonel, eğer böyle bir işlevsellik varsa) ---
-# Bu rotalar için ayrı formlar ve mantık gerekebilir.
-# Örnek:
-# @portfolio_bp.route('/<int:portfolio_id>/add_analysis', methods=['GET', 'POST'])
-# @login_required
-# def portfolio_add_analysis(portfolio_id):
-#     portfolio = Portfolio.query.get_or_404(portfolio_id)
-#     if portfolio.user_id != current_user.id:
-#         flash("Yetkisiz işlem.", "danger")
-#         return redirect(url_for('portfolio.portfolios_list'))
-    
-#     if request.method == 'POST':
-#         analiz_id_to_add = request.form.get('analiz_id')
-#         analiz = ArsaAnaliz.query.get(analiz_id_to_add)
-#         if analiz and analiz.user_id == current_user.id: # Sadece kendi analizlerini ekleyebilsin
-#             if analiz not in portfolio.analizler:
-#                 portfolio.analizler.append(analiz)
-#                 db.session.commit()
-#                 flash(f"'{analiz.il} {analiz.ilce}' analizi portföye eklendi.", "success")
-#             else:
-#                 flash("Bu analiz zaten portföyde.", "info")
-#         else:
-#             flash("Geçersiz analiz seçimi.", "danger")
-#         return redirect(url_for('portfolio.portfolio_detail', portfolio_id=portfolio.id))
 
-#     # Kullanıcının portföye ekleyebileceği analizleri listele
-#     user_analyses = ArsaAnaliz.query.filter_by(user_id=current_user.id).order_by(ArsaAnaliz.created_at.desc()).all()
-#     # Portföyde olmayanları filtrele
-#     available_analyses = [a for a in user_analyses if a not in portfolio.analizler]
-#     return render_template('portfolio_add_analysis.html', portfolio=portfolio, analyses=available_analyses)
+@portfolio_bp.route('/<int:portfolio_id>/delete', methods=['POST'])
+@login_required
+def portfolio_delete(portfolio_id):
+    portfolio = _own_portfolio_or_404(portfolio_id)
+    db.session.delete(portfolio)  # Analizler silinmez, sadece portföy bağlantıları kalkar
+    db.session.commit()
+    flash('Portföy silindi. İçindeki analizler korunuyor.', 'success')
+    return redirect(url_for('portfolio.portfolios_list'))
 
-# @portfolio_bp.route('/<int:portfolio_id>/remove_analysis/<int:analiz_id>', methods=['POST'])
-# @login_required
-# def portfolio_remove_analysis(portfolio_id, analiz_id):
-#     portfolio = Portfolio.query.get_or_404(portfolio_id)
-#     if portfolio.user_id != current_user.id:
-#         flash("Yetkisiz işlem.", "danger")
-#         return redirect(url_for('portfolio.portfolios_list'))
 
-#     analiz_to_remove = ArsaAnaliz.query.get(analiz_id)
-#     if analiz_to_remove and analiz_to_remove in portfolio.analizler:
-#         portfolio.analizler.remove(analiz_to_remove)
-#         db.session.commit()
-#         flash("Analiz portföyden çıkarıldı.", "success")
-#     else:
-#         flash("Analiz portföyde bulunamadı.", "danger")
-#     return redirect(url_for('portfolio.portfolio_detail', portfolio_id=portfolio.id))
+@portfolio_bp.route('/<int:portfolio_id>/add', methods=['POST'])
+@login_required
+def portfolio_add_analysis(portfolio_id):
+    portfolio = _own_portfolio_or_404(portfolio_id)
+    ids = {int(i) for i in request.form.getlist('analiz_ids') if i.isdigit()}
+    existing = {a.id for a in portfolio.analizler}
+    added = 0
+    for analiz in ArsaAnaliz.query.filter(ArsaAnaliz.id.in_(ids), ArsaAnaliz.user_id == current_user.id).all():
+        if analiz.id not in existing:
+            portfolio.analizler.append(analiz)
+            added += 1
+    db.session.commit()
+    flash(f'{added} analiz portföye eklendi.' if added else 'Eklenecek analiz seçilmedi.', 'success' if added else 'warning')
+    return redirect(url_for('portfolio.portfolio_detail', portfolio_id=portfolio.id))
+
+
+@portfolio_bp.route('/<int:portfolio_id>/remove/<int:analiz_id>', methods=['POST'])
+@login_required
+def portfolio_remove_analysis(portfolio_id, analiz_id):
+    portfolio = _own_portfolio_or_404(portfolio_id)
+    analiz = portfolio.analizler.filter(ArsaAnaliz.id == analiz_id).first()
+    if analiz:
+        portfolio.analizler.remove(analiz)
+        db.session.commit()
+        flash('Analiz portföyden çıkarıldı.', 'success')
+    else:
+        flash('Analiz bu portföyde bulunamadı.', 'warning')
+    return redirect(url_for('portfolio.portfolio_detail', portfolio_id=portfolio.id))

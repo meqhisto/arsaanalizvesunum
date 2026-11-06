@@ -6,8 +6,6 @@ Provides security headers to protect against common web vulnerabilities
 import os
 from flask import request, current_app
 
-# Debug import
-print("Security headers module loaded!")
 
 
 def add_security_headers(response):
@@ -24,7 +22,6 @@ def add_security_headers(response):
     - Permissions-Policy: Controls browser features
     """
 
-    print("Adding security headers to response...")  # Debug
     
     # Prevent MIME type sniffing
     response.headers['X-Content-Type-Options'] = 'nosniff'

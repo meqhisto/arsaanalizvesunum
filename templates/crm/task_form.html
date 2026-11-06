@@ -188,7 +188,7 @@
                                 <option value="{{ current_user.id }}" {% if (task and task.assigned_to_user_id == current_user.id) %}selected{% endif %}>Kendim</option>
                                 {% endif %}
                                 
-                                {% if current_user.role == 'broker' or current_user.team_members.count() > 0 %}
+                                {% if current_user.role == 'broker' or current_user.subordinates.count() > 0 %}
                                     <optgroup label="Ekip Üyeleri">
                                     {% for user_item in users_for_assignment %}
                                         {% if user_item.id != current_user.id %}
