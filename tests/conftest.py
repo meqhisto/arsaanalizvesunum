@@ -1,0 +1,62 @@
+import os
+
+import pytest
+
+if not os.environ.get('TEST_VERITABANI') or 'supabase' in os.environ.get('DATABASE_URL', ''):
+    pytest.exit("Testler yalnız yerel test veritabanında çalışır")
+
+from app import create_app  # noqa: E402
+from models import db  # noqa: E402
+from models.office_models import Office  # noqa: E402
+from models.user_models import User  # noqa: E402
+
+
+@pytest.fixture(scope='session')
+def app():
+    app = create_app()
+    app.config.update(WTF_CSRF_ENABLED=False, TESTING=True)
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+        yield app
+        db.session.remove()
+
+
+@pytest.fixture
+def db_session(app):
+    yield db.session
+    db.session.rollback()
+    tablolar = ', '.join(f'"{t.name}"' for t in db.metadata.sorted_tables)
+    db.session.execute(db.text(f'TRUNCATE {tablolar} RESTART IDENTITY CASCADE'))
+    db.session.commit()
+
+
+@pytest.fixture
+def kullanicilar(db_session):
+    ofis = Office(name='Test Ofis')
+    db.session.add(ofis)
+    db.session.flush()
+
+    def yarat(email, role, office_id=None, manager_id=None):
+        u = User(email=email, role=role, office_id=office_id, manager_id=manager_id, ad=email.split('@')[0])
+        u.set_password('Test1234!')
+        db.session.add(u)
+        db.session.flush()
+        return u
+
+    broker = yarat('broker@test.com', 'broker', ofis.id)
+    d1 = yarat('d1@test.com', 'danisman', ofis.id, broker.id)
+    d2 = yarat('d2@test.com', 'danisman', ofis.id)
+    dx = yarat('dx@test.com', 'danisman')
+    sa = yarat('sa@test.com', 'superadmin')
+    db.session.commit()
+    return {'ofis': ofis.id, 'broker': broker.id, 'd1': d1.id, 'd2': d2.id, 'dx': dx.id, 'sa': sa.id}
+
+
+def giris(client, user_id):
+    """client'a kullanıcıyı oturum açmış yazar. Her kullanıcı için AYRI app.test_client() verin
+    (aynı app context'te g paylaşımı yüzünden ikinci kullanıcı ilkinin kimliğini almasın)."""
+    with client.session_transaction() as s:
+        s['_user_id'] = str(user_id)
+        s['_fresh'] = True
+    return client

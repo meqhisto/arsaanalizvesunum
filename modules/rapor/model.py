@@ -11,12 +11,11 @@ from datetime import datetime
 from typing import List, Optional
 
 from modules.analiz import ArsaAnalizci
+from modules.gayrimenkul_sabitleri import ALTYAPI_ETIKETLERI
 
 SWOT_KEYS = ('strengths', 'weaknesses', 'opportunities', 'threats')
 SWOT_TITLES = {'strengths': 'Güçlü Yönler', 'weaknesses': 'Zayıf Yönler',
                'opportunities': 'Fırsatlar', 'threats': 'Tehditler'}
-ALTYAPI_ETIKETLERI = (('yol', 'Yol'), ('elektrik', 'Elektrik'), ('su', 'Su'),
-                      ('dogalgaz', 'Doğalgaz'), ('kanalizasyon', 'Kanalizasyon'))
 PROJEKSIYON_YIL = 5
 IMAGE_EXTS = ('.jpg', '.jpeg', '.png')
 
