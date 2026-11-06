@@ -42,3 +42,7 @@ def etiket(liste, kod):
         if k == kod:
             return e
     return kod
+
+
+KIMDEN = ['Sahibinden', 'Emlak ofisinden']
+IMAR_ONERILERI = ['Konut', 'Ticari', 'Konut + Ticari', 'Sanayi', 'Turizm', 'Tarım', 'İmarsız', 'Diğer']

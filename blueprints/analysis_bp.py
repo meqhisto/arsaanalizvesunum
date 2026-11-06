@@ -9,6 +9,7 @@ import tempfile # Kullanılmıyorsa kaldırılabilir
 import traceback
 import json
 from decimal import Decimal # Sayısal dönüşümler için
+from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename # Dosya yükleme için
 import os
 import logging # logging için
@@ -43,8 +44,60 @@ def allowed_file(filename):
 @analysis_bp.route('/new', methods=['GET'])
 @login_required
 def new_analysis():
-    """Yeni analiz formu sayfası"""
-    return render_template('analysis_form.html', title="Yeni Analiz")
+    """Yeni gayrimenkul formu"""
+    return _gayrimenkul_formu(None, MultiDict({'tur': request.args.get('tur', 'arsa')}))
+
+
+def _gayrimenkul_formu(gayrimenkul, veri, hatalar=None):
+    """Oluştur/düzenle ortak şablonu; veri MultiDict (POST'ta girilen değerler, GET'te kayıttan)."""
+    from modules.gayrimenkul_form import sahip_satirlari
+    from modules import gayrimenkul_sabitleri as sabit
+    baslik = 'Gayrimenkulü düzenle' if gayrimenkul else 'Yeni gayrimenkul'
+    return render_template('gayrimenkul/form.html', gayrimenkul=gayrimenkul, v=veri, hatalar=hatalar or [],
+                           sahipler=sahip_satirlari(veri, current_user), sabit=sabit, title=baslik)
+
+
+def _medyalari_kaydet(gayrimenkul, dosyalar):
+    """Formla gelen fotoğraf/videoları gayrimenkulün klasörüne kaydeder (commit etmez)."""
+    sayi = 0
+    for dosya in dosyalar:
+        if not dosya or not dosya.filename or not allowed_file(dosya.filename):
+            continue
+        ad = secure_filename(dosya.filename)
+        if not ad or '.' not in ad:
+            continue
+        uzanti = ad.rsplit('.', 1)[1].lower()
+        klasor = os.path.join(current_app.config['UPLOAD_FOLDER'], str(gayrimenkul.id))
+        os.makedirs(klasor, exist_ok=True)
+        dosya.save(os.path.join(klasor, ad))
+        medya = AnalizMedya()
+        medya.analiz_id = gayrimenkul.id
+        medya.filename = f"{gayrimenkul.id}/{ad}"
+        medya.type = 'image' if uzanti in {'jpg', 'jpeg', 'png', 'gif'} else 'video'
+        db.session.add(medya)
+        sayi += 1
+    return sayi
+
+
+def _sahipler_ve_ilan(gayrimenkul, form):
+    """Sahipleri senkronlar; 'hemen ilana çıkar' işaretliyse tek gayrimenkullü ilan açar (commit etmez)."""
+    from modules.gayrimenkul_form import ilan_verisi, sahipler_formdan
+    from modules.ilan_servis import ilan_kaydet, sahipleri_kaydet
+    sahipleri_kaydet(gayrimenkul, current_user, sahipler_formdan(form))
+    if form.get('ilana_cikar') == '1':
+        return ilan_kaydet(None, current_user, ilan_verisi(form, gayrimenkul))
+    return None
+
+
+def _medya_sonrasi(gayrimenkul):
+    try:
+        if _medyalari_kaydet(gayrimenkul, request.files.getlist('medya[]')):
+            db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Medya kaydetme hatası (ID: {gayrimenkul.id}): {e}", exc_info=True)
+        flash('Gayrimenkul kaydedildi ancak bazı fotoğraflar yüklenemedi.', 'warning')
+
 
 @analysis_bp.route('/list', methods=['GET'])
 @login_required
@@ -449,98 +502,27 @@ def view_analysis(analysis_id):
 @analysis_bp.route('/<int:analysis_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_analysis(analysis_id):
-    """Analizi düzenle"""
-    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
+    """Gayrimenkulü düzenle (sahibi, ekibinin broker'ı, superadmin)"""
+    from modules.gayrimenkul_form import form_verisi, formdan_gayrimenkul
+    from modules.ilan_servis import IlanHatasi, gayrimenkul_or_404
+    gayrimenkul = gayrimenkul_or_404(analysis_id, current_user)
+    if request.method == 'GET':
+        return _gayrimenkul_formu(gayrimenkul, form_verisi(gayrimenkul))
 
-    try:
-        analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+    hatalar = formdan_gayrimenkul(request.form, gayrimenkul)
+    if not hatalar:
+        try:
+            _sahipler_ve_ilan(gayrimenkul, request.form)
+            db.session.commit()
+        except IlanHatasi as e:
+            hatalar = [str(e)]
+    if hatalar:
+        db.session.rollback()
+        return _gayrimenkul_formu(gayrimenkul, request.form, hatalar)
+    _medya_sonrasi(gayrimenkul)
+    flash('Gayrimenkul güncellendi.', 'success')
+    return redirect(url_for('analysis.view_analysis', analysis_id=gayrimenkul.id))
 
-        if request.method == 'POST':
-            # Form verilerini al
-            analysis.il = request.form.get('il', '').strip()
-            analysis.ilce = request.form.get('ilce', '').strip()
-            analysis.mahalle = request.form.get('mahalle', '').strip()
-            analysis.ada = request.form.get('ada', '').strip()
-            analysis.parsel = request.form.get('parsel', '').strip()
-            analysis.koordinatlar = request.form.get('koordinatlar', '').strip()
-            analysis.pafta = request.form.get('pafta', '').strip()
-
-            # Sayısal değerler
-            try:
-                analysis.metrekare = float(request.form.get('metrekare', 0)) if request.form.get('metrekare') else None
-                analysis.fiyat = float(request.form.get('fiyat', 0)) if request.form.get('fiyat') else None
-                analysis.bolge_fiyat = float(request.form.get('bolge_fiyat', 0)) if request.form.get('bolge_fiyat') else None
-                analysis.taks = float(request.form.get('taks', 0)) if request.form.get('taks') else None
-                analysis.kaks = float(request.form.get('kaks', 0)) if request.form.get('kaks') else None
-                oran = request.form.get('deger_artis_orani', '').replace(',', '.').strip()
-                analysis.deger_artis_orani = min(max(float(oran), 0), 100) if oran else None
-            except ValueError:
-                flash('Sayısal değerlerde hata var. Lütfen kontrol edin.', 'error')
-                return render_template('analysis_edit.html', analysis=analysis, title="Analizi Düzenle")
-
-            analysis.imar_durumu = request.form.get('imar_durumu', '').strip()
-            analysis.notlar = request.form.get('notlar', '').strip()
-
-            # Altyapı bilgileri (checkbox'lar)
-            altyapi_list = []
-            altyapi_options = ['elektrik', 'su', 'dogalgaz', 'kanalizasyon', 'telefon', 'internet', 'yol']
-            for option in altyapi_options:
-                if request.form.get(f'altyapi_{option}'):
-                    altyapi_list.append(option.title())
-
-            analysis.altyapi = json.dumps(altyapi_list) if altyapi_list else None
-
-            # SWOT analizi
-            swot_data = {
-                'strengths': [s.strip() for s in request.form.get('strengths', '').split('\n') if s.strip()],
-                'weaknesses': [w.strip() for w in request.form.get('weaknesses', '').split('\n') if w.strip()],
-                'opportunities': [o.strip() for o in request.form.get('opportunities', '').split('\n') if o.strip()],
-                'threats': [t.strip() for t in request.form.get('threats', '').split('\n') if t.strip()]
-            }
-
-            analysis.swot_analizi = json.dumps(swot_data) if any(swot_data.values()) else None
-            analysis.updated_at = datetime.utcnow()
-
-            try:
-                db.session.commit()
-                flash('Analiz başarıyla güncellendi!', 'success')
-                return redirect(url_for('analysis.view_analysis', analysis_id=analysis.id))
-            except Exception as e:
-                db.session.rollback()
-                current_app.logger.error(f"Analysis update error: {str(e)}", exc_info=True)
-                flash('Analiz güncellenirken bir hata oluştu.', 'error')
-
-        # Parse existing data for form
-        altyapi_parsed = []
-        if analysis.altyapi:
-            try:
-                altyapi_data = json.loads(analysis.altyapi)
-                if isinstance(altyapi_data, list):
-                    altyapi_parsed = altyapi_data
-                elif isinstance(altyapi_data, dict):
-                    altyapi_parsed = [key for key, value in altyapi_data.items() if value]
-            except json.JSONDecodeError:
-                pass
-
-        swot_parsed = {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}
-        if analysis.swot_analizi:
-            try:
-                swot_data = json.loads(analysis.swot_analizi)
-                if isinstance(swot_data, dict):
-                    swot_parsed.update(swot_data)
-            except json.JSONDecodeError:
-                pass
-
-        return render_template('analysis_edit.html',
-                             analysis=analysis,
-                             altyapi=altyapi_parsed,
-                             swot=swot_parsed,
-                             title=f"Analizi Düzenle - {analysis.il} {analysis.ilce}")
-
-    except Exception as e:
-        current_app.logger.error(f"Analysis edit error: {str(e)}", exc_info=True)
-        flash('Analiz düzenleme sayfası yüklenirken bir hata oluştu.', 'error')
-        return redirect(url_for('analysis.list_analyses'))
 
 def _analizi_sil(analiz):
     """Analizi bağlı kayıtları ve dosyalarıyla siler, panel istatistiklerini günceller (commit etmez)."""
@@ -599,52 +581,43 @@ def delete_analysis(analysis_id):
         current_app.logger.error(f"Analysis delete error: {str(e)}", exc_info=True)
         return jsonify({'success': False, 'message': 'Analiz silinirken bir hata oluştu.'}), 500
 
+KOPYALANAN_ALANLAR = (
+    'il', 'ilce', 'ada', 'parsel', 'koordinatlar', 'pafta', 'metrekare', 'imar_durumu', 'taks', 'kaks', 'fiyat',
+    'bolge_fiyat', 'altyapi', 'swot_analizi', 'tur', 'alt_tur', 'baslik', 'brut_m2', 'net_m2', 'oda_sayisi',
+    'banyo_sayisi', 'bulundugu_kat', 'toplam_kat', 'bina_yasi', 'isinma', 'esyali', 'site_icinde', 'balkon',
+    'aidat', 'tapu_durumu', 'krediye_uygun', 'takasli', 'kimden',
+)
+
+
 @analysis_bp.route('/<int:analysis_id>/duplicate', methods=['POST'])
 @login_required
 def duplicate_analysis(analysis_id):
-    """Analizi kopyala"""
-    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
-
+    """Gayrimenkulü kopyala (sahipler ve ilan bağları kopyalanmaz)"""
+    import copy
+    from modules.ilan_servis import gayrimenkul_or_404
+    original = gayrimenkul_or_404(analysis_id, current_user)
     try:
-        original = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
-
-        # Yeni analiz oluştur
-        new_analysis = ArsaAnaliz(
-            user_id=user_id,
-            office_id=original.office_id,
-            il=original.il,
-            ilce=original.ilce,
-            mahalle=f"{original.mahalle} (Kopya)" if original.mahalle else "Kopya",
-            ada=original.ada,
-            parsel=original.parsel,
-            koordinatlar=original.koordinatlar,
-            pafta=original.pafta,
-            metrekare=original.metrekare,
-            imar_durumu=original.imar_durumu,
-            taks=original.taks,
-            kaks=original.kaks,
-            fiyat=original.fiyat,
-            bolge_fiyat=original.bolge_fiyat,
-            altyapi=original.altyapi,
-            swot_analizi=original.swot_analizi,
-            notlar=f"{original.notlar}\n\n[Bu analiz {original.il} {original.ilce} analizinden kopyalanmıştır]" if original.notlar else f"[Bu analiz {original.il} {original.ilce} analizinden kopyalanmıştır]",
-            created_at=datetime.utcnow()
-        )
-
-        db.session.add(new_analysis)
+        kopya = ArsaAnaliz(user_id=current_user.id, office_id=current_user.office_id,
+                           created_at=datetime.utcnow())
+        for alan in KOPYALANAN_ALANLAR:
+            setattr(kopya, alan, getattr(original, alan))
+        kopya.ozellikler = copy.deepcopy(original.ozellikler)
+        kopya.mahalle = f"{original.mahalle} (Kopya)" if original.mahalle else "Kopya"
+        not_ = f"[Bu kayıt {original.il} {original.ilce} kaydından kopyalanmıştır]"
+        kopya.notlar = f"{original.notlar}\n\n{not_}" if original.notlar else not_
+        db.session.add(kopya)
         db.session.commit()
-
         return jsonify({
             'success': True,
-            'message': 'Analiz başarıyla kopyalandı.',
-            'new_id': new_analysis.id,
-            'redirect_url': url_for('analysis.view_analysis', analysis_id=new_analysis.id)
+            'message': 'Gayrimenkul başarıyla kopyalandı.',
+            'new_id': kopya.id,
+            'redirect_url': url_for('analysis.view_analysis', analysis_id=kopya.id)
         })
-
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Analysis duplicate error: {str(e)}", exc_info=True)
-        return jsonify({'success': False, 'message': 'Analiz kopyalanırken bir hata oluştu.'}), 500
+        return jsonify({'success': False, 'message': 'Gayrimenkul kopyalanırken bir hata oluştu.'}), 500
+
 
 @analysis_bp.route('/<int:analysis_id>/share', methods=['GET'])
 @login_required
@@ -714,168 +687,104 @@ def generate_pdf_report(analysis_id):
     return _report_or_redirect(analysis, 'pdf')
 
 
-@analysis_bp.route('/create', methods=['POST']) # Eski /submit_analysis
+def _istatistiklere_ekle(gayrimenkul):
+    """Panel ve bölge istatistiklerine yeni kaydı ekler (commit etmez)."""
+    user_id = gayrimenkul.user_id
+    fiyat = Decimal(str(gayrimenkul.fiyat or 0))
+    stats = DashboardStats.query.filter_by(user_id=user_id).first()
+    if not stats:
+        stats = DashboardStats()
+        stats.user_id = user_id
+        db.session.add(stats)
+    stats.toplam_arsa_sayisi = (stats.toplam_arsa_sayisi or 0) + 1
+    stats.toplam_deger = (stats.toplam_deger or Decimal(0)) + fiyat
+    fiyat_f = float(fiyat)
+    if stats.toplam_arsa_sayisi == 1:
+        stats.ortalama_fiyat = stats.en_yuksek_fiyat = stats.en_dusuk_fiyat = fiyat_f
+    else:
+        stats.ortalama_fiyat = (((stats.ortalama_fiyat or 0.0) * (stats.toplam_arsa_sayisi - 1)) + fiyat_f) \
+            / stats.toplam_arsa_sayisi
+        stats.en_yuksek_fiyat = max((stats.en_yuksek_fiyat or 0.0), fiyat_f)
+        stats.en_dusuk_fiyat = min(stats.en_dusuk_fiyat if stats.en_dusuk_fiyat is not None else fiyat_f, fiyat_f)
+    stats.son_guncelleme = datetime.utcnow()
+
+    bolge = BolgeDagilimi.query.filter_by(user_id=user_id, il=gayrimenkul.il).first()
+    if not bolge:
+        bolge = BolgeDagilimi()
+        bolge.user_id = user_id
+        bolge.il = gayrimenkul.il
+        bolge.analiz_sayisi = 0
+        bolge.toplam_deger = Decimal('0.00')
+        db.session.add(bolge)
+    bolge.analiz_sayisi = (bolge.analiz_sayisi or 0) + 1
+    bolge.toplam_deger = (bolge.toplam_deger or Decimal(0)) + fiyat
+    bolge.son_guncelleme = datetime.utcnow()
+
+
+@analysis_bp.route('/create', methods=['POST'])
 @login_required
-def create_analysis(): # Fonksiyon adı değişti
+def create_analysis():
+    """Yeni gayrimenkul; sahipler ve isteğe bağlı ilan aynı transaction'da kaydedilir."""
+    from modules.gayrimenkul_form import formdan_gayrimenkul
+    from modules.ilan_servis import IlanHatasi
+    gayrimenkul = ArsaAnaliz(user_id=current_user.id, office_id=current_user.office_id, fiyat=Decimal('0'))
+    hatalar = formdan_gayrimenkul(request.form, gayrimenkul)
+    if hatalar:
+        return _gayrimenkul_formu(None, request.form, hatalar)
     try:
-        user_id = current_user.id
-        form_data_dict = request.form.to_dict()
-        altyapi_list = request.form.getlist("altyapi[]")
-
-        # --- Sunucu Tarafı Validasyon (analysis_form.html'deki submit_analysis'ten alındı) ---
-        errors = []
-        required_fields = {
-            "il": "İl", "ilce": "İlçe", "mahalle": "Mahalle",
-            "ada": "Ada No", "parsel": "Parsel No",
-            "metrekare": "Metrekare", "imar_durumu": "İmar Durumu",
-            "maliyet": "Maliyet (Fiyat)", "guncel_deger": "Güncel Değer (Bölge Fiyatı)", "tarih": "Alım Tarihi" # İsimler eşleştirildi
-        }
-        for field, label in required_fields.items():
-            if not form_data_dict.get(field, "").strip():
-                if field != "tarih": # Tarih zorunlu olmayabilir, modele bağlı
-                    errors.append(f"{label} alanı zorunludur.")
-
-        numeric_fields_config = {
-            "metrekare": {"label": "Metrekare", "min_val": 0.01, "max_val": 9999999.99},
-            "taks": {"label": "TAKS", "min_val": 0, "max_val": 1, "default": 0.3},
-            "kaks": {"label": "KAKS", "min_val": 0, "max_val": 10, "default": 1.5}, # max_val eklendi
-            "maliyet": {"label": "Maliyet", "min_val": 0, "max_val": 9999999999999.99},
-            "guncel_deger": {"label": "Güncel Değer", "min_val": 0, "max_val": 9999999999999.99},
-            "deger_artis_orani": {"label": "Yıllık Değer Artış Oranı", "min_val": 0, "max_val": 100, "default": 15}
-        }
-        
-        converted_data = {} # Dönüştürülmüş ve doğrulanmış sayısal veriler için
-
-        for field, config in numeric_fields_config.items():
-            value_str = form_data_dict.get(field, str(config.get("default", ""))).replace(",", "").strip()
-            if value_str: # Sadece doluysa işlem yap
-                try:
-                    value_float = float(value_str)
-                    if "min_val" in config and value_float < config["min_val"]:
-                        errors.append(f"{config['label']} en az {config['min_val']} olmalıdır.")
-                    if "max_val" in config and value_float > config["max_val"]:
-                        errors.append(f"{config['label']} en fazla {config['max_val']} olmalıdır.")
-                    converted_data[field] = value_float
-                except ValueError:
-                    errors.append(f"{config['label']} alanı geçerli bir sayı olmalıdır.")
-            elif field in ["metrekare", "maliyet", "guncel_deger"]: # Bu alanlar zorunlu (default'ları yoksa)
-                 if not config.get("default"): # Eğer default değeri yoksa ve boşsa hata ver
-                    errors.append(f"{config['label']} alanı zorunludur ve sayısal olmalıdır.")
-            else: # Opsiyonel sayısal alanlar için default değeri al
-                converted_data[field] = config.get("default", 0.0)
-
-
-        # Tarih validasyonu
-        # tarih_str = form_data_dict.get("tarih", "")
-        # if tarih_str: # Tarih zorunlu değilse bu kontrol opsiyonel
-        #     try:
-        #         datetime.strptime(tarih_str, "%Y-%m-%d")
-        #     except ValueError:
-        #         errors.append("Alım Tarihi geçerli bir formatta (YYYY-AA-GG) olmalıdır.")
-        # else: # Eğer tarih zorunluysa
-        #     errors.append("Alım Tarihi zorunludur.")
-        
-        swot_data_from_form = {}
-        for key in ["strengths", "weaknesses", "opportunities", "threats"]:
-            swot_json_str = form_data_dict.get(key, "[]")
-            try:
-                swot_list = json.loads(swot_json_str)
-                if not isinstance(swot_list, list):
-                    errors.append(f"SWOT {key.capitalize()} verisi liste formatında olmalı.")
-                    swot_data_from_form[key] = [] # Hata durumunda boş liste
-                else:
-                    swot_data_from_form[key] = swot_list
-            except json.JSONDecodeError:
-                errors.append(f"SWOT {key.capitalize()} verisi geçersiz JSON formatında.")
-                swot_data_from_form[key] = []
-
-        if errors:
-            for error in errors:
-                flash(error, "danger")
-            # Ensure the dictionary stored in session can hold mixed types for Pylance
-            form_data_for_session: dict[str, Any] = form_data_dict.copy()
-            form_data_for_session['altyapi[]'] = altyapi_list
-            session['analysis_form_data'] = form_data_for_session
-            session['analysis_form_errors'] = errors
-            return redirect(url_for("main.analysis_form")) # main blueprint'indeki forma yönlendir
-        # --- Validasyon Sonu ---
-
-        yeni_analiz = ArsaAnaliz()
-        yeni_analiz.user_id = user_id
-        yeni_analiz.il = form_data_dict.get("il")
-        yeni_analiz.ilce = form_data_dict.get("ilce")
-        yeni_analiz.mahalle = form_data_dict.get("mahalle")
-        yeni_analiz.ada = form_data_dict.get("ada")
-        yeni_analiz.parsel = form_data_dict.get("parsel")
-        yeni_analiz.koordinatlar = form_data_dict.get("koordinatlar")
-        yeni_analiz.pafta = form_data_dict.get("pafta")
-        yeni_analiz.metrekare = Decimal(str(converted_data.get("metrekare", 0)))
-        yeni_analiz.imar_durumu = form_data_dict.get("imar_durumu")
-        yeni_analiz.taks = Decimal(str(converted_data.get("taks", 0.3)))
-        yeni_analiz.kaks = Decimal(str(converted_data.get("kaks", 1.5)))
-        yeni_analiz.fiyat = Decimal(str(converted_data.get("maliyet", 0)))
-        yeni_analiz.bolge_fiyat = Decimal(str(converted_data.get("guncel_deger", 0)))
-        yeni_analiz.altyapi = json.dumps(altyapi_list)
-        yeni_analiz.swot_analizi = json.dumps(swot_data_from_form)
-        yeni_analiz.notlar = form_data_dict.get("notlar")
-        if form_data_dict.get("deger_artis_orani", "").strip():
-            yeni_analiz.deger_artis_orani = Decimal(str(converted_data.get("deger_artis_orani", 15)))
-
-        db.session.add(yeni_analiz)
-        
-        # Dashboard İstatistiklerini Güncelleme
-        stats = DashboardStats.query.filter_by(user_id=user_id).first()
-        if not stats: # Eğer kullanıcı için istatistik yoksa oluştur
-            stats = DashboardStats()
-            stats.user_id = user_id
-            stats.en_dusuk_fiyat = float('inf') # en_dusuk_fiyat için başlangıç
-            db.session.add(stats)
-        
-        # İstatistikleri initialize et (None ise)
-        stats.toplam_arsa_sayisi = (stats.toplam_arsa_sayisi or 0) + 1
-        stats.toplam_deger = (stats.toplam_deger or Decimal(0)) + yeni_analiz.fiyat
-        
-        # Ortalama fiyat (Float olarak saklandığı varsayılıyor)
-        current_fiyat_float = float(yeni_analiz.fiyat)
-        if stats.toplam_arsa_sayisi == 1:
-            stats.ortalama_fiyat = current_fiyat_float
-            stats.en_yuksek_fiyat = current_fiyat_float
-            stats.en_dusuk_fiyat = current_fiyat_float
-        else:
-            stats.ortalama_fiyat = (( (stats.ortalama_fiyat or 0.0) * (stats.toplam_arsa_sayisi - 1)) + current_fiyat_float) / stats.toplam_arsa_sayisi
-            stats.en_yuksek_fiyat = max((stats.en_yuksek_fiyat or 0.0), current_fiyat_float)
-            stats.en_dusuk_fiyat = min((stats.en_dusuk_fiyat or float('inf')), current_fiyat_float)
-        
-        stats.son_guncelleme = datetime.utcnow()
-
-        # Bölge istatistiklerini güncelle
-        bolge = BolgeDagilimi.query.filter_by(user_id=user_id, il=yeni_analiz.il).first()
-        if not bolge:
-            bolge = BolgeDagilimi()
-            bolge.user_id = user_id
-            bolge.il = yeni_analiz.il
-            bolge.analiz_sayisi = 0
-            bolge.toplam_deger = Decimal('0.00')
-            db.session.add(bolge)
-        bolge.analiz_sayisi = (bolge.analiz_sayisi or 0) + 1
-        bolge.toplam_deger = (bolge.toplam_deger or Decimal(0)) + yeni_analiz.fiyat
-        bolge.son_guncelleme = datetime.utcnow()
-
+        db.session.add(gayrimenkul)
+        db.session.flush()
+        ilan = _sahipler_ve_ilan(gayrimenkul, request.form)
+        # Panel istatistikleri fiyat alanına bakar: satış ilanı açıldıysa onun fiyatı, değilse 0
+        if ilan is not None and ilan.teklif_tipi == 'satilik' and ilan.fiyat is not None:
+            gayrimenkul.fiyat = ilan.fiyat
+        _istatistiklere_ekle(gayrimenkul)
         db.session.commit()
-        flash("Arsa analizi başarıyla kaydedildi.", "success")
-        return redirect(url_for('analysis.analiz_detay', analiz_id=yeni_analiz.id))
-
-    except Exception as e:
+    except IlanHatasi as e:
         db.session.rollback()
-        current_app.logger.error(f"Analiz oluşturma hatası: {str(e)}", exc_info=True)
-        # Hata durumunda form verilerini session'a kaydet ve formu tekrar göster
-        # Ensure the dictionary stored in session can hold mixed types for Pylance
-        form_data_for_session_on_error: dict[str, Any] = request.form.to_dict()
-        form_data_for_session_on_error['altyapi[]'] = request.form.getlist("altyapi[]")
-        session['analysis_form_data'] = form_data_for_session_on_error
-        session['analysis_form_errors'] = [f"Beklenmedik bir hata oluştu: {str(e)}"]
-        flash(f"Arsa analizi kaydedilirken bir hata oluştu. Lütfen alanları kontrol edin.", "danger")
-        return redirect(url_for("main.analysis_form"))
+        return _gayrimenkul_formu(None, request.form, [str(e)])
+    _medya_sonrasi(gayrimenkul)
+    flash('Gayrimenkul kaydedildi.' + (' İlan da oluşturuldu.' if ilan is not None else ''), 'success')
+    return redirect(url_for('analysis.view_analysis', analysis_id=gayrimenkul.id))
+
+
+@analysis_bp.route('/kontak-ara', methods=['GET'])
+@login_required
+def kontak_ara():
+    """Mal sahibi seçimi için görünür CRM kişilerinde ad/soyad/telefon araması (en çok 20)."""
+    from models.crm_models import Contact
+    from modules.gayrimenkul_form import kontak_json
+    from modules.ilan_servis import gorunur_kontaklar
+    q = (request.args.get('q') or '').strip()
+    if not q:
+        return jsonify([])
+    desen = f"%{q}%"
+    kontaklar = (gorunur_kontaklar(current_user)
+                 .filter(db.or_(Contact.first_name.ilike(desen), Contact.last_name.ilike(desen),
+                                Contact.phone.ilike(desen),
+                                (Contact.first_name + ' ' + Contact.last_name).ilike(desen)))
+                 .order_by(Contact.first_name, Contact.last_name).limit(20).all())
+    return jsonify([kontak_json(c) for c in kontaklar])
+
+
+@analysis_bp.route('/kontak-ekle', methods=['POST'])
+@login_required
+def kontak_ekle():
+    """Formdan anında mal sahibi kişisi oluşturur."""
+    from models.crm_models import Contact
+    from modules.gayrimenkul_form import kontak_json
+    veri = request.get_json(silent=True) or {}
+    ad = str(veri.get('ad') or '').strip()
+    if not ad:
+        return jsonify({'hata': 'Ad zorunludur.'}), 400
+    soyad = str(veri.get('soyad') or '').strip()
+    telefon = str(veri.get('telefon') or '').strip()
+    kontak = Contact(user_id=current_user.id, office_id=current_user.office_id, first_name=ad[:100],
+                     last_name=soyad[:100] or '-', phone=telefon[:30] or None, status='Mal sahibi',
+                     source='Portföy')
+    db.session.add(kontak)
+    db.session.commit()
+    return jsonify(kontak_json(kontak))
 
 
 @analysis_bp.route('/<int:analiz_id>')

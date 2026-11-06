@@ -80,4 +80,14 @@ def giris(client, user_id):
     with client.session_transaction() as s:
         s['_user_id'] = str(user_id)
         s['_fresh'] = True
+    # Test istemcisi oturumdaki app context'i (dolayısıyla g'yi) yeniden kullanır; flask_login'in g'de
+    # önbelleklediği kullanıcı önceki istekten/testten kalmasın diye her istekte temizlenir.
+    asil_open = client.open
+
+    def open_(*args, **kwargs):
+        from flask import g
+        g.pop('_login_user', None)
+        return asil_open(*args, **kwargs)
+
+    client.open = open_
     return client

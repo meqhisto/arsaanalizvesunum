@@ -1,0 +1,42 @@
+{# Mal sahipleri: CRM'de arama + seçme, hisse, irtibat; anında yeni müşteri. Değişken: sahipler #}
+<div class="card border-0 shadow-sm mb-4" id="sahipler"
+     data-ara-url="{{ url_for('analysis.kontak_ara') }}" data-ekle-url="{{ url_for('analysis.kontak_ekle') }}">
+    <div class="card-body">
+        <h6 class="mb-3">7. Mal sahipleri</h6>
+        <div class="position-relative mb-2">
+            <input type="search" class="form-control form-control-sm" id="sahipAra" autocomplete="off"
+                   placeholder="Müşteri ara (ad, soyad, telefon)" aria-label="Müşteri ara">
+            <div class="list-group position-absolute w-100 shadow-sm d-none" id="sahipSonuclar" style="z-index: 20;"></div>
+        </div>
+
+        <table class="table table-sm align-middle mb-2">
+            <thead class="small text-muted"><tr><th>Kişi</th><th style="width: 5.5rem;">Hisse</th><th title="İrtibat kişisi">İrtibat</th><th></th></tr></thead>
+            <tbody id="sahipSatirlari">
+                {% for s in sahipler %}
+                <tr data-id="{{ s.id }}">
+                    <td><div>{{ s.ad }}</div><div class="small text-muted">{{ s.telefon }}</div>
+                        <input type="hidden" name="sahip_contact_id[]" value="{{ s.id }}"></td>
+                    <td><input class="form-control form-control-sm" name="sahip_hisse[]" maxlength="20" placeholder="1/2" value="{{ s.hisse }}"></td>
+                    <td class="text-center"><input class="form-check-input" type="radio" name="sahip_irtibat" value="{{ s.id }}" {% if s.irtibat %}checked{% endif %} aria-label="İrtibat kişisi"></td>
+                    <td class="text-end"><button type="button" class="btn btn-sm btn-link text-danger p-0" data-sahip-cikar aria-label="Çıkar"><i class="fas fa-times"></i></button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="small text-muted mb-2 {% if sahipler %}d-none{% endif %}" id="sahipBos">Henüz mal sahibi seçilmedi.</div>
+
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#yeniSahip"
+                aria-expanded="false" aria-controls="yeniSahip"><i class="fas fa-user-plus me-1"></i>Yeni müşteri ekle</button>
+        <div class="collapse mt-2" id="yeniSahip">
+            <div class="border rounded p-2">
+                <div class="row g-2">
+                    <div class="col-6"><input class="form-control form-control-sm" id="yeniSahipAd" placeholder="Ad *" aria-label="Ad"></div>
+                    <div class="col-6"><input class="form-control form-control-sm" id="yeniSahipSoyad" placeholder="Soyad" aria-label="Soyad"></div>
+                    <div class="col-8"><input class="form-control form-control-sm" id="yeniSahipTelefon" placeholder="Telefon" inputmode="tel" aria-label="Telefon"></div>
+                    <div class="col-4"><button class="btn btn-sm btn-primary w-100" type="button" id="yeniSahipKaydet">Ekle</button></div>
+                </div>
+                <div class="small text-danger mt-1 d-none" id="yeniSahipHata"></div>
+            </div>
+        </div>
+    </div>
+</div>

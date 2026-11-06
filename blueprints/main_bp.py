@@ -463,9 +463,8 @@ def change_password(): # endpoint eski app.py'de 'change_password' idi, fonksiyo
 @main_bp.route('/analysis-form') # Varsayılan olarak sadece GET
 @login_required
 def analysis_form():
-    form_data = session.pop('analysis_form_data', None)
-    form_errors = session.pop('analysis_form_errors', None)
-    return render_template('analysis_form.html', form_data=form_data, form_errors=form_errors)
+    """Eski adres: yeni gayrimenkul formuna yönlendirir."""
+    return redirect(url_for('analysis.new_analysis'))
 
 @main_bp.route('/login')
 def login_redirect():
