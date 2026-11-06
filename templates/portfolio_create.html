@@ -1,0 +1,69 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Yeni Portföy - Arsa Analiz Platformu{% endblock %}
+{% block page_title %}Yeni Portföy{% endblock %}
+{% block page_description %}Birden fazla arsa analizini tek bir portföyde toplayın{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('portfolio.portfolios_list') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Geri</a>
+{% endblock %}
+
+{% block dashboard_content %}
+{% set selected = form_data.getlist('analiz_ids') if form_data.getlist is defined else [] %}
+<form method="POST" action="{{ url_for('portfolio.portfolio_create') }}">
+    <div class="row">
+        <div class="col-lg-5 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Portföy adı <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" maxlength="200" required
+                               value="{{ form_data.get('title', '') }}" placeholder="Örn. Kepez Konut Arsaları">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="description" name="description" rows="4"
+                                  placeholder="Portföyün amacı, hedef yatırımcı vb.">{{ form_data.get('description', '') }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="visibility" class="form-label">Görünürlük</label>
+                        <select class="form-select" id="visibility" name="visibility">
+                            {% for key, label in visibility_choices.items() %}
+                            <option value="{{ key }}" {% if form_data.get('visibility', 'private') == key %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Özel portföyleri sadece siz görebilirsiniz.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Portföyü Oluştur</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="mb-0">Portföye eklenecek analizler</h6>
+                </div>
+                <div class="card-body" style="max-height: 520px; overflow-y: auto;">
+                    {% if analyses %}
+                    <div class="list-group list-group-flush">
+                        {% for a in analyses %}
+                        <label class="list-group-item d-flex align-items-center gap-3">
+                            <input class="form-check-input flex-shrink-0" type="checkbox" name="analiz_ids" value="{{ a.id }}"
+                                   {% if (a.id|string) in selected or a.id == preselected %}checked{% endif %}>
+                            <span class="flex-grow-1">
+                                <strong>{{ a.il }} / {{ a.ilce }}</strong> – {{ a.mahalle }}
+                                <small class="d-block text-muted">Ada {{ a.ada or '-' }} / Parsel {{ a.parsel or '-' }} · {{ '{:,.0f}'.format(a.metrekare or 0) }} m²</small>
+                            </span>
+                            <span class="text-success text-nowrap">₺{{ '{:,.0f}'.format(a.fiyat or 0) }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">Henüz analiziniz yok. Portföyü şimdi oluşturup analizleri daha sonra ekleyebilirsiniz.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

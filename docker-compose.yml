@@ -10,6 +10,7 @@ services:
       - FLASK_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/arsa_analiz
       - SECRET_KEY=my-secret-key
+      - JWT_SECRET_KEY=my-jwt-secret-key
     volumes:
       - .:/app
     depends_on:

@@ -1,371 +1,208 @@
 {% extends "dashboard_base.html" %}
 
-{% block title %}Portföyler - Arsa Analiz Platformu{% endblock %}
+{% block title %}Portföy - Arsa Analiz Platformu{% endblock %}
 
 {% block page_title %}Portföy Yönetimi{% endblock %}
-{% block page_description %}Tüm kullanıcı analizleri ve portföy görünümü{% endblock %}
+{% block page_description %}Analizleriniz ve sunuma hazır portföyleriniz{% endblock %}
 
 {% block page_actions %}
-<div class="d-flex gap-2">
-    <a href="#" class="btn btn-primary">
+<div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('analysis.new_analysis') }}" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i>Yeni Analiz
     </a>
+    <a href="{{ url_for('portfolio.portfolio_create') }}" class="btn btn-outline-primary">
+        <i class="fas fa-folder-plus me-1"></i>Yeni Portföy
+    </a>
     <div class="dropdown">
-        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
             <i class="fas fa-download me-1"></i>Dışa Aktar
         </button>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#"><i class="fas fa-file-excel me-2"></i>Excel Raporu</a></li>
-            <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i>PDF Raporu</a></li>
-            <li><a class="dropdown-item" href="#"><i class="fas fa-chart-bar me-2"></i>Grafik Raporu</a></li>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('analysis.export_excel') }}"><i class="fas fa-file-excel me-2"></i>Excel Listesi</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('analysis.export_pdf') }}"><i class="fas fa-file-pdf me-2"></i>PDF Listesi</a></li>
         </ul>
     </div>
-    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#filterModal">
-        <i class="fas fa-filter me-1"></i>Gelişmiş Filtre
-    </button>
 </div>
 {% endblock %}
 
 {% block dashboard_content %}
-<!-- Portfolio Stats -->
+<!-- Özet -->
 <div class="row mb-4">
+    {% set cards = [
+        ('fa-chart-line', 'primary', 'Toplam Analiz', stats.toplam_analiz|string),
+        ('fa-map-marker-alt', 'success', 'Farklı Lokasyon', stats.lokasyon|string),
+        ('fa-ruler-combined', 'info', 'Toplam Alan', '{:,.0f} m²'.format(stats.toplam_m2)),
+        ('fa-coins', 'warning', 'Toplam Değer', '₺{:,.0f}'.format(stats.toplam_deger)),
+    ] %}
+    {% for icon, color, label, value in cards %}
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="bg-primary bg-opacity-10 rounded-3 p-3">
-                            <i class="fas fa-chart-line fa-2x text-primary"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Toplam Analiz</h6>
-                        <h3 class="mb-0">{{ analyses|length }}</h3>
-                        <small class="text-success">
-                            <i class="fas fa-arrow-up me-1"></i>Bu ay +12
-                        </small>
-                    </div>
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="bg-{{ color }} bg-opacity-10 rounded-3 p-3 flex-shrink-0">
+                    <i class="fas {{ icon }} fa-2x text-{{ color }}"></i>
+                </div>
+                <div class="ms-3">
+                    <h6 class="text-muted mb-1">{{ label }}</h6>
+                    <h4 class="mb-0">{{ value }}</h4>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="bg-success bg-opacity-10 rounded-3 p-3">
-                            <i class="fas fa-map-marker-alt fa-2x text-success"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Farklı Lokasyon</h6>
-                        <h3 class="mb-0">{{ unique_locations }}</h3>
-                        <small class="text-info">
-                            <i class="fas fa-info-circle me-1"></i>İl/İlçe
-                        </small>
-                    </div>
-                </div>
-            </div>
-        </div>
+    {% endfor %}
+</div>
+
+<!-- Portföyler -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0"><i class="fas fa-folder-open me-2"></i>Portföylerim</h5>
+        <a href="{{ url_for('portfolio.portfolio_create') }}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-plus me-1"></i>Yeni Portföy
+        </a>
     </div>
-    
-    <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="bg-warning bg-opacity-10 rounded-3 p-3">
-                            <i class="fas fa-calculator fa-2x text-warning"></i>
+    <div class="card-body">
+        {% if portfolios %}
+        <div class="row">
+            {% for p in portfolios %}
+            {% set adet = p.analizler.count() %}
+            <div class="col-lg-4 col-md-6 mb-3">
+                <a href="{{ url_for('portfolio.portfolio_detail', portfolio_id=p.id) }}" class="text-decoration-none text-reset">
+                    <div class="card border h-100 analysis-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">{{ p.title }}</h6>
+                                <span class="badge {{ 'bg-success' if p.visibility == 'public' else 'bg-secondary' }}">
+                                    {{ 'Herkese açık' if p.visibility == 'public' else 'Özel' }}
+                                </span>
+                            </div>
+                            {% if p.description %}<p class="text-muted small mb-2">{{ p.description|truncate(90) }}</p>{% endif %}
+                            <small class="text-muted"><i class="fas fa-layer-group me-1"></i>{{ adet }} analiz · {{ p.created_at.strftime('%d.%m.%Y') }}</small>
                         </div>
                     </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Ortalama Değer</h6>
-                        <h3 class="mb-0">₺{{ "{:,.0f}".format(average_value or 0) }}</h3>
-                        <small class="text-muted">
-                            <i class="fas fa-chart-pie me-1"></i>m² başına
-                        </small>
-                    </div>
-                </div>
+                </a>
             </div>
+            {% endfor %}
         </div>
-    </div>
-    
-    <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="bg-info bg-opacity-10 rounded-3 p-3">
-                            <i class="fas fa-users fa-2x text-info"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Aktif Kullanıcı</h6>
-                        <h3 class="mb-0">{{ active_users }}</h3>
-                        <small class="text-success">
-                            <i class="fas fa-user-check me-1"></i>Bu ay
-                        </small>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% else %}
+        <p class="text-muted mb-0">Henüz portföy oluşturmadınız. Birden fazla arsayı bir arada sunmak için analizlerinizi bir portföyde toplayabilirsiniz.</p>
+        {% endif %}
     </div>
 </div>
 
-<!-- Search and Filter -->
+<!-- Filtre -->
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-        <form method="GET" class="row g-3">
+        <form method="GET" action="{{ url_for('portfolio.portfolios_list') }}" class="row g-3 align-items-end">
             <div class="col-md-6">
-                <label class="form-label">
-                    <i class="fas fa-search me-1"></i>Arama
-                </label>
-                <input type="text" name="search" class="form-control" 
-                       placeholder="İl, İlçe, Mahalle, Kullanıcı Adı..." 
-                       value="{{ request.args.get('search', '') }}">
+                <label class="form-label" for="search">Ara</label>
+                <input type="text" class="form-control" id="search" name="search" value="{{ search_term }}"
+                       placeholder="İl, ilçe, mahalle, ada, parsel veya imar durumu">
             </div>
-            <div class="col-md-2">
-                <label class="form-label">
-                    <i class="fas fa-map-marker-alt me-1"></i>İl
-                </label>
-                <select name="il" class="form-select">
-                    <option value="">Tüm İller</option>
+            <div class="col-md-4">
+                <label class="form-label" for="il">İl</label>
+                <select class="form-select" id="il" name="il">
+                    <option value="">Tümü</option>
                     {% for il in unique_ils %}
-                    <option value="{{ il }}" {{ 'selected' if request.args.get('il') == il }}>{{ il }}</option>
+                    <option value="{{ il }}" {% if il == il_filter %}selected{% endif %}>{{ il }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-2">
-                <label class="form-label">
-                    <i class="fas fa-calendar me-1"></i>Tarih
-                </label>
-                <select name="date_filter" class="form-select">
-                    <option value="">Tüm Zamanlar</option>
-                    <option value="today" {{ 'selected' if request.args.get('date_filter') == 'today' }}>Bugün</option>
-                    <option value="week" {{ 'selected' if request.args.get('date_filter') == 'week' }}>Bu Hafta</option>
-                    <option value="month" {{ 'selected' if request.args.get('date_filter') == 'month' }}>Bu Ay</option>
-                    <option value="year" {{ 'selected' if request.args.get('date_filter') == 'year' }}>Bu Yıl</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">&nbsp;</label>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search me-1"></i>Ara
-                    </button>
-                </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i>Filtrele</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Analysis Grid -->
+<!-- Analizler -->
 <div class="card border-0 shadow-sm">
-    <div class="card-header bg-transparent border-0">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-chart-line me-2"></i>Analizler
-            </h5>
-            <div class="d-flex align-items-center gap-3">
-                <span class="text-muted small">
-                    {{ analyses|length }} analiz gösteriliyor
-                </span>
-                <div class="btn-group" role="group">
-                    <input type="radio" class="btn-check" name="view" id="gridView" checked>
-                    <label class="btn btn-outline-secondary btn-sm" for="gridView">
-                        <i class="fas fa-th"></i>
-                    </label>
-                    <input type="radio" class="btn-check" name="view" id="listView">
-                    <label class="btn btn-outline-secondary btn-sm" for="listView">
-                        <i class="fas fa-list"></i>
-                    </label>
-                </div>
-            </div>
-        </div>
+    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0"><i class="fas fa-chart-line me-2"></i>Analizler</h5>
+        <span class="text-muted small">{{ pagination.total }} analiz</span>
     </div>
     <div class="card-body">
         {% if analyses %}
-            <div id="analysisGrid" class="row">
-                {% for analysis in analyses %}
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card border h-100 analysis-card">
-                        <div class="card-header bg-light border-0">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="mb-1">{{ analysis.title or 'Başlıksız Analiz' }}</h6>
-                                    <small class="text-muted">{{ analysis.user.first_name }} {{ analysis.user.last_name }}</small>
-                                </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#">
-                                            <i class="fas fa-eye me-2"></i>Görüntüle
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="#">
-                                            <i class="fas fa-download me-2"></i>İndir
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="#">
-                                            <i class="fas fa-share me-2"></i>Paylaş
-                                        </a></li>
-                                    </ul>
-                                </div>
-                            </div>
+        <div class="row">
+            {% for a in analyses %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border h-100 analysis-card">
+                    <div class="card-header bg-light border-0 d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ a.il }} / {{ a.ilce }}</h6>
+                            <small class="text-muted">{{ a.mahalle }}{% if a.ada or a.parsel %} · Ada {{ a.ada or '-' }} / Parsel {{ a.parsel or '-' }}{% endif %}</small>
                         </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                                    <span class="fw-semibold">{{ analysis.il }}, {{ analysis.ilce }}</span>
-                                </div>
-                                {% if analysis.mahalle %}
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fas fa-location-dot text-muted me-2"></i>
-                                    <span class="text-muted">{{ analysis.mahalle }}</span>
-                                </div>
-                                {% endif %}
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-calendar text-muted me-2"></i>
-                                    <span class="text-muted small">{{ analysis.created_at.strftime('%d.%m.%Y') }}</span>
-                                </div>
-                            </div>
-                            
-                            {% if analysis.description %}
-                            <p class="text-muted small mb-3">{{ analysis.description[:100] }}...</p>
-                            {% endif %}
-                            
-                            <div class="row text-center">
-                                <div class="col-6">
-                                    <div class="border-end">
-                                        <h6 class="text-primary mb-0">{{ analysis.alan or 0 }}</h6>
-                                        <small class="text-muted">m²</small>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <h6 class="text-success mb-0">₺{{ "{:,.0f}".format(analysis.toplam_deger or 0) }}</h6>
-                                    <small class="text-muted">Değer</small>
-                                </div>
-                            </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-label="İşlemler">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('analysis.view_analysis', analysis_id=a.id) }}"><i class="fas fa-eye me-2"></i>Görüntüle</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('analysis.edit_analysis', analysis_id=a.id) }}"><i class="fas fa-pen me-2"></i>Düzenle</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('analysis.generate_pdf_report', analysis_id=a.id) }}"><i class="fas fa-file-pdf me-2"></i>PDF Rapor</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('analysis.generate_word_report', analysis_id=a.id) }}"><i class="fas fa-file-word me-2"></i>Word Rapor</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('portfolio.portfolio_create', analiz_id=a.id) }}"><i class="fas fa-folder-plus me-2"></i>Yeni portföye ekle</a></li>
+                            </ul>
                         </div>
-                        <div class="card-footer bg-transparent border-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-success">Tamamlandı</span>
-                                <a href="#" class="btn btn-sm btn-primary">
-                                    Detaylar <i class="fas fa-arrow-right ms-1"></i>
-                                </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3 small text-muted">
+                            {% if a.imar_durumu %}<span class="badge bg-primary bg-opacity-10 text-primary me-1">{{ a.imar_durumu }}</span>{% endif %}
+                            <i class="fas fa-calendar ms-1 me-1"></i>{{ a.created_at.strftime('%d.%m.%Y') if a.created_at else '' }}
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-4 border-end">
+                                <h6 class="text-primary mb-0">{{ '{:,.0f}'.format(a.metrekare or 0) }}</h6>
+                                <small class="text-muted">m²</small>
+                            </div>
+                            <div class="col-4 border-end">
+                                <h6 class="mb-0">{{ '{:,.0f}'.format((a.fiyat / a.metrekare) if a.metrekare else 0) }}</h6>
+                                <small class="text-muted">₺/m²</small>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="text-success mb-0">₺{{ '{:,.0f}'.format(a.fiyat or 0) }}</h6>
+                                <small class="text-muted">Fiyat</small>
                             </div>
                         </div>
                     </div>
+                    <div class="card-footer bg-transparent border-0 text-end">
+                        <a href="{{ url_for('analysis.view_analysis', analysis_id=a.id) }}" class="btn btn-sm btn-primary">
+                            Detaylar <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
                 </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Sayfalama">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('portfolio.portfolios_list', page=pagination.prev_num, search=search_term, il=il_filter) }}">Önceki</a>
+                </li>
+                {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if p %}
+                    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('portfolio.portfolios_list', page=p, search=search_term, il=il_filter) }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
                 {% endfor %}
-            </div>
-            
-            <!-- List View (Hidden by default) -->
-            <div id="analysisList" class="d-none">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Analiz</th>
-                                <th>Kullanıcı</th>
-                                <th>Konum</th>
-                                <th>Alan</th>
-                                <th>Değer</th>
-                                <th>Tarih</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for analysis in analyses %}
-                            <tr>
-                                <td>
-                                    <div>
-                                        <h6 class="mb-1">{{ analysis.title or 'Başlıksız Analiz' }}</h6>
-                                        <small class="text-muted">{{ analysis.description[:50] if analysis.description else 'Açıklama yok' }}...</small>
-                                    </div>
-                                </td>
-                                <td>{{ analysis.user.first_name }} {{ analysis.user.last_name }}</td>
-                                <td>
-                                    <span class="badge bg-light text-dark">{{ analysis.il }}, {{ analysis.ilce }}</span>
-                                </td>
-                                <td>{{ analysis.alan or 0 }} m²</td>
-                                <td>₺{{ "{:,.0f}".format(analysis.toplam_deger or 0) }}</td>
-                                <td>{{ analysis.created_at.strftime('%d.%m.%Y') }}</td>
-                                <td>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('portfolio.portfolios_list', page=pagination.next_num, search=search_term, il=il_filter) }}">Sonraki</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
         {% else %}
-            <div class="text-center py-5">
-                <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
-                <h5 class="text-muted">Analiz bulunamadı</h5>
-                <p class="text-muted">Henüz hiç analiz oluşturulmamış veya arama kriterlerinize uygun analiz bulunamadı.</p>
-                <a href="#" class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i>İlk Analizi Oluştur
-                </a>
-            </div>
+        <div class="text-center py-5">
+            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+            <h5>{{ 'Aramanıza uygun analiz bulunamadı' if search_term or il_filter else 'Henüz analiz yok' }}</h5>
+            <p class="text-muted">İlk arsa analizinizi oluşturarak başlayın.</p>
+            <a href="{{ url_for('analysis.new_analysis') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Yeni Analiz</a>
+        </div>
         {% endif %}
     </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-.analysis-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.analysis-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.analysis-card .card-header {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-</style>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // View toggle functionality
-    const gridView = document.getElementById('gridView');
-    const listView = document.getElementById('listView');
-    const analysisGrid = document.getElementById('analysisGrid');
-    const analysisList = document.getElementById('analysisList');
-    
-    gridView.addEventListener('change', function() {
-        if (this.checked) {
-            analysisGrid.classList.remove('d-none');
-            analysisList.classList.add('d-none');
-        }
-    });
-    
-    listView.addEventListener('change', function() {
-        if (this.checked) {
-            analysisGrid.classList.add('d-none');
-            analysisList.classList.remove('d-none');
-        }
-    });
-    
-    // Auto-submit form on filter change
-    const filterSelects = document.querySelectorAll('select[name="il"], select[name="date_filter"]');
-    filterSelects.forEach(select => {
-        select.addEventListener('change', function() {
-            this.closest('form').submit();
-        });
-    });
-});
-</script>
 {% endblock %}

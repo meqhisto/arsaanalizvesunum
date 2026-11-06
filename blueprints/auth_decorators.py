@@ -9,7 +9,8 @@ def role_required(*roles): # Birden fazla rol kabul edebilmesi için *roles
         def decorated_function(*args, **kwargs):
             if not current_user.is_authenticated:
                 return redirect(url_for('auth.login', next=request.url))
-            if current_user.role not in roles:
+            # superadmin her role ait sayfalara erisebilir
+            if current_user.role not in roles and current_user.role != 'superadmin':
                 flash(f'Bu sayfaya erişim için gerekli yetkiye sahip değilsiniz ({", ".join(roles)}).', 'danger')
                 return redirect(url_for('main.index'))
             return f(*args, **kwargs)
