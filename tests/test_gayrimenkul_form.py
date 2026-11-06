@@ -257,3 +257,64 @@ def test_yatirimci_alanlari_formda_yok(app, kullanicilar):
 def test_eski_form_adresi_yeni_forma_yonlenir(app, kullanicilar):
     r = istemci(app, kullanicilar['d1']).get('/analysis-form')
     assert r.status_code == 302 and r.headers['Location'].endswith('/analysis/new')
+
+
+def test_duzenleyenin_goremedigi_mevcut_sahip_korunur(app, kullanicilar):
+    c1 = istemci(app, kullanicilar['d1'])
+    olustur(c1, arsa_formu())
+    g = ArsaAnaliz.query.one()
+    cb = istemci(app, kullanicilar['broker'])
+    broker_kontak = cb.post('/analysis/kontak-ekle', json={'ad': 'Hasan', 'telefon': '5550'}).get_json()['id']
+    d1_kontak = kontak(kullanicilar['d1'], 'Mehmet')
+    r = cb.post(f'/analysis/{g.id}/edit', data=arsa_formu(**{
+        'sahip_contact_id[]': [str(broker_kontak)], 'sahip_hisse[]': ['1/2'], 'sahip_irtibat': str(broker_kontak)}))
+    assert r.status_code == 302
+
+    # d1 broker'ın kişisini göremez ama düzenleme formunda salt okunur satır olarak görür
+    html = c1.get(f'/analysis/{g.id}/edit').get_data(as_text=True)
+    assert 'Hasan' in html and f'name="sahip_contact_id[]" value="{broker_kontak}"' in html
+    assert 'ekip kaydı' in html
+    # d1 kaydederken kendi kişisini ekler; broker'ın kişisi korunur
+    r = c1.post(f'/analysis/{g.id}/edit', data=arsa_formu(**{
+        'sahip_contact_id[]': [str(broker_kontak), str(d1_kontak)], 'sahip_hisse[]': ['1/2', '1/2'],
+        'sahip_irtibat': str(broker_kontak)}))
+    assert r.status_code == 302, r.get_data(as_text=True)[:2000]
+    db.session.expire_all()
+    sahipler = {s.contact_id: s for s in db.session.get(ArsaAnaliz, g.id).sahiplikler}
+    assert set(sahipler) == {broker_kontak, d1_kontak}
+    assert sahipler[broker_kontak].irtibat and sahipler[broker_kontak].hisse == '1/2'
+
+
+def test_duzenlemede_ilana_cikar_fiyat_ve_istatistik(app, kullanicilar):
+    from models.arsa_models import DashboardStats
+    c = istemci(app, kullanicilar['d1'])
+    olustur(c, arsa_formu())
+    g = ArsaAnaliz.query.one()
+    r = c.post(f'/analysis/{g.id}/edit', data=arsa_formu(ilana_cikar='1', ilan_teklif_tipi='satilik',
+                                                          ilan_fiyat='2.000.000'))
+    assert r.status_code == 302, r.get_data(as_text=True)[:2000]
+    db.session.expire_all()
+    assert float(db.session.get(ArsaAnaliz, g.id).fiyat) == 2000000
+    assert Ilan.query.one().durum == 'pazarlamada'
+    stats = DashboardStats.query.filter_by(user_id=kullanicilar['d1']).one()
+    assert float(stats.toplam_deger) == 2000000 and stats.en_yuksek_fiyat == 2000000
+
+
+def test_ayni_adli_fotograflar_ezilmez(app, kullanicilar, tmp_path):
+    import io
+    from models.arsa_models import AnalizMedya
+    eski = app.config['UPLOAD_FOLDER']
+    app.config['UPLOAD_FOLDER'] = str(tmp_path)
+    try:
+        c = istemci(app, kullanicilar['d1'])
+        veri = arsa_formu()
+        veri['medya[]'] = [(io.BytesIO(b'a'), 'foto.jpg'), (io.BytesIO(b'b'), 'foto.jpg')]
+        r = c.post('/analysis/create', data=veri, content_type='multipart/form-data')
+        assert r.status_code == 302
+        adlar = [m.filename for m in AnalizMedya.query.all()]
+        assert len(adlar) == 2 and len(set(adlar)) == 2
+        assert all(a.endswith('_foto.jpg') for a in adlar)
+        gid = ArsaAnaliz.query.one().id
+        assert len(list((tmp_path / str(gid)).iterdir())) == 2
+    finally:
+        app.config['UPLOAD_FOLDER'] = eski

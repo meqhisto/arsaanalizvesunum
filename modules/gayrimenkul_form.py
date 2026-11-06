@@ -249,25 +249,33 @@ def kontak_json(c):
     return {'id': c.id, 'ad': f"{c.first_name} {c.last_name}".strip(), 'telefon': c.phone or ''}
 
 
-def sahip_satirlari(veri, user):
-    """Formdaki sahip seçimlerini, görünür kontakların ad/telefonuyla şablona hazırlar."""
+def sahip_satirlari(veri, user, gayrimenkul=None):
+    """Formdaki sahip seçimlerini ad/telefonla şablona hazırlar.
+
+    Görünür kontaklar ve (düzenlemede) gayrimenkulün mevcut sahipleri gösterilir; mevcut sahip
+    düzenleyene görünmüyorsa satır 'salt_okunur' işaretlenir (kaydederken korunur).
+    """
     sahipler = sahipler_formdan(veri)
-    idler = []
+    idler = set()
     for s in sahipler:
         try:
-            idler.append(int(s['contact_id']))
+            idler.add(int(s['contact_id']))
         except ValueError:
             continue
-    kontaklar = {c.id: c for c in gorunur_kontaklar(user).filter(Contact.id.in_(idler))} if idler else {}
+    gorunur = {c.id: c for c in gorunur_kontaklar(user).filter(Contact.id.in_(idler))} if idler else {}
+    mevcut = {}
+    if gayrimenkul is not None and gayrimenkul.id is not None:
+        mevcut = {sh.contact_id: sh.contact for sh in gayrimenkul.sahiplikler}
     satirlar = []
     for s in sahipler:
         try:
-            c = kontaklar.get(int(s['contact_id']))
+            cid = int(s['contact_id'])
         except ValueError:
-            c = None
+            continue
+        c = gorunur.get(cid) or mevcut.get(cid)
         if c is None:
             continue
         satir = kontak_json(c)
-        satir.update(hisse=s['hisse'] or '', irtibat=s['irtibat'])
+        satir.update(hisse=s['hisse'] or '', irtibat=s['irtibat'], salt_okunur=cid not in gorunur)
         satirlar.append(satir)
     return satirlar

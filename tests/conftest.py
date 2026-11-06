@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from flask import g, request_started
 from sqlalchemy.engine import make_url
 
 TEST_VERITABANI_ADI = 'arsa_ilan_test'
@@ -22,10 +23,17 @@ from models.office_models import Office  # noqa: E402
 from models.user_models import User  # noqa: E402
 
 
+def _login_onbellegini_temizle(sender, **kwargs):
+    g.pop('_login_user', None)
+
+
 @pytest.fixture(scope='session')
 def app():
     app = create_app()
     app.config.update(WTF_CSRF_ENABLED=False, TESTING=True)
+    # Test istemcisi açık app context'i (dolayısıyla g'yi) yeniden kullanır; flask_login'in g'de
+    # önbelleklediği kullanıcı önceki istekten/testten kalmasın diye her istek başında temizlenir.
+    request_started.connect(_login_onbellegini_temizle, app)
     with app.app_context():
         db.drop_all()
         db.create_all()
@@ -80,14 +88,4 @@ def giris(client, user_id):
     with client.session_transaction() as s:
         s['_user_id'] = str(user_id)
         s['_fresh'] = True
-    # Test istemcisi oturumdaki app context'i (dolayısıyla g'yi) yeniden kullanır; flask_login'in g'de
-    # önbelleklediği kullanıcı önceki istekten/testten kalmasın diye her istekte temizlenir.
-    asil_open = client.open
-
-    def open_(*args, **kwargs):
-        from flask import g
-        g.pop('_login_user', None)
-        return asil_open(*args, **kwargs)
-
-    client.open = open_
     return client

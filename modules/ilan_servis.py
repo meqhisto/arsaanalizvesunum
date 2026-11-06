@@ -300,13 +300,16 @@ def sahipleri_kaydet(gayrimenkul, user, sahipler):
         except (KeyError, TypeError, ValueError):
             raise IlanHatasi("Seçilen müşteri bulunamadı.")
         istenen[cid] = s
-    if istenen:
-        bulunan = {cid for (cid,) in gorunur_kontaklar(user).filter(Contact.id.in_(istenen))
+    mevcut = {s.contact_id: s for s in gayrimenkul.sahiplikler}
+    # Zaten sahip olan kişiler düzenleyen göremese de korunur (ör. broker'ın eklediği kişi);
+    # yeni eklenenler görünür olmalı.
+    yeniler = set(istenen) - set(mevcut)
+    if yeniler:
+        bulunan = {cid for (cid,) in gorunur_kontaklar(user).filter(Contact.id.in_(yeniler))
                    .with_entities(Contact.id)}
-        if bulunan != set(istenen):
+        if bulunan != yeniler:
             raise IlanHatasi("Seçilen müşteri bulunamadı.")
 
-    mevcut = {s.contact_id: s for s in gayrimenkul.sahiplikler}
     yeni = []
     for cid, s in istenen.items():
         kayit = mevcut.get(cid) or GayrimenkulSahibi(contact_id=cid)

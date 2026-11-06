@@ -54,7 +54,7 @@ def _gayrimenkul_formu(gayrimenkul, veri, hatalar=None):
     from modules import gayrimenkul_sabitleri as sabit
     baslik = 'Gayrimenkulü düzenle' if gayrimenkul else 'Yeni gayrimenkul'
     return render_template('gayrimenkul/form.html', gayrimenkul=gayrimenkul, v=veri, hatalar=hatalar or [],
-                           sahipler=sahip_satirlari(veri, current_user), sabit=sabit, title=baslik)
+                           sahipler=sahip_satirlari(veri, current_user, gayrimenkul), sabit=sabit, title=baslik)
 
 
 def _medyalari_kaydet(gayrimenkul, dosyalar):
@@ -67,6 +67,7 @@ def _medyalari_kaydet(gayrimenkul, dosyalar):
         if not ad or '.' not in ad:
             continue
         uzanti = ad.rsplit('.', 1)[1].lower()
+        ad = f"{uuid.uuid4().hex[:8]}_{ad}"  # aynı adlı yüklemeler birbirini ezmesin
         klasor = os.path.join(current_app.config['UPLOAD_FOLDER'], str(gayrimenkul.id))
         os.makedirs(klasor, exist_ok=True)
         dosya.save(os.path.join(klasor, ad))
@@ -512,7 +513,11 @@ def edit_analysis(analysis_id):
     hatalar = formdan_gayrimenkul(request.form, gayrimenkul)
     if not hatalar:
         try:
-            _sahipler_ve_ilan(gayrimenkul, request.form)
+            eski_fiyat = gayrimenkul.fiyat
+            ilan = _sahipler_ve_ilan(gayrimenkul, request.form)
+            if ilan is not None and ilan.teklif_tipi == 'satilik' and ilan.fiyat is not None:
+                gayrimenkul.fiyat = ilan.fiyat
+                _istatistik_fiyat_degisti(gayrimenkul, eski_fiyat)
             db.session.commit()
         except IlanHatasi as e:
             hatalar = [str(e)]
@@ -719,6 +724,30 @@ def _istatistiklere_ekle(gayrimenkul):
     bolge.analiz_sayisi = (bolge.analiz_sayisi or 0) + 1
     bolge.toplam_deger = (bolge.toplam_deger or Decimal(0)) + fiyat
     bolge.son_guncelleme = datetime.utcnow()
+
+
+def _istatistik_fiyat_degisti(gayrimenkul, eski_fiyat):
+    """Kayıtlı gayrimenkulün fiyatı değişince panel/bölge istatistiklerini düzeltir (commit etmez)."""
+    fark = Decimal(str(gayrimenkul.fiyat or 0)) - Decimal(str(eski_fiyat or 0))
+    if not fark:
+        return
+    user_id = gayrimenkul.user_id
+    stats = DashboardStats.query.filter_by(user_id=user_id).first()
+    if stats:
+        db.session.flush()
+        sayi, en_yuksek, en_dusuk = (db.session.query(db.func.count(ArsaAnaliz.id), db.func.max(ArsaAnaliz.fiyat),
+                                                       db.func.min(ArsaAnaliz.fiyat))
+                                     .filter(ArsaAnaliz.user_id == user_id).one())
+        stats.toplam_deger = (stats.toplam_deger or Decimal(0)) + fark
+        if sayi:
+            stats.ortalama_fiyat = float(stats.toplam_deger) / sayi
+            stats.en_yuksek_fiyat = float(en_yuksek or 0)
+            stats.en_dusuk_fiyat = float(en_dusuk or 0)
+        stats.son_guncelleme = datetime.utcnow()
+    bolge = BolgeDagilimi.query.filter_by(user_id=user_id, il=gayrimenkul.il).first()
+    if bolge:
+        bolge.toplam_deger = (bolge.toplam_deger or Decimal(0)) + fark
+        bolge.son_guncelleme = datetime.utcnow()
 
 
 @analysis_bp.route('/create', methods=['POST'])
