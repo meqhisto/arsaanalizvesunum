@@ -51,3 +51,6 @@ def init_db_models(app):
         print("Veritabanı tabloları (models/__init__.py üzerinden) başarıyla oluşturuldu!")
         from modules.is_takip_kurulum import kur as is_takip_kur
         is_takip_kur()
+        # gunicorn --preload: açılışta ana süreçte açılan bağlantılar worker'lara kopyalanmasın
+        # (SSL'li uzak bağlantılarda "decryption failed or bad record mac" hatasına yol açar)
+        db.engine.dispose()

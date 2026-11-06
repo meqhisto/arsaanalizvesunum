@@ -107,6 +107,14 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
 
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # Uzak veritabanı (ör. Supabase pooler) için: kopmuş bağlantıyı kullanmadan önce yakala,
+    # bağlantıları periyodik yenile ve worker başına havuzu küçük tut.
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_recycle": int(os.environ.get("DB_POOL_RECYCLE", "280")),
+        "pool_size": int(os.environ.get("DB_POOL_SIZE", "3")),
+        "max_overflow": int(os.environ.get("DB_MAX_OVERFLOW", "2")),
+    }
 
     # Secret key from environment (required for security)
     secret_key = os.environ.get("SECRET_KEY")
