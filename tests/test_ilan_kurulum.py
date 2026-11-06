@@ -103,3 +103,48 @@ def test_portfoyden_cikarilan_ilan_geri_eklenmez(db_session, kullanicilar):
     p.ilanlar.remove(Ilan.query.one()); db.session.commit()
     kur()
     assert p.ilanlar.count() == 0
+
+
+def _sql_kaydet():
+    """Motor üzerinden çalışan SQL ifadelerini toplayan dinleyici (kaldırıcı ile birlikte)."""
+    from sqlalchemy import event
+    ifadeler = []
+
+    def dinle(conn, cursor, statement, parameters, context, executemany):
+        ifadeler.append(statement)
+    event.listen(db.engine, 'before_cursor_execute', dinle)
+    return ifadeler, lambda: event.remove(db.engine, 'before_cursor_execute', dinle)
+
+
+def test_kur_sutunlar_tamsa_alter_calistirmaz(db_session, kullanicilar):
+    kur()
+    ifadeler, kaldir = _sql_kaydet()
+    try:
+        kur()
+    finally:
+        kaldir()
+    assert not [s for s in ifadeler if 'ALTER TABLE' in s or 'CREATE INDEX' in s or 'lock_timeout' in s]
+
+
+def test_kur_eksik_sutunda_once_lock_timeout(db_session, kullanicilar):
+    db.session.execute(db.text("ALTER TABLE arsa_analizleri DROP COLUMN kimden"))
+    db.session.commit()
+    ifadeler, kaldir = _sql_kaydet()
+    try:
+        kur()
+    finally:
+        kaldir()
+    alter = [i for i, s in enumerate(ifadeler) if 'ALTER TABLE' in s]
+    kilit = [i for i, s in enumerate(ifadeler) if "SET LOCAL lock_timeout = '10s'" in s]
+    assert alter and kilit and kilit[0] < alter[0]
+    from sqlalchemy import inspect
+    db.session.remove()
+    assert 'kimden' in {c['name'] for c in inspect(db.engine).get_columns('arsa_analizleri')}
+
+
+def test_gecis_ilan_basligi_200_karakterle_sinirli(db_session, kullanicilar):
+    a = eski_analiz(kullanicilar['broker'], mahalle='M' * 100, ilce='I' * 50, ada='1' * 20, parsel='2' * 20)
+    assert len(a.baslik_metni) > 200
+    kur()
+    i = Ilan.query.one()
+    assert i.baslik == a.baslik_metni[:200]

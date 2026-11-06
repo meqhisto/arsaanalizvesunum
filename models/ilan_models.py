@@ -26,7 +26,8 @@ class GayrimenkulSahibi(db.Model):
     __table_args__ = (db.UniqueConstraint('gayrimenkul_id', 'contact_id', name='uq_gayrimenkul_sahibi'),)
 
     gayrimenkul = db.relationship('ArsaAnaliz', back_populates='sahiplikler')
-    contact = db.relationship('Contact', backref=db.backref('sahiplikler', lazy=True, passive_deletes=True))
+    contact = db.relationship('Contact', backref=db.backref('sahiplikler', lazy=True,
+                                                         cascade='all, delete-orphan', passive_deletes=True))
 
 
 class Ilan(db.Model):

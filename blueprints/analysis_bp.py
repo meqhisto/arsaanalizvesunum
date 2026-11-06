@@ -575,6 +575,9 @@ def _analizi_sil(analiz):
         pass
     # Portföy bağlantıları (iş takip kayıtlarındaki bağlantı veritabanında SET NULL olur)
     db.session.execute(portfolio_arsalar.delete().where(portfolio_arsalar.c.arsa_id == analiz.id))
+    # İlanlar: tek gayrimenkullü ilan silinir, çok gayrimenkulden yalnız bağ çıkar
+    from modules.ilan_servis import gayrimenkul_silinirken
+    gayrimenkul_silinirken(analiz)
     db.session.delete(analiz)
 
 

@@ -18,11 +18,12 @@ import logging
 from datetime import datetime
 from decimal import ROUND_HALF_UP, Decimal
 
-from sqlalchemy import Text, cast, or_, text
+from sqlalchemy import Text, cast, inspect, or_, text
 
 from models import db
 from models.arsa_models import ArsaAnaliz
 from models.ilan_models import Ilan, IlanGayrimenkul, KurulumIsareti
+from modules.ilan_servis import yeni_ilan_kodu
 from modules.rapor.model import parse_altyapi
 
 log = logging.getLogger(__name__)
@@ -53,28 +54,31 @@ ARSA_SUTUNLARI = [
 ]
 
 
+def _sema_tamam_mi():
+    """Hedef sütunlar ve indeks zaten var mı? (Varsa ALTER hiç çalıştırılmaz: kilit beklemesi olmasın.)"""
+    ins = inspect(db.session.connection())
+    arsa = {c['name'] for c in ins.get_columns('arsa_analizleri')}
+    if not {ad for ad, _ in ARSA_SUTUNLARI} <= arsa:
+        return False
+    if 'ilan_id' not in {c['name'] for c in ins.get_columns('crm_deals')}:
+        return False
+    return 'ix_crm_deals_ilan_id' in {i['name'] for i in ins.get_indexes('crm_deals')}
+
+
 def _sutunlari_ekle():
     if db.engine.dialect.name != 'postgresql':
         log.warning("İlan kurulumu: yeni sütunlar sadece PostgreSQL'de otomatik eklenir; "
                     "diğer veritabanlarında arsa_analizleri ve crm_deals.ilan_id sütunlarını elle ekleyin.")
         return
+    if _sema_tamam_mi():
+        return
+    # Üretimde açılış bir tablo kilidini sonsuza dek beklemesin
+    db.session.execute(text("SET LOCAL lock_timeout = '10s'"))
     for ad, tip in ARSA_SUTUNLARI:
         db.session.execute(text(f"ALTER TABLE arsa_analizleri ADD COLUMN IF NOT EXISTS {ad} {tip}"))
     db.session.execute(text("ALTER TABLE crm_deals ADD COLUMN IF NOT EXISTS ilan_id INTEGER "
                             "REFERENCES ilanlar(id) ON DELETE SET NULL"))
     db.session.execute(text("CREATE INDEX IF NOT EXISTS ix_crm_deals_ilan_id ON crm_deals (ilan_id)"))
-
-
-def _yeni_kod(yil):
-    """ILN-YYYY-NNNN: o yılın en büyük sıra numarası + 1. (Task 3'te ilan_servis'e taşınacak.)"""
-    onek = f"ILN-{yil}-"
-    en_buyuk = 0
-    for (kod,) in db.session.query(Ilan.kod).filter(Ilan.kod.like(f"{onek}%")):
-        try:
-            en_buyuk = max(en_buyuk, int(kod[len(onek):]))
-        except ValueError:
-            continue
-    return f"{onek}{en_buyuk + 1:04d}"
 
 
 def donustur(a):
@@ -102,12 +106,12 @@ def _ilanlari_olustur():
     yil = datetime.utcnow().year
     ilansizlar = ArsaAnaliz.query.filter(~ArsaAnaliz.ilan_baglari.any()).order_by(ArsaAnaliz.id).all()
     for a in ilansizlar:
-        ilan = Ilan(kod=_yeni_kod(yil), baslik=a.baslik_metni, teklif_tipi='satilik', durum='pazarlamada',
+        ilan = Ilan(kod=yeni_ilan_kodu(yil), baslik=a.baslik_metni[:200], teklif_tipi='satilik', durum='pazarlamada',
                     fiyat=a.fiyat, bolge_m2_fiyat_elle=donustur(a), office_id=a.office_id,
                     user_id=a.user_id, sorumlu_user_id=a.user_id)
         ilan.baglar.append(IlanGayrimenkul(gayrimenkul=a, ana_kayit=True, sira=1))
         db.session.add(ilan)
-        db.session.flush()  # sonraki _yeni_kod bu kodu görsün
+        db.session.flush()  # sonraki yeni_ilan_kodu bu kodu görsün
     if ilansizlar:
         log.info("İlan kurulumu: %d gayrimenkul için ilan oluşturuldu.", len(ilansizlar))
 
