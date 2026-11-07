@@ -79,6 +79,25 @@ Geciken ve yaklaşan adımlar için bildirimler günde bir kez üretilir. Sunucu
 0 8 * * * cd /opt/arsaanalizvesunum && docker compose -f docker-compose.server.yml exec -T web flask --app "app:create_app()" is-takip hatirlat >> /var/log/is-takip-hatirlat.log 2>&1
 ```
 
+## Gayrimenkul ve İlanlar
+
+Kayıtlar iki katmanlıdır: **gayrimenkul** (fiziksel mülk: arsa, tarla, konut, işyeri, bina; tabloda `arsa_analizleri`)
+ve **ilan** (`/ilanlar`; satılık, kiralık ya da kat karşılığı teklif). Bir ilan birden çok gayrimenkulü içerebilir
+(ör. aynı sahibin komşu parsellerinden kat karşılığı ilanı); bir gayrimenkul aynı anda yalnız bir aktif
+(pazarlamada / opsiyonlu) ilanda olabilir.
+
+- Gayrimenkul ekranları `/analysis` altında kalır (eski bağlantılar çalışır); form türe göre alanları gösterir,
+  mal sahipleri CRM müşterilerinden hisseleriyle seçilir ve "Hemen ilana çıkar" ile ilan aynı anda açılabilir.
+- Fiyat, kira, bölge m² fiyatı, emsaller ve kat karşılığı şartları ilandadır. Raporlar ilandan üretilir
+  (`/ilanlar/<id>/rapor/<pdf|word|pptx>`); eski gayrimenkul rapor adresleri aktif ilan varsa onun raporuna yönlenir,
+  yoksa fiyatsız tanıtım raporu üretir. Raporlarda mal sahibi bilgisi yer almaz.
+- Portföyler ilan içerir; CRM fırsatları bir ilana bağlanabilir, müşteri detayında sahip olduğu gayrimenkuller görünür.
+- Açılışta `modules/ilan_kurulum.py` yeni sütunları ekler ve mevcut veriyi bir kez dönüştürür (her gayrimenkul için
+  tek gayrimenkullü satılık ilan, eski bölge fiyatı → m² fiyatı, portföy bağları); işaret `kurulum_isaretleri`
+  tablosundaki `ilan_gecisi_v1` satırıdır. Canlıya almadan önce Supabase yedeği alınmalıdır.
+- REST API (`/api/v1/analysis`) geriye dönük uyumludur; yanıtlara salt-okunur `tur`, `alt_tur`, `baslik` ve
+  `aktif_ilan` (`{kod, teklif_tipi, durum, fiyat}` ya da `null`) eklenmiştir.
+
 ## Raporlar (PDF / Word / PowerPoint)
 
 Rapor üretimi `modules/rapor/` paketindedir: `model.py` tüm hesapları bir kez yapar, `assets.py` grafik, konum haritası
