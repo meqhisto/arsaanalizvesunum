@@ -7,6 +7,7 @@ from sqlalchemy import or_, exists, and_
 from sqlalchemy.exc import IntegrityError
 
 from models import db
+from modules.istek_onbellegi import istek_onbellegi
 from models.user_models import User
 from models.crm_models import Task
 from models.is_takip_models import (
@@ -25,6 +26,10 @@ def yonetici_mi(user):
 
 def _ekip_idleri(user):
     """Broker'ın sorumlu olduğu kullanıcılar: kendisi + astları + (varsa) aynı ofistekiler."""
+    return set(istek_onbellegi(('is_ekip_idleri', user.id), lambda: _ekip_idlerini_hesapla(user)))
+
+
+def _ekip_idlerini_hesapla(user):
     ids = {user.id}
     ids.update(u.id for u in user.subordinates)
     if user.office_id:
@@ -48,7 +53,8 @@ def gorunur_isler(user):
 
 
 def gorebilir(user, is_kaydi):
-    return gorunur_isler(user).filter(Is.id == is_kaydi.id).first() is not None
+    return istek_onbellegi(('is_gorebilir', user.id, is_kaydi.id),
+                           lambda: gorunur_isler(user).filter(Is.id == is_kaydi.id).first() is not None)
 
 
 def yonetebilir(user, is_kaydi):

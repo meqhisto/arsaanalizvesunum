@@ -238,27 +238,11 @@ def index():
     user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
     
     # --- Mevcut Arsa Analiz Verileri ve İstatistikler ---
-    arsa_bolge_dagilimi = db.session.query(
-        ArsaAnaliz.il,
-        db.func.count(ArsaAnaliz.id).label('analiz_sayisi')
-    ).filter(
-        ArsaAnaliz.user_id == user_id
-    ).group_by(
-        ArsaAnaliz.il
-    ).order_by(
-        db.func.count(ArsaAnaliz.id).desc()
-    ).all()
-
-    grafik_bolge_labels = [b.il for b in arsa_bolge_dagilimi]
-    grafik_bolge_data_sayi = [b.analiz_sayisi for b in arsa_bolge_dagilimi]
-    
-    # Önce toplam değerleri hesaplayalım
-    toplam_arsa_degeri = (
-        db.session.query(db.func.sum(ArsaAnaliz.fiyat))
-        .filter_by(user_id=user_id)
-        .scalar() or Decimal(0)
-    )
-    toplam_arsa_sayisi = ArsaAnaliz.query.filter_by(user_id=user_id).count()
+    # Toplam değer ve sayı tek sorguda (uzak veritabanında her sorgu ~50 ms)
+    toplam_arsa_degeri, toplam_arsa_sayisi = db.session.query(
+        db.func.coalesce(db.func.sum(ArsaAnaliz.fiyat), 0), db.func.count(ArsaAnaliz.id)
+    ).filter(ArsaAnaliz.user_id == user_id).one()
+    toplam_arsa_degeri = Decimal(toplam_arsa_degeri or 0)
     
     stats = DashboardStats.query.filter_by(user_id=user_id).first()
     if not stats: # Eğer kullanıcı için istatistik yoksa oluştur
@@ -298,15 +282,22 @@ def index():
     son_alti_ay_analiz = []
     aylik_analiz_sayilari_arsa = []
     current_date = datetime.utcnow()
+    # Son 6 ayın kayıt sayıları tek sorguda
+    ilk_ay_offset = current_date.month - 1 - 5
+    ilk_ay = datetime(current_date.year + (ilk_ay_offset // 12), (ilk_ay_offset % 12) + 1, 1)
+    yil_ifadesi = db.extract("year", ArsaAnaliz.created_at)
+    ay_ifadesi = db.extract("month", ArsaAnaliz.created_at)
+    aylik_sayim = {
+        (int(yil), int(ay)): sayi
+        for yil, ay, sayi in db.session.query(yil_ifadesi, ay_ifadesi, db.func.count(ArsaAnaliz.id))
+        .filter(ArsaAnaliz.user_id == user_id, ArsaAnaliz.created_at >= ilk_ay)
+        .group_by(yil_ifadesi, ay_ifadesi)
+    }
     for i in range(6):
         month_offset = current_date.month - 1 - i
         target_year = current_date.year + (month_offset // 12)
         target_month = (month_offset % 12) + 1
-        ay_analiz_sayisi = ArsaAnaliz.query.filter(
-            ArsaAnaliz.user_id == user_id,
-            db.extract("year", ArsaAnaliz.created_at) == target_year,
-            db.extract("month", ArsaAnaliz.created_at) == target_month,
-        ).count()
+        ay_analiz_sayisi = aylik_sayim.get((target_year, target_month), 0)
         ay_isimleri = {1: "Oca", 2: "Şub", 3: "Mar", 4: "Nis", 5: "May", 6: "Haz", 7: "Tem", 8: "Ağu", 9: "Eyl", 10: "Eki", 11: "Kas", 12: "Ara"}
         son_alti_ay_analiz.insert(0, f"{ay_isimleri[target_month]} {str(target_year)[-2:]}")
         aylik_analiz_sayilari_arsa.insert(0, ay_analiz_sayisi)

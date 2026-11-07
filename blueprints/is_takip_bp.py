@@ -12,12 +12,14 @@ from flask import (Blueprint, render_template, request, redirect, url_for, flash
                    send_file, current_app)
 from flask_login import login_required, current_user
 
+from sqlalchemy.orm import selectinload
+
 from models import db
 from models.user_models import User, Portfolio
 from models.crm_models import Task, Contact, Deal
 from models.arsa_models import ArsaAnaliz
 from models.is_takip_models import (
-    Is, IsSablonu, IsSablonAdimi, IsBelgesi, IsMasrafi, Bildirim,
+    Is, IsSablonu, IsSablonAdimi, IsBelgesi, IsMasrafi, IsAktivitesi, Bildirim,
     IS_DURUMLARI, IS_ACIK_DURUMLAR, IS_ONCELIKLERI, IS_TURLERI, BELGE_TURLERI, MASRAF_KALEMLERI,
     ODEME_DURUMLARI, GOREV_TAMAMLANDI, GOREV_IPTAL,
 )
@@ -142,8 +144,13 @@ def _filtreli_isler():
 def pano():
     q, filtre = _filtreli_isler()
     gorunum = request.args.get('gorunum', 'pano')
-    isler = q.order_by(Is.updated_at.desc()).all()
-    ozetler = {i.id: i.adim_ozeti() for i in isler}
+    isler = q.options(selectinload(Is.contact), selectinload(Is.sorumlu)).order_by(Is.updated_at.desc()).all()
+    # Tüm işlerin adımları tek sorguda (iş başına ayrı sorgu yerine)
+    adim_gruplari = {i.id: [] for i in isler}
+    if isler:
+        for adim in Task.query.filter(Task.is_id.in_(list(adim_gruplari))):
+            adim_gruplari[adim.is_id].append(adim)
+    ozetler = {i.id: i.adim_ozeti(adim_gruplari[i.id]) for i in isler}
     sutunlar = {d: [i for i in isler if i.durum == d] for d in PANO_DURUMLARI}
     return render_template('is_takip/pano.html', isler=isler, sutunlar=sutunlar, ozetler=ozetler,
                            filtre=filtre, gorunum=gorunum, durumlar=IS_DURUMLARI, pano_durumlari=PANO_DURUMLARI,
@@ -254,18 +261,19 @@ def yeni():
 @login_required
 def detay(is_id):
     is_kaydi = _is_or_404(is_id)
-    adimlar = is_kaydi.adimlar.order_by(Task.sira, Task.id).all()
+    adimlar = is_kaydi.adimlar.options(selectinload(Task.assigned_user)).order_by(Task.sira, Task.id).all()
     yonetici = servis.yonetebilir(current_user, is_kaydi)
-    belgeler = is_kaydi.belgeler.all()
+    belgeler = is_kaydi.belgeler.options(selectinload(IsBelgesi.yukleyen)).all()
     return render_template(
         'is_takip/detay.html', is_kaydi=is_kaydi, adimlar=adimlar, ozet=is_kaydi.adim_ozeti(),
         masraf=is_kaydi.masraf_ozeti(), belgeler=belgeler, masraflar=is_kaydi.masraflar.all(),
-        aktiviteler=is_kaydi.aktiviteler.limit(100).all(), yonetici=yonetici,
+        aktiviteler=is_kaydi.aktiviteler.options(selectinload(IsAktivitesi.user)).limit(100).all(), yonetici=yonetici,
         kullanicilar=servis.atanabilir_kullanicilar(current_user) if yonetici else [],
         durumlar=IS_DURUMLARI, oncelikler=IS_ONCELIKLERI, turler=IS_TURLERI, belge_turleri=BELGE_TURLERI,
         masraf_kalemleri=MASRAF_KALEMLERI, odeme_durumlari=ODEME_DURUMLARI,
         simdi=datetime.utcnow(), bugun=date.today(), GOREV_TAMAMLANDI=GOREV_TAMAMLANDI,
-        adimi_guncelleyebilir=lambda a: servis.adimi_guncelleyebilir(current_user, is_kaydi, a),
+        # yonetici bir kez hesaplandı; adım başına yetki sorgusu atma
+        adimi_guncelleyebilir=lambda a: yonetici or a.assigned_to_user_id == current_user.id,
         kullanici_adi=servis.kullanici_adi, aktif_sekme=request.args.get('sekme', 'adimlar'),
         **(_baglanti_secenekleri() if yonetici else {}))
 
