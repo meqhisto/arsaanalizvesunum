@@ -1,10 +1,14 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
 
 {% block title %}Profil - {{ user.ad }} {{ user.soyad }}{% endblock %}
 
-{% block main_class %}with-sidebar{% endblock %}
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/unified-bootstrap-tailwind.css') }}" rel="stylesheet">
+{% endblock %}
+{% block page_title %}Profil{% endblock %}
+{% block page_description %}Hesap bilgileriniz{% endblock %}
 
-{% block content %}
+{% block dashboard_content %}
     <!-- Breadcrumb Navigation -->
     <nav aria-label="breadcrumb" class="mb-6">
         <ol class="flex space-x-2 text-sm text-gray-600">
