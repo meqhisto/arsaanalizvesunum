@@ -220,3 +220,28 @@ def test_detay_para_tr_currency_ve_gorunmeyen_ilan_linksiz(app, kullanicilar):
     assert '1.500 TL' in sayfa and '₺' not in sayfa
     assert f'/ilanlar/{gorunur.id}"' in sayfa
     assert 'ILN-2026-0002' in sayfa and f'/ilanlar/{baskasi.id}"' not in sayfa
+
+
+def test_panel_aktivite_metni_gayrimenkul_kaydi(app, kullanicilar):
+    from conftest import giris
+    from models import db
+    from models.arsa_models import ArsaAnaliz
+    g = ArsaAnaliz(user_id=kullanicilar['d1'], il='Çanakkale', ilce='Merkez', mahalle='Kepez', metrekare=100,
+                   fiyat=0, tur='arsa')
+    db.session.add(g)
+    db.session.commit()
+    from flask import template_rendered
+    baglamlar = []
+
+    def kaydet(sender, template, context, **extra):
+        if template.name == 'new_index.html':
+            baglamlar.append(context)
+    template_rendered.connect(kaydet, app)
+    try:
+        r = giris(app.test_client(), kullanicilar['d1']).get('/index')
+    finally:
+        template_rendered.disconnect(kaydet, app)
+    assert r.status_code == 200 and baglamlar
+    # Görünüm aktiviteleri 'recent_contacts' adıyla verir (new_index.html şu an göstermiyor)
+    mesajlar = [a['mesaj'] for a in baglamlar[0]['recent_contacts']]
+    assert mesajlar == ['Çanakkale, Merkez bölgesinde yeni gayrimenkul kaydı oluşturuldu.']

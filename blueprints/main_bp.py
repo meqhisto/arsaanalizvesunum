@@ -284,7 +284,7 @@ def index():
         son_aktiviteler_listesi.append(
             {
                 "tarih": analiz.created_at,
-                "mesaj": f"{analiz.il}, {analiz.ilce} bölgesinde yeni arsa analizi oluşturuldu.",
+                "mesaj": f"{analiz.il}, {analiz.ilce} bölgesinde yeni gayrimenkul kaydı oluşturuldu.",
                 "url": url_for('analysis.view_analysis', analysis_id=analiz.id), # 'analysis' blueprint'i
                 "tip": "analiz" 
             }

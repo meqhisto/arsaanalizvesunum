@@ -160,7 +160,8 @@
             </div>
             <div class="mb-3">
                 <label class="form-label" for="aciklama">Açıklama</label>
-                <textarea class="form-control" id="aciklama" name="aciklama" rows="5">{{ v.get('aciklama') or '' }}</textarea>
+                <textarea class="form-control" id="aciklama" name="aciklama" rows="5" aria-describedby="aciklamaYardim">{{ v.get('aciklama') or '' }}</textarea>
+                <div class="form-text" id="aciklamaYardim">Raporlarda görünür — mal sahibi bilgisi yazmayın.</div>
             </div>
             <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Kaydet</button>
         </div>

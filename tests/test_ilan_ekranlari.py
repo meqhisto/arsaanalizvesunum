@@ -342,3 +342,13 @@ def test_bagli_firsatlar_gorunurluge_gore(app, kullanicilar):
     assert 'D1 fırsatı' in d1 and 'D2 fırsatı' not in d1 and 'DX fırsatı' not in d1
     br = html(istemci(app, k['broker']).get(f'/ilanlar/{i.id}'))
     assert 'D1 fırsatı' in br and 'D2 fırsatı' in br and 'DX fırsatı' not in br
+
+
+def test_ilan_detayindan_firsat_ekle(app, kullanicilar):
+    g = daire(kullanicilar['d1'])
+    i = ilan([g], fiyat=1)
+    c = istemci(app, kullanicilar['d1'])
+    sayfa = html(c.get(f'/ilanlar/{i.id}'))
+    assert f'/crm/deal/new?ilan_id={i.id}' in sayfa and 'Bu ilana fırsat ekle' in sayfa
+    form_sayfasi = html(c.get(f'/crm/deal/new?ilan_id={i.id}'))
+    assert f'<option value="{i.id}" selected>' in form_sayfasi
