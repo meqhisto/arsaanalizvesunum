@@ -23,7 +23,7 @@
       const binlik = gruplar[gruplar.length - 1].length === 3 && ilk !== '0' && (gruplar.length > 2 || haneler > 3);
       if (binlik) s = s.replace(/\./g, '');
     }
-    if (!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return null;
+    if (!/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return null;
     const n = parseFloat(s);
     return isFinite(n) ? n : null;
   }
@@ -58,8 +58,6 @@
   function satirDurumu(satir) {
     const kutu = satir.querySelector('input[name="gayrimenkul_id[]"]');
     const secili = kutu.checked;
-    // Seçilmeyen satırın parsel fiyatı gönderilmez; gayrimenkul_id[] ile parsel_fiyati[] hizalı kalır
-    satir.querySelector('input[name="parsel_fiyati[]"]').disabled = !secili;
     const ana = satir.querySelector('input[name="ana_gayrimenkul_id"]');
     ana.disabled = !secili;
     if (!secili) ana.checked = false;
@@ -117,8 +115,10 @@
     orta.className = 'col-7 col-md-3';
     const fiyat = document.createElement('input');
     fiyat.className = 'form-control form-control-sm'; fiyat.name = 'parsel_fiyati[]'; fiyat.inputMode = 'decimal';
-    fiyat.placeholder = 'Parsel fiyatı (TL)'; fiyat.setAttribute('aria-label', 'Parsel fiyatı'); fiyat.disabled = true;
-    orta.appendChild(fiyat);
+    fiyat.placeholder = 'Parsel fiyatı (TL)'; fiyat.setAttribute('aria-label', 'Parsel fiyatı');
+    const fiyatId = document.createElement('input');
+    fiyatId.type = 'hidden'; fiyatId.name = 'parsel_gayrimenkul_id[]'; fiyatId.value = g.id;
+    orta.append(fiyatId, fiyat);
 
     const sag = document.createElement('div');
     sag.className = 'col-5 col-md-2';

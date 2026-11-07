@@ -10,6 +10,13 @@ def test_tutar_ayristir_turkce():
     assert tutar_ayristir("") is None and tutar_ayristir(None) is None and tutar_ayristir("abc") is None
 
 
+def test_tutar_ayristir_sonlu_ve_duz_sayi():
+    for metin in ("nan", "NaN", "inf", "-inf", "Infinity", "1e3", "1E3", "1_000", "+-5", "--5", "1.2.3,4,5"):
+        assert tutar_ayristir(metin) is None, metin
+    assert tutar_ayristir("-1.250,5") == -1250.5 and tutar_ayristir("+50") is None
+    assert tutar_ayristir("-12") == -12 and tutar_ayristir("0,5") == 0.5 and tutar_ayristir(".5") == 0.5
+
+
 def test_insaat_hakki_toplar():
     p = [{'m2': 1000, 'kaks': 1.5}, {'m2': 800, 'kaks': 2.0}]
     assert toplam_m2(p) == 1800

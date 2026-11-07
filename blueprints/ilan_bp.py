@@ -68,6 +68,15 @@ def kart_ozeti(i):
     return ' · '.join(parcalar)
 
 
+def gorunur_firsatlar(i, user):
+    """İlana bağlı, kullanıcının görebildiği fırsatlar (sahibi; broker için ekibi; superadmin hepsi)."""
+    sorgu = i.firsatlar
+    idler = gorunur_kullanici_idleri(user)
+    if idler is not None:
+        sorgu = sorgu.filter(Deal.user_id.in_(idler))
+    return sorgu.order_by(Deal.created_at.desc(), Deal.id.desc()).all()
+
+
 def silebilir_mi(i, user):
     """Oluşturan, oluşturanın broker'ı (ekibi) ve superadmin; yalnız sorumlu olan silemez."""
     idler = gorunur_kullanici_idleri(user)
@@ -121,13 +130,22 @@ def _kontak(contact_id):
 
 # ---------------------------------------------------------------- form verisi
 
+def parsel_fiyatlari(form):
+    """gayrimenkul id (metin) → parsel fiyatı. Her satırın fiyatı, yanındaki gizli parsel_gayrimenkul_id[]
+    ile eşlenir; böylece işaretlenmeyen satırlar sırayı kaydırmaz. Gizli alan yoksa (eski istemci)
+    parsel_fiyati[] seçili gayrimenkul_id[] sırasıyla eşlenir."""
+    fiyatlar = form.getlist('parsel_fiyati[]')
+    idler = form.getlist('parsel_gayrimenkul_id[]') or form.getlist('gayrimenkul_id[]')
+    return {gid: fiyat for gid, fiyat in zip(idler, fiyatlar)}
+
+
 def formdan_veri(form):
     """POST formu → ilan_servis.ilan_kaydet veri sözlüğü."""
     veri = {alan: form.get(alan) for alan in SKALER_ALANLAR}
     veri['ana_gayrimenkul_id'] = form.get('ana_gayrimenkul_id')
-    veri['gayrimenkuller'] = [{'id': gid, 'parsel_fiyati': fiyat} for gid, fiyat in
-                              zip_longest(form.getlist('gayrimenkul_id[]'), form.getlist('parsel_fiyati[]'))
-                              if gid is not None]
+    fiyatlar = parsel_fiyatlari(form)
+    veri['gayrimenkuller'] = [{'id': gid, 'parsel_fiyati': fiyatlar.get(gid)}
+                              for gid in form.getlist('gayrimenkul_id[]')]
     listeler = [form.getlist(ad) for _, ad in EMSAL_FORM]
     veri['emsaller'] = [dict(zip((k for k, _ in EMSAL_FORM), satir))
                         for satir in zip_longest(*listeler, fillvalue='')]
@@ -170,7 +188,7 @@ def _post_form_sayfasi(ilan, hata):
     f = request.form
     v = {alan: f.get(alan, '') for alan in SKALER_ALANLAR}
     secili = [s for s in f.getlist('gayrimenkul_id[]')]
-    fiyatlar = dict(zip_longest(secili, f.getlist('parsel_fiyati[]'), fillvalue=''))
+    fiyatlar = parsel_fiyatlari(f)
     ana = f.get('ana_gayrimenkul_id', '')
     sahip = _kontak(f.get('sahip'))
     idler = []
@@ -181,7 +199,7 @@ def _post_form_sayfasi(ilan, hata):
         if idler else {}
     if ilan is not None:
         bulunan.update({g.id: g for g in ilan.gayrimenkuller if g.id in idler})
-    satirlar = [_satir(bulunan[gid], str(gid) in secili, str(gid) == ana, fiyatlar.get(str(gid), ''))
+    satirlar = [_satir(bulunan[gid], str(gid) in secili, str(gid) == ana, fiyatlar.get(str(gid)) or '')
                 for gid in idler if gid in bulunan]
     emsaller = [e for e in formdan_veri(f)['emsaller'] if any((x or '').strip() for x in e.values())]
     return _form_sayfasi(ilan, v, satirlar, emsaller, _sahip_satiri(sahip) if sahip else None, hata)
@@ -344,13 +362,9 @@ def detay(ilan_id):
                 sahipler.append(s)
     gorunur_kontak = {cid for (cid,) in gorunur_kontaklar(current_user)
                       .filter(Contact.id.in_(gorulen)).with_entities(Contact.id)} if gorulen else set()
-    firsatlar = i.firsatlar.order_by(Deal.created_at.desc()).all()
-    if i.teklif_tipi == 'kat_karsiligi':
-        emsal_sayisi = sum(1 for e in i.emsaller if e.pay_yuzde is not None)
-    else:
-        emsal_sayisi = sum(1 for e in i.emsaller if e.m2 and e.fiyat is not None)
+    firsatlar = gorunur_firsatlar(i, current_user)
     return render_template('ilan/detay.html', i=i, oz=oz, gorunur_gm=gorunur_gm, sahipler=sahipler,
-                           gorunur_kontak=gorunur_kontak, firsatlar=firsatlar, emsal_sayisi=emsal_sayisi, sabit=sabit,
+                           gorunur_kontak=gorunur_kontak, firsatlar=firsatlar, sabit=sabit,
                            kart_ozeti=kart_ozeti(i), fiyat_metni=fiyat_metni, tur_etiketi=tur_etiketi,
                            kullanici_adi=kullanici_adi, silebilir=silebilir_mi(i, current_user),
                            title=i.kod)

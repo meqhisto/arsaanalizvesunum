@@ -284,6 +284,7 @@ def ilan_ozeti(ilan):
         'istenen': istenen,
         'bolge': bolge,
         'bolge_kaynak': kaynak,
+        'emsal_sayisi': len(ilan_hesap.gecerli_emsaller(ilan.teklif_tipi, emsaller)) if kaynak == 'emsal' else 0,
         'fark': fark,
         'konum': ilan_hesap.konumlandirma(ilan.teklif_tipi, fark),
     }

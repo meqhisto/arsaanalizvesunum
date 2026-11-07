@@ -52,8 +52,9 @@
                             </label>
                         </div>
                         <div class="col-7 col-md-3">
+                            <input type="hidden" name="parsel_gayrimenkul_id[]" value="{{ s.id }}">
                             <input class="form-control form-control-sm" name="parsel_fiyati[]" inputmode="decimal" value="{{ s.parsel_fiyati }}"
-                                   placeholder="Parsel fiyatı (TL)" aria-label="Parsel fiyatı"{% if not s.secili %} disabled{% endif %}>
+                                   placeholder="Parsel fiyatı (TL)" aria-label="Parsel fiyatı">
                         </div>
                         <div class="col-5 col-md-2">
                             <div class="form-check mb-0">

@@ -156,6 +156,7 @@ def test_kat_karsiligi_dort_parsel(db_session, kullanicilar):
     assert round(oz['fark'], 1) == 11.1
     assert oz['konum'] == 'Talep bölge ortalamasının üstünde'
     assert oz['istenen'] == 50 and oz['kakssiz_parseller'] == []
+    assert oz['emsal_sayisi'] == 2
 
 
 def test_ozet_kakssiz_parselleri_listeler(db_session, kullanicilar):
@@ -167,6 +168,7 @@ def test_ozet_kakssiz_parselleri_listeler(db_session, kullanicilar):
     assert oz['toplam_m2'] == 1500 and oz['insaat_hakki'] == 2000
     assert oz['kakssiz_parseller'] == [g2.baslik_metni]
     assert oz['istenen'] == 2000 and (oz['bolge'], oz['bolge_kaynak']) == (2500, 'elle')
+    assert oz['emsal_sayisi'] == 0
     assert oz['konum'] == 'Bölgeye göre uygun'
 
 

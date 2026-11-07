@@ -129,7 +129,7 @@
                     <div class="col-12 col-sm-4"><div class="border rounded p-2 h-100">
                         <div class="small text-muted">Bölge ortalaması</div>
                         <div class="fw-semibold">{% if kat %}%{{ oz.bolge|tr_sayi(1) }}{% else %}{{ oz.bolge|tr_para }}/m²{% endif %}</div>
-                        <div class="small text-muted">{% if oz.bolge_kaynak == 'emsal' %}{{ emsal_sayisi }} emsalden{% else %}elle girildi{% endif %}</div>
+                        <div class="small text-muted">{% if oz.bolge_kaynak == 'emsal' %}{{ oz.emsal_sayisi }} emsalden{% else %}elle girildi{% endif %}</div>
                     </div></div>
                     <div class="col-12 col-sm-4"><div class="border rounded p-2 h-100">
                         <div class="small text-muted">Fark</div>
@@ -212,7 +212,7 @@
                 <ul class="list-unstyled mb-0">
                     {% for d in firsatlar %}
                     <li class="py-1 d-flex justify-content-between gap-2">
-                        {% if d.user_id == current_user.id %}<a href="{{ url_for('crm.crm_deal_detail', deal_id=d.id) }}" class="text-decoration-none text-break">{{ d.title }}</a>{% else %}<span class="text-break">{{ d.title }}</span>{% endif %}
+                        <a href="{{ url_for('crm.crm_deal_detail', deal_id=d.id) }}" class="text-decoration-none text-break">{{ d.title }}</a>
                         <span class="small text-muted text-nowrap">{{ d.stage }}</span>
                     </li>
                     {% endfor %}

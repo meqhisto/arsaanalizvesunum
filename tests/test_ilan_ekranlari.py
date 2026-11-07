@@ -49,7 +49,8 @@ def ilan(gler, kod='ILN-2026-0001', durum='pazarlamada', teklif_tipi='satilik', 
 
 def form(gler, emsaller=(), **kw):
     v = {'baslik': '', 'aciklama': '', 'teklif_tipi': 'satilik', 'durum': 'pazarlamada',
-         'gayrimenkul_id[]': [str(g.id) for g in gler], 'parsel_fiyati[]': ['' for _ in gler],
+         'gayrimenkul_id[]': [str(g.id) for g in gler], 'parsel_gayrimenkul_id[]': [str(g.id) for g in gler],
+         'parsel_fiyati[]': ['' for _ in gler],
          'ana_gayrimenkul_id': str(gler[0].id)}
     anahtarlar = ('konum', 'm2', 'fiyat', 'pay', 'link', 'not')
     for a in anahtarlar:
@@ -296,3 +297,48 @@ def test_ilan_silinince_gayrimenkul_kalir(app, kullanicilar):
     assert db.session.get(ArsaAnaliz, g_id) is not None
     assert db.session.get(Deal, deal_id).ilan_id is None
     assert db.session.execute(portfolio_ilanlar.select()).fetchall() == []
+
+
+# ---------------------------------------------------------------- düzeltme turu 1
+
+def test_nan_pay_form_hatasi(app, kullanicilar):
+    g = arsa(kullanicilar['d1'])
+    c = istemci(app, kullanicilar['d1'])
+    for alan, deger in (('sahip_payi_yuzde', 'nan'), ('sahip_payi_yuzde', 'inf'), ('ek_nakit', '1e3')):
+        veri = form([g], teklif_tipi='kat_karsiligi', sahip_payi_yuzde='50')
+        veri[alan] = deger
+        r = c.post('/ilanlar/yeni', data=veri)
+        assert r.status_code == 200, (alan, deger)
+        assert 'geçersiz' in r.get_data(as_text=True) or 'arasında olmalıdır' in r.get_data(as_text=True)
+    assert Ilan.query.count() == 0
+    assert html(c.get('/ilanlar/?fiyat_min=nan&fiyat_max=inf')) is not None
+
+
+def test_ortadaki_satir_secilmeyince_parsel_fiyatlari_kaymaz(app, kullanicilar):
+    br = kullanicilar['broker']
+    g1, g2, g3 = (arsa(br, parsel=str(p)) for p in (2, 3, 4))
+    veri = form([g1, g3], teklif_tipi='kat_karsiligi', sahip_payi_yuzde='50')
+    # Formda üç satır gösterilir; ortadaki işaretsiz ama fiyat alanı yine gönderilir
+    veri['parsel_gayrimenkul_id[]'] = [str(g1.id), str(g2.id), str(g3.id)]
+    veri['parsel_fiyati[]'] = ['1.000.000', '2.000.000', '3.000.000']
+    r = istemci(app, br).post('/ilanlar/yeni', data=veri)
+    assert r.status_code == 302
+    i = Ilan.query.one()
+    assert [(b.gayrimenkul_id, float(b.parsel_fiyati)) for b in i.baglar] == \
+        [(g1.id, 1_000_000), (g3.id, 3_000_000)]
+
+
+def test_bagli_firsatlar_gorunurluge_gore(app, kullanicilar):
+    k = kullanicilar
+    g = daire(k['d1'])
+    i = ilan([g], fiyat=1, sorumlu=k['d1'])
+    for uid, baslik in ((k['d1'], 'D1 fırsatı'), (k['d2'], 'D2 fırsatı'), (k['dx'], 'DX fırsatı')):
+        kisi = Contact(user_id=uid, first_name='K', last_name=baslik)
+        db.session.add(kisi)
+        db.session.flush()
+        db.session.add(Deal(user_id=uid, contact_id=kisi.id, title=baslik, ilan_id=i.id))
+    db.session.commit()
+    d1 = html(istemci(app, k['d1']).get(f'/ilanlar/{i.id}'))
+    assert 'D1 fırsatı' in d1 and 'D2 fırsatı' not in d1 and 'DX fırsatı' not in d1
+    br = html(istemci(app, k['broker']).get(f'/ilanlar/{i.id}'))
+    assert 'D1 fırsatı' in br and 'D2 fırsatı' in br and 'DX fırsatı' not in br

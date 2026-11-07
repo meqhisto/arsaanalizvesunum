@@ -1,4 +1,8 @@
 """İlan hesapları: saf fonksiyonlar, ORM bilmez."""
+import math
+import re
+
+_SAYI_DESENI = re.compile(r'-?(\d+(\.\d*)?|\.\d+)')
 
 
 def tutar_ayristir(metin):
@@ -18,10 +22,11 @@ def tutar_ayristir(metin):
         binlik = len(gruplar[-1]) == 3 and gruplar[0].lstrip('-+') != '0' and (len(gruplar) > 2 or haneler > 3)
         if binlik:
             s = s.replace('.', '')
-    try:
-        return float(s)
-    except ValueError:
+    # Yalnız rakam, tek ondalık nokta ve isteğe bağlı baştaki eksi: nan/inf/1e3/1_000 reddedilir
+    if not _SAYI_DESENI.fullmatch(s):
         return None
+    sonuc = float(s)
+    return sonuc if math.isfinite(sonuc) else None
 
 
 def toplam_m2(parseller):
@@ -44,14 +49,21 @@ def sahibe_dusen_m2(insaat, pay_yuzde):
     return insaat * pay_yuzde / 100
 
 
-def bolge_ortalamasi(teklif_tipi, emsaller, elle_m2, elle_pay):
+def gecerli_emsaller(teklif_tipi, emsaller):
+    """Bölge ortalamasına katılan emsaller: kat karşılığında payı olanlar, diğerlerinde m² ve fiyatı olanlar."""
     if teklif_tipi == 'kat_karsiligi':
-        paylar = [e['pay_yuzde'] for e in emsaller if e.get('pay_yuzde') is not None]
+        return [e for e in emsaller if e.get('pay_yuzde') is not None]
+    return [e for e in emsaller if e.get('m2') and e.get('fiyat') is not None]
+
+
+def bolge_ortalamasi(teklif_tipi, emsaller, elle_m2, elle_pay):
+    gecerli = gecerli_emsaller(teklif_tipi, emsaller)
+    if teklif_tipi == 'kat_karsiligi':
+        paylar = [e['pay_yuzde'] for e in gecerli]
         if paylar:
             return sum(paylar) / len(paylar), 'emsal'
         elle = elle_pay
     else:
-        gecerli = [e for e in emsaller if e.get('m2') and e.get('fiyat') is not None]
         m2 = sum(e['m2'] for e in gecerli)
         if m2:
             return sum(e['fiyat'] for e in gecerli) / m2, 'emsal'
