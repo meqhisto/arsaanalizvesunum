@@ -591,24 +591,37 @@ def generate_pptx_report(analysis_id):
 @analysis_bp.route('/create', methods=['POST'])
 @login_required
 def create_analysis():
-    """Yeni gayrimenkul; sahipler ve isteğe bağlı ilan aynı transaction'da kaydedilir."""
+    """Yeni gayrimenkul; sahipler ve isteğe bağlı ilan aynı transaction'da kaydedilir.
+
+    'Hemen ilana çıkar'da ilan kodu yarışında (benzersiz kod ihlali) ilan formu gibi bir kez yeniden dener.
+    """
+    from sqlalchemy.exc import IntegrityError
+    from blueprints.ilan_bp import _kod_ihlali_mi
     from modules.gayrimenkul_form import formdan_gayrimenkul
     from modules.ilan_servis import IlanHatasi
-    gayrimenkul = ArsaAnaliz(user_id=current_user.id, office_id=current_user.office_id, fiyat=Decimal('0'))
-    hatalar = formdan_gayrimenkul(request.form, gayrimenkul)
-    if hatalar:
-        return _gayrimenkul_formu(None, request.form, hatalar)
-    try:
-        db.session.add(gayrimenkul)
-        db.session.flush()
-        # Panel istatistikleri fiyat alanına bakar: önce 0 ile eklenir; aktif satılık ilan açılırsa
-        # ilan_kaydet fiyatı eşitler ve farkı istatistiğe yansıtır
-        _istatistiklere_ekle(gayrimenkul)
-        ilan = _sahipler_ve_ilan(gayrimenkul, request.form)
-        db.session.commit()
-    except IlanHatasi as e:
-        db.session.rollback()
-        return _gayrimenkul_formu(None, request.form, [str(e)])
+    for deneme in range(2):
+        # Geri alınan işlemden kalan nesne yeniden kullanılmaz: her denemede formdan baştan kurulur
+        gayrimenkul = ArsaAnaliz(user_id=current_user.id, office_id=current_user.office_id, fiyat=Decimal('0'))
+        hatalar = formdan_gayrimenkul(request.form, gayrimenkul)
+        if hatalar:
+            return _gayrimenkul_formu(None, request.form, hatalar)
+        try:
+            db.session.add(gayrimenkul)
+            db.session.flush()
+            # Panel istatistikleri fiyat alanına bakar: önce 0 ile eklenir; aktif satılık ilan açılırsa
+            # ilan_kaydet fiyatı eşitler ve farkı istatistiğe yansıtır
+            _istatistiklere_ekle(gayrimenkul)
+            ilan = _sahipler_ve_ilan(gayrimenkul, request.form)
+            db.session.commit()
+        except IlanHatasi as e:
+            db.session.rollback()
+            return _gayrimenkul_formu(None, request.form, [str(e)])
+        except IntegrityError as e:
+            db.session.rollback()
+            if deneme == 0 and request.form.get('ilana_cikar') == '1' and _kod_ihlali_mi(e):
+                continue
+            raise
+        break
     _medya_sonrasi(gayrimenkul)
     flash('Gayrimenkul kaydedildi.' + (' İlan da oluşturuldu.' if ilan is not None else ''), 'success')
     return redirect(url_for('analysis.view_analysis', analysis_id=gayrimenkul.id))

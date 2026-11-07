@@ -318,3 +318,34 @@ def test_ayni_adli_fotograflar_ezilmez(app, kullanicilar, tmp_path):
         assert len(list((tmp_path / str(gid)).iterdir())) == 2
     finally:
         app.config['UPLOAD_FOLDER'] = eski
+
+
+def test_hemen_ilana_cikar_kod_cakismasinda_yeniden_dener(app, kullanicilar, monkeypatch):
+    from models.arsa_models import DashboardStats
+    from models.ilan_models import IlanGayrimenkul
+    from modules import ilan_servis
+    d1 = kullanicilar['d1']
+    eski = ArsaAnaliz(user_id=d1, il='Çanakkale', ilce='Merkez', mahalle='Esenler', metrekare=100, fiyat=0)
+    db.session.add(eski)
+    db.session.flush()
+    mevcut = Ilan(kod='ILN-2026-0005', baslik='x', user_id=d1, sorumlu_user_id=d1, teklif_tipi='satilik',
+                  durum='hazirlaniyor', fiyat=1)
+    mevcut.baglar.append(IlanGayrimenkul(gayrimenkul=eski, ana_kayit=True, sira=1))
+    db.session.add(mevcut)
+    db.session.commit()
+    gercek = ilan_servis.yeni_ilan_kodu
+    cagri = []
+
+    def sahte(yil=None):
+        cagri.append(1)
+        return 'ILN-2026-0005' if len(cagri) == 1 else gercek(yil)
+    monkeypatch.setattr(ilan_servis, 'yeni_ilan_kodu', sahte)
+    c = istemci(app, d1)
+    r = olustur(c, arsa_formu(ilana_cikar='1', ilan_teklif_tipi='satilik', ilan_fiyat='4.250.000'))
+    assert r.status_code == 302 and len(cagri) == 2
+    db.session.expire_all()
+    assert ArsaAnaliz.query.count() == 2 and Ilan.query.count() == 2
+    yeni = Ilan.query.filter(Ilan.kod != 'ILN-2026-0005').one()
+    assert float(yeni.fiyat) == 4250000 and float(yeni.ana_gayrimenkul.fiyat) == 4250000
+    stats = DashboardStats.query.filter_by(user_id=d1).one()
+    assert stats.toplam_arsa_sayisi == 1 and float(stats.toplam_deger) == 4250000
