@@ -312,7 +312,9 @@ def create_app(config_name=None): # config_name opsiyonel, farklÄ± config'ler iÃ
         def okunmamis_bildirim_sayisi():
             from models.is_takip_models import Bildirim
             try:
-                return Bildirim.query.filter_by(user_id=current_user.id, okundu=False).count()
+                from modules.istek_onbellegi import istek_onbellegi
+                return istek_onbellegi(('okunmamis_bildirim', current_user.id),
+                                       lambda: Bildirim.query.filter_by(user_id=current_user.id, okundu=False).count())
             except Exception:
                 application_db.session.rollback()
                 return 0

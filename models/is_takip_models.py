@@ -98,8 +98,10 @@ class Is(db.Model):
                                   cascade='all, delete-orphan', order_by='IsAktivitesi.created_at.desc()')
 
     # --- Hesaplanan bilgiler ---
-    def adim_ozeti(self):
-        adimlar = [a for a in self.adimlar if a.status != GOREV_IPTAL]
+    def adim_ozeti(self, tum_adimlar=None):
+        """tum_adimlar verilirse (liste sayfasında toplu yüklenmiş) ayrıca sorgu atılmaz."""
+        kaynak = self.adimlar if tum_adimlar is None else tum_adimlar
+        adimlar = [a for a in kaynak if a.status != GOREV_IPTAL]
         tamam = sum(1 for a in adimlar if a.status == GOREV_TAMAMLANDI)
         toplam = len(adimlar)
         now = datetime.utcnow()

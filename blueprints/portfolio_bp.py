@@ -2,6 +2,7 @@
 """Portföy yönetimi: portföyler ilan içerir (spec §3.6); portfolio_arsalar yalnız okunur."""
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, current_app
 from flask_login import login_required, current_user
+from sqlalchemy.orm import selectinload
 
 from models import db
 from models.user_models import Portfolio
@@ -64,7 +65,9 @@ def portfolios_list():
     if il_filter:
         query = query.filter(ArsaAnaliz.il == il_filter)
 
-    pagination = query.order_by(ArsaAnaliz.created_at.desc()).paginate(page=page, per_page=12, error_out=False)
+    from models.ilan_models import IlanGayrimenkul
+    pagination = (query.options(selectinload(ArsaAnaliz.ilan_baglari).selectinload(IlanGayrimenkul.ilan))
+                  .order_by(ArsaAnaliz.created_at.desc()).paginate(page=page, per_page=12, error_out=False))
 
     # İstatistikler tüm analizler üzerinden (sayfadan bağımsız)
     stats_row = base.with_entities(

@@ -642,11 +642,11 @@ def crm_deal_update_stage(deal_id):
 @login_required
 def crm_deals_list():
     user_id = current_user.id
-    deals_query = Deal.query.filter_by(user_id=user_id)
-    
-    deals_by_stage = {}
-    for stage in DEAL_STAGES: # DEAL_STAGES bu BP içinde tanımlı
-        deals_by_stage[stage] = deals_query.filter_by(stage=stage).order_by(Deal.expected_close_date.asc()).all()
+    # Tüm fırsatlar tek sorguda, aşamalara Python'da ayrılır (aşama başına sorgu yerine)
+    deals_by_stage = {stage: [] for stage in DEAL_STAGES}
+    for deal in Deal.query.filter_by(user_id=user_id).order_by(Deal.expected_close_date.asc()):
+        if deal.stage in deals_by_stage:
+            deals_by_stage[deal.stage].append(deal)
     
     return render_template('deals_list.html', deals_by_stage=deals_by_stage, stages=DEAL_STAGES, title="Fırsatlar")
 

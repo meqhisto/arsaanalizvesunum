@@ -10,6 +10,7 @@ from flask import abort
 from sqlalchemy import or_
 
 from models import db
+from modules.istek_onbellegi import istek_onbellegi
 from models.arsa_models import ArsaAnaliz
 from models.crm_models import Contact, Deal
 from models.ilan_models import GayrimenkulSahibi, Ilan, IlanEmsal, IlanGayrimenkul
@@ -32,12 +33,17 @@ def gorunur_kullanici_idleri(user):
     if user.role == 'superadmin':
         return None
     if user.role == 'broker':
-        kosul = User.manager_id == user.id
-        if user.office_id:
-            kosul = or_(kosul, User.office_id == user.office_id)
-        ekip = db.session.query(User.id).filter(kosul, User.id != user.id, User._is_active.is_(True))
-        return [user.id] + [uid for (uid,) in ekip]
+        return list(istek_onbellegi(('gorunur_kullanici_idleri', user.id), lambda: _broker_ekibi(user)))
     return [user.id]
+
+
+def _broker_ekibi(user):
+    """Broker + astları + (ofisi varsa) aynı ofisteki aktif kullanıcılar."""
+    kosul = User.manager_id == user.id
+    if user.office_id:
+        kosul = or_(kosul, User.office_id == user.office_id)
+    ekip = db.session.query(User.id).filter(kosul, User.id != user.id, User._is_active.is_(True))
+    return [user.id] + [uid for (uid,) in ekip]
 
 
 def _kisitla(sorgu, *sutunlar, user):
