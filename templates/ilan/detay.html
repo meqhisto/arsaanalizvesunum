@@ -168,6 +168,19 @@
     </div>
 
     <div class="col-12 col-lg-4">
+        <!-- Raporlar -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-1"><i class="fas fa-file-alt me-2 text-primary"></i>Raporlar</h6>
+                <div class="small text-muted mb-3">Alıcıya / mal sahibine verilebilir; mal sahibi bilgisi yer almaz.</div>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('ilan.rapor', ilan_id=i.id, fmt='pdf') }}" class="btn btn-outline-secondary"><i class="fas fa-file-pdf me-1"></i>PDF raporu</a>
+                    <a href="{{ url_for('ilan.rapor', ilan_id=i.id, fmt='word') }}" class="btn btn-outline-secondary"><i class="fas fa-file-word me-1"></i>Word raporu</a>
+                    <a href="{{ url_for('ilan.rapor', ilan_id=i.id, fmt='pptx') }}" class="btn btn-outline-secondary"><i class="fas fa-file-powerpoint me-1"></i>Sunum (PowerPoint)</a>
+                </div>
+            </div>
+        </div>
+
         <!-- Durum -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">

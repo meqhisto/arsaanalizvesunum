@@ -381,6 +381,31 @@ def detay(ilan_id):
                            title=i.kod)
 
 
+# ---------------------------------------------------------------- rapor
+
+@ilan_bp.route('/<int:ilan_id>/rapor/<fmt>')
+@login_required
+def rapor(ilan_id, fmt):
+    """İlan raporu (pdf / word / pptx); mal sahibi bilgisi içermez."""
+    from datetime import datetime
+
+    from flask import current_app
+
+    from modules.rapor import EXTENSIONS, build_report_model, report_response
+    i = ilan_or_404(ilan_id, current_user)
+    if fmt not in EXTENSIONS or i.ana_gayrimenkul is None:
+        abort(404)
+    detail_url = request.url_root.rstrip('/') + url_for('ilan.detay', ilan_id=i.id)
+    try:
+        model = build_report_model(i, i.ana_gayrimenkul, current_user, detail_url=detail_url,
+                                   upload_folder=current_app.config.get('UPLOAD_FOLDER'))
+        return report_response(model, fmt, f"ilan_{i.kod}_{datetime.now().strftime('%Y%m%d')}")
+    except Exception as e:
+        current_app.logger.error(f"İlan raporu hatası ({fmt}, {i.kod}): {e}", exc_info=True)
+        flash('Rapor oluşturulurken bir hata oluştu.', 'danger')
+        return redirect(url_for('ilan.detay', ilan_id=i.id))
+
+
 # ---------------------------------------------------------------- durum / sil
 
 @ilan_bp.route('/<int:ilan_id>/durum', methods=['POST'])

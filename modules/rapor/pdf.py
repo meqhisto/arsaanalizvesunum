@@ -72,7 +72,7 @@ def _image(path, width, max_height=None):
 
 def _kv_table(rows, st, width, label_ratio=0.42):
     data = [[Paragraph(_p(k), st.cell_b), Paragraph(_p(v), st.cell)] for k, v in rows]
-    t = Table(data, colWidths=[width * label_ratio, width * (1 - label_ratio)])
+    t = Table(data, colWidths=[width * label_ratio, width * (1 - label_ratio)], hAlign='LEFT')
     t.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, st.light]),
@@ -137,29 +137,36 @@ def _altyapi_table(m, st, width):
     return t
 
 
-def _scenario_table(m, st, width):
-    rows = common.scenario_rows(m)
+def _grid_table(rows, st, width, ratios, right_cols=()):
+    """Başlık satırlı tablo; right_cols sütunları sağa yaslı."""
     head_r = ParagraphStyle('hr', parent=st.cell_b, alignment=TA_RIGHT)
 
     def style(r, j):
+        sag = j in right_cols
         if r == 0:
-            return head_r if j >= 2 else st.cell_b
-        return st.cell_b if j == 0 else (st.cell if j < 2 else st.cell_r)
+            return head_r if sag else st.cell_b
+        return st.cell_r if sag else st.cell
     data = [[Paragraph(_p(c), style(r, j)) for j, c in enumerate(row)] for r, row in enumerate(rows)]
-    t = Table(data, colWidths=[width * x for x in (0.15, 0.13, 0.18, 0.18, 0.2, 0.16)])
+    t = Table(data, colWidths=[width * x for x in ratios], repeatRows=1, hAlign='LEFT')
     t.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), st.light), ('LINEBELOW', (0, 0), (-1, -1), 0.4, st.line),
-        ('BACKGROUND', (0, 2), (-1, 2), colors.HexColor('#FFF6EA')),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('TOPPADDING', (0, 0), (-1, -1), 4), ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
     ]))
     return t
 
 
+def _side_by_side(left, right, W):
+    t = Table([[left, right]], colWidths=[W * 0.51, W * 0.49])
+    t.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                           ('RIGHTPADDING', (0, 0), (-1, -1), 0)]))
+    return t
+
+
 def _contact_block(m, assets, st, width):
     left = [Paragraph(_p('İletişim'), st.h2), _kv_table(common.advisor_rows(m), st, width * 0.62, 0.3)]
     qrs = []
-    for key, label in (('qr_detay', 'Analiz sayfası'), ('qr_harita', 'Haritada aç')):
+    for key, label in common.QR_LABELS:
         if assets.get(key):
             qrs.append([Image(assets[key], width=2.6 * cm, height=2.6 * cm), Paragraph(_p(label), st.center)])
     right = Table([[q for q in qrs]], colWidths=[3.2 * cm] * len(qrs)) if qrs else Spacer(1, 1)
@@ -195,7 +202,7 @@ def render_pdf(m, assets, path):
         canvas.setFont(FONT_B, 11)
         canvas.drawString(x, ph - 0.78 * cm, m.brand.name)
         canvas.setFont(FONT, 8.5)
-        canvas.drawRightString(pw - margin, ph - 0.78 * cm, m.satir(m.konum, m.ada_parsel))
+        canvas.drawRightString(pw - margin, ph - 0.78 * cm, m.satir(m.kod, m.konum, m.ada_parsel))
         canvas.setFillColor(st.muted)
         canvas.setFont(FONT, 7.5)
         foot = f"{m.brand.name}{'  ·  ' + m.brand.web if m.brand.web else ''}  ·  Rapor tarihi {m.tarih.strftime('%d.%m.%Y')}"
@@ -209,42 +216,60 @@ def render_pdf(m, assets, path):
 
     # --- Başlık ve özet
     E.append(Paragraph(_p(m.baslik), st.h1))
-    E.append(Paragraph(_p(m.satir(m.konum, m.ada_parsel, m.tarih.strftime('%d.%m.%Y'))), st.sub))
+    E.append(Paragraph(_p(m.satir(m.kod, m.konum, m.ada_parsel, m.tarih.strftime('%d.%m.%Y'))), st.sub))
     E.append(_kpi_row(m, st, W))
     E.append(_section('Değerlendirme özeti', st))
-    E.append(Paragraph(_p(m.temel_ozet), st.body))
-    E.append(Paragraph(_p(m.yatirim_ozet), st.body))
+    E.append(Paragraph(_p(m.fiyat_ozet), st.body))
 
-    # --- Konum ve arsa bilgileri
+    # --- Konum ve gayrimenkul bilgileri
     if assets.get('harita'):
         E.append(KeepTogether([_section('Konum', st), _image(assets['harita'], W, 7.2 * cm)]))
-    info = Table([[_kv_table(common.parcel_rows(m), st, W * 0.49), _kv_table(common.zoning_rows(m), st, W * 0.49)]],
-                 colWidths=[W * 0.51, W * 0.49])
-    info.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'), ('LEFTPADDING', (0, 0), (-1, -1), 0),
-                              ('RIGHTPADDING', (0, 0), (-1, -1), 0)]))
-    E.append(KeepTogether([_section('Arsa ve imar bilgileri', st), info, Spacer(1, 6),
-                           Paragraph(_p('Altyapı'), st.cell_b), Spacer(1, 3), _altyapi_table(m, st, W)]))
+    if common.show_zoning(m):
+        blok = [_section('Arsa ve imar bilgileri', st),
+                _side_by_side(_kv_table(common.location_rows(m), st, W * 0.49),
+                              _kv_table(common.zoning_rows(m), st, W * 0.49), W)]
+    else:
+        blok = [_section('Konum bilgileri', st), _kv_table(common.location_rows(m), st, W * 0.6, 0.35)]
+    if m.arsa_mi:
+        blok += [Spacer(1, 6), Paragraph(_p('Altyapı'), st.cell_b), Spacer(1, 3), _altyapi_table(m, st, W)]
+    E.append(KeepTogether(blok))
+    if m.cok_parsel:
+        E.append(KeepTogether([
+            _section(common.parcel_section_title(m), st),
+            _grid_table(common.parcel_table(m), st, W, common.PARCEL_RATIOS, right_cols=common.PARCEL_RIGHT),
+            Spacer(1, 4), Paragraph(_p(common.parcel_summary(m)), st.cell_b)]))
+    if m.tur_bilgileri:
+        E.append(KeepTogether([_section(f"{m.tur_etiketi} bilgileri", st),
+                               _kv_table(m.tur_bilgileri, st, W * 0.7, 0.4)]))
+    if m.ozellik_gruplari:
+        oz = [_section('Özellikler', st)]
+        oz += [Paragraph(f"<b>{_p(baslik)}:</b> {_p(', '.join(liste))}", st.body) for baslik, liste in m.ozellik_gruplari]
+        E.append(KeepTogether(oz))
 
-    # --- Fiyat ve değer
-    if assets.get('fiyat_grafik'):
-        E.append(KeepTogether([_section('Bölge fiyatı karşılaştırması', st), _image(assets['fiyat_grafik'], W * 0.8)]))
-    kaynak = 'danışmanın girdiği' if m.artis_kaynagi == 'kullanıcı' else 'modelin tahmin ettiği'
-    E.append(KeepTogether([
-        _section('Değer projeksiyonu (5 yıl)', st),
-        Paragraph(_p(f"Beklenen senaryo {kaynak} yıllık %{tr_number(m.yillik_artis, 1)} artışa dayanır; "
-                     f"temkinli ve iyimser senaryolar ±5 puan farkla hesaplanmıştır."), st.small),
-        Spacer(1, 4), _image(assets['projeksiyon_grafik'], W * 0.8), Spacer(1, 4), _scenario_table(m, st, W)]))
+    # --- Fiyat ve emsal analizi
+    if not m.tanitim:
+        E.append(CondPageBreak(6 * cm))
+        E.append(_section(common.FIYAT_BASLIK, st))
+        E.append(_side_by_side(_kv_table(m.fiyat_satirlari, st, W * 0.49),
+                               _kv_table(common.bolge_rows(m), st, W * 0.49, 0.4), W))
+        emsal = common.emsal_table(m)
+        if emsal:
+            E.append(KeepTogether([Spacer(1, 8), Paragraph(_p('Emsaller'), st.cell_b), Spacer(1, 3),
+                                   _grid_table(emsal, st, W, common.emsal_ratios(m), right_cols=common.EMSAL_RIGHT)]))
+        if assets.get('price_chart'):
+            E.append(KeepTogether([Spacer(1, 8), _image(assets['price_chart'], W * 0.8)]))
     if assets.get('puan_grafik'):
         E.append(KeepTogether([
             _section(f"Uygunluk puanı: {tr_number(m.puan, 0)} / 100 ({m.puan_etiketi})", st),
             _image(assets['puan_grafik'], W * 0.85)]))
 
     # --- SWOT ve tavsiyeler
-    E.append(CondPageBreak(7 * cm))
-    E.append(KeepTogether([_section('SWOT analizi', st), _swot_table(m, st, W)]))
+    if common.has_swot(m):
+        E.append(CondPageBreak(7 * cm))
+        E.append(KeepTogether([_section('SWOT analizi', st), _swot_table(m, st, W)]))
     tav = [_section('Tavsiyeler', st)] + [Paragraph('• ' + _p(t), st.body) for t in m.tavsiyeler]
     if m.notlar:
-        tav += [Paragraph(_p('Danışman notu'), st.cell_b), Paragraph(_p(m.notlar), st.body)]
+        tav += [Paragraph(_p(m.extras.get('not_basligi', 'Not')), st.cell_b), Paragraph(_p(m.notlar), st.body)]
     E.append(KeepTogether(tav))
 
     # --- Fotoğraflar

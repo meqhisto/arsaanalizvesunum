@@ -513,14 +513,14 @@ def duplicate_analysis(analysis_id):
 @analysis_bp.route('/<int:analysis_id>/share', methods=['GET'])
 @login_required
 def share_analysis(analysis_id):
-    """Analiz paylaşım bilgilerini getir"""
-    user_id = current_user.id  # Giriş yapmış kullanıcının ID'si
-    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=user_id).first_or_404()
+    """Gayrimenkul paylaşım bilgilerini getir (sahibi, ekibinin broker'ı, superadmin)."""
+    from modules.ilan_servis import gayrimenkul_or_404
+    analysis = gayrimenkul_or_404(analysis_id, current_user)
 
     try:
         share_data = {
-            'title': f'Arsa Analizi - {analysis.il} {analysis.ilce}',
-            'description': f'{analysis.metrekare} m² arsa analizi. Fiyat: ₺{analysis.fiyat:,.0f}' if analysis.metrekare and analysis.fiyat else f'{analysis.il} {analysis.ilce} arsa analizi',
+            'title': analysis.baslik_metni,
+            'description': analysis.ozet or f'{analysis.il} {analysis.ilce}',
             'url': request.url_root.rstrip('/') + url_for('analysis.view_analysis', analysis_id=analysis_id),
             'image': None  # Gelecekte analiz görseli eklenebilir
         }
@@ -531,29 +531,32 @@ def share_analysis(analysis_id):
         current_app.logger.error(f"Analysis share error: {str(e)}", exc_info=True)
         return jsonify({'success': False, 'message': 'Paylaşım bilgileri alınırken bir hata oluştu.'}), 500
 
+def _gorunur_aktif_ilan(gayrimenkul):
+    """Gayrimenkulün, kullanıcının görebildiği aktif ilanı (yoksa None)."""
+    from models.ilan_models import Ilan
+    from modules.ilan_servis import gorunur_ilanlar
+    ilan = gayrimenkul.aktif_ilan
+    if ilan is None or gorunur_ilanlar(current_user).filter(Ilan.id == ilan.id).first() is None:
+        return None
+    return ilan
+
+
 def _build_report(analiz, fmt, settings=None):
-    """Analiz için istenen formatta (pdf / word / pptx) rapor üretir ve indirilebilir yanıt döndürür."""
-    import tempfile, shutil
-    from modules.rapor import MIMETYPES, EXTENSIONS, ascii_slug, build_report_model, generate_report
+    """Gayrimenkul için fiyatsız tanıtım raporu (pdf / word / pptx) üretir ve indirilebilir yanıt döndürür."""
+    from modules.rapor import ascii_slug, build_report_model, report_response
     detail_url = request.url_root.rstrip('/') + url_for('analysis.view_analysis', analysis_id=analiz.id)
-    model = build_report_model(analiz, current_user, detail_url=detail_url,
+    model = build_report_model(None, analiz, current_user, detail_url=detail_url,
                                upload_folder=current_app.config.get('UPLOAD_FOLDER'))
-    output_dir = tempfile.mkdtemp(prefix='rapor_')
-    try:
-        path = generate_report(model, fmt, output_dir)
-        with open(path, 'rb') as f:
-            data = f.read()
-    finally:
-        shutil.rmtree(output_dir, ignore_errors=True)
-    filename = (f"arsa_analiz_{ascii_slug(analiz.il)}_{ascii_slug(analiz.ilce)}_{analiz.id}_"
-                f"{datetime.now().strftime('%Y%m%d')}.{EXTENSIONS[fmt]}")
-    response = make_response(data)
-    response.headers['Content-Type'] = MIMETYPES[fmt]
-    response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
-    return response
+    stem = (f"tanitim_{ascii_slug(analiz.il)}_{ascii_slug(analiz.ilce)}_{analiz.id}_"
+            f"{datetime.now().strftime('%Y%m%d')}")
+    return report_response(model, fmt, stem)
 
 
 def _report_or_redirect(analiz, fmt, settings=None):
+    """Aktif (ve görünür) ilan varsa ilan raporuna yönlendirir, yoksa tanıtım raporu üretir."""
+    ilan = _gorunur_aktif_ilan(analiz)
+    if ilan is not None:
+        return redirect(url_for('ilan.rapor', ilan_id=ilan.id, fmt=fmt))
     try:
         return _build_report(analiz, fmt, settings)
     except Exception as e:
@@ -566,16 +569,24 @@ def _report_or_redirect(analiz, fmt, settings=None):
 @login_required
 def generate_word_report(analysis_id):
     """Word raporu indir."""
-    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=current_user.id).first_or_404()
-    return _report_or_redirect(analysis, 'word')
+    from modules.ilan_servis import gayrimenkul_or_404
+    return _report_or_redirect(gayrimenkul_or_404(analysis_id, current_user), 'word')
 
 
 @analysis_bp.route('/<int:analysis_id>/report/pdf', methods=['GET'])
 @login_required
 def generate_pdf_report(analysis_id):
     """PDF raporu indir."""
-    analysis = ArsaAnaliz.query.filter_by(id=analysis_id, user_id=current_user.id).first_or_404()
-    return _report_or_redirect(analysis, 'pdf')
+    from modules.ilan_servis import gayrimenkul_or_404
+    return _report_or_redirect(gayrimenkul_or_404(analysis_id, current_user), 'pdf')
+
+
+@analysis_bp.route('/<int:analysis_id>/report/pptx', methods=['GET'])
+@login_required
+def generate_pptx_report(analysis_id):
+    """PowerPoint sunumu indir (GET; renk ayarlı POST için generate_pptx)."""
+    from modules.ilan_servis import gayrimenkul_or_404
+    return _report_or_redirect(gayrimenkul_or_404(analysis_id, current_user), 'pptx')
 
 
 def _istatistiklere_ekle(gayrimenkul):
@@ -812,7 +823,8 @@ def medya_sil(analiz_id, medya_id):
 @login_required
 def generate_report(format_type, analiz_id_param):
     """Eski rapor rotası: /report/generate/<word|pdf>/<id> (tema/renk ayarlarıyla)."""
-    analiz = ArsaAnaliz.query.filter_by(id=analiz_id_param, user_id=current_user.id).first_or_404()
+    from modules.ilan_servis import gayrimenkul_or_404
+    analiz = gayrimenkul_or_404(analiz_id_param, current_user)
     fmt = {'word': 'word', 'docx': 'word', 'pdf': 'pdf', 'pptx': 'pptx'}.get(format_type)
     if not fmt:
         flash("Geçersiz rapor formatı.", "danger")
@@ -828,8 +840,12 @@ def generate_report(format_type, analiz_id_param):
 @login_required
 def generate_pptx(analiz_id):
     """PowerPoint sunumu indir."""
-    analiz = ArsaAnaliz.query.filter_by(id=analiz_id, user_id=current_user.id).first_or_404()
+    from modules.ilan_servis import gayrimenkul_or_404
+    analiz = gayrimenkul_or_404(analiz_id, current_user)
     settings = {"color_scheme": request.form.get("color_scheme", "blue")}
+    ilan = _gorunur_aktif_ilan(analiz)
+    if ilan is not None:
+        return redirect(url_for('ilan.rapor', ilan_id=ilan.id, fmt='pptx'))
     try:
         return _build_report(analiz, 'pptx', settings)
     except Exception as e:

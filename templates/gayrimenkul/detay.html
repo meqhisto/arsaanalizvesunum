@@ -181,11 +181,15 @@
             </div>
         </div>
 
-        {% if g.user_id == current_user.id %}
-        <!-- Raporlar (tanıtım raporu Task 8'de yenilenecek) -->
+        <!-- Raporlar: aktif ilan varsa ilan raporu, yoksa fiyatsız tanıtım raporu -->
+        {% set rapor_ilani = g.aktif_ilan %}
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
-                <h6 class="mb-3"><i class="fas fa-file-alt me-2 text-primary"></i>Raporlar</h6>
+                <h6 class="mb-1"><i class="fas fa-file-alt me-2 text-primary"></i>Raporlar</h6>
+                <div class="small text-muted mb-3">
+                    {% if rapor_ilani and rapor_ilani.id in gorunur_ilan_idleri %}{{ rapor_ilani.kod }} ilanının fiyat ve emsal analiziyle.{% else %}Fiyatsız tanıtım raporu.{% endif %}
+                    Mal sahibi bilgisi yer almaz.
+                </div>
                 <div class="d-grid gap-2">
                     <a href="{{ url_for('analysis.generate_pdf_report', analysis_id=g.id) }}" class="btn btn-outline-secondary"><i class="fas fa-file-pdf me-1"></i>PDF raporu</a>
                     <a href="{{ url_for('analysis.generate_word_report', analysis_id=g.id) }}" class="btn btn-outline-secondary"><i class="fas fa-file-word me-1"></i>Word raporu</a>
@@ -196,7 +200,6 @@
                 </div>
             </div>
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -13,7 +13,7 @@ import qrcode
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
-from .model import tr_number, tr_short_currency
+from .model import tr_number
 
 log = logging.getLogger(__name__)
 
@@ -65,66 +65,43 @@ def _save(img, path):
 
 
 def price_comparison_chart(model, path, width=760, height=200):
-    """Arsanın m² fiyatı ile bölge ortalamasını yatay çubuklarla karşılaştırır."""
-    if model.bolge_m2_fiyat <= 0:
+    """İlanın istenen değerini bölge ortalamasıyla yatay çubuklarla karşılaştırır.
+
+    Satılık/kiralıkta m² değeri (TL/m²), kat karşılığında arsa sahibi payı (%). Bölge yoksa None.
+    """
+    if model.bolge is None or model.istenen is None:
         return None
     img, d = _canvas(width, height)
     s = SCALE
-    rows = [('Bu arsa', model.m2_fiyat, model.brand.accent), ('Bölge ortalaması', model.bolge_m2_fiyat, model.brand.primary)]
-    step = _nice_step(max(v for _, v, _ in rows) * 1.25)
-    maxv = step * 4
+    pay = model.teklif_tipi == 'kat_karsiligi'
+    rows = [('Bu ilan', model.istenen, model.brand.accent), ('Bölge ortalaması', model.bolge, model.brand.primary)]
+    if pay:
+        maxv = 100 if max(v for _, v, _ in rows) > 75 else _nice_step(max(v for _, v, _ in rows) * 1.25) * 4
+        fmt = lambda v: f"%{tr_number(v, 0)}"  # noqa: E731
+        val_fmt = lambda v: f"%{tr_number(v, 1).rstrip('0').rstrip(',')}"  # noqa: E731
+    else:
+        maxv = _nice_step(max(v for _, v, _ in rows) * 1.25) * 4
+        fmt = lambda v: f"{tr_number(v)} TL"  # noqa: E731
+        val_fmt = lambda v: f"{tr_number(v)} TL/m²"  # noqa: E731
     left, right, top = 170, width - 40, 24
     bar_h, gap = 50, 30
     f_label, f_val, f_small = _font(15, True), _font(14, True), _font(12)
     for i in range(5):
         x = left + (right - left) * i / 4
         d.line([(x * s, (top - 8) * s), (x * s, (top + 2 * bar_h + gap + 8) * s)], fill=GRID, width=s)
-        d.text((x * s, (top + 2 * bar_h + gap + 14) * s), f"{tr_number(maxv * i / 4)} TL", font=f_small, fill=MUTED, anchor='mt')
+        d.text((x * s, (top + 2 * bar_h + gap + 14) * s), fmt(maxv * i / 4), font=f_small, fill=MUTED, anchor='mt')
     for i, (label, value, color) in enumerate(rows):
         y = top + i * (bar_h + gap)
         d.text(((left - 14) * s, (y + bar_h / 2) * s), label, font=f_label, fill=TEXT, anchor='rm')
-        x2 = left + (right - left) * value / maxv
-        d.rounded_rectangle([left * s, y * s, x2 * s, (y + bar_h) * s], radius=6 * s, fill=_hex(color))
-        d.text(((x2 + 8) * s, (y + bar_h / 2) * s), f"{tr_number(value)} TL/m²", font=f_val, fill=TEXT, anchor='lm')
-    return _save(img, path)
-
-
-def projection_chart(model, path, width=760, height=330):
-    """Senaryolara göre yıllara yayılmış toplam değer projeksiyonu."""
-    img, d = _canvas(width, height)
-    s = SCALE
-    left, right, top, bottom = 110, width - 40, 56, height - 46
-    all_vals = [v for sc in model.senaryolar for v in sc.degerler]
-    lo, hi = min(all_vals) * 0.95, max(all_vals) * 1.03
-    years = len(model.senaryolar[0].degerler) - 1
-    f_small, f_lbl = _font(12), _font(13, True)
-
-    def xy(i, v):
-        return (left + (right - left) * i / years) * s, (bottom - (bottom - top) * (v - lo) / (hi - lo or 1)) * s
-
-    for k in range(5):
-        v = lo + (hi - lo) * k / 4
-        y = xy(0, v)[1]
-        d.line([(left * s, y), (right * s, y)], fill=GRID, width=s)
-        d.text(((left - 10) * s, y), tr_short_currency(v), font=f_small, fill=MUTED, anchor='rm')
-    for i in range(years + 1):
-        x = xy(i, lo)[0]
-        d.text((x, (bottom + 14) * s), 'Bugün' if i == 0 else f"{i}. yıl", font=f_small, fill=MUTED, anchor='mt')
-
-    colors = [_blend(model.brand.primary, 0.45), _hex(model.brand.primary), _hex(model.brand.accent)]
-    for sc, color in zip(model.senaryolar, colors):
-        pts = [xy(i, v) for i, v in enumerate(sc.degerler)]
-        d.line(pts, fill=color, width=4 * s if sc.ad == 'Beklenen' else 3 * s, joint='curve')
-        for p in pts:
-            r = 4 * s
-            d.ellipse([p[0] - r, p[1] - r, p[0] + r, p[1] + r], fill=color)
-    # Lejant
-    x = left
-    for sc, color in zip(model.senaryolar, colors):
-        d.rounded_rectangle([x * s, 14 * s, (x + 22) * s, 26 * s], radius=3 * s, fill=color)
-        label = f"{sc.ad} (yıllık %{tr_number(sc.oran, 0)})"
-        d.text(((x + 30) * s, 20 * s), label, font=f_lbl, fill=TEXT, anchor='lm')
-        x += 30 + d.textlength(label, font=f_lbl) / s + 28
+        x2 = left + (right - left) * max(value, 0) / maxv
+        if x2 > left:
+            d.rounded_rectangle([left * s, y * s, x2 * s, (y + bar_h) * s], radius=6 * s, fill=_hex(color))
+        text = val_fmt(value)
+        tw = d.textlength(text, font=f_val) / s
+        if x2 + 8 + tw > width - 4:  # Uzun çubukta değer çubuğun içine yazılır
+            d.text(((x2 - 8) * s, (y + bar_h / 2) * s), text, font=f_val, fill='white', anchor='rm')
+        else:
+            d.text(((x2 + 8) * s, (y + bar_h / 2) * s), text, font=f_val, fill=TEXT, anchor='lm')
     return _save(img, path)
 
 
@@ -251,18 +228,18 @@ def small_logo(src, path, size=400):
 
 
 def build_assets(model, out_dir):
-    """Tüm görselleri üretir; üretilemeyenler için None döner."""
+    """Tüm görselleri üretir; üretilemeyenler sözlükte yer almaz."""
     os.makedirs(out_dir, exist_ok=True)
     j = lambda n: os.path.join(out_dir, n)  # noqa: E731
     if model.brand.logo_path:
         model.brand.logo_path = small_logo(model.brand.logo_path, j('logo.png'))
     assets = {
-        'fiyat_grafik': price_comparison_chart(model, j('fiyat.png')),
-        'projeksiyon_grafik': projection_chart(model, j('projeksiyon.png')),
+        'price_chart': price_comparison_chart(model, j('fiyat.png')),
         'puan_grafik': score_chart(model, j('puan.png')),
         'harita': location_map(model, j('harita.jpg')),
         'qr_detay': qr_code(model.detail_url, j('qr_detay.png')),
         'qr_harita': qr_code(model.maps_url, j('qr_harita.png')),
         'fotograflar': [p for p in (photo_thumb(src, j(f'foto_{i}.jpg')) for i, src in enumerate(model.fotograflar)) if p],
     }
-    return assets
+    # Üretilemeyen görseller anahtarıyla birlikte düşer (ör. bölge yoksa price_chart yok)
+    return {k: v for k, v in assets.items() if v}
