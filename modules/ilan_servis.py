@@ -55,6 +55,11 @@ def gorunur_ilanlar(user):
     return _kisitla(Ilan.query, Ilan.user_id, Ilan.sorumlu_user_id, user=user)
 
 
+def secilebilir_ilanlar(user):
+    """Seçim listeleri (fırsat formu, portföy) için görünür ilanlar, en yenisi önce."""
+    return gorunur_ilanlar(user).order_by(Ilan.created_at.desc(), Ilan.id.desc()).all()
+
+
 def gorunur_kontaklar(user):
     return _kisitla(Contact.query, Contact.user_id, user=user)
 

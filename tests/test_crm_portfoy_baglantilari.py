@@ -210,11 +210,60 @@ def test_ilan_detayinda_portfoye_ekle(app, kullanicilar):
     istem = istemci(app, br)
     s = html(istem.get(f'/ilanlar/{i.id}'))
     assert 'Portföye ekle' in s and 'Yatırımcı Seçkisi' in s
-    assert f'/portfolio/{p.id}/add' in s or 'portfolio_id' in s
-    r = istem.post(f'/portfolio/{p.id}/add', data={'ilan_id': str(i.id), 'geri': 'ilan'})
-    assert r.status_code == 302 and f'/ilanlar/{i.id}' in r.headers['Location']
+    assert 'action="/portfolio/ilan-ekle"' in s
+    assert f'<option value="{p.id}">Yatırımcı Seçkisi</option>' in s
+    r = istem.post('/portfolio/ilan-ekle', data={'portfolio_id': str(p.id), 'ilan_id': str(i.id), 'geri': 'ilan'})
+    assert r.status_code == 302 and r.headers['Location'].endswith(f'/ilanlar/{i.id}')
     db.session.expire_all()
     assert [x.id for x in db.session.get(Portfolio, p.id).ilanlar] == [i.id]
+    # Eklendikten sonra seçimde o portföy yok; portföy linkli listelenir
+    s = html(istem.get(f'/ilanlar/{i.id}'))
+    assert f'/portfolio/{p.id}"' in s and f'<option value="{p.id}">' not in s
+
+
+def test_ilan_ekle_rotasi_yetki(app, kullanicilar):
+    k = kullanicilar
+    baskasi = portfoy(k['d2'], baslik='D2 Portföyü')
+    i = ilan([daire(k['broker'])], kod='ILN-2026-0062')
+    istem = istemci(app, k['broker'])
+    r = istem.post('/portfolio/ilan-ekle', data={'portfolio_id': str(baskasi.id), 'ilan_id': str(i.id)})
+    assert r.status_code == 404
+    r = istem.post('/portfolio/ilan-ekle', data={'portfolio_id': 'abc', 'ilan_id': str(i.id)})
+    assert r.status_code == 404
+    db.session.expire_all()
+    assert db.session.get(Portfolio, baskasi.id).ilanlar.count() == 0
+
+
+def test_ilan_detayinda_baskasinin_ozel_portfoyu_gorunmez(app, kullanicilar):
+    k = kullanicilar
+    i = ilan([daire(k['broker'])], kod='ILN-2026-0063')
+    ozel = portfoy(k['d1'], baslik='D1 Gizli Seçki')
+    acik = portfoy(k['d1'], baslik='D1 Açık Seçki', visibility='public')
+    ozel.ilanlar.append(i)
+    acik.ilanlar.append(i)
+    db.session.commit()
+    s = html(istemci(app, k['broker']).get(f'/ilanlar/{i.id}'))
+    assert 'D1 Gizli Seçki' not in s
+    assert 'D1 Açık Seçki' in s
+    # İlan yalnız başkalarının portföylerinde: kendi portföyü olmayan kullanıcıya oluşturma linki
+    assert '/portfolio/create?ilan_id=' in s
+    # Kendi portföyü varsa ekleme formu görünür
+    portfoy(k['broker'], baslik='Broker Seçkisi')
+    s = html(istemci(app, k['broker']).get(f'/ilanlar/{i.id}'))
+    assert 'action="/portfolio/ilan-ekle"' in s and 'Broker Seçkisi' in s
+
+
+def test_gorunmeyen_ilanlar_atlandi_mesaji(app, kullanicilar):
+    k = kullanicilar
+    p = portfoy(k['d1'])
+    benim = ilan([daire(k['d1'])], kod='ILN-2026-0064')
+    yabanci = ilan([daire(k['dx'])], kod='ILN-2026-0065')
+    istem = istemci(app, k['d1'])
+    istem.post(f'/portfolio/{p.id}/add', data={'ilan_ids': [str(benim.id), str(yabanci.id)]})
+    mesaj = flashlar(istem)
+    assert '1 ilan' in mesaj and '1 ilan bulunamadığı için atlandı' in mesaj
+    db.session.expire_all()
+    assert [x.id for x in db.session.get(Portfolio, p.id).ilanlar] == [benim.id]
 
 
 def test_portfoy_olusturma_ilan_ile(app, kullanicilar):

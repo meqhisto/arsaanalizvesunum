@@ -8,7 +8,7 @@ from models.user_models import Portfolio
 from models.arsa_models import ArsaAnaliz
 from models.ilan_models import Ilan
 from modules import gayrimenkul_sabitleri as sabit
-from modules.ilan_servis import gorunur_gayrimenkuller, gorunur_ilanlar
+from modules.ilan_servis import gorunur_gayrimenkuller, gorunur_ilanlar, secilebilir_ilanlar
 
 portfolio_bp = Blueprint('portfolio', __name__, template_folder='../templates')
 
@@ -44,10 +44,6 @@ def _gayrimenkulun_ilani(analiz_id):
         if gorunur_ilanlar(current_user).filter(Ilan.id == aday.id).first() is not None:
             return aday
     return None
-
-
-def _secilebilir_ilanlar():
-    return gorunur_ilanlar(current_user).order_by(Ilan.created_at.desc(), Ilan.id.desc()).all()
 
 
 @portfolio_bp.route('/portfolios')
@@ -95,7 +91,7 @@ def portfolios_list():
 @portfolio_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def portfolio_create():
-    ilanlar = _secilebilir_ilanlar()
+    ilanlar = secilebilir_ilanlar(current_user)
 
     def sayfa(form_data, kod=200, preselected=None):
         from blueprints.ilan_bp import kart_ozeti
@@ -146,7 +142,7 @@ def portfolio_detail(portfolio_id):
     ids = [i.id for i in ilanlar]
     gorunur = {iid for (iid,) in gorunur_ilanlar(current_user).filter(Ilan.id.in_(ids))
                .with_entities(Ilan.id)} if ids else set()
-    available = [i for i in _secilebilir_ilanlar() if i.id not in set(ids)] if is_owner else []
+    available = [i for i in secilebilir_ilanlar(current_user) if i.id not in set(ids)] if is_owner else []
     from blueprints.ilan_bp import fiyat_metni, kart_ozeti  # app.py ilan_bp'yi geç yükler
     return render_template('portfolio_detail.html', portfolio=portfolio, ilanlar=ilanlar, available=available,
                            gorunur=gorunur, totals=_portfolio_totals(ilanlar), is_owner=is_owner,
@@ -194,6 +190,9 @@ def _ilan_ekle(portfolio):
             flash('Bu gayrimenkulün portföye eklenecek ilanı yok.', 'danger')
             return
         bulunan.append(i)
+    atlanan = len(ids) - len({i.id for i in bulunan if i.id in ids})
+    if atlanan and bulunan:
+        flash(f'{atlanan} ilan bulunamadığı için atlandı.', 'warning')
     if not bulunan:
         flash('Seçilen ilan bulunamadı.' if ids else 'Eklenecek ilan seçilmedi.', 'warning')
         return

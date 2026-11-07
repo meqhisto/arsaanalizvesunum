@@ -14,7 +14,7 @@ from models.user_models import User
 from models.crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam
 from models.arsa_models import ArsaAnaliz
 from models.ilan_models import Ilan
-from modules.ilan_servis import gorunur_gayrimenkuller, gorunur_ilanlar
+from modules.ilan_servis import gorunur_gayrimenkuller, gorunur_ilanlar, secilebilir_ilanlar
 
 # Flask uygulamasının yapılandırmasına erişmek için current_app
 from flask import current_app
@@ -650,9 +650,9 @@ def crm_deals_list():
     
     return render_template('deals_list.html', deals_by_stage=deals_by_stage, stages=DEAL_STAGES, title="Fırsatlar")
 
-def _secilebilir_ilanlar(mevcut=None):
+def _firsat_ilan_secenekleri(mevcut=None):
     """Fırsat formundaki "İlgili ilan" seçenekleri: görünür ilanlar (+ fırsatın mevcut ilanı)."""
-    ilanlar = gorunur_ilanlar(current_user).order_by(Ilan.created_at.desc(), Ilan.id.desc()).all()
+    ilanlar = secilebilir_ilanlar(current_user)
     if mevcut is not None and mevcut.id not in {i.id for i in ilanlar}:
         ilanlar.append(mevcut)
     return ilanlar
@@ -679,7 +679,7 @@ def crm_deal_new():
     user_id = current_user.id
     contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
     companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
-    ilanlar = _secilebilir_ilanlar()
+    ilanlar = _firsat_ilan_secenekleri()
 
     if request.method == 'POST':
         title_form = request.form.get('title') # Değişken adı çakışmaması için _form eklendi
@@ -757,7 +757,7 @@ def crm_deal_edit(deal_id):
     deal_to_edit = Deal.query.filter_by(id=deal_id, user_id=user_id).first_or_404()
     contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
     companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
-    ilanlar = _secilebilir_ilanlar(deal_to_edit.ilan)
+    ilanlar = _firsat_ilan_secenekleri(deal_to_edit.ilan)
 
     if request.method == 'POST':
         try:

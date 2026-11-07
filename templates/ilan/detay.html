@@ -228,9 +228,9 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <h6 class="mb-3"><i class="fas fa-folder-open me-2 text-primary"></i>Portföyler</h6>
-                {% if i.portfoyler %}
+                {% if gorunen_portfoyler %}
                 <ul class="list-unstyled mb-3 small">
-                    {% for p in i.portfoyler %}<li class="py-1 text-break">{% if p.user_id == current_user.id %}<a href="{{ url_for('portfolio.portfolio_detail', portfolio_id=p.id) }}" class="text-decoration-none">{{ p.title }}</a>{% else %}{{ p.title }}{% endif %}</li>{% endfor %}
+                    {% for p in gorunen_portfoyler %}<li class="py-1 text-break">{% if p.user_id == current_user.id %}<a href="{{ url_for('portfolio.portfolio_detail', portfolio_id=p.id) }}" class="text-decoration-none">{{ p.title }}</a>{% else %}{{ p.title }}{% endif %}</li>{% endfor %}
                 </ul>
                 {% endif %}
                 {% if eklenebilir_portfoyler %}
@@ -246,8 +246,8 @@
                         <button type="submit" class="btn btn-outline-primary">Portföye ekle</button>
                     </div>
                 </form>
-                {% elif not i.portfoyler %}
-                <div class="small text-muted">Bu ilan bir portföyde değil. <a href="{{ url_for('portfolio.portfolio_create', ilan_id=i.id) }}">Yeni portföy oluştur</a></div>
+                {% elif not kendi_portfoyu_var %}
+                <div class="small text-muted">Bu ilanı ekleyebileceğiniz portföy yok. <a href="{{ url_for('portfolio.portfolio_create', ilan_id=i.id) }}">Yeni portföy oluştur</a></div>
                 {% endif %}
             </div>
         </div>

@@ -367,9 +367,15 @@ def detay(ilan_id):
     portfoy_idleri = {p.id for p in i.portfoyler}
     eklenebilir_portfoyler = [p for p in Portfolio.query.filter_by(user_id=current_user.id)
                               .order_by(Portfolio.title).all() if p.id not in portfoy_idleri]
+    # Başkalarının özel portföyleri adıyla bile gösterilmez
+    gorunen_portfoyler = sorted((p for p in i.portfoyler
+                                 if p.user_id == current_user.id or p.visibility == 'public'),
+                                key=lambda p: (p.title or '').lower())
+    kendi_portfoyu_var = any(p.user_id == current_user.id for p in i.portfoyler)
     return render_template('ilan/detay.html', i=i, oz=oz, gorunur_gm=gorunur_gm, sahipler=sahipler,
                            gorunur_kontak=gorunur_kontak, firsatlar=firsatlar, sabit=sabit,
-                           eklenebilir_portfoyler=eklenebilir_portfoyler,
+                           eklenebilir_portfoyler=eklenebilir_portfoyler, gorunen_portfoyler=gorunen_portfoyler,
+                           kendi_portfoyu_var=kendi_portfoyu_var,
                            kart_ozeti=kart_ozeti(i), fiyat_metni=fiyat_metni, tur_etiketi=tur_etiketi,
                            kullanici_adi=kullanici_adi, silebilir=silebilir_mi(i, current_user),
                            title=i.kod)
