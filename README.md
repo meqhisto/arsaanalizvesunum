@@ -129,6 +129,11 @@ DATABASE_URL=postgresql://<rol>.<proje-ref>:<şifre>@aws-1-eu-central-1.pooler.s
   ALTER TABLE public.<tablo> ENABLE ROW LEVEL SECURITY;
   REVOKE ALL ON TABLE public.<tablo> FROM anon, authenticated;
   ```
+- Gayrimenkul/ilan yapısının tabloları (`kurulum_isaretleri`, `gayrimenkul_sahipleri`, `ilanlar`, `ilan_gayrimenkulleri`,
+  `ilan_emsalleri`, `portfolio_ilanlar`) için bu işlemi açılışta `modules/ilan_kurulum.py` `kur()` yapar (yalnız PostgreSQL):
+  RLS kapalı olan tabloda `ALTER TABLE public.<tablo> ENABLE ROW LEVEL SECURITY` çalışır; `anon` / `authenticated` rolleri
+  varsa ve bu tablolarda yetkileri kalmışsa `REVOKE ALL ON TABLE public.<tablo> FROM anon, authenticated` çalışır.
+  Zaten tamamsa hiçbir şey çalıştırılmaz.
 - Bağlantı havuzu `DB_POOL_SIZE` (varsayılan 3), `DB_MAX_OVERFLOW` (2) ve `DB_POOL_RECYCLE` (280 sn) ortam değişkenleriyle ayarlanır. `pool_pre_ping` açıktır.
 - Ücretsiz planda Supabase yedekleri indirilemez. Yedek, PostgreSQL 17 istemcisiyle `pg_dump` alınarak sunucuda tutulur.
 - Ücretsiz plan projeleri 7 gün düşük aktivitede duraklatılabilir. Duraklatılırsa Supabase panelinden "Resume project" ile açılır.

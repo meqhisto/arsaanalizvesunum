@@ -148,3 +148,29 @@ def test_gecis_ilan_basligi_200_karakterle_sinirli(db_session, kullanicilar):
     kur()
     i = Ilan.query.one()
     assert i.baslik == a.baslik_metni[:200]
+
+
+YENI_TABLOLAR = ['kurulum_isaretleri', 'gayrimenkul_sahipleri', 'ilanlar', 'ilan_gayrimenkulleri',
+                 'ilan_emsalleri', 'portfolio_ilanlar']
+
+
+def _rls_durumu():
+    satirlar = db.session.execute(db.text(
+        "SELECT relname, relrowsecurity FROM pg_class WHERE relkind = 'r' AND relname = ANY(:t) "
+        "AND relnamespace = 'public'::regnamespace"), {'t': YENI_TABLOLAR}).all()
+    return dict(satirlar)
+
+
+def test_kur_yeni_tablolarda_rls_acar_ve_ikinci_kez_sessiz(db_session, kullanicilar):
+    for t in YENI_TABLOLAR:
+        db.session.execute(db.text(f'ALTER TABLE "{t}" DISABLE ROW LEVEL SECURITY'))
+    db.session.commit()
+    kur()
+    assert _rls_durumu() == {t: True for t in YENI_TABLOLAR}
+    ifadeler, kaldir = _sql_kaydet()
+    try:
+        kur()  # zaten açık: hata vermez, ALTER/REVOKE çalıştırmaz
+    finally:
+        kaldir()
+    assert not [s for s in ifadeler if 'ALTER TABLE' in s or 'REVOKE' in s]
+    assert _rls_durumu() == {t: True for t in YENI_TABLOLAR}

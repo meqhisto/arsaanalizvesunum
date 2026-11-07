@@ -12,6 +12,9 @@
 4. Hiç ilanı olmayan her gayrimenkul için tek gayrimenkullü satılık/pazarlamada ilan açılır.
 5. portfolio_arsalar bağları portfolio_ilanlar'a kopyalanır.
 
+6. (PostgreSQL, her açılışta) YENI_TABLOLAR'da RLS açılır; Supabase'in `anon` / `authenticated`
+   rolleri varsa bu tablolardaki yetkileri kaldırılır. Zaten tamamsa hiçbir ALTER/REVOKE çalışmaz.
+
 Hepsi tek veritabanı işleminde (oturum bağlantısı) çalışır: ya tamamı uygulanır ya hiçbiri.
 """
 import logging
@@ -52,6 +55,39 @@ ARSA_SUTUNLARI = [
     ('kimden', 'VARCHAR(20)'),
     ('ozellikler', 'JSON'),
 ]
+
+
+# Bu dalda eklenen tablolar: Supabase PostgREST public şemayı dışa açtığı için RLS açık, anon/authenticated yetkisiz
+YENI_TABLOLAR = ('kurulum_isaretleri', 'gayrimenkul_sahipleri', 'ilanlar', 'ilan_gayrimenkulleri',
+                 'ilan_emsalleri', 'portfolio_ilanlar')
+REST_ROLLERI = ('anon', 'authenticated')
+
+
+def _rls_ac():
+    """Yeni tablolarda RLS'yi açar, REST rollerinin yetkilerini kaldırır (yalnız gerekiyorsa)."""
+    if db.engine.dialect.name != 'postgresql':
+        return
+    kapali = db.session.execute(text(
+        "SELECT c.relname FROM pg_class c WHERE c.relkind = 'r' AND c.relnamespace = 'public'::regnamespace "
+        "AND c.relname = ANY(:t) AND NOT c.relrowsecurity ORDER BY c.relname"),
+        {'t': list(YENI_TABLOLAR)}).scalars().all()
+    roller = db.session.execute(text("SELECT rolname FROM pg_roles WHERE rolname = ANY(:r) ORDER BY rolname"),
+                                {'r': list(REST_ROLLERI)}).scalars().all()
+    yetkili = []
+    if roller:
+        yetkili = db.session.execute(text(
+            "SELECT DISTINCT table_name FROM information_schema.role_table_grants "
+            "WHERE table_schema = 'public' AND table_name = ANY(:t) AND grantee = ANY(:r) ORDER BY table_name"),
+            {'t': list(YENI_TABLOLAR), 'r': list(roller)}).scalars().all()
+    if not kapali and not yetkili:
+        return
+    db.session.execute(text("SET LOCAL lock_timeout = '10s'"))
+    for t in kapali:
+        db.session.execute(text(f'ALTER TABLE public."{t}" ENABLE ROW LEVEL SECURITY'))
+    rol_listesi = ', '.join(f'"{r}"' for r in roller)
+    for t in yetkili:
+        db.session.execute(text(f'REVOKE ALL ON TABLE public."{t}" FROM {rol_listesi}'))
+    log.info("İlan kurulumu: RLS açıldı %s, yetki kaldırıldı %s", list(kapali), list(yetkili))
 
 
 def _sema_tamam_mi():
@@ -137,6 +173,7 @@ def kur():
             _portfoyleri_kopyala()
             db.session.add(KurulumIsareti(ad=GECIS_ISARETI))
             log.info("İlan kurulumu: veri geçişi tamamlandı (%s).", GECIS_ISARETI)
+        _rls_ac()
         db.session.commit()
     except Exception:
         db.session.rollback()
