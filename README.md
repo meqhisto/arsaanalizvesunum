@@ -97,6 +97,10 @@ ve **ilan** (`/ilanlar`; satılık, kiralık ya da kat karşılığı teklif). B
   tablosundaki `ilan_gecisi_v1` satırıdır. Canlıya almadan önce Supabase yedeği alınmalıdır.
 - REST API (`/api/v1/analysis`) geriye dönük uyumludur; yanıtlara salt-okunur `tur`, `alt_tur`, `baslik` ve
   `aktif_ilan` (`{kod, teklif_tipi, durum, fiyat}` ya da `null`) eklenmiştir.
+- `/api/v1/portfolio*` uç noktaları değiştirilmedi ve hâlâ eski `portfolio_arsalar` tablosunu okur. Web arayüzü bu
+  tabloya artık yazmaz; tablo geçiş anındaki portföy içeriğinin anlık görüntüsü olarak kalır (yalnız eski API'nin
+  ekleme uç noktası hâlâ yazabilir). Web portföyleri `portfolio_ilanlar` üzerinden ilan içerir; iki görünüm zamanla
+  farklılaşabilir.
 
 ## Raporlar (PDF / Word / PowerPoint)
 
@@ -113,7 +117,11 @@ Marka bilgileri `.env` üzerinden ayarlanır; boş bırakılırsa raporu indiren
 | `REPORT_PRIMARY_COLOR`, `REPORT_ACCENT_COLOR` | Ana ve vurgu rengi |
 | `REPORT_TILE_URL` | Harita karo sunucusu (varsayılan OpenStreetMap) |
 
-Değer projeksiyonu analizdeki "Yıllık Değer Artış Oranı" alanını kullanır; boşsa model tahmini kullanılır.
+Değer projeksiyonu kaldırılmıştır; yerine **Fiyat ve Emsal Analizi** bölümü vardır. İlanın emsallerinden bölge m²
+fiyatı (kat karşılığında ortalama arsa sahibi payı) hesaplanır; emsal yoksa ilandaki elle girilen bölge fiyatı
+kullanılır. İstenen fiyat/pay bu ortalamayla karşılaştırılır ve konumlandırma (altında / aynı seviyede / üzerinde)
+yazılır; emsal tablosu ve kat karşılığı şartları (sahibe düşen inşaat alanı, KAKS eksik parsel uyarısı) aynı
+bölümdedir. Fiyatsız tanıtım raporunda bu bölüm boştur.
 
 ## Veritabanı: Supabase
 
