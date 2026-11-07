@@ -1,0 +1,52 @@
+{# Emsal satırları (ekle/sil). Değişken: emsal_satirlari (konum, m2, fiyat, pay_yuzde, link, notlar) #}
+{% macro emsal_satiri(e) -%}
+<div class="border rounded p-2 mb-2" data-emsal-satir>
+    <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+            <label class="form-label small mb-1">Konum</label>
+            <input class="form-control form-control-sm" name="emsal_konum[]" maxlength="200" value="{{ e.konum }}" placeholder="Mahalle, sokak">
+        </div>
+        <div class="col-6 col-md-2" data-teklif="satilik kiralik">
+            <label class="form-label small mb-1">m²</label>
+            <input class="form-control form-control-sm" name="emsal_m2[]" inputmode="decimal" value="{{ e.m2 }}" data-emsal="m2">
+        </div>
+        <div class="col-6 col-md-3" data-teklif="satilik kiralik">
+            <label class="form-label small mb-1">Fiyat / kira (TL)</label>
+            <input class="form-control form-control-sm" name="emsal_fiyat[]" inputmode="decimal" value="{{ e.fiyat }}" data-emsal="fiyat">
+        </div>
+        <div class="col-6 col-md-2" data-teklif="kat_karsiligi">
+            <label class="form-label small mb-1">Sahip payı %</label>
+            <input class="form-control form-control-sm" name="emsal_pay[]" inputmode="decimal" value="{{ e.pay_yuzde }}" data-emsal="pay">
+        </div>
+        <div class="col-12 col-md-5">
+            <label class="form-label small mb-1">Link</label>
+            <input class="form-control form-control-sm" name="emsal_link[]" type="url" maxlength="500" value="{{ e.link }}" placeholder="https://">
+        </div>
+        <div class="col-10 col-md-6">
+            <label class="form-label small mb-1">Not</label>
+            <input class="form-control form-control-sm" name="emsal_not[]" value="{{ e.notlar }}">
+        </div>
+        <div class="col-2 col-md-1 text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger" data-emsal-sil aria-label="Emsali sil" title="Sil"><i class="fas fa-trash"></i></button>
+        </div>
+    </div>
+</div>
+{%- endmacro %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+            <h6 class="mb-0">4. Emsaller</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="emsalEkle"><i class="fas fa-plus me-1"></i>Satır ekle</button>
+        </div>
+        <div id="emsalSatirlari">
+            {% for e in emsal_satirlari %}{{ emsal_satiri(e) }}{% endfor %}
+        </div>
+        <div class="small text-muted mb-3 {% if emsal_satirlari %}d-none{% endif %}" id="emsalBos">Emsal eklenmedi. Emsal yoksa bölge değerini aşağıya elle girebilirsiniz.</div>
+        <template id="emsalSablon">{{ emsal_satiri({'konum': '', 'm2': '', 'fiyat': '', 'pay_yuzde': '', 'link': '', 'notlar': ''}) }}</template>
+
+        <div class="alert alert-light border mb-0" id="karsilastirma" aria-live="polite">
+            <div class="small text-muted">Karşılaştırma için emsal ya da bölge değeri girin.</div>
+        </div>
+        <div class="form-text">Kesin karşılaştırma kayıttan sonra ilan sayfasında gösterilir.</div>
+    </div>
+</div>

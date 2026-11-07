@@ -12,7 +12,7 @@
 <div class="d-flex flex-wrap gap-2">
     <a href="{{ url_for('analysis.analizler') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Liste</a>
     <a href="{{ url_for('analysis.edit_analysis', analysis_id=g.id) }}" class="btn btn-outline-primary"><i class="fas fa-pen me-1"></i>Düzenle</a>
-    <a href="/ilanlar/yeni?gayrimenkul={{ g.id }}" class="btn btn-primary"><i class="fas fa-bullhorn me-1"></i>Yeni ilan oluştur</a>
+    <a href="{{ url_for('ilan.yeni', gayrimenkul=g.id) }}" class="btn btn-primary"><i class="fas fa-bullhorn me-1"></i>Yeni ilan oluştur</a>
     <form method="post" action="{{ url_for('analysis.analiz_sil', analiz_id=g.id) }}" class="d-inline"
           onsubmit="return confirm('Bu gayrimenkul, fotoğrafları ve yalnız bu kaydı içeren ilanlarıyla birlikte silinecek. Emin misiniz?');">
         {{ csrf() }}
@@ -157,7 +157,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
                     <h6 class="mb-0"><i class="fas fa-bullhorn me-2 text-primary"></i>Yer aldığı ilanlar</h6>
-                    <a href="/ilanlar/yeni?gayrimenkul={{ g.id }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-plus"></i><span class="ms-1">Yeni ilan</span></a>
+                    <a href="{{ url_for('ilan.yeni', gayrimenkul=g.id) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-plus"></i><span class="ms-1">Yeni ilan</span></a>
                 </div>
                 {% if ilanlar %}
                 <div class="table-responsive">
@@ -166,7 +166,7 @@
                         <tbody>
                             {% for i in ilanlar %}
                             <tr>
-                                <td class="text-nowrap">{% if i.id in gorunur_ilan_idleri %}<a href="/ilanlar/{{ i.id }}" class="text-decoration-none">{{ i.kod }}</a>{% else %}{{ i.kod }}{% endif %}</td>
+                                <td class="text-nowrap">{% if i.id in gorunur_ilan_idleri %}<a href="{{ url_for('ilan.detay', ilan_id=i.id) }}" class="text-decoration-none">{{ i.kod }}</a>{% else %}{{ i.kod }}{% endif %}</td>
                                 <td class="small">{{ sabit.etiket(sabit.TEKLIF_TIPLERI, i.teklif_tipi) }}</td>
                                 <td><span class="badge text-bg-{{ DURUM_RENK.get(i.durum, 'secondary') }}">{{ sabit.etiket(sabit.DURUMLAR, i.durum) }}</span></td>
                                 <td class="small text-nowrap">{{ i.created_at.strftime('%d.%m.%Y') if i.created_at else '' }}</td>

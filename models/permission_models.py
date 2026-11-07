@@ -1,6 +1,7 @@
 # models/permission_models.py
 from models import db
 from datetime import datetime
+from flask import url_for
 
 class PermissionTemplate(db.Model):
     """Rol bazlı yetki şablonları"""
@@ -227,7 +228,7 @@ class PermissionManager:
             menu_items.append({
                 'title': 'İlanlar',
                 'icon': 'fas fa-bullhorn',
-                'url': '/ilanlar/',
+                'url': url_for('ilan.liste'),
                 'active': True
             })
         
