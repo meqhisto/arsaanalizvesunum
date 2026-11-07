@@ -58,3 +58,35 @@ def test_api_analiz_listesi_eski_alanlar_ve_yeni_alanlar(app, kullanicilar):
     assert r.status_code == 200
     up = r.get_json()['data']
     assert up['tur'] == 'arsa' and up['aktif_ilan']['kod'] == 'ILN-2026-0001'
+
+
+def test_api_silme_ilanlari_temizler(app, kullanicilar):
+    """API DELETE web silme yolunu kullanır: tek gayrimenkullü ilan silinir, çoklu ilandan yalnız bağ çıkar."""
+    br = kullanicilar['broker']
+    tek = ArsaAnaliz(user_id=br, il='Çanakkale', ilce='Merkez', mahalle='Kepez', ada='1', parsel='1',
+                     metrekare=500, fiyat=1000000, tur='arsa')
+    a1 = ArsaAnaliz(user_id=br, il='Çanakkale', ilce='Merkez', mahalle='Kepez', ada='2', parsel='1',
+                    metrekare=500, fiyat=1000000, tur='arsa')
+    a2 = ArsaAnaliz(user_id=br, il='Çanakkale', ilce='Merkez', mahalle='Kepez', ada='2', parsel='2',
+                    metrekare=500, fiyat=1000000, tur='arsa')
+    db.session.add_all([tek, a1, a2])
+    db.session.flush()
+    i_tek = Ilan(kod='ILN-2026-0001', baslik='Tek', user_id=br, sorumlu_user_id=br,
+                 teklif_tipi='satilik', durum='pazarlamada', fiyat=1000000)
+    i_tek.baglar.append(IlanGayrimenkul(gayrimenkul=tek, ana_kayit=True, sira=1))
+    i_cift = Ilan(kod='ILN-2026-0002', baslik='Çift', user_id=br, sorumlu_user_id=br,
+                  teklif_tipi='satilik', durum='pazarlamada', fiyat=2000000)
+    i_cift.baglar.append(IlanGayrimenkul(gayrimenkul=a1, ana_kayit=True, sira=1))
+    i_cift.baglar.append(IlanGayrimenkul(gayrimenkul=a2, ana_kayit=False, sira=2))
+    db.session.add_all([i_tek, i_cift])
+    db.session.commit()
+    tek_id, a1_id, a2_id, i_tek_id, i_cift_id = tek.id, a1.id, a2.id, i_tek.id, i_cift.id
+
+    H = {'Authorization': f'Bearer {_token(app, "broker@test.com")}'}
+    assert app.test_client().delete(f'/api/v1/analysis/{tek_id}', headers=H).status_code == 200
+    assert app.test_client().delete(f'/api/v1/analysis/{a1_id}', headers=H).status_code == 200
+    db.session.expire_all()
+    assert db.session.get(Ilan, i_tek_id) is None
+    cift = db.session.get(Ilan, i_cift_id)
+    assert cift is not None and [b.gayrimenkul_id for b in cift.baglar] == [a2_id]
+    assert ArsaAnaliz.query.filter(ArsaAnaliz.id.in_([tek_id, a1_id])).count() == 0

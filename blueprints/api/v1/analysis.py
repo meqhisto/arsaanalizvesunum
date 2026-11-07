@@ -7,8 +7,8 @@ import os
 import tempfile
 
 from models import db
-from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats, AnalizMedya
-from models.user_models import Portfolio, portfolio_arsalar, User
+from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats
+from models.user_models import Portfolio, User
 from ..schemas.analysis_schemas import (
     ArsaAnalizSchema, ArsaAnalizCreateSchema, ArsaAnalizUpdateSchema,
     ArsaAnalizFilterSchema, BolgeDagilimiSchema, DashboardStatsSchema,
@@ -469,11 +469,10 @@ def delete_analysis(analysis_id):
     if not analysis:
         return not_found_response("Analysis not found")
     
-    # Bağlı kayıtlar: fotoğraflar ve portföy bağlantıları (iş takip bağlantısı DB'de SET NULL)
-    AnalizMedya.query.filter_by(analiz_id=analysis.id).delete(synchronize_session=False)
-    db.session.execute(portfolio_arsalar.delete().where(portfolio_arsalar.c.arsa_id == analysis.id))
+    # Web silme yoluyla aynı: medya (dosyalarıyla), portföy bağları, ilanlar (gayrimenkul_silinirken), istatistikler
+    from blueprints.analysis_bp import _analizi_sil
     il, ilce = analysis.il, analysis.ilce
-    db.session.delete(analysis)
+    _analizi_sil(analysis)
     db.session.commit()
     
     # Dashboard istatistiklerini güncelle
