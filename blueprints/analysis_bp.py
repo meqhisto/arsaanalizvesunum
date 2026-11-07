@@ -17,6 +17,8 @@ from typing import Any # For type hinting
 # Modelleri ve db nesnesini models paketinden import et
 from models import db
 from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats, AnalizMedya
+# Panel/bölge istatistik yardımcıları (ilan_servis de kullanır)
+from modules.gayrimenkul_istatistik import istatistiklere_ekle as _istatistiklere_ekle
 
 # Flask uygulamasının yapılandırmasına erişmek için current_app
 from flask import current_app
@@ -280,7 +282,7 @@ def export_pdf():
         )
 
         # Add title
-        title = Paragraph("Arsa Analiz Raporu", title_style)
+        title = Paragraph("Gayrimenkul Listesi", title_style)
         elements.append(title)
         elements.append(Spacer(1, 12))
 
@@ -398,11 +400,8 @@ def edit_analysis(analysis_id):
     hatalar = formdan_gayrimenkul(request.form, gayrimenkul)
     if not hatalar:
         try:
-            eski_fiyat = gayrimenkul.fiyat
-            ilan = _sahipler_ve_ilan(gayrimenkul, request.form)
-            if ilan is not None and ilan.teklif_tipi == 'satilik' and ilan.fiyat is not None:
-                gayrimenkul.fiyat = ilan.fiyat
-                _istatistik_fiyat_degisti(gayrimenkul, eski_fiyat)
+            # Aktif satılık ilan açılırsa fiyat ve istatistikler ilan_kaydet içinde eşitlenir
+            _sahipler_ve_ilan(gayrimenkul, request.form)
             db.session.commit()
         except IlanHatasi as e:
             hatalar = [str(e)]
@@ -589,64 +588,6 @@ def generate_pptx_report(analysis_id):
     return _report_or_redirect(gayrimenkul_or_404(analysis_id, current_user), 'pptx')
 
 
-def _istatistiklere_ekle(gayrimenkul):
-    """Panel ve bölge istatistiklerine yeni kaydı ekler (commit etmez)."""
-    user_id = gayrimenkul.user_id
-    fiyat = Decimal(str(gayrimenkul.fiyat or 0))
-    stats = DashboardStats.query.filter_by(user_id=user_id).first()
-    if not stats:
-        stats = DashboardStats()
-        stats.user_id = user_id
-        db.session.add(stats)
-    stats.toplam_arsa_sayisi = (stats.toplam_arsa_sayisi or 0) + 1
-    stats.toplam_deger = (stats.toplam_deger or Decimal(0)) + fiyat
-    fiyat_f = float(fiyat)
-    if stats.toplam_arsa_sayisi == 1:
-        stats.ortalama_fiyat = stats.en_yuksek_fiyat = stats.en_dusuk_fiyat = fiyat_f
-    else:
-        stats.ortalama_fiyat = (((stats.ortalama_fiyat or 0.0) * (stats.toplam_arsa_sayisi - 1)) + fiyat_f) \
-            / stats.toplam_arsa_sayisi
-        stats.en_yuksek_fiyat = max((stats.en_yuksek_fiyat or 0.0), fiyat_f)
-        stats.en_dusuk_fiyat = min(stats.en_dusuk_fiyat if stats.en_dusuk_fiyat is not None else fiyat_f, fiyat_f)
-    stats.son_guncelleme = datetime.utcnow()
-
-    bolge = BolgeDagilimi.query.filter_by(user_id=user_id, il=gayrimenkul.il).first()
-    if not bolge:
-        bolge = BolgeDagilimi()
-        bolge.user_id = user_id
-        bolge.il = gayrimenkul.il
-        bolge.analiz_sayisi = 0
-        bolge.toplam_deger = Decimal('0.00')
-        db.session.add(bolge)
-    bolge.analiz_sayisi = (bolge.analiz_sayisi or 0) + 1
-    bolge.toplam_deger = (bolge.toplam_deger or Decimal(0)) + fiyat
-    bolge.son_guncelleme = datetime.utcnow()
-
-
-def _istatistik_fiyat_degisti(gayrimenkul, eski_fiyat):
-    """Kayıtlı gayrimenkulün fiyatı değişince panel/bölge istatistiklerini düzeltir (commit etmez)."""
-    fark = Decimal(str(gayrimenkul.fiyat or 0)) - Decimal(str(eski_fiyat or 0))
-    if not fark:
-        return
-    user_id = gayrimenkul.user_id
-    stats = DashboardStats.query.filter_by(user_id=user_id).first()
-    if stats:
-        db.session.flush()
-        sayi, en_yuksek, en_dusuk = (db.session.query(db.func.count(ArsaAnaliz.id), db.func.max(ArsaAnaliz.fiyat),
-                                                       db.func.min(ArsaAnaliz.fiyat))
-                                     .filter(ArsaAnaliz.user_id == user_id).one())
-        stats.toplam_deger = (stats.toplam_deger or Decimal(0)) + fark
-        if sayi:
-            stats.ortalama_fiyat = float(stats.toplam_deger) / sayi
-            stats.en_yuksek_fiyat = float(en_yuksek or 0)
-            stats.en_dusuk_fiyat = float(en_dusuk or 0)
-        stats.son_guncelleme = datetime.utcnow()
-    bolge = BolgeDagilimi.query.filter_by(user_id=user_id, il=gayrimenkul.il).first()
-    if bolge:
-        bolge.toplam_deger = (bolge.toplam_deger or Decimal(0)) + fark
-        bolge.son_guncelleme = datetime.utcnow()
-
-
 @analysis_bp.route('/create', methods=['POST'])
 @login_required
 def create_analysis():
@@ -660,11 +601,10 @@ def create_analysis():
     try:
         db.session.add(gayrimenkul)
         db.session.flush()
-        ilan = _sahipler_ve_ilan(gayrimenkul, request.form)
-        # Panel istatistikleri fiyat alanına bakar: satış ilanı açıldıysa onun fiyatı, değilse 0
-        if ilan is not None and ilan.teklif_tipi == 'satilik' and ilan.fiyat is not None:
-            gayrimenkul.fiyat = ilan.fiyat
+        # Panel istatistikleri fiyat alanına bakar: önce 0 ile eklenir; aktif satılık ilan açılırsa
+        # ilan_kaydet fiyatı eşitler ve farkı istatistiğe yansıtır
         _istatistiklere_ekle(gayrimenkul)
+        ilan = _sahipler_ve_ilan(gayrimenkul, request.form)
         db.session.commit()
     except IlanHatasi as e:
         db.session.rollback()

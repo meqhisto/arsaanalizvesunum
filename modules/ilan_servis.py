@@ -260,7 +260,28 @@ def ilan_kaydet(ilan, user, veri):
     ilan.baglar = yeni_baglar
 
     ilan.emsaller = [IlanEmsal(**e) for e in emsaller]
+    gayrimenkul_fiyatini_esitle(ilan)
     return ilan
+
+
+def gayrimenkul_fiyatini_esitle(ilan):
+    """Aktif (pazarlamada/opsiyonlu), satılık, tek gayrimenkullü ilanın fiyatını gayrimenkulün eski `fiyat`
+    alanına yazar ve panel/bölge istatistiklerini farkla günceller (commit etmez).
+
+    Portföy kartları dışındaki eski ekranlar (panel toplamları, liste dışa aktarımları, API) bu alanı okur.
+    """
+    from modules.gayrimenkul_istatistik import istatistik_fiyat_degisti
+    if ilan.teklif_tipi != 'satilik' or ilan.durum not in AKTIF_DURUMLAR or ilan.fiyat is None:
+        return
+    if len(ilan.baglar) != 1 or ilan.baglar[0].gayrimenkul is None:
+        return
+    g = ilan.baglar[0].gayrimenkul
+    yeni = Decimal(str(ilan.fiyat))
+    eski = g.fiyat
+    if eski is not None and Decimal(str(eski)) == yeni:
+        return
+    g.fiyat = yeni
+    istatistik_fiyat_degisti(g, eski)
 
 
 # ---------------------------------------------------------------- özet

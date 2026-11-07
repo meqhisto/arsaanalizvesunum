@@ -149,18 +149,25 @@
                             {% if a.imar_durumu %}<span class="badge bg-primary bg-opacity-10 text-primary me-1">{{ a.imar_durumu }}</span>{% endif %}
                             <i class="fas fa-calendar ms-1 me-1"></i>{{ a.created_at.strftime('%d.%m.%Y') if a.created_at else '' }}
                         </div>
+                        {# Fiyat aktif ilandan (teklif tipine göre); eski fiyat alanı gösterilmez #}
+                        {% set aktif = a.aktif_ilan %}
                         <div class="row text-center">
                             <div class="col-4 border-end">
                                 <h6 class="text-primary mb-0">{{ (a.metrekare or 0)|tr_sayi }}</h6>
                                 <small class="text-muted">m²</small>
                             </div>
                             <div class="col-4 border-end">
-                                <h6 class="mb-0">{{ ((a.fiyat / a.metrekare) if a.metrekare else 0)|tr_sayi }}</h6>
+                                <h6 class="mb-0">{% if aktif and aktif.teklif_tipi == 'satilik' and aktif.fiyat is not none and a.metrekare %}{{ (aktif.fiyat / a.metrekare)|tr_sayi }}{% else %}—{% endif %}</h6>
                                 <small class="text-muted">TL/m²</small>
                             </div>
                             <div class="col-4">
-                                <h6 class="text-success mb-0">{{ (a.fiyat or 0)|tr_para }}</h6>
-                                <small class="text-muted">Fiyat</small>
+                                {% if aktif %}
+                                <h6 class="text-success mb-0">{% with i = aktif %}{% include "gayrimenkul/_ilan_fiyat.html" %}{% endwith %}</h6>
+                                <small class="text-muted">{{ aktif.kod }}</small>
+                                {% else %}
+                                <h6 class="text-muted mb-0">—</h6>
+                                <small class="text-muted">Aktif ilan yok</small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

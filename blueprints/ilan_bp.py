@@ -424,6 +424,7 @@ def durum(ilan_id):
                       'danger')
                 return redirect(url_for('ilan.detay', ilan_id=i.id))
     i.durum = yeni_durum
+    ilan_servis.gayrimenkul_fiyatini_esitle(i)
     db.session.commit()
     flash(f"Durum: {sabit.etiket(sabit.DURUMLAR, yeni_durum)}.", 'success')
     return redirect(url_for('ilan.detay', ilan_id=i.id))
