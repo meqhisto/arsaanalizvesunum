@@ -106,8 +106,27 @@
 
     /* Dashboard Content */
     .dashboard-content {
-        flex: 1;
+        flex: 1 1 auto;
+        min-width: 0; /* esnek kutu içinde geniş tablolar sayfayı genişletmesin */
         padding: 2rem;
+    }
+
+    /* Eski ortak CSS (unified-bootstrap-tailwind.css) yüklenen sayfalarda yan menüyü
+       !important ile gizleyen/kaydıran kuralları geçersiz kıl */
+    @media (min-width: 992px) {
+        #sidebar.sidebar { transform: none !important; top: 0; height: 100vh; }
+    }
+    @media (max-width: 991.98px) {
+        #sidebar.sidebar { top: 56px; height: calc(100vh - 56px); z-index: 1021; }
+        #sidebar.sidebar.show { transform: translateX(0) !important; }
+        #sidebar.sidebar.show::before { content: none; }
+    }
+
+    @media (max-width: 991.98px) {
+        .dashboard-content { padding: 1rem; }
+        .page-header .d-flex, .page-header.d-flex { flex-wrap: wrap; gap: .5rem; }
+        .dashboard-content table:not(.table-responsive table) { display: block; overflow-x: auto; }
+        .dashboard-content img, .dashboard-content canvas { max-width: 100%; height: auto; }
     }
 
     /* Desktop dashboard content */
@@ -972,7 +991,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
-{% block extra_js %}
+{# Ortak yerleşim betiği: alt şablonlar extra_js bloğunu ezse bile her sayfada çalışmalı (mobil menü vb.) #}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Sidebar toggle functionality
@@ -1056,7 +1075,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Enhanced card hover effects
-    const cards = document.querySelectorAll('.card');
+    // Yalnız fareli cihazlarda: dokunmatikte mouseenter ile stil değişince ilk dokunuş bağlantıyı açmıyor
+    const cards = window.matchMedia('(hover: hover) and (pointer: fine)').matches ? document.querySelectorAll('.card') : [];
     cards.forEach(card => {
         card.addEventListener('mouseenter', function() {
             this.style.transform = 'translateY(-2px)';
@@ -1193,4 +1213,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Bootstrap Bundle JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-{% endblock %}
+{% block extra_js %}{% endblock %}

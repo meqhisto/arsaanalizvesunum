@@ -1,181 +1,54 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+{# CRM sayfaları ortak yerleşimi: mobil uyumlu dashboard_base üzerine kurulu. #}
 
 {% block title %}{% block crm_title %}CRM Modülü{% endblock %} - Arsa Analiz Platformu{% endblock %}
 
-{% block meta_description %}{% block crm_meta_description %}CRM modülü - Müşteri ilişkileri yönetimi, kişiler, şirketler, fırsatlar ve görevler{% endblock %}{% endblock %}
-
 {% block extra_css %}
-<!-- Bootstrap Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-
+<link href="{{ url_for('static', filename='css/unified-bootstrap-tailwind.css') }}" rel="stylesheet">
+<style>
+  .crm-nav { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+  .crm-nav .nav-link { white-space: nowrap; }
+</style>
 {% block crm_extra_css %}{% endblock %}
 {% endblock %}
 
-{% block content %}
-<!-- CRM Header -->
-<div class="crm-header sticky top-16 z-40 mb-6">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Header Content -->
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between py-6">
-      <!-- Title Section -->
-      <div class="flex items-center space-x-4">
-        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-          <i class="fas fa-users text-white text-xl"></i>
-        </div>
-        <div>
-          <h1 class="text-2xl lg:text-3xl font-bold" style="color: var(--text-primary);">
-            CRM Sistemi
-          </h1>
-          <p class="text-sm" style="color: var(--text-secondary);">
-            Müşteri ilişkileri yönetim sistemi
-          </p>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="mt-4 lg:mt-0 flex items-center space-x-3">
-        <a href="{{ url_for('crm.crm_contact_add') }}" class="btn-primary">
-          <i class="fas fa-plus mr-2"></i>Yeni Kişi
-        </a>
-        <a href="{{ url_for('crm.crm_import_wizard') }}" class="btn-secondary">
-          <i class="fas fa-file-import mr-2"></i>Import
-        </a>
-      </div>
-    </div>
-
-    <!-- CRM Navigation -->
-    <nav class="border-t" style="border-color: var(--border-color);">
-      <!-- Mobile Navigation Toggle -->
-      <div class="sm:hidden py-4">
-        <button id="mobile-nav-toggle" class="w-full flex items-center justify-between px-4 py-3 rounded-lg border" style="border-color: var(--border-color); background-color: var(--bg-primary);">
-          <span class="font-medium" style="color: var(--text-primary);">CRM Menü</span>
-          <i class="fas fa-chevron-down transition-transform duration-200" style="color: var(--text-secondary);" id="mobile-nav-icon"></i>
-        </button>
-      </div>
-
-      <!-- Desktop Navigation -->
-      <div class="hidden sm:flex items-center space-x-1 py-4 overflow-x-auto" id="desktop-nav">
-        <a href="{{ url_for('crm.crm_dashboard') }}"
-           class="nav-tab {% if 'crm_dashboard' in request.endpoint %}active{% endif %}">
-          <i class="fas fa-chart-line mr-2"></i>Dashboard
-        </a>
-          <a href="{{ url_for('crm.crm_contacts_list') }}"
-             class="nav-tab {% if 'crm_contact' in request.endpoint %}active{% endif %}">
-            <i class="fas fa-user mr-2"></i>Kişiler
-          </a>
-          <a href="{{ url_for('crm.crm_companies_list') }}"
-             class="nav-tab {% if 'crm_company' in request.endpoint %}active{% endif %}">
-            <i class="fas fa-building mr-2"></i>Şirketler
-          </a>
-          <a href="{{ url_for('crm.crm_import_wizard') }}"
-             class="nav-tab {% if 'crm_import' in request.endpoint %}active{% endif %}">
-            <i class="fas fa-file-import mr-2"></i>Import
-          </a>
-          <a href="{{ url_for('crm.crm_deals_list') }}"
-             class="nav-tab {% if 'crm_deal' in request.endpoint %}active{% endif %}">
-            <i class="fas fa-handshake mr-2"></i>Fırsatlar
-          </a>
-          <a href="{{ url_for('crm.crm_tasks_list') }}"
-             class="nav-tab {% if 'crm_task' in request.endpoint %}active{% endif %}">
-            <i class="fas fa-tasks mr-2"></i>Görevler
-          </a>
-          {% if current_user.role == 'broker' %}
-          <a href="{{ url_for('crm.crm_team_management') }}"
-             class="nav-tab {% if 'crm_team_management' in request.endpoint %}active{% endif %}">
-            <i class="fas fa-users-cog mr-2"></i>Ekip
-          </a>
-          {% endif %}
-        </div>
-
-        <!-- Mobile Navigation Menu -->
-        <div class="sm:hidden hidden flex-col gap-2 mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200" id="mobile-nav-menu">
-          <a href="{{ url_for('crm.crm_dashboard') }}"
-             class="nav-tab {% if 'crm_dashboard' in request.endpoint %}active{% endif %} w-full justify-start">
-            <i class="fas fa-chart-line mr-3"></i>Dashboard
-          </a>
-          <a href="{{ url_for('crm.crm_contacts_list') }}"
-             class="nav-tab {% if 'crm_contact' in request.endpoint %}active{% endif %} w-full justify-start">
-            <i class="fas fa-user mr-3"></i>Kişiler
-          </a>
-          <a href="{{ url_for('crm.crm_companies_list') }}"
-             class="nav-tab {% if 'crm_company' in request.endpoint %}active{% endif %} w-full justify-start">
-            <i class="fas fa-building mr-3"></i>Şirketler
-          </a>
-          <a href="{{ url_for('crm.crm_import_wizard') }}"
-             class="nav-tab {% if 'crm_import' in request.endpoint %}active{% endif %} w-full justify-start">
-            <i class="fas fa-file-import mr-3"></i>Import
-          </a>
-          <a href="{{ url_for('crm.crm_deals_list') }}"
-             class="nav-tab {% if 'crm_deal' in request.endpoint %}active{% endif %} w-full justify-start">
-            <i class="fas fa-handshake mr-3"></i>Fırsatlar
-          </a>
-          <a href="{{ url_for('crm.crm_tasks_list') }}"
-             class="nav-tab {% if 'crm_task' in request.endpoint %}active{% endif %} w-full justify-start">
-            <i class="fas fa-tasks mr-3"></i>Görevler
-          </a>
-          {% if current_user.role == 'broker' %}
-          <a href="{{ url_for('crm.crm_team_management') }}"
-             class="nav-tab {% if 'crm_team_management' in request.endpoint %}active{% endif %} w-full justify-start">
-            <i class="fas fa-users-cog mr-3"></i>Ekip
-          </a>
-          {% endif %}
-        </div>
-      </nav>
-    </div>
-  </div>
-</div>
-<!-- Hatırlatıcı Bildirimleri -->
-<div class="fixed top-4 right-4 z-50">
-  <div class="relative">
-    <button id="reminderDropdown" class="btn btn-outline-primary relative" data-bs-toggle="dropdown" aria-expanded="false">
+{% block page_title %}CRM{% endblock %}
+{% block page_description %}Müşteri ilişkileri yönetimi{% endblock %}
+{% block page_actions %}
+<div class="d-flex flex-wrap gap-2 align-items-center">
+  <div class="dropdown">
+    <button id="reminderDropdown" class="btn btn-outline-primary position-relative" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Hatırlatıcılar">
       <i class="fas fa-bell"></i>
-      <span id="reminder-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+      <span id="reminder-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger hidden">0</span>
     </button>
-    <ul id="reminder-list" class="dropdown-menu dropdown-menu-end" aria-labelledby="reminderDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+    <ul id="reminder-list" class="dropdown-menu dropdown-menu-end" aria-labelledby="reminderDropdown" style="width: min(320px, 90vw); max-height: 400px; overflow-y: auto;">
       <li><span class="dropdown-item text-center">Hatırlatıcılar yükleniyor...</span></li>
     </ul>
   </div>
+  <a href="{{ url_for('crm.crm_contact_add') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Yeni Kişi</a>
+  <a href="{{ url_for('crm.crm_import_wizard') }}" class="btn btn-outline-secondary"><i class="fas fa-file-import me-1"></i>Import</a>
 </div>
-
-<!-- CRM İçerik Alanı -->
-{% block crm_content %}
-<!-- CRM sayfalarına özgü içerik buraya gelecek -->
-{% endblock %}
 {% endblock %}
 
-{% block extra_js %}
-<!-- CRM specific JavaScript -->
-<script src="{{ url_for('static', filename='js/contact_form.js') }}"></script>
-<script src="{{ url_for('static', filename='js/task_form.js') }}"></script>
-<script src="{{ url_for('static', filename='js/reminders.js') }}"></script>
+{% block dashboard_content %}
+<ul class="nav nav-pills crm-nav gap-1 mb-4 pb-1 border-bottom">
+  {% set uc = request.endpoint or '' %}
+  <li class="nav-item"><a class="nav-link {% if 'crm_dashboard' in uc %}active{% endif %}" href="{{ url_for('crm.crm_dashboard') }}"><i class="fas fa-chart-line me-1"></i>Panel</a></li>
+  <li class="nav-item"><a class="nav-link {% if 'crm_contact' in uc %}active{% endif %}" href="{{ url_for('crm.crm_contacts_list') }}"><i class="fas fa-user me-1"></i>Kişiler</a></li>
+  <li class="nav-item"><a class="nav-link {% if 'crm_compan' in uc %}active{% endif %}" href="{{ url_for('crm.crm_companies_list') }}"><i class="fas fa-building me-1"></i>Şirketler</a></li>
+  <li class="nav-item"><a class="nav-link {% if 'crm_deal' in uc %}active{% endif %}" href="{{ url_for('crm.crm_deals_list') }}"><i class="fas fa-handshake me-1"></i>Fırsatlar</a></li>
+  <li class="nav-item"><a class="nav-link {% if 'crm_task' in uc %}active{% endif %}" href="{{ url_for('crm.crm_tasks_list') }}"><i class="fas fa-tasks me-1"></i>Görevler</a></li>
+  <li class="nav-item"><a class="nav-link {% if 'crm_import' in uc %}active{% endif %}" href="{{ url_for('crm.crm_import_wizard') }}"><i class="fas fa-file-import me-1"></i>Import</a></li>
+  {% if current_user.role == 'broker' %}
+  <li class="nav-item"><a class="nav-link {% if 'crm_team' in uc %}active{% endif %}" href="{{ url_for('crm.crm_team_management') }}"><i class="fas fa-users-cog me-1"></i>Ekip</a></li>
+  {% endif %}
+</ul>
 
-<!-- Mobile Navigation JavaScript -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const mobileNavToggle = document.getElementById('mobile-nav-toggle');
-  const mobileNavMenu = document.getElementById('mobile-nav-menu');
-  const mobileNavIcon = document.getElementById('mobile-nav-icon');
-
-  if (mobileNavToggle && mobileNavMenu) {
-    mobileNavToggle.addEventListener('click', function() {
-      const isHidden = mobileNavMenu.classList.contains('hidden');
-
-      if (isHidden) {
-        mobileNavMenu.classList.remove('hidden');
-        mobileNavMenu.classList.add('flex');
-        mobileNavIcon.style.transform = 'rotate(180deg)';
-      } else {
-        mobileNavMenu.classList.add('hidden');
-        mobileNavMenu.classList.remove('flex');
-        mobileNavIcon.style.transform = 'rotate(0deg)';
-      }
-    });
-  }
-});
-</script>
+{% block crm_content %}{% endblock %}
 
 <!-- Toast Bildirimleri -->
-<div class="fixed bottom-4 right-4 z-50 space-y-2" id="toast-container">
+<div class="fixed bottom-4 right-4 z-50 space-y-2" id="crm-toast-container">
   <!-- Başarı Bildirimi -->
   <div id="successToast" class="toast hidden" role="alert" aria-live="assertive" aria-atomic="true">
     <div class="bg-green-500 text-white p-4 rounded-lg shadow-lg flex items-center justify-between">
@@ -209,5 +82,11 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/contact_form.js') }}"></script>
+<script src="{{ url_for('static', filename='js/task_form.js') }}"></script>
+<script src="{{ url_for('static', filename='js/reminders.js') }}"></script>
 {% block crm_extra_js %}{% endblock %}
 {% endblock %}
