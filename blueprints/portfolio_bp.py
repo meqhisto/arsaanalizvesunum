@@ -1,11 +1,14 @@
 # blueprints/portfolio_bp.py
-"""Portföy yönetimi: kullanıcının analizlerini ve analizlerden oluşan portföy (koleksiyon) kayıtlarını yönetir."""
+"""Portföy yönetimi: portföyler ilan içerir (spec §3.6); portfolio_arsalar yalnız okunur."""
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, current_app
 from flask_login import login_required, current_user
 
 from models import db
 from models.user_models import Portfolio
 from models.arsa_models import ArsaAnaliz
+from models.ilan_models import Ilan
+from modules import gayrimenkul_sabitleri as sabit
+from modules.ilan_servis import gorunur_gayrimenkuller, gorunur_ilanlar
 
 portfolio_bp = Blueprint('portfolio', __name__, template_folder='../templates')
 
@@ -19,15 +22,32 @@ def _own_portfolio_or_404(portfolio_id):
     return portfolio
 
 
-def _portfolio_totals(analyses):
-    toplam_fiyat = sum(float(a.fiyat or 0) for a in analyses)
-    toplam_m2 = sum(float(a.metrekare or 0) for a in analyses)
+def _portfolio_totals(ilanlar):
+    """Portföy özeti: satılık fiyatları ve kiralık aylık kiralar ayrı toplanır."""
     return {
-        'adet': len(analyses),
-        'toplam_fiyat': toplam_fiyat,
-        'toplam_m2': toplam_m2,
-        'ort_m2_fiyat': (toplam_fiyat / toplam_m2) if toplam_m2 else 0,
+        'adet': len(ilanlar),
+        'toplam_fiyat': sum(float(i.fiyat or 0) for i in ilanlar if i.teklif_tipi == 'satilik'),
+        'aylik_kira': sum(float(i.kira or 0) for i in ilanlar if i.teklif_tipi == 'kiralik'),
+        'kat_karsiligi_adet': sum(1 for i in ilanlar if i.teklif_tipi == 'kat_karsiligi'),
     }
+
+
+def _gayrimenkulun_ilani(analiz_id):
+    """Eski analiz_id için: görünür gayrimenkulün aktif ilanı, yoksa son ilanı (görünür olmalı)."""
+    g = gorunur_gayrimenkuller(current_user).filter(ArsaAnaliz.id == analiz_id).first()
+    if g is None:
+        return None
+    adaylar = [g.aktif_ilan] if g.aktif_ilan is not None else []
+    adaylar += sorted((b.ilan for b in g.ilan_baglari if b.ilan is not None),
+                      key=lambda i: (i.created_at is not None, i.created_at, i.id), reverse=True)
+    for aday in adaylar:
+        if gorunur_ilanlar(current_user).filter(Ilan.id == aday.id).first() is not None:
+            return aday
+    return None
+
+
+def _secilebilir_ilanlar():
+    return gorunur_ilanlar(current_user).order_by(Ilan.created_at.desc(), Ilan.id.desc()).all()
 
 
 @portfolio_bp.route('/portfolios')
@@ -75,23 +95,28 @@ def portfolios_list():
 @portfolio_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def portfolio_create():
-    user_analyses = ArsaAnaliz.query.filter_by(user_id=current_user.id).order_by(ArsaAnaliz.created_at.desc()).all()
+    ilanlar = _secilebilir_ilanlar()
+
+    def sayfa(form_data, kod=200, preselected=None):
+        from blueprints.ilan_bp import kart_ozeti
+        return render_template('portfolio_create.html', form_data=form_data, ilanlar=ilanlar, kart_ozeti=kart_ozeti,
+                               preselected=preselected, visibility_choices=VISIBILITY_CHOICES), kod
+
     if request.method == 'POST':
         title = (request.form.get('title') or '').strip()
         visibility = request.form.get('visibility', 'private')
         if not title:
             flash('Portföy adı zorunludur.', 'danger')
-            return render_template('portfolio_create.html', form_data=request.form, analyses=user_analyses,
-                                   visibility_choices=VISIBILITY_CHOICES), 400
+            return sayfa(request.form, 400)
         if visibility not in VISIBILITY_CHOICES:
             visibility = 'private'
         try:
             portfolio = Portfolio(user_id=current_user.id, title=title[:200],
                                   description=(request.form.get('description') or '').strip(), visibility=visibility)
-            selected_ids = {int(i) for i in request.form.getlist('analiz_ids') if i.isdigit()}
-            for analiz in user_analyses:
-                if analiz.id in selected_ids:
-                    portfolio.analizler.append(analiz)
+            selected_ids = {int(i) for i in request.form.getlist('ilan_ids') if i.isdigit()}
+            for i in ilanlar:
+                if i.id in selected_ids:
+                    portfolio.ilanlar.append(i)
             db.session.add(portfolio)
             db.session.commit()
             flash('Portföy başarıyla oluşturuldu.', 'success')
@@ -100,12 +125,14 @@ def portfolio_create():
             db.session.rollback()
             current_app.logger.error(f"Portfolio creation error: {e}", exc_info=True)
             flash('Portföy oluşturulurken bir hata oluştu.', 'danger')
-            return render_template('portfolio_create.html', form_data=request.form, analyses=user_analyses,
-                                   visibility_choices=VISIBILITY_CHOICES), 500
+            return sayfa(request.form, 500)
 
-    preselected = request.args.get('analiz_id', type=int)
-    return render_template('portfolio_create.html', form_data={}, analyses=user_analyses,
-                           preselected=preselected, visibility_choices=VISIBILITY_CHOICES)
+    preselected = request.args.get('ilan_id', type=int)
+    analiz_id = request.args.get('analiz_id', type=int)
+    if preselected is None and analiz_id is not None:
+        bulunan = _gayrimenkulun_ilani(analiz_id)
+        preselected = bulunan.id if bulunan else None
+    return sayfa({}, preselected=preselected)
 
 
 @portfolio_bp.route('/<int:portfolio_id>')
@@ -115,14 +142,15 @@ def portfolio_detail(portfolio_id):
     is_owner = portfolio.user_id == current_user.id
     if portfolio.visibility == 'private' and not is_owner and current_user.role != 'superadmin':
         abort(404)
-    analyses = portfolio.analizler.order_by(ArsaAnaliz.created_at.desc()).all()
-    available = []
-    if is_owner:
-        in_ids = {a.id for a in analyses}
-        available = [a for a in ArsaAnaliz.query.filter_by(user_id=current_user.id)
-                     .order_by(ArsaAnaliz.created_at.desc()).all() if a.id not in in_ids]
-    return render_template('portfolio_detail.html', portfolio=portfolio, analyses=analyses, available=available,
-                           totals=_portfolio_totals(analyses), is_owner=is_owner,
+    ilanlar = portfolio.ilanlar.order_by(Ilan.created_at.desc(), Ilan.id.desc()).all()
+    ids = [i.id for i in ilanlar]
+    gorunur = {iid for (iid,) in gorunur_ilanlar(current_user).filter(Ilan.id.in_(ids))
+               .with_entities(Ilan.id)} if ids else set()
+    available = [i for i in _secilebilir_ilanlar() if i.id not in set(ids)] if is_owner else []
+    from blueprints.ilan_bp import fiyat_metni, kart_ozeti  # app.py ilan_bp'yi geç yükler
+    return render_template('portfolio_detail.html', portfolio=portfolio, ilanlar=ilanlar, available=available,
+                           gorunur=gorunur, totals=_portfolio_totals(ilanlar), is_owner=is_owner,
+                           fiyat_metni=fiyat_metni, kart_ozeti=kart_ozeti, sabit=sabit,
                            visibility_choices=VISIBILITY_CHOICES)
 
 
@@ -148,37 +176,78 @@ def portfolio_edit(portfolio_id):
 @login_required
 def portfolio_delete(portfolio_id):
     portfolio = _own_portfolio_or_404(portfolio_id)
-    db.session.delete(portfolio)  # Analizler silinmez, sadece portföy bağlantıları kalkar
+    db.session.delete(portfolio)  # İlanlar silinmez, sadece portföy bağlantıları kalkar
     db.session.commit()
-    flash('Portföy silindi. İçindeki analizler korunuyor.', 'success')
+    flash('Portföy silindi. İçindeki ilanlar korunuyor.', 'success')
     return redirect(url_for('portfolio.portfolios_list'))
+
+
+def _ilan_ekle(portfolio):
+    """Formdaki ilan_id(ler)i (ya da eski analiz_id'yi) portföye ekler; flash mesajı yazar."""
+    f = request.form
+    ids = {int(x) for x in f.getlist('ilan_id') + f.getlist('ilan_ids') if x.strip().isdigit()}
+    bulunan = gorunur_ilanlar(current_user).filter(Ilan.id.in_(ids)).all() if ids else []
+    eski = [x for x in f.getlist('analiz_id') + f.getlist('analiz_ids') if x.strip().isdigit()]
+    for analiz_id in eski:
+        i = _gayrimenkulun_ilani(int(analiz_id))
+        if i is None:
+            flash('Bu gayrimenkulün portföye eklenecek ilanı yok.', 'danger')
+            return
+        bulunan.append(i)
+    if not bulunan:
+        flash('Seçilen ilan bulunamadı.' if ids else 'Eklenecek ilan seçilmedi.', 'warning')
+        return
+    mevcut = {i.id for i in portfolio.ilanlar}
+    eklenen = 0
+    for i in bulunan:
+        if i.id not in mevcut:
+            portfolio.ilanlar.append(i)
+            mevcut.add(i.id)
+            eklenen += 1
+    db.session.commit()
+    if eklenen:
+        flash(f'{eklenen} ilan "{portfolio.title}" portföyüne eklendi.', 'success')
+    else:
+        flash('Seçilen ilanlar zaten portföyde.', 'info')
+
+
+def _ekleme_sonrasi(portfolio):
+    ilan_id = request.form.get('ilan_id', '')
+    if request.form.get('geri') == 'ilan' and ilan_id.isdigit():
+        return redirect(url_for('ilan.detay', ilan_id=int(ilan_id)))
+    return redirect(url_for('portfolio.portfolio_detail', portfolio_id=portfolio.id))
 
 
 @portfolio_bp.route('/<int:portfolio_id>/add', methods=['POST'])
 @login_required
 def portfolio_add_analysis(portfolio_id):
+    """Portföye ilan ekler (form: ilan_id/ilan_ids; eski analiz_id → gayrimenkulün aktif/son ilanı)."""
     portfolio = _own_portfolio_or_404(portfolio_id)
-    ids = {int(i) for i in request.form.getlist('analiz_ids') if i.isdigit()}
-    existing = {a.id for a in portfolio.analizler}
-    added = 0
-    for analiz in ArsaAnaliz.query.filter(ArsaAnaliz.id.in_(ids), ArsaAnaliz.user_id == current_user.id).all():
-        if analiz.id not in existing:
-            portfolio.analizler.append(analiz)
-            added += 1
-    db.session.commit()
-    flash(f'{added} analiz portföye eklendi.' if added else 'Eklenecek analiz seçilmedi.', 'success' if added else 'warning')
-    return redirect(url_for('portfolio.portfolio_detail', portfolio_id=portfolio.id))
+    _ilan_ekle(portfolio)
+    return _ekleme_sonrasi(portfolio)
 
 
-@portfolio_bp.route('/<int:portfolio_id>/remove/<int:analiz_id>', methods=['POST'])
+@portfolio_bp.route('/ilan-ekle', methods=['POST'])
 @login_required
-def portfolio_remove_analysis(portfolio_id, analiz_id):
+def portfolio_add_ilan_secili():
+    """İlan detayındaki "Portföye ekle": portföy formdaki portfolio_id ile seçilir."""
+    pid = request.form.get('portfolio_id', '')
+    if not pid.isdigit():
+        abort(404)
+    portfolio = _own_portfolio_or_404(int(pid))
+    _ilan_ekle(portfolio)
+    return _ekleme_sonrasi(portfolio)
+
+
+@portfolio_bp.route('/<int:portfolio_id>/remove/<int:ilan_id>', methods=['POST'])
+@login_required
+def portfolio_remove_analysis(portfolio_id, ilan_id):
     portfolio = _own_portfolio_or_404(portfolio_id)
-    analiz = portfolio.analizler.filter(ArsaAnaliz.id == analiz_id).first()
-    if analiz:
-        portfolio.analizler.remove(analiz)
+    ilan = portfolio.ilanlar.filter(Ilan.id == ilan_id).first()
+    if ilan:
+        portfolio.ilanlar.remove(ilan)
         db.session.commit()
-        flash('Analiz portföyden çıkarıldı.', 'success')
+        flash(f'{ilan.kod} portföyden çıkarıldı.', 'success')
     else:
-        flash('Analiz bu portföyde bulunamadı.', 'warning')
+        flash('İlan bu portföyde bulunamadı.', 'warning')
     return redirect(url_for('portfolio.portfolio_detail', portfolio_id=portfolio.id))

@@ -212,7 +212,8 @@
                 <ul class="list-unstyled mb-0">
                     {% for d in firsatlar %}
                     <li class="py-1 d-flex justify-content-between gap-2">
-                        <a href="{{ url_for('crm.crm_deal_detail', deal_id=d.id) }}" class="text-decoration-none text-break">{{ d.title }}</a>
+                        {# CRM fırsat detayı yalnız sahibine açık: ekipteki diğer fırsatlar düz metin #}
+                        {% if d.user_id == current_user.id %}<a href="{{ url_for('crm.crm_deal_detail', deal_id=d.id) }}" class="text-decoration-none text-break">{{ d.title }}</a>{% else %}<span class="text-break">{{ d.title }}</span>{% endif %}
                         <span class="small text-muted text-nowrap">{{ d.stage }}</span>
                     </li>
                     {% endfor %}
@@ -223,17 +224,33 @@
             </div>
         </div>
 
-        {% if i.portfoyler %}
         <!-- Portföyler -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <h6 class="mb-3"><i class="fas fa-folder-open me-2 text-primary"></i>Portföyler</h6>
-                <ul class="list-unstyled mb-0 small">
-                    {% for p in i.portfoyler %}<li class="py-1 text-break">{{ p.title }}</li>{% endfor %}
+                {% if i.portfoyler %}
+                <ul class="list-unstyled mb-3 small">
+                    {% for p in i.portfoyler %}<li class="py-1 text-break">{% if p.user_id == current_user.id %}<a href="{{ url_for('portfolio.portfolio_detail', portfolio_id=p.id) }}" class="text-decoration-none">{{ p.title }}</a>{% else %}{{ p.title }}{% endif %}</li>{% endfor %}
                 </ul>
+                {% endif %}
+                {% if eklenebilir_portfoyler %}
+                <form method="post" action="{{ url_for('portfolio.portfolio_add_ilan_secili') }}">
+                    {{ csrf() }}
+                    <input type="hidden" name="ilan_id" value="{{ i.id }}">
+                    <input type="hidden" name="geri" value="ilan">
+                    <label for="portfoy_sec" class="form-label small text-muted">Portföye ekle</label>
+                    <div class="input-group input-group-sm">
+                        <select id="portfoy_sec" name="portfolio_id" class="form-select" required>
+                            {% for p in eklenebilir_portfoyler %}<option value="{{ p.id }}">{{ p.title }}</option>{% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-outline-primary">Portföye ekle</button>
+                    </div>
+                </form>
+                {% elif not i.portfoyler %}
+                <div class="small text-muted">Bu ilan bir portföyde değil. <a href="{{ url_for('portfolio.portfolio_create', ilan_id=i.id) }}">Yeni portföy oluştur</a></div>
+                {% endif %}
             </div>
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

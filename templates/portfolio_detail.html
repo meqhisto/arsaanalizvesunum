@@ -10,7 +10,7 @@
     {% if is_owner %}
     <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPortfolioModal"><i class="fas fa-pen me-1"></i>Düzenle</button>
     <form method="POST" action="{{ url_for('portfolio.portfolio_delete', portfolio_id=portfolio.id) }}"
-          onsubmit="return confirm('Bu portföy silinsin mi? İçindeki analizler silinmez.');">
+          onsubmit="return confirm('Bu portföy silinsin mi? İçindeki ilanlar silinmez.');">
         <button type="submit" class="btn btn-outline-danger"><i class="fas fa-trash me-1"></i>Sil</button>
     </form>
     {% endif %}
@@ -18,85 +18,84 @@
 {% endblock %}
 
 {% block dashboard_content %}
-<div class="row mb-4">
+{% set DURUM_RENK = {'hazirlaniyor': 'secondary', 'pazarlamada': 'success', 'opsiyonlu': 'warning',
+                     'anlasildi': 'primary', 'geri_cekildi': 'dark'} %}
+{% set TIP_RENK = {'satilik': 'primary', 'kiralik': 'info', 'kat_karsiligi': 'warning'} %}
+<div class="row g-3 mb-4">
     {% set cards = [
-        ('fa-layer-group', 'primary', 'Analiz Sayısı', totals.adet|string),
-        ('fa-ruler-combined', 'info', 'Toplam Alan', '{:,.0f} m²'.format(totals.toplam_m2)),
-        ('fa-coins', 'success', 'Toplam Değer', '₺{:,.0f}'.format(totals.toplam_fiyat)),
-        ('fa-calculator', 'warning', 'Ort. m² Fiyatı', '₺{:,.0f}'.format(totals.ort_m2_fiyat)),
+        ('fa-layer-group', 'primary', 'İlan sayısı', totals.adet|tr_sayi),
+        ('fa-coins', 'success', 'Satılık toplamı', totals.toplam_fiyat|tr_para),
+        ('fa-key', 'info', 'Aylık kira toplamı', totals.aylik_kira|tr_para),
+        ('fa-building', 'warning', 'Kat karşılığı', totals.kat_karsiligi_adet|tr_sayi ~ ' ilan'),
     ] %}
     {% for icon, color, label, value in cards %}
-    <div class="col-lg-3 col-md-6 mb-3">
+    <div class="col-6 col-lg-3">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body d-flex align-items-center">
-                <div class="bg-{{ color }} bg-opacity-10 rounded-3 p-3 flex-shrink-0"><i class="fas {{ icon }} fa-2x text-{{ color }}"></i></div>
-                <div class="ms-3"><h6 class="text-muted mb-1">{{ label }}</h6><h4 class="mb-0">{{ value }}</h4></div>
+                <div class="bg-{{ color }} bg-opacity-10 rounded-3 p-2 p-sm-3 flex-shrink-0 d-none d-sm-block"><i class="fas {{ icon }} fa-2x text-{{ color }}"></i></div>
+                <div class="ms-sm-3 text-break"><h6 class="text-muted mb-1 small">{{ label }}</h6><h5 class="mb-0">{{ value }}</h5></div>
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
 
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Portföydeki Analizler</h5>
-        <span class="badge {{ 'bg-success' if portfolio.visibility == 'public' else 'bg-secondary' }}">{{ visibility_choices.get(portfolio.visibility, portfolio.visibility) }}</span>
-    </div>
-    <div class="card-body p-0">
-        {% if analyses %}
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr><th>Konum</th><th>Ada / Parsel</th><th>İmar</th><th class="text-end">Alan</th><th class="text-end">Fiyat</th><th class="text-end">₺/m²</th><th></th></tr>
-                </thead>
-                <tbody>
-                    {% for a in analyses %}
-                    <tr>
-                        <td><a href="{{ url_for('analysis.view_analysis', analysis_id=a.id) }}">{{ a.il }} / {{ a.ilce }}</a><small class="d-block text-muted">{{ a.mahalle }}</small></td>
-                        <td>{{ a.ada or '-' }} / {{ a.parsel or '-' }}</td>
-                        <td>{{ a.imar_durumu or '-' }}</td>
-                        <td class="text-end text-nowrap">{{ '{:,.0f}'.format(a.metrekare or 0) }} m²</td>
-                        <td class="text-end text-nowrap">₺{{ '{:,.0f}'.format(a.fiyat or 0) }}</td>
-                        <td class="text-end text-nowrap">₺{{ '{:,.0f}'.format((a.fiyat / a.metrekare) if a.metrekare else 0) }}</td>
-                        <td class="text-end text-nowrap">
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('analysis.generate_pdf_report', analysis_id=a.id) }}" title="PDF rapor"><i class="fas fa-file-pdf"></i></a>
-                            {% if is_owner %}
-                            <form method="POST" action="{{ url_for('portfolio.portfolio_remove_analysis', portfolio_id=portfolio.id, analiz_id=a.id) }}" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Portföyden çıkar"><i class="fas fa-times"></i></button>
-                            </form>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p class="text-muted p-4 mb-0">Bu portföyde henüz analiz yok.</p>
-        {% endif %}
-    </div>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Portföydeki İlanlar</h5>
+    <span class="badge {{ 'bg-success' if portfolio.visibility == 'public' else 'bg-secondary' }}">{{ visibility_choices.get(portfolio.visibility, portfolio.visibility) }}</span>
 </div>
+{% if ilanlar %}
+<div class="row g-3 mb-4">
+    {% for i in ilanlar %}
+    {% set g = i.ana_gayrimenkul %}
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="card border shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    <span class="fw-semibold small">{{ i.kod }}</span>
+                    <span class="badge text-bg-{{ TIP_RENK.get(i.teklif_tipi, 'secondary') }}">{{ sabit.etiket(sabit.TEKLIF_TIPLERI, i.teklif_tipi) }}</span>
+                    <span class="badge text-bg-{{ DURUM_RENK.get(i.durum, 'secondary') }}">{{ sabit.etiket(sabit.DURUMLAR, i.durum) }}</span>
+                </div>
+                <h6 class="mb-1 text-break">
+                    {% if i.id in gorunur %}<a href="{{ url_for('ilan.detay', ilan_id=i.id) }}" class="text-decoration-none">{{ i.baslik or i.kod }}</a>{% else %}{{ i.baslik or i.kod }}{% endif %}
+                </h6>
+                {% if g %}<div class="small text-muted text-break mb-2">{{ g.il }} / {{ g.ilce }} · {{ g.mahalle }}</div>{% endif %}
+                <div class="small text-muted text-break">{{ kart_ozeti(i) }}</div>
+            </div>
+            {% if is_owner %}
+            <div class="card-footer bg-transparent border-0 text-end">
+                <form method="POST" action="{{ url_for('portfolio.portfolio_remove_analysis', portfolio_id=portfolio.id, ilan_id=i.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-times me-1"></i>Portföyden çıkar</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card border-0 shadow-sm mb-4"><div class="card-body text-muted">Bu portföyde henüz ilan yok.</div></div>
+{% endif %}
 
 {% if is_owner %}
 <div class="card border-0 shadow-sm">
-    <div class="card-header bg-transparent border-0"><h5 class="card-title mb-0"><i class="fas fa-plus me-2"></i>Analiz Ekle</h5></div>
+    <div class="card-header bg-transparent border-0"><h5 class="card-title mb-0"><i class="fas fa-plus me-2"></i>İlan Ekle</h5></div>
     <div class="card-body">
         {% if available %}
         <form method="POST" action="{{ url_for('portfolio.portfolio_add_analysis', portfolio_id=portfolio.id) }}">
             <div class="list-group list-group-flush mb-3" style="max-height: 360px; overflow-y: auto;">
                 {% for a in available %}
                 <label class="list-group-item d-flex align-items-center gap-3">
-                    <input class="form-check-input flex-shrink-0" type="checkbox" name="analiz_ids" value="{{ a.id }}">
-                    <span class="flex-grow-1"><strong>{{ a.il }} / {{ a.ilce }}</strong> – {{ a.mahalle }}
-                        <small class="d-block text-muted">Ada {{ a.ada or '-' }} / Parsel {{ a.parsel or '-' }} · {{ '{:,.0f}'.format(a.metrekare or 0) }} m²</small></span>
-                    <span class="text-success text-nowrap">₺{{ '{:,.0f}'.format(a.fiyat or 0) }}</span>
+                    <input class="form-check-input flex-shrink-0" type="checkbox" name="ilan_ids" value="{{ a.id }}">
+                    <span class="flex-grow-1 text-break"><strong>{{ a.kod }}</strong> · {{ a.baslik or '' }}
+                        <small class="d-block text-muted">{{ kart_ozeti(a) }}</small></span>
                 </label>
                 {% endfor %}
             </div>
             <button type="submit" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Seçilenleri Ekle</button>
         </form>
         {% else %}
-        <p class="text-muted mb-0">Eklenebilecek başka analiziniz yok.</p>
+        <p class="text-muted mb-0">Eklenebilecek başka ilan yok.</p>
         {% endif %}
     </div>
 </div>

@@ -127,6 +127,56 @@
     </div>
 </div>
 
+<!-- Gayrimenkulleri (spec §5.3) -->
+<div class="card mb-4" id="gayrimenkulleri">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item"><span class="nav-link active"><i class="fas fa-map-marked-alt me-2"></i>Gayrimenkulleri <span class="badge bg-secondary">{{ sahiplikler|length }}</span></span></li>
+        </ul>
+    </div>
+    <div class="card-body">
+        {% if sahiplikler %}
+        <form method="get" action="{{ url_for('ilan.yeni') }}">
+            <input type="hidden" name="sahip" value="{{ contact.id }}">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-3">
+                    <thead class="table-light">
+                        <tr><th style="width: 2rem;"></th><th>Gayrimenkul</th><th>Tür</th><th>Hisse</th><th>Aktif ilan</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for s in sahiplikler %}
+                        {% set g = s.gayrimenkul %}
+                        {% set a = aktifler.get(g.id) %}
+                        <tr>
+                            <td><input class="form-check-input" type="checkbox" name="gayrimenkul" value="{{ g.id }}" id="gm_{{ g.id }}" aria-label="Seç"></td>
+                            <td class="text-break"><a href="{{ url_for('analysis.view_analysis', analysis_id=g.id) }}" class="text-decoration-none">{{ g.baslik_metni }}</a>{% if s.irtibat %} <span class="badge bg-info-subtle text-info-emphasis">İrtibat</span>{% endif %}</td>
+                            <td class="text-nowrap">{{ tur_etiketi(g) }}</td>
+                            <td class="text-nowrap">{{ s.hisse or '-' }}</td>
+                            <td class="text-nowrap">
+                                {% if a %}
+                                {% if a.id in gorunur_ilan %}<a href="{{ url_for('ilan.detay', ilan_id=a.id) }}" class="text-decoration-none">{{ a.kod }}</a>{% else %}{{ a.kod }}{% endif %}
+                                <span class="badge bg-success">{{ sabit.etiket(sabit.DURUMLAR, a.durum) }}</span>
+                                {% else %}<span class="text-muted">Yok</span>{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex flex-wrap justify-content-end gap-2">
+                <a href="{{ url_for('ilan.yeni', sahip=contact.id) }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-plus me-1"></i>Bu kişi için yeni ilan</a>
+                <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-bullhorn me-1"></i>Seçilenlerle yeni ilan</button>
+            </div>
+        </form>
+        {% else %}
+        <p class="text-muted mb-0">Bu kişiye bağlı gayrimenkul yok.</p>
+        {% endif %}
+        {% if gizli_gm_sayisi %}
+        <p class="small text-muted mt-2 mb-0">Görme yetkiniz olmayan {{ gizli_gm_sayisi }} gayrimenkul daha var.</p>
+        {% endif %}
+    </div>
+</div>
+
 <!-- ... (Temel Bilgiler kartından sonra) ... -->
 <div class="row">
     <div class="col-md-12">

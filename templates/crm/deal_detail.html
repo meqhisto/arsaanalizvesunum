@@ -6,7 +6,7 @@
 {% block page_description %}Fırsat detay bilgileri ve satış süreci{% endblock %}
 
 {% block page_actions %}
-<div class="d-flex gap-2">
+<div class="d-flex flex-wrap gap-2">
     <a href="{{ url_for('crm.crm_deals_list') }}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-1"></i> Listeye Dön
     </a>
@@ -66,6 +66,17 @@
                     <a href="{{ url_for('crm.crm_contact_detail', contact_id=deal.contact.id) }}">
                         {{ deal.contact.first_name }} {{ deal.contact.last_name }}
                     </a>
+                </p>
+                <p><strong>İlgili İlan:</strong>
+                    {% if deal.ilan %}
+                        {% if ilan_gorunur %}
+                        <a href="{{ url_for('ilan.detay', ilan_id=deal.ilan.id) }}" class="text-break">{{ deal.ilan.kod }} · {{ deal.ilan.baslik or '' }}</a>
+                        {% else %}
+                        <span class="text-break">{{ deal.ilan.kod }}</span>
+                        {% endif %}
+                    {% else %}
+                        -
+                    {% endif %}
                 </p>
                 <p><strong>İlişkili Şirket:</strong> 
                     {% if deal.company %}

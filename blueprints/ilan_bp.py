@@ -12,7 +12,7 @@ from models import db
 from models.arsa_models import ArsaAnaliz
 from models.crm_models import Contact, Deal
 from models.ilan_models import GayrimenkulSahibi, Ilan, IlanGayrimenkul
-from models.user_models import User
+from models.user_models import Portfolio, User
 from modules import gayrimenkul_sabitleri as sabit
 from modules import ilan_servis
 from modules.ilan_hesap import sayi_metni, tutar_ayristir
@@ -363,8 +363,13 @@ def detay(ilan_id):
     gorunur_kontak = {cid for (cid,) in gorunur_kontaklar(current_user)
                       .filter(Contact.id.in_(gorulen)).with_entities(Contact.id)} if gorulen else set()
     firsatlar = gorunur_firsatlar(i, current_user)
+    # "Portföye ekle": kullanıcının, ilanı henüz içermeyen portföyleri
+    portfoy_idleri = {p.id for p in i.portfoyler}
+    eklenebilir_portfoyler = [p for p in Portfolio.query.filter_by(user_id=current_user.id)
+                              .order_by(Portfolio.title).all() if p.id not in portfoy_idleri]
     return render_template('ilan/detay.html', i=i, oz=oz, gorunur_gm=gorunur_gm, sahipler=sahipler,
                            gorunur_kontak=gorunur_kontak, firsatlar=firsatlar, sabit=sabit,
+                           eklenebilir_portfoyler=eklenebilir_portfoyler,
                            kart_ozeti=kart_ozeti(i), fiyat_metni=fiyat_metni, tur_etiketi=tur_etiketi,
                            kullanici_adi=kullanici_adi, silebilir=silebilir_mi(i, current_user),
                            title=i.kod)

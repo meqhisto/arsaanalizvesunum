@@ -12,6 +12,9 @@ from sqlalchemy import text, cast, Date, or_ # Sorgular için
 from models import db
 from models.user_models import User
 from models.crm_models import Contact, Company, Interaction, Deal, Task, CrmTeam
+from models.arsa_models import ArsaAnaliz
+from models.ilan_models import Ilan
+from modules.ilan_servis import gorunur_gayrimenkuller, gorunur_ilanlar
 
 # Flask uygulamasının yapılandırmasına erişmek için current_app
 from flask import current_app
@@ -287,7 +290,22 @@ def crm_contact_detail(contact_id):
     ).all()
     # Fırsatlar da eklenebilir
     deals = contact.deals.order_by(Deal.created_at.desc()).all()
-    return render_template('contact_detail.html', contact=contact, title=f"{contact.first_name} {contact.last_name}", interactions=interactions, tasks=tasks)
+    # "Gayrimenkulleri": kişinin sahip olduğu, kullanıcının görebildiği gayrimenkuller
+    gm_idleri = [s.gayrimenkul_id for s in contact.sahiplikler]
+    gorunur_gm = {gid for (gid,) in gorunur_gayrimenkuller(current_user)
+                  .filter(ArsaAnaliz.id.in_(gm_idleri)).with_entities(ArsaAnaliz.id)} if gm_idleri else set()
+    sahiplikler = sorted((s for s in contact.sahiplikler if s.gayrimenkul_id in gorunur_gm),
+                         key=lambda s: s.gayrimenkul_id)
+    aktifler = {s.gayrimenkul_id: s.gayrimenkul.aktif_ilan for s in sahiplikler}
+    aktif_idler = [i.id for i in aktifler.values() if i is not None]
+    gorunur_ilan = {iid for (iid,) in gorunur_ilanlar(current_user).filter(Ilan.id.in_(aktif_idler))
+                    .with_entities(Ilan.id)} if aktif_idler else set()
+    from modules import gayrimenkul_sabitleri as sabit
+    from blueprints.ilan_bp import tur_etiketi  # app.py ilan_bp'yi geç yükler
+    return render_template('contact_detail.html', contact=contact, title=f"{contact.first_name} {contact.last_name}",
+                           interactions=interactions, tasks=tasks, sahiplikler=sahiplikler, aktifler=aktifler,
+                           gorunur_ilan=gorunur_ilan, gizli_gm_sayisi=len(set(gm_idleri) - gorunur_gm),
+                           sabit=sabit, tur_etiketi=tur_etiketi)
 
 
 @crm_bp.route('/contact/<int:contact_id>/edit', methods=['GET', 'POST'])
@@ -632,12 +650,36 @@ def crm_deals_list():
     
     return render_template('deals_list.html', deals_by_stage=deals_by_stage, stages=DEAL_STAGES, title="Fırsatlar")
 
+def _secilebilir_ilanlar(mevcut=None):
+    """Fırsat formundaki "İlgili ilan" seçenekleri: görünür ilanlar (+ fırsatın mevcut ilanı)."""
+    ilanlar = gorunur_ilanlar(current_user).order_by(Ilan.created_at.desc(), Ilan.id.desc()).all()
+    if mevcut is not None and mevcut.id not in {i.id for i in ilanlar}:
+        ilanlar.append(mevcut)
+    return ilanlar
+
+
+def _formdaki_ilan_id(mevcut_ilan_id=None):
+    """Formdaki ilan_id: boşsa None; görünmeyen/geçersizse ValueError. Değişmeyen mevcut bağ korunur."""
+    deger = (request.form.get('ilan_id') or '').strip()
+    if not deger:
+        return None
+    if not deger.isdigit():
+        raise ValueError
+    ilan_id = int(deger)
+    if mevcut_ilan_id is not None and ilan_id == mevcut_ilan_id:
+        return ilan_id
+    if gorunur_ilanlar(current_user).filter(Ilan.id == ilan_id).first() is None:
+        raise ValueError
+    return ilan_id
+
+
 @crm_bp.route('/deal/new', methods=['GET', 'POST'])
 @login_required
 def crm_deal_new():
     user_id = current_user.id
     contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
     companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+    ilanlar = _secilebilir_ilanlar()
 
     if request.method == 'POST':
         title_form = request.form.get('title') # Değişken adı çakışmaması için _form eklendi
@@ -651,28 +693,34 @@ def crm_deal_new():
 
         if not title_form or not contact_id_str:
             flash('Fırsat başlığı ve birincil kontak zorunludur.', 'danger')
-            return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form)
+            return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form, ilanlar=ilanlar)
 
         try:
             value = Decimal(value_str) if value_str else Decimal('0.00')
         except:
             flash('Geçersiz değer formatı.', 'danger')
-            return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form)
+            return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form, ilanlar=ilanlar)
         
+        try:
+            ilan_id = _formdaki_ilan_id()
+        except ValueError:
+            flash('Seçilen ilan bulunamadı.', 'danger')
+            return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form, ilanlar=ilanlar), 400
+
         expected_close_date = None
         if expected_close_date_str:
             try:
                 expected_close_date = datetime.strptime(expected_close_date_str, '%Y-%m-%d').date()
             except ValueError:
                 flash('Geçersiz beklenen kapanış tarihi formatı.', 'danger')
-                return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form)
+                return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form, ilanlar=ilanlar)
         
         try:
             new_deal = Deal(
                 user_id=user_id, title=title_form, contact_id=int(contact_id_str),
                 company_id=int(company_id_str) if company_id_str else None,
                 value=value, currency=currency, stage=stage,
-                expected_close_date=expected_close_date, notes=notes
+                expected_close_date=expected_close_date, notes=notes, ilan_id=ilan_id
             )
             db.session.add(new_deal)
             db.session.commit()
@@ -682,9 +730,9 @@ def crm_deal_new():
             db.session.rollback()
             current_app.logger.error(f"CRM Deal New Error: {e}", exc_info=True)
             flash(f'Fırsat eklenirken bir hata oluştu: {str(e)}', 'danger')
-            return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form)
+            return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal=request.form, ilanlar=ilanlar)
 
-    return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal={})
+    return render_template('deal_form.html', title="Yeni Fırsat Ekle", contacts=contacts, companies=companies, stages=DEAL_STAGES, deal={}, ilanlar=ilanlar)
 
 
 @crm_bp.route('/deal/<int:deal_id>')
@@ -697,7 +745,10 @@ def crm_deal_detail(deal_id):
         text("CASE WHEN crm_tasks.due_date IS NULL THEN 1 ELSE 0 END"),
         Task.due_date.asc(),
     ).all()
-    return render_template('deal_detail.html', deal=deal, title=deal.title, interactions=interactions, tasks=tasks)
+    ilan_gorunur = deal.ilan_id is not None and \
+        gorunur_ilanlar(current_user).filter(Ilan.id == deal.ilan_id).first() is not None
+    return render_template('deal_detail.html', deal=deal, title=deal.title, interactions=interactions, tasks=tasks,
+                           ilan_gorunur=ilan_gorunur)
 
 @crm_bp.route('/deal/<int:deal_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -706,8 +757,14 @@ def crm_deal_edit(deal_id):
     deal_to_edit = Deal.query.filter_by(id=deal_id, user_id=user_id).first_or_404()
     contacts = Contact.query.filter_by(user_id=user_id).order_by(Contact.last_name, Contact.first_name).all()
     companies = Company.query.filter_by(user_id=user_id).order_by(Company.name).all()
+    ilanlar = _secilebilir_ilanlar(deal_to_edit.ilan)
 
     if request.method == 'POST':
+        try:
+            ilan_id = _formdaki_ilan_id(deal_to_edit.ilan_id)
+        except ValueError:
+            flash('Seçilen ilan bulunamadı.', 'danger')
+            return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True, ilanlar=ilanlar), 400
         deal_to_edit.title = request.form.get('title')
         contact_id_str = request.form.get('contact_id')
         company_id_str = request.form.get('company_id')
@@ -720,24 +777,25 @@ def crm_deal_edit(deal_id):
 
         if not deal_to_edit.title or not contact_id_str:
             flash('Fırsat başlığı ve birincil kontak zorunludur.', 'danger')
-            return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+            return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True, ilanlar=ilanlar)
         try:
             deal_to_edit.value = Decimal(value_str) if value_str else Decimal('0.00')
         except:
             flash('Geçersiz değer formatı.', 'danger')
-            return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+            return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True, ilanlar=ilanlar)
 
         deal_to_edit.contact_id = int(contact_id_str)
+        deal_to_edit.ilan_id = ilan_id
         deal_to_edit.company_id = int(company_id_str) if company_id_str else None
         
         if expected_close_date_str:
             try: deal_to_edit.expected_close_date = datetime.strptime(expected_close_date_str, '%Y-%m-%d').date()
-            except ValueError: flash('Geçersiz beklenen kapanış tarihi formatı.', 'danger'); return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+            except ValueError: flash('Geçersiz beklenen kapanış tarihi formatı.', 'danger'); return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True, ilanlar=ilanlar)
         else: deal_to_edit.expected_close_date = None
 
         if deal_to_edit.stage in ["Kazanıldı", "Kaybedildi"] and actual_close_date_str:
             try: deal_to_edit.actual_close_date = datetime.strptime(actual_close_date_str, '%Y-%m-%d').date()
-            except ValueError: flash('Geçersiz fiili kapanış tarihi formatı.', 'danger'); return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+            except ValueError: flash('Geçersiz fiili kapanış tarihi formatı.', 'danger'); return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True, ilanlar=ilanlar)
         elif deal_to_edit.stage not in ["Kazanıldı", "Kaybedildi"]:
              deal_to_edit.actual_close_date = None
 
@@ -749,9 +807,9 @@ def crm_deal_edit(deal_id):
             db.session.rollback()
             current_app.logger.error(f"CRM Deal Edit Error: {e}", exc_info=True)
             flash(f'Fırsat güncellenirken bir hata oluştu: {str(e)}', 'danger')
-            return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+            return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True, ilanlar=ilanlar)
 
-    return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True)
+    return render_template('deal_form.html', title=f"Fırsat Düzenle: {deal_to_edit.title}", deal=deal_to_edit, contacts=contacts, companies=companies, stages=DEAL_STAGES, edit_mode=True, ilanlar=ilanlar)
 
 @crm_bp.route('/deal/<int:deal_id>/delete', methods=['POST'])
 @login_required
