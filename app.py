@@ -202,6 +202,10 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.jinja_env.filters['nl2br'] = nl2br_filter
     app.jinja_env.filters['format_currency'] = format_currency_filter
     app.jinja_env.filters['format_number'] = format_number_filter
+    from modules.ilan_hesap import sayi_metni
+    app.jinja_env.filters['tr_sayi'] = sayi_metni
+    from modules.rapor.model import tr_currency
+    app.jinja_env.filters['tr_para'] = tr_currency
     # current_user'ı tüm şablonlara global olarak eklemek için (Flask-Login bunu zaten yapar ama explicit olabilir)
     @app.context_processor
     def inject_current_user():
@@ -279,6 +283,8 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     app.register_blueprint(analysis_bp, url_prefix='/analysis') # url_for('analysis.analizler')
     app.register_blueprint(crm_bp, url_prefix='/crm') # url_for('crm.crm_contacts_list')
     app.register_blueprint(broker_bp) # Broker blueprint'ini kaydet (prefix zaten /broker)
+    from blueprints.ilan_bp import ilan_bp
+    app.register_blueprint(ilan_bp, url_prefix='/ilanlar') # url_for('ilan.liste')
     # portfolio_bp için de benzer bir kayıt yapabilirsiniz.
 
     # --- API BLUEPRINT REGISTRATION ---

@@ -1,0 +1,8 @@
+{# İlanın teklif tipine göre fiyat metni. Değişken: i (Ilan) #}
+{%- if i.teklif_tipi == 'kiralik' -%}
+{% if i.kira is not none %}{{ i.kira|tr_para }}/ay{% endif %}
+{%- elif i.teklif_tipi == 'kat_karsiligi' -%}
+{% if i.sahip_payi_yuzde is not none %}%{{ i.sahip_payi_yuzde|tr_sayi }} sahip payı{% endif %}
+{%- else -%}
+{% if i.fiyat is not none %}{{ i.fiyat|tr_para }}{% endif %}
+{%- endif -%}

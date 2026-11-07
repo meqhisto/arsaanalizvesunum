@@ -31,8 +31,8 @@
     {% set cards = [
         ('fa-chart-line', 'primary', 'Toplam Analiz', stats.toplam_analiz|string),
         ('fa-map-marker-alt', 'success', 'Farklı Lokasyon', stats.lokasyon|string),
-        ('fa-ruler-combined', 'info', 'Toplam Alan', '{:,.0f} m²'.format(stats.toplam_m2)),
-        ('fa-coins', 'warning', 'Toplam Değer', '₺{:,.0f}'.format(stats.toplam_deger)),
+        ('fa-ruler-combined', 'info', 'Toplam Alan', stats.toplam_m2|tr_sayi ~ ' m²'),
+        ('fa-coins', 'warning', 'Toplam Değer', stats.toplam_deger|tr_para),
     ] %}
     {% for icon, color, label, value in cards %}
     <div class="col-lg-3 col-md-6 mb-3">
@@ -63,7 +63,7 @@
         {% if portfolios %}
         <div class="row">
             {% for p in portfolios %}
-            {% set adet = p.analizler.count() %}
+            {% set adet = p.ilanlar.count() %}
             <div class="col-lg-4 col-md-6 mb-3">
                 <a href="{{ url_for('portfolio.portfolio_detail', portfolio_id=p.id) }}" class="text-decoration-none text-reset">
                     <div class="card border h-100 analysis-card">
@@ -75,7 +75,7 @@
                                 </span>
                             </div>
                             {% if p.description %}<p class="text-muted small mb-2">{{ p.description|truncate(90) }}</p>{% endif %}
-                            <small class="text-muted"><i class="fas fa-layer-group me-1"></i>{{ adet }} analiz · {{ p.created_at.strftime('%d.%m.%Y') }}</small>
+                            <small class="text-muted"><i class="fas fa-layer-group me-1"></i>{{ adet }} ilan · {{ p.created_at.strftime('%d.%m.%Y') }}</small>
                         </div>
                     </div>
                 </a>
@@ -83,7 +83,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-muted mb-0">Henüz portföy oluşturmadınız. Birden fazla arsayı bir arada sunmak için analizlerinizi bir portföyde toplayabilirsiniz.</p>
+        <p class="text-muted mb-0">Henüz portföy oluşturmadınız. Birden fazla ilanı bir arada sunmak için ilanlarınızı bir portföyde toplayabilirsiniz.</p>
         {% endif %}
     </div>
 </div>
@@ -149,18 +149,25 @@
                             {% if a.imar_durumu %}<span class="badge bg-primary bg-opacity-10 text-primary me-1">{{ a.imar_durumu }}</span>{% endif %}
                             <i class="fas fa-calendar ms-1 me-1"></i>{{ a.created_at.strftime('%d.%m.%Y') if a.created_at else '' }}
                         </div>
+                        {# Fiyat aktif ilandan (teklif tipine göre); eski fiyat alanı gösterilmez #}
+                        {% set aktif = a.aktif_ilan %}
                         <div class="row text-center">
                             <div class="col-4 border-end">
-                                <h6 class="text-primary mb-0">{{ '{:,.0f}'.format(a.metrekare or 0) }}</h6>
+                                <h6 class="text-primary mb-0">{{ (a.metrekare or 0)|tr_sayi }}</h6>
                                 <small class="text-muted">m²</small>
                             </div>
                             <div class="col-4 border-end">
-                                <h6 class="mb-0">{{ '{:,.0f}'.format((a.fiyat / a.metrekare) if a.metrekare else 0) }}</h6>
-                                <small class="text-muted">₺/m²</small>
+                                <h6 class="mb-0">{% if aktif and aktif.teklif_tipi == 'satilik' and aktif.fiyat is not none and a.metrekare %}{{ (aktif.fiyat / a.metrekare)|tr_sayi }}{% else %}—{% endif %}</h6>
+                                <small class="text-muted">TL/m²</small>
                             </div>
                             <div class="col-4">
-                                <h6 class="text-success mb-0">₺{{ '{:,.0f}'.format(a.fiyat or 0) }}</h6>
-                                <small class="text-muted">Fiyat</small>
+                                {% if aktif %}
+                                <h6 class="text-success mb-0">{% with i = aktif %}{% include "gayrimenkul/_ilan_fiyat.html" %}{% endwith %}</h6>
+                                <small class="text-muted">{{ aktif.kod }}</small>
+                                {% else %}
+                                <h6 class="text-muted mb-0">—</h6>
+                                <small class="text-muted">Aktif ilan yok</small>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

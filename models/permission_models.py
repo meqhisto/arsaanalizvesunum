@@ -1,6 +1,7 @@
 # models/permission_models.py
 from models import db
 from datetime import datetime
+from flask import url_for
 
 class PermissionTemplate(db.Model):
     """Rol bazlı yetki şablonları"""
@@ -216,12 +217,18 @@ class PermissionManager:
             'active': True
         })
         
-        # Analizler
+        # Gayrimenkuller ve ilanlar
         if any(p.startswith('analysis.') for p in permissions):
             menu_items.append({
-                'title': 'Analizlerim',
-                'icon': 'fas fa-chart-line',
+                'title': 'Gayrimenkuller',
+                'icon': 'fas fa-building',
                 'url': '/analysis/list',
+                'active': True
+            })
+            menu_items.append({
+                'title': 'İlanlar',
+                'icon': 'fas fa-bullhorn',
+                'url': url_for('ilan.liste'),
                 'active': True
             })
         

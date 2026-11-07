@@ -1,0 +1,246 @@
+{% extends "dashboard_base.html" %}
+
+{% macro metin(ad, etiket, zorunlu=false, ipucu='', tip='text', ek='', liste='') -%}
+<label class="form-label" for="{{ ad }}">{{ etiket }}{% if zorunlu %} <span class="text-danger">*</span>{% endif %}</label>
+<input class="form-control" type="{{ tip }}" id="{{ ad }}" name="{{ ad }}" value="{{ v.get(ad, '') }}"
+       {% if zorunlu %}required data-zorunlu{% endif %}{% if ipucu %} placeholder="{{ ipucu }}"{% endif %}
+       {% if liste %} list="{{ liste }}"{% endif %} {{ ek }}>
+{%- endmacro %}
+
+{% macro sayi(ad, etiket, zorunlu=false, birim='', ipucu='') -%}
+<label class="form-label" for="{{ ad }}">{{ etiket }}{% if zorunlu %} <span class="text-danger">*</span>{% endif %}</label>
+<div class="input-group">
+    <input class="form-control" id="{{ ad }}" name="{{ ad }}" inputmode="decimal" value="{{ v.get(ad, '') }}"
+           {% if zorunlu %}required data-zorunlu{% endif %}{% if ipucu %} placeholder="{{ ipucu }}"{% endif %}>
+    {% if birim %}<span class="input-group-text">{{ birim }}</span>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro secim(ad, etiket, secenekler, bos='Seçiniz') -%}
+<label class="form-label" for="{{ ad }}">{{ etiket }}</label>
+<select class="form-select" id="{{ ad }}" name="{{ ad }}">
+    <option value="">{{ bos }}</option>
+    {% for s in secenekler %}<option {% if v.get(ad) == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+</select>
+{%- endmacro %}
+
+{% macro kutu(ad, etiket) -%}
+<div class="form-check">
+    <input class="form-check-input" type="checkbox" id="{{ ad }}" name="{{ ad }}" value="1" {% if v.get(ad) %}checked{% endif %}>
+    <label class="form-check-label" for="{{ ad }}">{{ etiket }}</label>
+</div>
+{%- endmacro %}
+
+{% block title %}{{ title }} - Arsa Analiz Platformu{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_description %}{% if gayrimenkul %}{{ gayrimenkul.baslik_metni }}{% else %}Arsa, tarla, konut, işyeri veya bina kaydı oluşturun{% endif %}{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('analysis.view_analysis', analysis_id=gayrimenkul.id) if gayrimenkul else url_for('analysis.analizler') }}"
+       class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Geri</a>
+    <button type="submit" form="gayrimenkulForm" class="btn btn-primary"><i class="fas fa-save me-1"></i>Kaydet</button>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+{% set duzenleme = gayrimenkul is not none %}
+{% set tur = v.get('tur') or 'arsa' %}
+{% set ALTYAPI_ADLARI = {'yol': 'Yol', 'elektrik': 'Elektrik', 'su': 'Su', 'dogalgaz': 'Doğalgaz',
+                         'kanalizasyon': 'Kanalizasyon', 'telefon': 'Telefon', 'internet': 'İnternet'} %}
+
+{% if hatalar %}
+<div class="alert alert-danger" role="alert">
+    <strong>Kayıt yapılamadı:</strong>
+    <ul class="mb-0">{% for h in hatalar %}<li>{{ h }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form id="gayrimenkulForm" method="post" enctype="multipart/form-data" novalidate
+      action="{{ url_for('analysis.edit_analysis', analysis_id=gayrimenkul.id) if duzenleme else url_for('analysis.create_analysis') }}">
+    {{ csrf_token() if csrf_token else '' }}
+<div class="row g-4">
+<div class="col-xl-8">
+
+    {# 1. Tür #}
+    <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+        <h6 class="mb-3">1. Gayrimenkul türü</h6>
+        <div class="d-flex flex-wrap gap-2 mb-3" role="radiogroup" aria-label="Gayrimenkul türü">
+            {% for kod, ad in sabit.TURLER %}
+            <input type="radio" class="btn-check" name="tur" id="tur_{{ kod }}" value="{{ kod }}" {% if tur == kod %}checked{% endif %}>
+            <label class="btn btn-outline-primary" for="tur_{{ kod }}">{{ ad }}</label>
+            {% endfor %}
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6" data-turler="konut isyeri">
+                <label class="form-label" for="alt_tur">Alt tür</label>
+                <select class="form-select" id="alt_tur" name="alt_tur">
+                    <option value="">Seçiniz</option>
+                    {% for ust, liste in sabit.ALT_TURLER.items() %}{% for kod, ad in liste %}
+                    <option value="{{ kod }}" data-tur="{{ ust }}" {% if v.get('alt_tur') == kod %}selected{% endif %}>{{ ad }}</option>
+                    {% endfor %}{% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                {{ metin('baslik', 'Başlık', ipucu='Boş bırakılırsa konumdan üretilir', ek='maxlength="200"') }}
+            </div>
+        </div>
+    </div></div>
+
+    {# 2. Konum #}
+    <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+        <h6 class="mb-3">2. Konum</h6>
+        <div class="mb-3" data-turler="arsa tarla">
+            <label class="form-label" for="jsonDosya">Parsel bilgisini JSON ile yükle</label>
+            <input class="form-control" type="file" id="jsonDosya" accept=".json,application/json">
+            <div class="form-text">TKGM Parsel Sorgu'dan indirilen JSON dosyası il, ilçe, mahalle, ada, parsel, alan ve koordinatı doldurur.</div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-4">{{ metin('il', 'İl', zorunlu=true) }}</div>
+            <div class="col-md-4">{{ metin('ilce', 'İlçe', zorunlu=true) }}</div>
+            <div class="col-md-4">{{ metin('mahalle', 'Mahalle', zorunlu=true) }}</div>
+            <div class="col-md-4" data-turler="arsa tarla">{{ metin('ada', 'Ada', zorunlu=true) }}</div>
+            <div class="col-md-4" data-turler="arsa tarla">{{ metin('parsel', 'Parsel', zorunlu=true) }}</div>
+            <div class="col-md-4" data-turler="arsa tarla">{{ metin('pafta', 'Pafta') }}</div>
+            <div class="col-12">{{ metin('koordinatlar', 'Koordinatlar', ipucu='Örn. 40.1553, 26.4142') }}</div>
+        </div>
+    </div></div>
+
+    {# 3. Temel bilgiler #}
+    <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+        <h6 class="mb-3">3. Temel bilgiler</h6>
+        <div class="row g-3" data-turler="arsa tarla">
+            <div class="col-md-4">{{ sayi('metrekare', 'Alan', zorunlu=true, birim='m²') }}</div>
+            <div class="col-md-4">{{ metin('imar_durumu', 'İmar durumu', liste='imarOnerileri') }}
+                <datalist id="imarOnerileri">{% for i in sabit.IMAR_ONERILERI %}<option value="{{ i }}">{% endfor %}</datalist>
+            </div>
+            <div class="col-md-2">{{ sayi('taks', 'TAKS', ipucu='0,30') }}</div>
+            <div class="col-md-2">{{ sayi('kaks', 'KAKS', ipucu='1,50') }}</div>
+        </div>
+        <div class="row g-3" data-turler="konut isyeri bina">
+            <div class="col-md-3">{{ sayi('brut_m2', 'Brüt alan', zorunlu=true, birim='m²') }}</div>
+            <div class="col-md-3">{{ sayi('net_m2', 'Net alan', birim='m²') }}</div>
+            <div class="col-md-3" data-turler="konut isyeri">
+                <label class="form-label" for="oda_sayisi">Oda sayısı <span class="text-danger" data-turler="konut">*</span></label>
+                <input class="form-control" id="oda_sayisi" name="oda_sayisi" maxlength="10" value="{{ v.get('oda_sayisi', '') }}"
+                       placeholder="3+1" list="odaOnerileri" data-zorunlu-tur="konut">
+                <datalist id="odaOnerileri">{% for o in ['1+0', '1+1', '2+1', '3+1', '4+1', '5+1', '5+2'] %}<option value="{{ o }}">{% endfor %}</datalist>
+            </div>
+            <div class="col-md-3">{{ sayi('banyo_sayisi', 'Banyo sayısı') }}</div>
+            <div class="col-md-3" data-turler="konut isyeri">{{ metin('bulundugu_kat', 'Bulunduğu kat', ipucu='Zemin, Bahçe, 5', ek='maxlength="10"') }}</div>
+            <div class="col-md-3">{{ sayi('toplam_kat', 'Kat sayısı') }}</div>
+            <div class="col-md-3">{{ sayi('bina_yasi', 'Bina yaşı') }}</div>
+            <div class="col-md-3">{{ sayi('aidat', 'Aidat', birim='₺') }}</div>
+            <div class="col-md-4">{{ secim('isinma', 'Isınma', sabit.ISINMA) }}</div>
+            <div class="col-md-8 d-flex flex-wrap gap-4 align-items-end">
+                {{ kutu('esyali', 'Eşyalı') }}{{ kutu('site_icinde', 'Site içinde') }}{{ kutu('balkon', 'Balkon') }}
+            </div>
+        </div>
+        <hr>
+        <div class="row g-3">
+            <div class="col-md-4">{{ secim('tapu_durumu', 'Tapu durumu', sabit.TAPU_DURUMLARI) }}</div>
+            <div class="col-md-4">{{ secim('kimden', 'Kimden', sabit.KIMDEN) }}</div>
+            <div class="col-md-4 d-flex flex-wrap gap-4 align-items-end">
+                {{ kutu('krediye_uygun', 'Krediye uygun') }}{{ kutu('takasli', 'Takaslı') }}
+            </div>
+        </div>
+    </div></div>
+
+    {# 4. Özellikler #}
+    <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+        <h6 class="mb-3">4. Özellikler</h6>
+        {% for baslik, secenekler in sabit.OZELLIKLER.items() %}
+        {% set secili = v.getlist('oz_' ~ baslik) %}
+        <div class="mb-3">
+            <div class="fw-semibold small text-muted mb-1">{{ sabit.OZELLIK_BASLIKLARI[baslik] }}</div>
+            <div class="d-flex flex-wrap gap-3">
+                {% for o in secenekler %}
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="oz_{{ baslik }}_{{ loop.index }}" name="oz_{{ baslik }}" value="{{ o }}"{% if o in secili %} checked{% endif %}>
+                    <label class="form-check-label" for="oz_{{ baslik }}_{{ loop.index }}">{{ ALTYAPI_ADLARI.get(o, o) if baslik == 'altyapi' else o }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div></div>
+
+    {# 5. SWOT #}
+    <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+        <h6 class="mb-3">5. SWOT</h6>
+        <div class="row g-3">
+            {% for tip, alan, ad, renk in [('strength', 'strengths', 'Güçlü yönler', 'success'),
+                                           ('weakness', 'weaknesses', 'Zayıf yönler', 'danger'),
+                                           ('opportunity', 'opportunities', 'Fırsatlar', 'info'),
+                                           ('threat', 'threats', 'Tehditler', 'warning')] %}
+            <div class="col-md-6" data-swot="{{ tip }}">
+                <div class="fw-semibold small mb-1">{{ ad }}</div>
+                <div class="input-group input-group-sm mb-2">
+                    <input type="text" class="form-control" data-swot-yeni placeholder="Madde ekleyin...">
+                    <button class="btn btn-outline-secondary" type="button" data-swot-oneri>Önerilenler</button>
+                    <button class="btn btn-{{ renk }}" type="button" data-swot-ekle><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="list-group list-group-flush small" data-swot-liste></div>
+                <input type="hidden" name="{{ alan }}" value="{{ v.get(alan) or '[]' }}" data-swot-gizli>
+            </div>
+            {% endfor %}
+        </div>
+    </div></div>
+
+    {# 6. Açıklama ve fotoğraflar #}
+    <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+        <h6 class="mb-3">6. Açıklama ve fotoğraflar</h6>
+        <div class="mb-3">
+            <label class="form-label" for="notlar">Açıklama</label>
+            <textarea class="form-control" id="notlar" name="notlar" rows="4" aria-describedby="notlarYardim">{{ v.get('notlar', '') }}</textarea>
+            <div class="form-text" id="notlarYardim">Ofis içi not, raporlara girmez.</div>
+        </div>
+        <label class="form-label" for="medya">Fotoğraf / video ekle</label>
+        <input class="form-control" type="file" id="medya" name="medya[]" multiple accept="image/*,video/*">
+        <div class="form-text">png, jpg, jpeg, gif, mp4, mov, avi. {% if duzenleme %}Mevcut dosyalar detay sayfasından yönetilir.{% endif %}</div>
+        <div id="secilenDosyalar" class="small text-muted mt-2"></div>
+    </div></div>
+</div>
+
+<div class="col-xl-4">
+    {# 7. Mal sahipleri #}
+    {% include "gayrimenkul/_sahipler.html" %}
+
+    {# 8. Hemen ilana çıkar #}
+    {% if not duzenleme or not gayrimenkul.aktif_ilan %}
+    {% set ilan_tipi = v.get('ilan_teklif_tipi') or 'satilik' %}
+    <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+        <h6 class="mb-3">8. İlan</h6>
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="ilana_cikar" name="ilana_cikar" value="1"
+                   {% if v.get('ilana_cikar') == '1' %}checked{% endif %}>
+            <label class="form-check-label" for="ilana_cikar">Bunu hemen ilana çıkar</label>
+        </div>
+        <div id="ilanAlanlari" class="{% if v.get('ilana_cikar') != '1' %}d-none{% endif %}">
+            <div class="form-text mb-2">Kayıtla birlikte bu gayrimenkulden oluşan, pazarlamada bir ilan açılır.</div>
+            <label class="form-label" for="ilan_teklif_tipi">Teklif tipi</label>
+            <select class="form-select mb-2" id="ilan_teklif_tipi" name="ilan_teklif_tipi">
+                {% for kod, ad in sabit.TEKLIF_TIPLERI %}<option value="{{ kod }}" {% if ilan_tipi == kod %}selected{% endif %}>{{ ad }}</option>{% endfor %}
+            </select>
+            <div data-teklif="satilik" class="mb-2">{{ sayi('ilan_fiyat', 'Satış fiyatı', birim='₺', ipucu='4.250.000') }}</div>
+            <div data-teklif="kiralik" class="mb-2">
+                {{ sayi('ilan_kira', 'Aylık kira', birim='₺') }}
+                <div class="mt-2">{{ sayi('ilan_depozito', 'Depozito', birim='₺') }}</div>
+            </div>
+            <div data-teklif="kat_karsiligi" class="mb-2">{{ sayi('ilan_sahip_payi_yuzde', 'Arsa sahibi payı', birim='%', ipucu='40') }}</div>
+        </div>
+    </div></div>
+    {% else %}
+    <div class="alert alert-info small">Bu gayrimenkul {{ gayrimenkul.aktif_ilan.kod }} numaralı aktif ilanda.</div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Kaydet</button>
+</div>
+</div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/gayrimenkul_form.js') }}"></script>
+{% endblock %}

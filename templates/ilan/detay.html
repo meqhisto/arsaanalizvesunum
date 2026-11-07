@@ -1,0 +1,270 @@
+{% extends "dashboard_base.html" %}
+
+{% macro csrf() -%}
+{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+{%- endmacro %}
+
+{% macro satir(etiket, deger) -%}
+<div class="col-12 col-sm-6 d-flex justify-content-between gap-2 border-bottom py-2 px-sm-2">
+    <span class="text-muted small">{{ etiket }}</span>
+    <span class="fw-semibold text-end text-break">{{ deger }}</span>
+</div>
+{%- endmacro %}
+
+{% block title %}{{ i.kod }} - Arsa Analiz Platformu{% endblock %}
+{% block page_title %}{{ i.baslik or i.kod }}{% endblock %}
+{% block page_description %}{{ i.kod }} · {{ kart_ozeti }}{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('ilan.liste') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Liste</a>
+    <a href="{{ url_for('ilan.duzenle', ilan_id=i.id) }}" class="btn btn-outline-primary"><i class="fas fa-pen me-1"></i>Düzenle</a>
+    {% if silebilir %}
+    <form method="post" action="{{ url_for('ilan.sil', ilan_id=i.id) }}" class="d-inline"
+          onsubmit="return confirm('İlan silinecek; gayrimenkuller kayıtlı kalır, portföy ve fırsat bağları kalkar. Emin misiniz?');">
+        {{ csrf() }}
+        <button type="submit" class="btn btn-outline-danger"><i class="fas fa-trash me-1"></i>Sil</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+{% set DURUM_RENK = {'hazirlaniyor': 'secondary', 'pazarlamada': 'success', 'opsiyonlu': 'warning',
+                     'anlasildi': 'primary', 'geri_cekildi': 'dark'} %}
+{% set TIP_RENK = {'satilik': 'primary', 'kiralik': 'info', 'kat_karsiligi': 'warning'} %}
+{% set kat = i.teklif_tipi == 'kat_karsiligi' %}
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <span class="fw-semibold">{{ i.kod }}</span>
+    <span class="badge text-bg-{{ TIP_RENK.get(i.teklif_tipi, 'secondary') }}">{{ sabit.etiket(sabit.TEKLIF_TIPLERI, i.teklif_tipi) }}</span>
+    <span class="badge text-bg-{{ DURUM_RENK.get(i.durum, 'secondary') }}">{{ sabit.etiket(sabit.DURUMLAR, i.durum) }}</span>
+    <span class="small text-muted"><i class="fas fa-user-tie me-1"></i>{{ kullanici_adi(i.sorumlu) }}</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <!-- Fiyat ve şartlar -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-tags me-2 text-primary"></i>Fiyat ve şartlar</h6>
+                <div class="row g-0">
+                    {% if i.teklif_tipi == 'satilik' %}
+                    {{ satir('Satış fiyatı', i.fiyat|tr_para if i.fiyat is not none else '—') }}
+                    {% elif i.teklif_tipi == 'kiralik' %}
+                    {{ satir('Aylık kira', i.kira|tr_para if i.kira is not none else '—') }}
+                    {{ satir('Depozito', i.depozito|tr_para if i.depozito is not none else '—') }}
+                    {% else %}
+                    {{ satir('Arsa sahibi payı', '%' ~ (i.sahip_payi_yuzde|tr_sayi) if i.sahip_payi_yuzde is not none else '—') }}
+                    {% if i.ek_nakit is not none %}{{ satir('Ek nakit', i.ek_nakit|tr_para) }}{% endif %}
+                    {% if i.teslim_suresi_ay is not none %}{{ satir('Teslim süresi', (i.teslim_suresi_ay|tr_sayi) ~ ' ay') }}{% endif %}
+                    {% if i.teminat_turu %}{{ satir('Teminat', i.teminat_turu) }}{% endif %}
+                    {% if i.teminat_tutari is not none %}{{ satir('Teminat tutarı', i.teminat_tutari|tr_para) }}{% endif %}
+                    {% if i.tevhid_durumu %}{{ satir('Tevhid', sabit.etiket(sabit.TEVHID, i.tevhid_durumu)) }}{% endif %}
+                    {% endif %}
+                    {{ satir('Toplam alan', (oz.toplam_m2|tr_sayi) ~ ' m²' if oz.toplam_m2 else '—') }}
+                    {% if kat %}
+                    {{ satir('İnşaat hakkı' ~ (' (elle)' if i.insaat_alani_elle is not none else ' (tahmini)'), (oz.insaat_hakki|tr_sayi) ~ ' m²' if oz.insaat_hakki is not none else '—') }}
+                    {{ satir('Arsa sahibine düşen', (oz.sahibe_dusen_m2|tr_sayi) ~ ' m²' if oz.sahibe_dusen_m2 is not none else '—') }}
+                    {% elif oz.istenen is not none %}
+                    {{ satir('m² ' ~ ('kirası' if i.teklif_tipi == 'kiralik' else 'fiyatı'), (oz.istenen|tr_para) ~ '/m²') }}
+                    {% endif %}
+                </div>
+                {% if oz.kakssiz_parseller %}
+                <div class="alert alert-warning small mt-3 mb-0">
+                    <i class="fas fa-exclamation-triangle me-1"></i>KAKS bilgisi olmayan parseller hesaba katılmadı:
+                    {{ oz.kakssiz_parseller|join(', ') }}
+                </div>
+                {% endif %}
+                {% if kat and i.daire_tercihi_notu %}
+                <div class="mt-3"><div class="text-muted small mb-1">Daire tercihi</div><div class="text-break">{{ i.daire_tercihi_notu|nl2br }}</div></div>
+                {% endif %}
+                {% if i.aciklama %}
+                <div class="mt-3"><div class="text-muted small mb-1">Açıklama</div><div class="text-break">{{ i.aciklama|nl2br }}</div></div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Parseller / gayrimenkuller -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-map me-2 text-primary"></i>{{ 'Parseller' if i.baglar|length > 1 else 'Gayrimenkul' }}</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="small text-muted"><tr><th>Kayıt</th><th class="text-nowrap">Ada / Parsel</th><th class="text-end">m²</th><th class="text-end">KAKS</th>{% if i.baglar|selectattr('parsel_fiyati')|list %}<th class="text-end">Parsel fiyatı</th>{% endif %}</tr></thead>
+                        <tbody>
+                            {% for b in i.baglar %}
+                            {% set g = b.gayrimenkul %}
+                            <tr>
+                                <td class="text-break">
+                                    {% if g.id in gorunur_gm %}<a href="{{ url_for('analysis.view_analysis', analysis_id=g.id) }}" class="text-decoration-none">{{ g.baslik_metni }}</a>{% else %}{{ g.baslik_metni }}{% endif %}
+                                    {% if b.ana_kayit %}<span class="badge text-bg-light border ms-1">Ana kayıt</span>{% endif %}
+                                    <div class="small text-muted">{{ tur_etiketi(g) }}{% if g.ozet %} · {{ g.ozet }}{% endif %}</div>
+                                </td>
+                                <td class="small text-nowrap">{% if g.ada or g.parsel %}{{ g.ada or '-' }} / {{ g.parsel or '-' }}{% else %}—{% endif %}</td>
+                                <td class="text-end text-nowrap">{{ g.metrekare|tr_sayi if g.metrekare is not none else '—' }}</td>
+                                <td class="text-end">{{ g.kaks|tr_sayi if g.kaks is not none else '—' }}</td>
+                                {% if i.baglar|selectattr('parsel_fiyati')|list %}<td class="text-end text-nowrap">{{ b.parsel_fiyati|tr_para if b.parsel_fiyati is not none else '—' }}</td>{% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if i.baglar|length > 1 %}
+                        <tfoot class="small"><tr><th colspan="2">{{ i.baglar|length }} parsel</th><th class="text-end text-nowrap">{{ oz.toplam_m2|tr_sayi }}</th><th></th>{% if i.baglar|selectattr('parsel_fiyati')|list %}<th></th>{% endif %}</tr></tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emsal karşılaştırma -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-balance-scale me-2 text-primary"></i>Emsal karşılaştırması</h6>
+                {% if oz.bolge is not none %}
+                {% set birim = '%' if kat else '' %}
+                <div class="row g-2 text-center mb-3">
+                    <div class="col-12 col-sm-4"><div class="border rounded p-2 h-100">
+                        <div class="small text-muted">{{ 'Talep edilen pay' if kat else 'İstenen m² değeri' }}</div>
+                        <div class="fw-semibold">{% if oz.istenen is none %}—{% elif kat %}%{{ oz.istenen|tr_sayi }}{% else %}{{ oz.istenen|tr_para }}/m²{% endif %}</div>
+                    </div></div>
+                    <div class="col-12 col-sm-4"><div class="border rounded p-2 h-100">
+                        <div class="small text-muted">Bölge ortalaması</div>
+                        <div class="fw-semibold">{% if kat %}%{{ oz.bolge|tr_sayi(1) }}{% else %}{{ oz.bolge|tr_para }}/m²{% endif %}</div>
+                        <div class="small text-muted">{% if oz.bolge_kaynak == 'emsal' %}{{ oz.emsal_sayisi }} emsalden{% else %}elle girildi{% endif %}</div>
+                    </div></div>
+                    <div class="col-12 col-sm-4"><div class="border rounded p-2 h-100">
+                        <div class="small text-muted">Fark</div>
+                        <div class="fw-semibold">{% if oz.fark is not none %}%{{ (oz.fark|abs)|tr_sayi(1) }} {{ 'üstünde' if oz.fark > 0 else ('altında' if oz.fark < 0 else 'eşit') }}{% else %}—{% endif %}</div>
+                        {% if oz.konum %}<div class="small fw-semibold {{ 'text-success' if oz.konum in ('Bölgeye göre uygun', 'Müteahhit için cazip') else ('text-danger' if oz.fark is not none and oz.fark > 5 else 'text-primary') }}">{{ oz.konum }}</div>{% endif %}
+                    </div></div>
+                </div>
+                {% else %}
+                <div class="small text-muted mb-3">Emsal ya da elle girilmiş bölge değeri yok; karşılaştırma yapılamadı.</div>
+                {% endif %}
+
+                {% if i.emsaller %}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="small text-muted"><tr><th>Konum</th>{% if kat %}<th class="text-end">Sahip payı</th>{% else %}<th class="text-end">m²</th><th class="text-end">Fiyat</th><th class="text-end">m² değeri</th>{% endif %}<th>Not</th></tr></thead>
+                        <tbody>
+                            {% for e in i.emsaller %}
+                            <tr>
+                                <td class="text-break">{% if e.link and e.link.lower().startswith(('http://', 'https://')) %}<a href="{{ e.link }}" target="_blank" rel="noopener noreferrer nofollow" class="text-decoration-none">{{ e.konum or e.link }}</a>{% else %}{{ e.konum or '—' }}{% if e.link %}<div class="small text-muted">{{ e.link }}</div>{% endif %}{% endif %}</td>
+                                {% if kat %}
+                                <td class="text-end">{{ '%' ~ (e.pay_yuzde|tr_sayi) if e.pay_yuzde is not none else '—' }}</td>
+                                {% else %}
+                                <td class="text-end text-nowrap">{{ e.m2|tr_sayi if e.m2 is not none else '—' }}</td>
+                                <td class="text-end text-nowrap">{{ e.fiyat|tr_para if e.fiyat is not none else '—' }}</td>
+                                <td class="text-end text-nowrap">{{ ((e.fiyat / e.m2)|tr_para) ~ '/m²' if e.fiyat is not none and e.m2 else '—' }}</td>
+                                {% endif %}
+                                <td class="small text-break">{{ e.notlar or '' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <!-- Raporlar -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-1"><i class="fas fa-file-alt me-2 text-primary"></i>Raporlar</h6>
+                <div class="small text-muted mb-3">Alıcıya / mal sahibine verilebilir; mal sahibi bilgisi yer almaz.</div>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('ilan.rapor', ilan_id=i.id, fmt='pdf') }}" class="btn btn-outline-secondary"><i class="fas fa-file-pdf me-1"></i>PDF raporu</a>
+                    <a href="{{ url_for('ilan.rapor', ilan_id=i.id, fmt='word') }}" class="btn btn-outline-secondary"><i class="fas fa-file-word me-1"></i>Word raporu</a>
+                    <a href="{{ url_for('ilan.rapor', ilan_id=i.id, fmt='pptx') }}" class="btn btn-outline-secondary"><i class="fas fa-file-powerpoint me-1"></i>Sunum (PowerPoint)</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Durum -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-flag me-2 text-primary"></i>Durum</h6>
+                <form method="post" action="{{ url_for('ilan.durum', ilan_id=i.id) }}" class="d-flex gap-2">
+                    {{ csrf() }}
+                    <select class="form-select" name="durum" aria-label="İlan durumu">
+                        {% for kod, ad in sabit.DURUMLAR %}<option value="{{ kod }}" {% if i.durum == kod %}selected{% endif %}>{{ ad }}</option>{% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary text-nowrap">Güncelle</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sahipler (ofis içi) -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-1"><i class="fas fa-user-tie me-2 text-primary"></i>Mal sahipleri</h6>
+                <div class="small text-muted mb-2">Ofis içi bilgi; raporlarda yer almaz.</div>
+                {% if sahipler %}
+                <ul class="list-unstyled mb-0">
+                    {% for s in sahipler %}
+                    <li class="py-2 {% if not loop.last %}border-bottom{% endif %} text-break">
+                        {% if s.contact_id in gorunur_kontak %}<a href="{{ url_for('crm.crm_contact_detail', contact_id=s.contact_id) }}" class="text-decoration-none">{{ s.contact.full_name }}</a>{% else %}{{ s.contact.full_name }}{% endif %}
+                        {% if s.irtibat %}<span class="badge text-bg-info ms-1">İrtibat</span>{% endif %}
+                        {% if s.hisse %}<span class="badge text-bg-light border ms-1" title="Hisse">{{ s.hisse }}</span>{% endif %}
+                        {% if s.contact.phone %}<div class="small"><a href="tel:{{ s.contact.phone }}" class="text-muted text-decoration-none"><i class="fas fa-phone me-1"></i>{{ s.contact.phone }}</a></div>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="small text-muted">Gayrimenkullere mal sahibi eklenmemiş.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Bağlı fırsatlar -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-handshake me-2 text-primary"></i>Bağlı fırsatlar</h6>
+                {% if firsatlar %}
+                <ul class="list-unstyled mb-0">
+                    {% for d in firsatlar %}
+                    <li class="py-1 d-flex justify-content-between gap-2">
+                        {# CRM fırsat detayı yalnız sahibine açık: ekipteki diğer fırsatlar düz metin #}
+                        {% if d.user_id == current_user.id %}<a href="{{ url_for('crm.crm_deal_detail', deal_id=d.id) }}" class="text-decoration-none text-break">{{ d.title }}</a>{% else %}<span class="text-break">{{ d.title }}</span>{% endif %}
+                        <span class="small text-muted text-nowrap">{{ d.stage }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="small text-muted">Bu ilana bağlı fırsat yok.</div>
+                {% endif %}
+                <a href="{{ url_for('crm.crm_deal_new', ilan_id=i.id) }}" class="btn btn-sm btn-outline-primary mt-3"><i class="fas fa-plus me-1"></i>Bu ilana fırsat ekle</a>
+            </div>
+        </div>
+
+        <!-- Portföyler -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="mb-3"><i class="fas fa-folder-open me-2 text-primary"></i>Portföyler</h6>
+                {% if gorunen_portfoyler %}
+                <ul class="list-unstyled mb-3 small">
+                    {% for p in gorunen_portfoyler %}<li class="py-1 text-break">{% if p.user_id == current_user.id %}<a href="{{ url_for('portfolio.portfolio_detail', portfolio_id=p.id) }}" class="text-decoration-none">{{ p.title }}</a>{% else %}{{ p.title }}{% endif %}</li>{% endfor %}
+                </ul>
+                {% endif %}
+                {% if eklenebilir_portfoyler %}
+                <form method="post" action="{{ url_for('portfolio.portfolio_add_ilan_secili') }}">
+                    {{ csrf() }}
+                    <input type="hidden" name="ilan_id" value="{{ i.id }}">
+                    <input type="hidden" name="geri" value="ilan">
+                    <label for="portfoy_sec" class="form-label small text-muted">Portföye ekle</label>
+                    <div class="input-group input-group-sm">
+                        <select id="portfoy_sec" name="portfolio_id" class="form-select" required>
+                            {% for p in eklenebilir_portfoyler %}<option value="{{ p.id }}">{{ p.title }}</option>{% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-outline-primary">Portföye ekle</button>
+                    </div>
+                </form>
+                {% elif not kendi_portfoyu_var %}
+                <div class="small text-muted">Bu ilanı ekleyebileceğiniz portföy yok. <a href="{{ url_for('portfolio.portfolio_create', ilan_id=i.id) }}">Yeni portföy oluştur</a></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

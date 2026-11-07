@@ -1,0 +1,177 @@
+{% extends "dashboard_base.html" %}
+
+{% macro sayi(ad, etiket, birim='', ipucu='', zorunlu=false) -%}
+<label class="form-label" for="{{ ad }}">{{ etiket }}{% if zorunlu %} <span class="text-danger">*</span>{% endif %}</label>
+<div class="input-group">
+    <input class="form-control" id="{{ ad }}" name="{{ ad }}" inputmode="decimal" value="{{ v.get(ad) or '' }}"
+           {% if ipucu %}placeholder="{{ ipucu }}"{% endif %}>
+    {% if birim %}<span class="input-group-text">{{ birim }}</span>{% endif %}
+</div>
+{%- endmacro %}
+
+{% block title %}{{ title }} - Arsa Analiz Platformu{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_description %}{% if ilan %}{{ ilan.baslik or ilan.kod }}{% else %}Bir ya da birden çok gayrimenkulden satılık, kiralık veya kat karşılığı ilan oluşturun{% endif %}{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('ilan.detay', ilan_id=ilan.id) if ilan else url_for('ilan.liste') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Vazgeç</a>
+{% endblock %}
+
+{% block dashboard_content %}
+{% set tip = v.get('teklif_tipi') or 'satilik' %}
+{% if hata %}<div class="alert alert-danger" role="alert"><i class="fas fa-exclamation-triangle me-1"></i>{{ hata }}</div>{% endif %}
+
+<form method="post" id="ilanForm" novalidate
+      action="{{ url_for('ilan.duzenle', ilan_id=ilan.id) if ilan else url_for('ilan.yeni') }}"
+      data-sahip-url="{{ url_for('ilan.sahip_gayrimenkulleri', contact_id=0) }}">
+{% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+<div class="row g-4">
+<div class="col-12 col-lg-8">
+    {# 1. Mal sahibi #}
+    {% with sahip_tek_secim=true, sahip_baslik='1. Mal sahibi' %}{% include "gayrimenkul/_sahipler.html" %}{% endwith %}
+
+    {# 2. Gayrimenkuller #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                <h6 class="mb-0">2. Gayrimenkuller</h6>
+                <a href="{{ url_for('analysis.new_analysis') }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary"><i class="fas fa-plus me-1"></i>Gayrimenkul ekle</a>
+            </div>
+            <div class="form-text mb-2">İlana katılacakları işaretleyin ve ana kaydı seçin. Mal sahibi seçilince gayrimenkulleri burada listelenir.</div>
+            <div class="list-group" id="gmSatirlari">
+                {% for s in gm_satirlari %}
+                <div class="list-group-item px-2" data-gm data-id="{{ s.id }}" data-m2="{{ s.m2 if s.m2 is not none else '' }}" data-kaks="{{ s.kaks if s.kaks is not none else '' }}">
+                    <input type="hidden" name="gosterilen_gayrimenkul[]" value="{{ s.id }}">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-12 col-md-7 d-flex gap-2 align-items-start">
+                            <input class="form-check-input mt-1 flex-shrink-0" type="checkbox" id="gm{{ s.id }}" name="gayrimenkul_id[]" value="{{ s.id }}"{% if s.secili %} checked{% endif %} aria-label="İlana ekle">
+                            <label class="form-check-label text-break" for="gm{{ s.id }}">
+                                <span class="fw-semibold">{{ s.baslik }}</span>
+                                {% if s.ozet %}<span class="d-block small text-muted">{{ s.ozet }}</span>{% endif %}
+                                {% if s.aktif_ilan_kodu and (not ilan or s.aktif_ilan_kodu != ilan.kod) %}<span class="d-block small text-warning-emphasis"><i class="fas fa-exclamation-circle me-1"></i>{{ s.aktif_ilan_kodu }} numaralı aktif ilanda</span>{% endif %}
+                            </label>
+                        </div>
+                        <div class="col-7 col-md-3">
+                            <input type="hidden" name="parsel_gayrimenkul_id[]" value="{{ s.id }}">
+                            <input class="form-control form-control-sm" name="parsel_fiyati[]" inputmode="decimal" value="{{ s.parsel_fiyati }}"
+                                   placeholder="Parsel fiyatı (TL)" aria-label="Parsel fiyatı">
+                        </div>
+                        <div class="col-5 col-md-2">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="radio" id="ana{{ s.id }}" name="ana_gayrimenkul_id" value="{{ s.id }}"{% if s.ana %} checked{% endif %}{% if not s.secili %} disabled{% endif %}>
+                                <label class="form-check-label small" for="ana{{ s.id }}">Ana kayıt</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="small text-muted {% if gm_satirlari %}d-none{% endif %}" id="gmBos">Listelenecek gayrimenkul yok. Önce mal sahibini seçin ya da yeni gayrimenkul ekleyin.</div>
+        </div>
+    </div>
+
+    {# 3. Teklif tipi ve şartlar #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h6 class="mb-3">3. Teklif tipi ve şartlar</h6>
+            <div class="d-flex flex-wrap gap-3 mb-3" role="radiogroup" aria-label="Teklif tipi">
+                {% for kod, ad in sabit.TEKLIF_TIPLERI %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="teklif_tipi" id="tip_{{ kod }}" value="{{ kod }}" {% if tip == kod %}checked{% endif %}>
+                    <label class="form-check-label" for="tip_{{ kod }}">{{ ad }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="row g-3">
+                <div class="col-12 col-md-6" data-teklif="satilik">{{ sayi('fiyat', 'Satış fiyatı', 'TL', '4.250.000', true) }}</div>
+                <div class="col-12 col-md-6" data-teklif="kiralik">{{ sayi('kira', 'Aylık kira', 'TL', '30.000', true) }}</div>
+                <div class="col-12 col-md-6" data-teklif="kiralik">{{ sayi('depozito', 'Depozito', 'TL') }}</div>
+
+                <div class="col-6 col-md-4" data-teklif="kat_karsiligi">{{ sayi('sahip_payi_yuzde', 'Arsa sahibi payı', '%', '50', true) }}</div>
+                <div class="col-6 col-md-4" data-teklif="kat_karsiligi">{{ sayi('ek_nakit', 'Ek nakit', 'TL') }}</div>
+                <div class="col-6 col-md-4" data-teklif="kat_karsiligi">{{ sayi('teslim_suresi_ay', 'Teslim süresi', 'ay', '24') }}</div>
+                <div class="col-6 col-md-4" data-teklif="kat_karsiligi">
+                    <label class="form-label" for="teminat_turu">Teminat</label>
+                    <select class="form-select" id="teminat_turu" name="teminat_turu">
+                        <option value="">Seçiniz</option>
+                        {% for t in sabit.TEMINAT_TURLERI %}<option {% if v.get('teminat_turu') == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-6 col-md-4" data-teklif="kat_karsiligi">{{ sayi('teminat_tutari', 'Teminat tutarı', 'TL') }}</div>
+                <div class="col-6 col-md-4" data-teklif="kat_karsiligi">
+                    <label class="form-label" for="tevhid_durumu">Tevhid</label>
+                    <select class="form-select" id="tevhid_durumu" name="tevhid_durumu">
+                        <option value="">Seçiniz</option>
+                        {% for kod, ad in sabit.TEVHID %}<option value="{{ kod }}" {% if v.get('tevhid_durumu') == kod %}selected{% endif %}>{{ ad }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-6" data-teklif="kat_karsiligi">{{ sayi('insaat_alani_elle', 'İnşaat alanı (elle)', 'm²', 'Boşsa m² × KAKS') }}</div>
+                <div class="col-12" data-teklif="kat_karsiligi">
+                    <label class="form-label" for="daire_tercihi_notu">Daire tercihi notu</label>
+                    <textarea class="form-control" id="daire_tercihi_notu" name="daire_tercihi_notu" rows="2">{{ v.get('daire_tercihi_notu') or '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="row g-2 mt-3 text-center small" id="canliOzet">
+                <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><div class="text-muted">Toplam alan</div><div class="fw-semibold" id="canliToplam">—</div></div></div>
+                <div class="col-6 col-md-3"><div class="border rounded p-2 h-100"><div class="text-muted">İnşaat hakkı</div><div class="fw-semibold" id="canliInsaat">—</div></div></div>
+                <div class="col-6 col-md-3" data-teklif="kat_karsiligi"><div class="border rounded p-2 h-100"><div class="text-muted">Sahibe düşen</div><div class="fw-semibold" id="canliSahibe">—</div></div></div>
+                <div class="col-6 col-md-3" data-teklif="satilik kiralik"><div class="border rounded p-2 h-100"><div class="text-muted">m² değeri</div><div class="fw-semibold" id="canliM2">—</div></div></div>
+            </div>
+            <div class="small text-warning-emphasis mt-2 d-none" id="canliKaksUyari"><i class="fas fa-exclamation-circle me-1"></i>KAKS bilgisi olmayan parseller inşaat hakkına katılmadı.</div>
+        </div>
+    </div>
+
+    {# 4. Emsaller ve karşılaştırma #}
+    {% include "ilan/_emsaller.html" %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h6 class="mb-1">Emsal yoksa bölge değeri</h6>
+            <div class="form-text mb-2">Emsal girildiğinde emsaller esas alınır.</div>
+            <div class="row g-3">
+                <div class="col-12 col-md-6" data-teklif="satilik kiralik">{{ sayi('bolge_m2_fiyat_elle', 'Bölge m² değeri', 'TL/m²', '18.000') }}</div>
+                <div class="col-12 col-md-6" data-teklif="kat_karsiligi">{{ sayi('bolge_pay_yuzde_elle', 'Bölgede arsa sahibi payı', '%', '45') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-12 col-lg-4">
+    {# 5. Durum, sorumlu, açıklama #}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h6 class="mb-3">5. Durum ve açıklama</h6>
+            <div class="mb-3">
+                <label class="form-label" for="baslik">İlan başlığı</label>
+                <input class="form-control" id="baslik" name="baslik" maxlength="200" value="{{ v.get('baslik') or '' }}" placeholder="Boşsa ana kaydın başlığı">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="durum">Durum</label>
+                <select class="form-select" id="durum" name="durum">
+                    {% for kod, ad in sabit.DURUMLAR %}<option value="{{ kod }}" {% if v.get('durum') == kod %}selected{% endif %}>{{ ad }}</option>{% endfor %}
+                </select>
+                <div class="form-text">Bir gayrimenkul aynı anda yalnız bir pazarlamadaki/opsiyonlu ilanda olabilir.</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="sorumlu_user_id">Sorumlu danışman</label>
+                <select class="form-select" id="sorumlu_user_id" name="sorumlu_user_id">
+                    {% for uid, ad in sorumlular %}<option value="{{ uid }}" {% if v.get('sorumlu_user_id') == uid|string %}selected{% endif %}>{{ ad }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="aciklama">Açıklama</label>
+                <textarea class="form-control" id="aciklama" name="aciklama" rows="5" aria-describedby="aciklamaYardim">{{ v.get('aciklama') or '' }}</textarea>
+                <div class="form-text" id="aciklamaYardim">Raporlarda görünür — mal sahibi bilgisi yazmayın.</div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-1"></i>Kaydet</button>
+        </div>
+    </div>
+</div>
+</div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/ilan_form.js') }}"></script>
+{% endblock %}

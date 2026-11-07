@@ -11,13 +11,12 @@ from datetime import datetime
 from typing import List, Optional
 
 from modules.analiz import ArsaAnalizci
+from modules.gayrimenkul_sabitleri import ALTYAPI_ETIKETLERI
 
 SWOT_KEYS = ('strengths', 'weaknesses', 'opportunities', 'threats')
 SWOT_TITLES = {'strengths': 'Güçlü Yönler', 'weaknesses': 'Zayıf Yönler',
                'opportunities': 'Fırsatlar', 'threats': 'Tehditler'}
-ALTYAPI_ETIKETLERI = (('yol', 'Yol'), ('elektrik', 'Elektrik'), ('su', 'Su'),
-                      ('dogalgaz', 'Doğalgaz'), ('kanalizasyon', 'Kanalizasyon'))
-PROJEKSIYON_YIL = 5
+ARSA_TURLERI = ('arsa', 'tarla')
 IMAGE_EXTS = ('.jpg', '.jpeg', '.png')
 
 
@@ -33,18 +32,6 @@ def tr_number(value, decimals=0):
 
 def tr_currency(value, decimals=0):
     return f"{tr_number(value, decimals)} TL"
-
-
-def tr_short_currency(value):
-    """Grafik etiketleri için kısa para: 7.350.000 -> '7,35 Mn TL'."""
-    v = float(value or 0)
-    if abs(v) >= 1e9:
-        return f"{tr_number(v / 1e9, 2)} Mr TL"
-    if abs(v) >= 1e6:
-        return f"{tr_number(v / 1e6, 2)} Mn TL"
-    if abs(v) >= 1e3:
-        return f"{tr_number(v / 1e3, 0)} B TL"
-    return tr_currency(v)
 
 
 def to_local_time(dt, tz_name='Europe/Istanbul'):
@@ -143,16 +130,14 @@ class Advisor:
 
 
 @dataclass
-class Scenario:
-    ad: str
-    oran: float
-    degerler: List[float]  # yıl 0..N toplam değer
-
-
-@dataclass
 class ReportModel:
-    analiz_id: int
+    analiz_id: int                 # ana gayrimenkulün id'si
     baslik: str
+    kod: str                       # ilan kodu; tanıtım raporunda ''
+    teklif_tipi: Optional[str]     # satilik / kiralik / kat_karsiligi; tanıtım raporunda None
+    teklif_etiketi: str
+    tur: str                       # arsa, tarla, konut, isyeri, bina
+    tur_etiketi: str               # alt tür varsa onun etiketi
     konum: str
     il: str
     ilce: str
@@ -161,26 +146,35 @@ class ReportModel:
     parsel: str
     pafta: str
     koordinat: Optional[tuple]
-    metrekare: float
+    metrekare: float               # toplam alan (çok parselde parsellerin toplamı)
+    parseller: List[dict]          # [{baslik, ada, parsel, m2, imar, kaks}]
+    tur_bilgileri: List[tuple]     # [(etiket, metin)] — yalnız dolu türe özel alanlar
+    ozellik_gruplari: List[tuple]  # [(başlık, [etiket, ...])]
+    # Arsa / tarla (ana gayrimenkul)
     imar_durumu: str
     taks: float
     kaks: float
-    fiyat: float
-    m2_fiyat: float
-    bolge_m2_fiyat: float          # 0 ise girilmemiş
-    bolge_fark: Optional[float]    # % (negatif = bölgeden ucuz)
     taban_alani: float
     insaat_alani: float
     kat_sayisi: float
     altyapi: List[tuple]           # [(etiket, var_mi)]
-    swot: dict
-    puan: float
+    puan: float                    # yalnız tek parselli arsa/tarla; diğerlerinde 0
     puan_detay: List[dict]
-    yillik_artis: float            # baz senaryo oranı (%)
-    artis_kaynagi: str             # 'kullanıcı' / 'model'
-    senaryolar: List[Scenario]
-    temel_ozet: str
-    yatirim_ozet: str
+    # Fiyat ve emsal analizi (tanıtım raporunda boş)
+    fiyat_satirlari: List[tuple]   # [(etiket, metin)]
+    tutar: Optional[float]         # satılıkta fiyat, kiralıkta aylık kira
+    istenen: Optional[float]       # m² fiyatı / m² kira / sahip payı %
+    emsaller: List[dict]           # [{konum, m2, deger, m2_fiyat}] — biçimlenmiş metinler
+    bolge: Optional[float]
+    bolge_kaynak: str              # 'emsal' / 'elle' / 'yok'
+    emsal_sayisi: int
+    fark: Optional[float]          # % (negatif = bölgenin altında)
+    konum_etiketi: Optional[str]
+    toplam_m2: float
+    insaat_hakki: Optional[float]
+    sahibe_dusen_m2: Optional[float]
+    fiyat_ozet: str
+    swot: dict
     tavsiyeler: List[str]
     notlar: str
     fotograflar: List[str]
@@ -192,8 +186,27 @@ class ReportModel:
     extras: dict = field(default_factory=dict)
 
     @property
+    def arsa_mi(self):
+        return self.tur in ARSA_TURLERI
+
+    @property
+    def cok_parsel(self):
+        return len(self.parseller) > 1
+
+    @property
+    def tanitim(self):
+        return self.teklif_tipi is None
+
+    @property
+    def parsel_birimi(self):
+        """Çok kayıtlı ilanda birim: hepsi arsa/tarla ise 'parsel', değilse 'gayrimenkul'."""
+        return 'parsel' if self.extras.get('hepsi_arsa') else 'gayrimenkul'
+
+    @property
     def ada_parsel(self):
-        """'Ada 1245 / Parsel 18'; bilgi yoksa boş."""
+        """'Ada 1245 / Parsel 18'; çok parselde '4 parsel'; bilgi yoksa boş."""
+        if self.cok_parsel:
+            return f"{len(self.parseller)} {self.parsel_birimi}"
         if self.ada == '-' and self.parsel == '-':
             return ''
         return f"Ada {self.ada} / Parsel {self.parsel}"
@@ -221,6 +234,18 @@ class ReportModel:
             return 'Orta'
         return 'Dikkatli değerlendirilmeli'
 
+    @property
+    def birim(self):
+        """Karşılaştırılan değerin birimi: 'TL/m²' ya da '%'."""
+        return '%' if self.teklif_tipi == 'kat_karsiligi' else 'TL/m²'
+
+    def deger_metni(self, deger):
+        """İstenen / bölge değeri: '12.500 TL/m²' ya da '%45'."""
+        if deger is None:
+            return '-'
+        if self.teklif_tipi == 'kat_karsiligi':
+            return f"%{sayi(deger)}"
+        return f"{tr_currency(deger)}/m²"
 
 def _brand_for(user, base_dir):
     """Marka bilgisi: ortam değişkeni > kullanıcının firması > platform adı."""
@@ -255,89 +280,291 @@ def _photos_for(analiz, upload_folder):
     return paths[:8]
 
 
-def _scenarios(fiyat, baz_oran):
-    oranlar = [('Temkinli', max(baz_oran - 5, 0)), ('Beklenen', baz_oran), ('İyimser', baz_oran + 5)]
-    out = []
-    for ad, oran in oranlar:
-        out.append(Scenario(ad, oran, [fiyat * (1 + oran / 100) ** y for y in range(PROJEKSIYON_YIL + 1)]))
-    return out
+def tr_lower(text):
+    return (text or '').replace('İ', 'i').replace('I', 'ı').lower()
 
 
-def build_report_model(analiz, user, detail_url='', upload_folder=None, base_dir=None):
+def sayi(deger, ondalik=2):
+    """Gereksiz ondalık sıfırları atılmış Türkçe sayı: 2400 -> '2.400', 1.5 -> '1,5'."""
+    from modules.ilan_hesap import sayi_metni
+    return sayi_metni(deger, ondalik) or '-'
+
+
+def _f(deger):
+    return float(deger) if deger is not None else None
+
+
+def _tur_etiketi(g):
+    from modules.gayrimenkul_sabitleri import ALT_TURLER, TURLER, etiket
+    tur = g.tur or 'arsa'
+    if g.alt_tur:
+        return etiket(ALT_TURLER.get(tur, []), g.alt_tur)
+    return etiket(TURLER, tur)
+
+
+# detay_bilgileri satırlarından rapora ayrıca girenler (konum, arsa/imar tablosu)
+_GENEL_ETIKETLER = {'Tür', 'Alt tür', 'Konum', 'Koordinatlar', 'Ada', 'Parsel', 'Pafta', 'Yüzölçümü',
+                    'İmar durumu', 'TAKS', 'KAKS'}
+
+
+def _parsel(g):
+    return {'baslik': g.baslik_metni, 'ada': g.ada or '-', 'parsel': g.parsel or '-',
+            'm2': float(g.metrekare or 0), 'imar': (g.imar_durumu or '').strip() or '-',
+            'kaks': _f(g.kaks)}
+
+
+def _emsal_satirlari(ilan):
+    kat = ilan.teklif_tipi == 'kat_karsiligi'
+    satirlar = []
+    for e in ilan.emsaller:
+        m2, fiyat, pay = _f(e.m2), _f(e.fiyat), _f(e.pay_yuzde)
+        if kat:
+            deger = f"%{sayi(pay)}" if pay is not None else '-'
+            m2_fiyat = '-'
+        else:
+            deger = tr_currency(fiyat) if fiyat is not None else '-'
+            m2_fiyat = f"{tr_currency(fiyat / m2)}/m²" if fiyat is not None and m2 else '-'
+        satirlar.append({'konum': (e.konum or '').strip() or '-', 'm2': f"{sayi(m2)} m²" if m2 else '-',
+                         'deger': deger, 'm2_fiyat': m2_fiyat})
+    return satirlar
+
+
+def _fiyat_satirlari(ilan, oz):
+    from modules.gayrimenkul_sabitleri import TEVHID, etiket
+    tip = ilan.teklif_tipi
+    satirlar = []
+    if tip == 'satilik':
+        satirlar.append(('İstenen fiyat', tr_currency(ilan.fiyat) if ilan.fiyat is not None else '-'))
+        if oz['istenen'] is not None:
+            satirlar.append(('m² fiyatı', f"{tr_currency(oz['istenen'])}/m²"))
+    elif tip == 'kiralik':
+        satirlar.append(('Aylık kira', tr_currency(ilan.kira) if ilan.kira is not None else '-'))
+        if ilan.depozito is not None:
+            satirlar.append(('Depozito', tr_currency(ilan.depozito)))
+        if oz['istenen'] is not None:
+            satirlar.append(('m² kira', f"{tr_currency(oz['istenen'])}/m²"))
+    else:
+        pay = ilan.sahip_payi_yuzde
+        satirlar.append(('Arsa sahibi payı', f"%{sayi(pay)}" if pay is not None else '-'))
+        if ilan.ek_nakit is not None:
+            satirlar.append(('Ek nakit', tr_currency(ilan.ek_nakit)))
+        if ilan.teslim_suresi_ay is not None:
+            satirlar.append(('Teslim süresi', f"{sayi(ilan.teslim_suresi_ay)} ay"))
+        teminat = ' · '.join(p for p in ((ilan.teminat_turu or '').strip(),
+                                          tr_currency(ilan.teminat_tutari) if ilan.teminat_tutari is not None else '')
+                             if p)
+        if teminat:
+            satirlar.append(('Teminat', teminat))
+        if ilan.tevhid_durumu:
+            satirlar.append(('Tevhid', etiket(TEVHID, ilan.tevhid_durumu)))
+        if oz['toplam_m2']:
+            satirlar.append(('Toplam arsa alanı', f"{sayi(oz['toplam_m2'])} m²"))
+        elle = ilan.insaat_alani_elle is not None
+        eksik = kaks_eksik_notu(oz)
+        ek = f" ({eksik})" if eksik else ''
+        if oz['insaat_hakki'] is not None:
+            satirlar.append((f"İnşaat hakkı ({'elle' if elle else 'tahmini'})", f"{sayi(oz['insaat_hakki'])} m²{ek}"))
+        else:
+            satirlar.append(('İnşaat hakkı (tahmini)', HESAPLANAMADI))
+        if oz['sahibe_dusen_m2'] is not None:
+            satirlar.append(('Arsa sahibine düşen (tahmini)', f"{sayi(oz['sahibe_dusen_m2'])} m²{ek}"))
+        elif oz['insaat_hakki'] is None:
+            satirlar.append(('Arsa sahibine düşen (tahmini)', HESAPLANAMADI))
+    return satirlar
+
+
+HESAPLANAMADI = 'Hesaplanamadı (KAKS bilgisi yok)'
+
+
+def kaks_eksik_notu(oz):
+    """KAKS'ı olmayan parseller hesaba katılmadıysa uyarı metni; yoksa ''."""
+    n = len(oz.get('kakssiz_parseller') or [])
+    if not n or oz.get('insaat_hakki') is None:
+        return ''
+    return f"KAKS bilgisi eksik {n} parsel hesaba katılmadı"
+
+
+def _kaynak_metni(oz):
+    return f"{oz['emsal_sayisi']} emsal" if oz['bolge_kaynak'] == 'emsal' else 'elle girildi'
+
+
+def _fiyat_ozeti(ilan, oz, konum, tanim):
+    tip = ilan.teklif_tipi
+    fark = oz['fark']
+    if tip == 'kat_karsiligi':
+        gler = ilan.gayrimenkuller
+        birim = 'parsel' if all((x.tur or 'arsa') in ARSA_TURLERI for x in gler) else 'gayrimenkul'
+        metin = f"{len(gler)} {birim}, toplam {sayi(oz['toplam_m2'])} m² arsa için arsa sahibi "
+        if ilan.sahip_payi_yuzde is not None:
+            metin += f"%{sayi(ilan.sahip_payi_yuzde)} pay talep ediyor"
+        else:
+            metin += "pay talep ediyor (oran belirtilmemiş)"
+        if oz['sahibe_dusen_m2'] is not None:
+            metin += f"; tahmini {sayi(oz['sahibe_dusen_m2'])} m² inşaat alanına karşılık gelir"
+            eksik = kaks_eksik_notu(oz)
+            metin += f" ({eksik})." if eksik else '.'
+        elif oz['insaat_hakki'] is None:
+            metin += "; KAKS bilgisi eksik olduğundan inşaat alanı hesaplanamadı."
+        else:
+            metin += '.'
+        if oz['bolge'] is not None:
+            metin += f" Bölge emsallerinde ortalama pay %{sayi(oz['bolge'])} ({_kaynak_metni(oz)})"
+            if fark is None:
+                metin += '.'
+            elif abs(fark) >= 0.05:
+                yon = 'altında' if fark < 0 else 'üzerinde'
+                metin += f"; talep bu ortalamanın %{tr_number(abs(fark), 1)} {yon} — {oz['konum']}."
+            else:
+                metin += f"; talep bu ortalamayla aynı seviyede — {oz['konum']}."
+        return metin
+
+    kira = tip == 'kiralik'
+    tutar = ilan.kira if kira else ilan.fiyat
+    metin = (f"{konum} konumundaki {tanim} için istenen {'aylık kira' if kira else 'fiyat'} "
+             f"{tr_currency(tutar) if tutar is not None else '-'}")
+    if oz['istenen'] is not None:
+        metin += f", m² {tr_currency(oz['istenen'])}"
+    metin += '.'
+    if oz['bolge'] is not None:
+        metin += f" Bölge ortalaması {tr_currency(oz['bolge'])}/m² ({_kaynak_metni(oz)})"
+        if fark is not None and abs(fark) >= 0.05:
+            yon = 'altında' if fark < 0 else 'üzerinde'
+            metin += f"; ilan bu ortalamanın %{tr_number(abs(fark), 1)} {yon} — {oz['konum']}."
+        elif fark is not None:
+            metin += f"; ilan bu ortalamayla aynı seviyede — {oz['konum']}."
+        else:
+            metin += '.'
+    else:
+        metin += " Emsal ya da bölge ortalaması girilmediği için karşılaştırma yapılmamıştır."
+    return metin
+
+
+def _tavsiyeler(ilan, oz, arsa_mi, altyapi_list):
+    tavsiyeler = []
+    fark = oz['fark'] if ilan is not None else None
+    if ilan is not None and ilan.teklif_tipi == 'kat_karsiligi':
+        if fark is not None and fark > 5:
+            tavsiyeler.append('Talep edilen pay bölge emsallerinin üzerinde; müteahhit tekliflerinde pazarlık '
+                              'beklenmeli.')
+        elif fark is not None and fark < -5:
+            tavsiyeler.append('Talep edilen pay bölge emsallerinin altında; müteahhitler için cazip bir teklif.')
+        if ilan.tevhid_durumu == 'yapilacak':
+            tavsiyeler.append('Parsellerin tevhidi (birleştirilmesi) için belediye ve tapu süreci planlanmalı.')
+    elif fark is not None:
+        ne = 'Kira' if ilan.teklif_tipi == 'kiralik' else 'Fiyat'
+        # Bantlar ilan_hesap.konumlandirma ile aynı: < -5 altında, -5..5 piyasa seviyesinde, > 5 üzerinde
+        if fark < -10:
+            tavsiyeler.append(f'{ne} bölge ortalamasının belirgin şekilde altında; hızlı karar avantaj sağlayabilir.')
+        elif fark < -5:
+            tavsiyeler.append(f'{ne} bölge ortalamasının altında; bölgeye göre uygun, pazarlık payı sınırlı olabilir.')
+        elif fark <= 5:
+            tavsiyeler.append(f'{ne} piyasa seviyesinde, bölge ortalamasına yakın; emsal işlemlerle teyit edilmesi '
+                              'önerilir.')
+        elif fark <= 10:
+            tavsiyeler.append(f'{ne} bölge ortalamasının üzerinde; pazarlık payı değerlendirilmeli.')
+        else:
+            tavsiyeler.append(f'{ne} bölge ortalamasının belirgin şekilde üzerinde; pazarlık veya emsal araştırması '
+                              'önerilir.')
+    if arsa_mi:
+        eksik = [etiket for kod, etiket in ALTYAPI_ETIKETLERI if kod not in altyapi_list]
+        if eksik:
+            tavsiyeler.append(f"Eksik altyapı ({', '.join(eksik).lower()}) için belediyeden bağlantı planı ve "
+                              "maliyeti sorulmalı.")
+    tavsiyeler.append('Tapu kaydı, imar durumu ve olası şerhler resmi kurumlardan güncel olarak teyit edilmelidir.')
+    return tavsiyeler
+
+
+def _puan(g, fark, teklif_tipi, altyapi_list):
+    """Tek parselli arsa/tarla için mevcut ArsaAnalizci uygunluk puanı."""
+    karsilastir = fark is not None and teklif_tipi in ('satilik', 'kiralik')
+    detay = ArsaAnalizci().uygunluk_detay({
+        'metrekare': float(g.metrekare or 0), 'imar_durumu': g.imar_durumu or '', 'altyapi': altyapi_list,
+        'bolge_karsilastirma': fark if karsilastir else None, 'bolge_fiyat_girildi': karsilastir,
+    })
+    for d in detay:
+        if d['kod'] == 'fiyat' and not karsilastir:
+            d['aciklama'] = ('Kat karşılığında fiyat bileşeni nötr kabul edildi' if teklif_tipi == 'kat_karsiligi'
+                             else 'Bölge karşılaştırması olmadığı için nötr kabul edildi')
+    puan = round(max(0, min(100, sum(d['puan'] for d in detay))), 1)
+    return puan, detay
+
+
+def build_report_model(ilan_or_none, gayrimenkul, user, detail_url='', upload_folder=None, base_dir=None):
+    """İlan (ya da ilan yoksa yalnız gayrimenkul -> tanıtım raporu) için rapor modeli.
+
+    Mal sahibi bilgisi modele hiç alınmaz.
+    """
+    from modules.gayrimenkul_form import detay_bilgileri, ozellik_gruplari
+    from modules.gayrimenkul_sabitleri import TEKLIF_TIPLERI, etiket
     base_dir = base_dir or os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     upload_folder = upload_folder or os.path.join(base_dir, 'static', 'uploads')
 
-    metrekare = float(analiz.metrekare or 0)
-    fiyat = float(analiz.fiyat or 0)
-    bolge = float(analiz.bolge_fiyat or 0)
-    taks = float(analiz.taks) if analiz.taks is not None else 0.3
-    kaks = float(analiz.kaks) if analiz.kaks is not None else 1.5
-    altyapi_list = parse_altyapi(analiz.altyapi)
-    m2_fiyat = fiyat / metrekare if metrekare else 0
+    ilan = ilan_or_none
+    g = gayrimenkul
+    gler = ilan.gayrimenkuller if ilan is not None else [g]
+    if g not in gler:
+        gler = [g] + list(gler)
+    tur = g.tur or 'arsa'
+    arsa_mi = tur in ARSA_TURLERI
+    tek = len(gler) == 1
+    tur_etiketi = _tur_etiketi(g)
 
-    analizci = ArsaAnalizci()
-    metrics = {}
-    if metrekare > 0 and fiyat > 0:
-        metrics = analizci.analiz_et({
-            'metrekare': metrekare, 'fiyat': fiyat,
-            'bolge_fiyat': bolge if bolge > 0 else m2_fiyat,
-            'bolge_fiyat_girildi': bolge > 0,
-            'imar_durumu': analiz.imar_durumu or '', 'altyapi': altyapi_list,
-            'konum': {'il': analiz.il, 'ilce': analiz.ilce, 'mahalle': analiz.mahalle},
-        })
-    bolge_fark = metrics.get('bolge_karsilastirma') if bolge > 0 else None
-    model_oran = float(metrics.get('potansiyel_getiri') or 0)
-    kullanici_oran = getattr(analiz, 'deger_artis_orani', None)
-    if kullanici_oran is not None:
-        yillik, kaynak = float(kullanici_oran), 'kullanıcı'
+    taks = float(g.taks) if g.taks is not None else 0.3
+    kaks = float(g.kaks) if g.kaks is not None else 1.5
+    altyapi_list = parse_altyapi(g.altyapi)
+    konum = ', '.join(p for p in [g.mahalle, g.ilce, g.il] if p)
+    imar = (g.imar_durumu or '').strip()
+
+    if ilan is not None:
+        from modules.ilan_servis import ilan_ozeti
+        oz = ilan_ozeti(ilan)
     else:
-        yillik, kaynak = model_oran, 'model'
+        oz = {'toplam_m2': sum(float(x.metrekare or 0) for x in gler), 'insaat_hakki': None, 'kakssiz_parseller': [],
+              'sahibe_dusen_m2': None, 'istenen': None, 'bolge': None, 'bolge_kaynak': 'yok',
+              'emsal_sayisi': 0, 'fark': None, 'konum': None}
+    metrekare = float(oz['toplam_m2'] or 0)
 
-    konum = ', '.join(p for p in [analiz.mahalle, analiz.ilce, analiz.il] if p)
-    imar = (analiz.imar_durumu or '').strip()
-
-    # Metinler
-    temel = (f"{konum} konumundaki {tr_number(metrekare)} m² büyüklüğündeki "
-             f"{imar.lower() + ' imarlı ' if imar else ''}arsanın fiyatı {tr_currency(fiyat)}, "
-             f"metrekare fiyatı {tr_currency(m2_fiyat)}.")
-    if bolge_fark is not None:
-        if abs(bolge_fark) < 0.05:
-            temel += f" Bu fiyat bölge ortalamasıyla ({tr_currency(bolge)}/m²) aynı seviyededir."
-        else:
-            yon = 'altında' if bolge_fark < 0 else 'üzerinde'
-            temel += (f" Bölge ortalaması {tr_currency(bolge)}/m² olup arsa bu ortalamanın "
-                      f"%{tr_number(abs(bolge_fark), 1)} {yon} fiyatlanmıştır.")
+    tip = ilan.teklif_tipi if ilan is not None else None
+    if tip == 'satilik':
+        baslik = f"Satılık {tur_etiketi} Sunum Raporu"
+    elif tip == 'kiralik':
+        baslik = f"Kiralık {tur_etiketi} Sunum Raporu"
+    elif tip == 'kat_karsiligi':
+        baslik = 'Kat Karşılığı Teklif Raporu'
     else:
-        temel += " Bölge ortalama fiyatı girilmediği için karşılaştırma yapılmamıştır."
+        baslik = f"{tur_etiketi} Tanıtım Raporu"
 
-    senaryolar = _scenarios(fiyat, yillik)
-    beklenen_son = senaryolar[1].degerler[-1]
-    yatirim = (f"Yıllık %{tr_number(yillik, 1)} değer artışı varsayımıyla ({'danışman girdisi' if kaynak == 'kullanıcı' else 'model tahmini'}) "
-               f"arsanın {PROJEKSIYON_YIL} yıl sonraki tahmini değeri {tr_currency(beklenen_son)} olur. "
-               f"Temkinli senaryoda {tr_currency(senaryolar[0].degerler[-1])}, iyimser senaryoda "
-               f"{tr_currency(senaryolar[2].degerler[-1])} öngörülmektedir.")
-    if metrics:
-        yatirim += f" {metrics['yatirim_degerlendirmesi']['yatirim_suresi_aciklama']}"
+    # Türe özel bilgiler ve özellikler (tek kayıtta)
+    tur_bilgileri, gruplar = [], []
+    if tek:
+        tur_bilgileri = [(k, v) for k, v in detay_bilgileri(g) if k not in _GENEL_ETIKETLER]
+        gruplar = [(b, liste) for b, liste in ozellik_gruplari(g) if not (arsa_mi and b == 'Altyapı')]
 
-    tavsiyeler = []
-    if bolge_fark is not None:
-        if bolge_fark <= -10:
-            tavsiyeler.append('Fiyat bölge ortalamasının belirgin şekilde altında; hızlı karar avantaj sağlayabilir.')
-        elif bolge_fark < 0:
-            tavsiyeler.append('Fiyat bölge ortalamasının altında; pazarlık payı sınırlı olabilir.')
-        elif bolge_fark > 10:
-            tavsiyeler.append('Fiyat bölge ortalamasının belirgin şekilde üzerinde; pazarlık veya emsal araştırması önerilir.')
-        else:
-            tavsiyeler.append('Fiyat bölge ortalamasına yakın; emsal satışlarla teyit edilmesi önerilir.')
-    eksik = [etiket for kod, etiket in ALTYAPI_ETIKETLERI if kod not in altyapi_list]
-    if eksik:
-        tavsiyeler.append(f"Eksik altyapı ({', '.join(eksik).lower()}) için belediyeden bağlantı planı ve maliyeti sorulmalı.")
-    tavsiyeler.append('Tapu kaydı, imar durumu ve olası şerhler resmi kurumlardan güncel olarak teyit edilmelidir.')
+    if tek:
+        tanim = f"{g.ozet} {tr_lower(tur_etiketi)}".strip() if g.ozet else tr_lower(tur_etiketi)
+        tanim = tanim.replace(' · ', ', ')
+    else:
+        birim = 'parsel' if all((x.tur or 'arsa') in ARSA_TURLERI for x in gler) else 'gayrimenkul'
+        tanim = f"{len(gler)} {birim}, toplam {sayi(metrekare)} m²"
 
-    tarih = to_local_time(analiz.created_at or datetime.utcnow(), getattr(user, 'timezone', None))
-    coord = parse_coordinates(analiz.koordinatlar)
+    if ilan is not None:
+        fiyat_satirlari = _fiyat_satirlari(ilan, oz)
+        emsaller = _emsal_satirlari(ilan)
+        fiyat_ozet = _fiyat_ozeti(ilan, oz, konum, tanim)
+        tutar = _f(ilan.kira if tip == 'kiralik' else ilan.fiyat) if tip != 'kat_karsiligi' else None
+    else:
+        fiyat_satirlari, emsaller, tutar = [], [], None
+        fiyat_ozet = f"{konum} konumundaki {tanim} için hazırlanan tanıtım raporudur."
+
+    puan, puan_detay = (_puan(g, oz['fark'], tip, altyapi_list) if arsa_mi and tek else (0, []))
+
+    tarih = to_local_time(datetime.utcnow(), getattr(user, 'timezone', None))
+    coord = parse_coordinates(g.koordinatlar)
     maps_url = f"https://www.google.com/maps?q={coord[0]},{coord[1]}" if coord else ''
 
+    fotograflar = []
+    for x in gler:
+        fotograflar.extend(p for p in _photos_for(x, upload_folder) if p not in fotograflar)
     photo = None
     if user.profil_foto:
         cand = os.path.join(upload_folder, user.profil_foto)
@@ -347,24 +574,38 @@ def build_report_model(analiz, user, detail_url='', upload_folder=None, base_dir
         unvan=_clean(user.unvan), firma=_clean(user.firma), email=_clean(user.email),
         telefon=_clean(user.telefon), adres=_clean(user.adres), photo_path=photo,
     )
+    # Yalnız ilan açıklaması (alıcıya yönelik metin). Gayrimenkulün iç notları (mal sahibi bilgisi
+    # içerebilir) hiçbir rapora girmez; tanıtım raporunda not yok.
+    notlar = ((ilan.aciklama if ilan is not None else None) or '').strip()
 
     return ReportModel(
-        analiz_id=analiz.id,
-        baslik='Arsa Değerleme ve Yatırım Raporu',
-        konum=konum, il=analiz.il or '', ilce=analiz.ilce or '', mahalle=analiz.mahalle or '',
-        ada=analiz.ada or '-', parsel=analiz.parsel or '-', pafta=analiz.pafta or '-',
-        koordinat=coord, metrekare=metrekare, imar_durumu=imar or '-', taks=taks, kaks=kaks,
-        fiyat=fiyat, m2_fiyat=m2_fiyat, bolge_m2_fiyat=bolge, bolge_fark=bolge_fark,
-        taban_alani=metrekare * taks, insaat_alani=metrekare * kaks,
+        analiz_id=g.id, baslik=baslik, kod=ilan.kod if ilan is not None else '',
+        teklif_tipi=tip, teklif_etiketi=etiket(TEKLIF_TIPLERI, tip) if tip else 'Tanıtım',
+        tur=tur, tur_etiketi=tur_etiketi,
+        konum=konum, il=g.il or '', ilce=g.ilce or '', mahalle=g.mahalle or '',
+        ada=g.ada or '-', parsel=g.parsel or '-', pafta=g.pafta or '-',
+        koordinat=coord, metrekare=metrekare,
+        parseller=[_parsel(x) for x in gler], tur_bilgileri=tur_bilgileri, ozellik_gruplari=gruplar,
+        imar_durumu=imar or '-', taks=taks, kaks=kaks,
+        taban_alani=float(g.metrekare or 0) * taks, insaat_alani=float(g.metrekare or 0) * kaks,
         kat_sayisi=(kaks / taks) if taks else 0,
-        altyapi=[(etiket, kod in altyapi_list) for kod, etiket in ALTYAPI_ETIKETLERI],
-        swot=parse_swot(analiz.swot_analizi),
-        puan=float(metrics.get('uygunluk_puani') or 0), puan_detay=metrics.get('uygunluk_detay') or [],
-        yillik_artis=yillik, artis_kaynagi=kaynak, senaryolar=senaryolar,
-        temel_ozet=temel, yatirim_ozet=yatirim, tavsiyeler=tavsiyeler,
-        notlar=(analiz.notlar or '').strip(),
-        fotograflar=_photos_for(analiz, upload_folder),
+        altyapi=[(etiket_, kod in altyapi_list) for kod, etiket_ in ALTYAPI_ETIKETLERI],
+        puan=puan, puan_detay=puan_detay,
+        fiyat_satirlari=fiyat_satirlari, tutar=tutar, istenen=oz['istenen'], emsaller=emsaller,
+        bolge=oz['bolge'], bolge_kaynak=oz['bolge_kaynak'], emsal_sayisi=oz['emsal_sayisi'],
+        fark=oz['fark'], konum_etiketi=oz['konum'],
+        toplam_m2=metrekare, insaat_hakki=oz['insaat_hakki'], sahibe_dusen_m2=oz['sahibe_dusen_m2'],
+        fiyat_ozet=fiyat_ozet,
+        swot=parse_swot(g.swot_analizi),
+        tavsiyeler=_tavsiyeler(ilan, oz, arsa_mi, altyapi_list),
+        notlar=notlar,
+        fotograflar=fotograflar[:8],
         tarih=tarih, detail_url=detail_url, maps_url=maps_url,
         advisor=advisor, brand=_brand_for(user, base_dir),
-        extras={'taks_varsayilan': analiz.taks is None or analiz.kaks is None},
+        extras={'taks_varsayilan': g.taks is None or g.kaks is None,
+                'hepsi_arsa': all((x.tur or 'arsa') in ARSA_TURLERI for x in gler),
+                'insaat_elle': ilan is not None and ilan.insaat_alani_elle is not None,
+                'not_basligi': 'Açıklama',
+                'kaks_eksik': kaks_eksik_notu(oz),
+                'kaks_hic_yok': ilan is not None and oz['insaat_hakki'] is None},
     )

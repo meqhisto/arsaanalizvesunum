@@ -112,6 +112,33 @@ def _kv_table(doc_or_cell, rows, width_cm, label_ratio=0.42):
     return t
 
 
+def _grid_table(doc, rows, widths_cm, right_cols=()):
+    """Başlık satırlı tablo; right_cols sütunları sağa yaslı."""
+    t = doc.add_table(rows=len(rows), cols=len(rows[0]))
+    _borders(t)
+    _no_split(t)
+    for r, row in enumerate(rows):
+        for c, val in enumerate(row):
+            cell = t.cell(r, c)
+            cell.width = Cm(widths_cm[c])
+            sag = c in right_cols
+            _cell_text(cell, val, 9, bold=(r == 0), align=WD_ALIGN_PARAGRAPH.RIGHT if sag else None)
+            if r == 0:
+                _shade(cell, 'F3F5F8')
+    return t
+
+
+def _side_by_side(doc, left_rows, right_rows, W, right_ratio=0.42):
+    outer = doc.add_table(rows=1, cols=2)
+    lc, rc = outer.rows[0].cells
+    lc.width, rc.width = Cm(W * 0.52), Cm(W * 0.48)
+    _kv_table(lc, left_rows, W * 0.5)
+    _kv_table(rc, right_rows, W * 0.46, right_ratio)
+    _drop_leading_paragraph(lc)
+    _drop_leading_paragraph(rc)
+    return outer
+
+
 def _picture(doc, path, width_cm):
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -139,13 +166,14 @@ def render_word(m, assets, path):
         hp.add_run().add_picture(m.brand.logo_path, height=Cm(0.9))
         hp.add_run('  ')
     _run(hp, m.brand.name, 11, True, pri)
-    _run(hp, "     " + m.satir(m.konum, m.ada_parsel, ayirici=" · "), 8.5, False, MUTED)
+    _run(hp, "     " + m.satir(m.kod, m.konum, m.ada_parsel, ayirici=" · "), 8.5, False, MUTED)
     fp = sec.footer.paragraphs[0]
     _run(fp, f"{m.brand.name}{' · ' + m.brand.web if m.brand.web else ''} · Rapor tarihi {m.tarih.strftime('%d.%m.%Y')}", 8, color=MUTED)
 
     # Başlık
     _para(doc, m.baslik, 20, True, pri, space_after=2)
-    _para(doc, m.satir(m.konum, m.ada_parsel, m.tarih.strftime('%d.%m.%Y'), ayirici=' · '), 11, color=MUTED, space_after=10)
+    _para(doc, m.satir(m.kod, m.konum, m.ada_parsel, m.tarih.strftime('%d.%m.%Y'), ayirici=' · '), 11, color=MUTED,
+          space_after=10)
 
     # Göstergeler
     k = doc.add_table(rows=1, cols=4)
@@ -159,73 +187,77 @@ def render_word(m, assets, path):
         p = cell.add_paragraph(); _run(p, note, 7.5, color=MUTED); p.paragraph_format.space_after = Pt(3)
 
     _heading(doc, 'Değerlendirme özeti', m)
-    _para(doc, m.temel_ozet)
-    _para(doc, m.yatirim_ozet)
+    _para(doc, m.fiyat_ozet)
 
     if assets.get('harita'):
         _heading(doc, 'Konum', m)
         _picture(doc, assets['harita'], W * 0.95)
 
-    _heading(doc, 'Arsa ve imar bilgileri', m)
-    outer = doc.add_table(rows=1, cols=2)
-    lc, rc = outer.rows[0].cells
-    lc.width, rc.width = Cm(W * 0.52), Cm(W * 0.48)
-    _kv_table(lc, common.parcel_rows(m), W * 0.5)
-    _kv_table(rc, common.zoning_rows(m), W * 0.46)
-    _drop_leading_paragraph(lc)
-    _drop_leading_paragraph(rc)
-    p = _para(doc, '', space_after=2); p.paragraph_format.space_before = Pt(6)
-    _run(p, 'Altyapı: ', 10, True)
-    for label, var in m.altyapi:
-        _run(p, '✓ ' if var else '✗ ', 10, True, RGBColor(0x1E, 0x7B, 0x3A) if var else RGBColor(0xB3, 0x26, 0x1E))
-        _run(p, f"{label}    ", 10)
+    if common.show_zoning(m):
+        _heading(doc, 'Arsa ve imar bilgileri', m)
+        _side_by_side(doc, common.location_rows(m), common.zoning_rows(m), W)
+    else:
+        _heading(doc, 'Konum bilgileri', m)
+        _kv_table(doc, common.location_rows(m), W * 0.6, 0.35)
+    if m.arsa_mi:
+        p = _para(doc, '', space_after=2); p.paragraph_format.space_before = Pt(6)
+        _run(p, 'Altyapı: ', 10, True)
+        for label, var in m.altyapi:
+            _run(p, '✓ ' if var else '✗ ', 10, True, RGBColor(0x1E, 0x7B, 0x3A) if var else RGBColor(0xB3, 0x26, 0x1E))
+            _run(p, f"{label}    ", 10)
 
-    if assets.get('fiyat_grafik'):
-        _heading(doc, 'Bölge fiyatı karşılaştırması', m)
-        _picture(doc, assets['fiyat_grafik'], W * 0.8)
+    if m.cok_parsel:
+        _heading(doc, common.parcel_section_title(m), m)
+        _grid_table(doc, common.parcel_table(m), [W * x for x in common.PARCEL_RATIOS], right_cols=common.PARCEL_RIGHT)
+        _para(doc, common.parcel_summary(m), 10, True, space_after=2).paragraph_format.space_before = Pt(4)
 
-    _heading(doc, 'Değer projeksiyonu (5 yıl)', m)
-    kaynak = 'danışmanın girdiği' if m.artis_kaynagi == 'kullanıcı' else 'modelin tahmin ettiği'
-    _para(doc, f"Beklenen senaryo {kaynak} yıllık %{tr_number(m.yillik_artis, 1)} artışa dayanır; temkinli ve "
-               f"iyimser senaryolar ±5 puan farkla hesaplanmıştır.", 8.5, color=MUTED)
-    _picture(doc, assets['projeksiyon_grafik'], W * 0.85)
-    rows = common.scenario_rows(m)
-    t = doc.add_table(rows=len(rows), cols=len(rows[0]))
-    _borders(t)
-    for r, row in enumerate(rows):
-        for c, val in enumerate(row):
-            cell = t.cell(r, c)
-            _cell_text(cell, val, 9, bold=(r == 0 or c == 0),
-                       align=WD_ALIGN_PARAGRAPH.RIGHT if c >= 2 and r > 0 else None)
-            if r == 0:
-                _shade(cell, 'F3F5F8')
-            elif r == 2:
-                _shade(cell, 'FFF6EA')
+    if m.tur_bilgileri:
+        _heading(doc, f"{m.tur_etiketi} bilgileri", m)
+        _kv_table(doc, m.tur_bilgileri, W * 0.7, 0.4)
+
+    if m.ozellik_gruplari:
+        _heading(doc, 'Özellikler', m)
+        for baslik, liste in m.ozellik_gruplari:
+            p = _para(doc, '', space_after=2)
+            _run(p, f"{baslik}: ", 10, True)
+            _run(p, ', '.join(liste), 10)
+
+    if not m.tanitim:
+        _heading(doc, common.FIYAT_BASLIK, m)
+        _side_by_side(doc, m.fiyat_satirlari, common.bolge_rows(m), W, 0.4)
+        emsal = common.emsal_table(m)
+        if emsal:
+            _para(doc, 'Emsaller', 10, True, space_after=3).paragraph_format.space_before = Pt(8)
+            _grid_table(doc, emsal, [W * x for x in common.emsal_ratios(m)], right_cols=common.EMSAL_RIGHT)
+        if assets.get('price_chart'):
+            _para(doc, '', space_after=2)
+            _picture(doc, assets['price_chart'], W * 0.8)
 
     if assets.get('puan_grafik'):
         _heading(doc, f"Uygunluk puanı: {tr_number(m.puan, 0)} / 100 ({m.puan_etiketi})", m)
         _picture(doc, assets['puan_grafik'], W * 0.85)
 
-    _heading(doc, 'SWOT analizi', m)
-    fills = ['E6F4EA', 'FCE8E6', 'E8F0FE', 'FEF3E2']
-    heads = ['1E7B3A', 'B3261E', '1A56B8', 'A15C07']
-    sw = doc.add_table(rows=2, cols=2)
-    _borders(sw, inside=False)
-    _no_split(sw)
-    for i, (title, items) in enumerate(common.swot_blocks(m)):
-        cell = sw.cell(i // 2, i % 2)
-        cell.width = Cm(W / 2)
-        _shade(cell, fills[i])
-        _cell_text(cell, title, 10.5, True, _rgb(heads[i]))
-        for it in items or ['Belirtilmemiş']:
-            p = cell.add_paragraph(); _run(p, f"• {it}" if items else it, 9.5, color=TEXT if items else MUTED)
-            p.paragraph_format.space_after = Pt(1)
+    if common.has_swot(m):
+        _heading(doc, 'SWOT analizi', m)
+        fills = ['E6F4EA', 'FCE8E6', 'E8F0FE', 'FEF3E2']
+        heads = ['1E7B3A', 'B3261E', '1A56B8', 'A15C07']
+        sw = doc.add_table(rows=2, cols=2)
+        _borders(sw, inside=False)
+        _no_split(sw)
+        for i, (title, items) in enumerate(common.swot_blocks(m)):
+            cell = sw.cell(i // 2, i % 2)
+            cell.width = Cm(W / 2)
+            _shade(cell, fills[i])
+            _cell_text(cell, title, 10.5, True, _rgb(heads[i]))
+            for it in items or ['Belirtilmemiş']:
+                p = cell.add_paragraph(); _run(p, f"• {it}" if items else it, 9.5, color=TEXT if items else MUTED)
+                p.paragraph_format.space_after = Pt(1)
 
     _heading(doc, 'Tavsiyeler', m)
     for t_ in m.tavsiyeler:
         _para(doc, f"• {t_}", space_after=2)
     if m.notlar:
-        _para(doc, 'Danışman notu', 10, True, space_after=1).paragraph_format.space_before = Pt(6)
+        _para(doc, m.extras.get('not_basligi', 'Not'), 10, True, space_after=1).paragraph_format.space_before = Pt(6)
         _para(doc, m.notlar)
 
     photos = assets.get('fotograflar') or []
@@ -245,7 +277,7 @@ def render_word(m, assets, path):
     rp = rc.paragraphs[0]
     rp.alignment = WD_ALIGN_PARAGRAPH.CENTER
     labels = []
-    for key, label in (('qr_detay', 'Analiz sayfası'), ('qr_harita', 'Haritada aç')):
+    for key, label in common.QR_LABELS:
         if assets.get(key):
             rp.add_run().add_picture(assets[key], width=Cm(2.6))
             rp.add_run('   ')

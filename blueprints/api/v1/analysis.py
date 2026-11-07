@@ -7,12 +7,13 @@ import os
 import tempfile
 
 from models import db
-from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats, AnalizMedya
-from models.user_models import Portfolio, portfolio_arsalar, User
+from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats
+from models.user_models import Portfolio, User
 from ..schemas.analysis_schemas import (
     ArsaAnalizSchema, ArsaAnalizCreateSchema, ArsaAnalizUpdateSchema,
     ArsaAnalizFilterSchema, BolgeDagilimiSchema, DashboardStatsSchema,
-    AnalysisReportSchema, BulkAnalysisSchema, AnalysisComparisonSchema
+    AnalysisReportSchema, BulkAnalysisSchema, AnalysisComparisonSchema,
+    gayrimenkul_alanlari
 )
 from ..utils.decorators import (
     validate_json, log_api_call, handle_db_errors,
@@ -98,14 +99,15 @@ def list_analyses():
                 'mahalle': analysis.mahalle,
                 'ada': analysis.ada,
                 'parsel': analysis.parsel,
-                'metrekare': float(analysis.metrekare),
-                'fiyat': float(analysis.fiyat),
+                'metrekare': float(analysis.metrekare) if analysis.metrekare is not None else None,
+                'fiyat': float(analysis.fiyat) if analysis.fiyat is not None else None,
                 'imar_durumu': analysis.imar_durumu,
                 'taks': float(analysis.taks) if analysis.taks else None,
                 'kaks': float(analysis.kaks) if analysis.kaks else None,
                 'notlar': analysis.notlar,
                 'created_at': analysis.created_at.isoformat() if analysis.created_at else None,
-                'user_id': analysis.user_id
+                'user_id': analysis.user_id,
+                **gayrimenkul_alanlari(analysis)
             }
             analyses_data.append(analysis_data)
 
@@ -269,14 +271,15 @@ def create_analysis():
             'mahalle': analysis.mahalle,
             'ada': analysis.ada,
             'parsel': analysis.parsel,
-            'metrekare': float(analysis.metrekare),
-            'fiyat': float(analysis.fiyat),
+            'metrekare': float(analysis.metrekare) if analysis.metrekare is not None else None,
+            'fiyat': float(analysis.fiyat) if analysis.fiyat is not None else None,
             'imar_durumu': analysis.imar_durumu,
             'taks': float(analysis.taks) if analysis.taks else None,
             'kaks': float(analysis.kaks) if analysis.kaks else None,
             'notlar': analysis.notlar,
             'created_at': analysis.created_at.isoformat() if analysis.created_at else None,
-            'user_id': analysis.user_id
+            'user_id': analysis.user_id,
+            **gayrimenkul_alanlari(analysis)
         }
 
         current_app.logger.info(f"Analysis created: {analysis.il}/{analysis.ilce} by user {current_user.id}")
@@ -341,14 +344,15 @@ def get_analysis(analysis_id):
             'mahalle': analysis.mahalle,
             'ada': analysis.ada,
             'parsel': analysis.parsel,
-            'metrekare': float(analysis.metrekare),
-            'fiyat': float(analysis.fiyat),
+            'metrekare': float(analysis.metrekare) if analysis.metrekare is not None else None,
+            'fiyat': float(analysis.fiyat) if analysis.fiyat is not None else None,
             'imar_durumu': analysis.imar_durumu,
             'taks': float(analysis.taks) if analysis.taks else None,
             'kaks': float(analysis.kaks) if analysis.kaks else None,
             'notlar': analysis.notlar,
             'created_at': analysis.created_at.isoformat() if analysis.created_at else None,
-            'user_id': analysis.user_id
+            'user_id': analysis.user_id,
+            **gayrimenkul_alanlari(analysis)
         }
 
         return success_response(
@@ -465,11 +469,10 @@ def delete_analysis(analysis_id):
     if not analysis:
         return not_found_response("Analysis not found")
     
-    # Bağlı kayıtlar: fotoğraflar ve portföy bağlantıları (iş takip bağlantısı DB'de SET NULL)
-    AnalizMedya.query.filter_by(analiz_id=analysis.id).delete(synchronize_session=False)
-    db.session.execute(portfolio_arsalar.delete().where(portfolio_arsalar.c.arsa_id == analysis.id))
+    # Web silme yoluyla aynı: medya (dosyalarıyla), portföy bağları, ilanlar (gayrimenkul_silinirken), istatistikler
+    from blueprints.analysis_bp import _analizi_sil
     il, ilce = analysis.il, analysis.ilce
-    db.session.delete(analysis)
+    _analizi_sil(analysis)
     db.session.commit()
     
     # Dashboard istatistiklerini güncelle
@@ -559,8 +562,8 @@ def get_analysis_stats():
                     'il': analysis.il,
                     'ilce': analysis.ilce,
                     'mahalle': analysis.mahalle,
-                    'metrekare': float(analysis.metrekare),
-                    'fiyat': float(analysis.fiyat),
+                    'metrekare': float(analysis.metrekare) if analysis.metrekare is not None else None,
+                    'fiyat': float(analysis.fiyat) if analysis.fiyat is not None else None,
                     'created_at': analysis.created_at.isoformat() if analysis.created_at else None
                 })
 

@@ -1,12 +1,31 @@
 # blueprints/api/schemas/analysis_schemas.py
 from marshmallow import Schema, fields, validate, validates, ValidationError
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
 from models.arsa_models import ArsaAnaliz, BolgeDagilimi, DashboardStats, AnalizMedya
 from models import db
 from ..utils.validators import (
     validate_coordinates, validate_positive_number, validate_percentage,
     validate_price_range, validate_area_range
 )
+
+
+def _sayi_ya_da_none(deger):
+    return float(deger) if deger is not None else None
+
+
+def aktif_ilan_ozeti(analiz):
+    """Gayrimenkulün aktif ilanının API özeti: {kod, teklif_tipi, durum, fiyat} ya da None (salt-okunur)."""
+    ilan = analiz.aktif_ilan
+    if ilan is None:
+        return None
+    return {'kod': ilan.kod, 'teklif_tipi': ilan.teklif_tipi, 'durum': ilan.durum,
+            'fiyat': _sayi_ya_da_none(ilan.fiyat)}
+
+
+def gayrimenkul_alanlari(analiz):
+    """API yanıtlarına eklenen salt-okunur gayrimenkul/ilan alanları (eski alanlara dokunmaz)."""
+    return {'tur': analiz.tur or 'arsa', 'alt_tur': analiz.alt_tur, 'baslik': analiz.baslik,
+            'aktif_ilan': aktif_ilan_ozeti(analiz)}
 
 
 class ArsaAnalizSchema(SQLAlchemyAutoSchema):
@@ -17,11 +36,20 @@ class ArsaAnalizSchema(SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
     
+    # Gayrimenkul/ilan alanları: salt-okunur (API ile güncellenemez)
+    tur = auto_field(dump_only=True)
+    alt_tur = auto_field(dump_only=True)
+    baslik = auto_field(dump_only=True)
+    aktif_ilan = fields.Method("get_aktif_ilan", dump_only=True)
+
     # Computed fields
     total_value = fields.Method("get_total_value")
     price_per_sqm = fields.Method("get_price_per_sqm")
     roi_percentage = fields.Method("get_roi_percentage")
     
+    def get_aktif_ilan(self, obj):
+        return aktif_ilan_ozeti(obj)
+
     def get_total_value(self, obj):
         # Bölge m² fiyatına göre tahmini piyasa değeri; bölge fiyatı yoksa satış fiyatı
         if obj.metrekare and obj.bolge_fiyat:

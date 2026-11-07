@@ -284,8 +284,8 @@ def index():
         son_aktiviteler_listesi.append(
             {
                 "tarih": analiz.created_at,
-                "mesaj": f"{analiz.il}, {analiz.ilce} bölgesinde yeni arsa analizi oluşturuldu.",
-                "url": url_for('analysis.analiz_detay', analiz_id=analiz.id), # 'analysis' blueprint'i
+                "mesaj": f"{analiz.il}, {analiz.ilce} bölgesinde yeni gayrimenkul kaydı oluşturuldu.",
+                "url": url_for('analysis.view_analysis', analysis_id=analiz.id), # 'analysis' blueprint'i
                 "tip": "analiz" 
             }
         )
@@ -463,9 +463,8 @@ def change_password(): # endpoint eski app.py'de 'change_password' idi, fonksiyo
 @main_bp.route('/analysis-form') # Varsayılan olarak sadece GET
 @login_required
 def analysis_form():
-    form_data = session.pop('analysis_form_data', None)
-    form_errors = session.pop('analysis_form_errors', None)
-    return render_template('analysis_form.html', form_data=form_data, form_errors=form_errors)
+    """Eski adres: yeni gayrimenkul formuna yönlendirir."""
+    return redirect(url_for('analysis.new_analysis'))
 
 @main_bp.route('/login')
 def login_redirect():

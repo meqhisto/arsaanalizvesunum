@@ -141,6 +141,14 @@ portfolio_arsalar = db.Table( # Bu tablo tanımı burada veya arsa_models.py'de 
     db.Column("added_at", db.DateTime, default=datetime.utcnow)
 )
 
+# Geçiş sonrası portföyler ilan içerir; portfolio_arsalar yalnız okunur (spec §3.6)
+portfolio_ilanlar = db.Table(
+    "portfolio_ilanlar",
+    db.Column("portfolio_id", db.Integer, db.ForeignKey("portfolios.id", ondelete="CASCADE"), primary_key=True),
+    db.Column("ilan_id", db.Integer, db.ForeignKey("ilanlar.id", ondelete="CASCADE"), primary_key=True),
+    db.Column("added_at", db.DateTime, default=datetime.utcnow)
+)
+
 class Portfolio(db.Model):
     __tablename__ = "portfolios"
     # ----- BU SATIR ÇOK ÖNEMLİ -----
@@ -162,4 +170,10 @@ class Portfolio(db.Model):
         lazy="dynamic",
         # backref Portfolio'ya ArsaAnaliz'den nasıl erişileceğini tanımlar
         backref=db.backref("portfolios_containing", lazy=True)
+    )
+    ilanlar = db.relationship(
+        "Ilan",
+        secondary=portfolio_ilanlar,
+        lazy="dynamic",
+        backref=db.backref("portfoyler", lazy=True)
     )

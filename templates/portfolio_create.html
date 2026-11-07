@@ -2,14 +2,14 @@
 
 {% block title %}Yeni Portföy - Arsa Analiz Platformu{% endblock %}
 {% block page_title %}Yeni Portföy{% endblock %}
-{% block page_description %}Birden fazla arsa analizini tek bir portföyde toplayın{% endblock %}
+{% block page_description %}Birden fazla ilanı tek bir portföyde toplayın{% endblock %}
 
 {% block page_actions %}
 <a href="{{ url_for('portfolio.portfolios_list') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Geri</a>
 {% endblock %}
 
 {% block dashboard_content %}
-{% set selected = form_data.getlist('analiz_ids') if form_data.getlist is defined else [] %}
+{% set selected = form_data.getlist('ilan_ids') if form_data.getlist is defined else [] %}
 <form method="POST" action="{{ url_for('portfolio.portfolio_create') }}">
     <div class="row">
         <div class="col-lg-5 mb-4">
@@ -41,25 +41,24 @@
         <div class="col-lg-7 mb-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent border-0">
-                    <h6 class="mb-0">Portföye eklenecek analizler</h6>
+                    <h6 class="mb-0">Portföye eklenecek ilanlar</h6>
                 </div>
                 <div class="card-body" style="max-height: 520px; overflow-y: auto;">
-                    {% if analyses %}
+                    {% if ilanlar %}
                     <div class="list-group list-group-flush">
-                        {% for a in analyses %}
+                        {% for i in ilanlar %}
                         <label class="list-group-item d-flex align-items-center gap-3">
-                            <input class="form-check-input flex-shrink-0" type="checkbox" name="analiz_ids" value="{{ a.id }}"
-                                   {% if (a.id|string) in selected or a.id == preselected %}checked{% endif %}>
-                            <span class="flex-grow-1">
-                                <strong>{{ a.il }} / {{ a.ilce }}</strong> – {{ a.mahalle }}
-                                <small class="d-block text-muted">Ada {{ a.ada or '-' }} / Parsel {{ a.parsel or '-' }} · {{ '{:,.0f}'.format(a.metrekare or 0) }} m²</small>
+                            <input class="form-check-input flex-shrink-0" type="checkbox" name="ilan_ids" value="{{ i.id }}"
+                                   {% if (i.id|string) in selected or i.id == preselected %}checked{% endif %}>
+                            <span class="flex-grow-1 text-break">
+                                <strong>{{ i.kod }}</strong> · {{ i.baslik or '' }}
+                                <small class="d-block text-muted">{{ kart_ozeti(i) }}</small>
                             </span>
-                            <span class="text-success text-nowrap">₺{{ '{:,.0f}'.format(a.fiyat or 0) }}</span>
                         </label>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p class="text-muted mb-0">Henüz analiziniz yok. Portföyü şimdi oluşturup analizleri daha sonra ekleyebilirsiniz.</p>
+                    <p class="text-muted mb-0">Henüz ilanınız yok. Portföyü şimdi oluşturup ilanları daha sonra ekleyebilirsiniz.</p>
                     {% endif %}
                 </div>
             </div>

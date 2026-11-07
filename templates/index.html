@@ -75,7 +75,7 @@
           <a href="{{ url_for('analysis.analizler') }}" class="quick-access-card no-underline h-full">
             <div class="card-body text-center p-4">
               <i class="fas fa-file-alt text-success-600 mb-3 text-4xl"></i>
-              <h6 class="font-medium text-gray-900">Analizlerim</h6>
+              <h6 class="font-medium text-gray-900">Gayrimenkuller</h6>
             </div>
           </a>
 
@@ -427,7 +427,7 @@
                   <ul class="list-group list-group-flush">
                     {% for analiz_item in analizler %}
                     <a
-                      href="{{ url_for('analysis.analiz_detay', analiz_id=analiz_item.id) }}"
+                      href="{{ url_for('analysis.view_analysis', analysis_id=analiz_item.id) }}"
                       class="list-group-item list-group-item-action"
                     >
                       <div class="d-flex w-100 justify-content-between">
@@ -472,7 +472,7 @@
                     son_goruntulenen_analizler %}
                     <li class="list-group-item">
                       <a
-                        href="{{ url_for('analysis.analiz_detay', analiz_id=analiz_item.id) }}"
+                        href="{{ url_for('analysis.view_analysis', analysis_id=analiz_item.id) }}"
                         >{{ analiz_item.il }} - {{ analiz_item.ilce }}</a
                       >
                       <small class="text-muted ms-2"
