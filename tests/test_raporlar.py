@@ -124,6 +124,11 @@ def docx_metni(data):
     return '\n'.join(parcalar)
 
 
+def pdf_metni(data):
+    pypdf = pytest.importorskip('pypdf', reason='PDF metin çıkarma için pypdf gerekli (requirements-dev.txt)')
+    return '\n'.join(page.extract_text() or '' for page in pypdf.PdfReader(io.BytesIO(data)).pages)
+
+
 def pptx_metni(data):
     prs = Presentation(io.BytesIO(data))
     parcalar = []
@@ -204,7 +209,7 @@ def test_tanitim_raporu_fiyatsiz(app, kullanicilar):
 @pytest.mark.parametrize('senaryo', ['satilik_daire', 'kat_karsiligi_4_parsel', 'tanitim_arsa'])
 def test_rapor_mal_sahibi_icermez(app, kullanicilar, senaryo):
     yol, _ = SENARYOLAR[senaryo](kullanicilar['broker'])
-    for fmt, cikar in (('word', docx_metni), ('pptx', pptx_metni)):
+    for fmt, cikar in (('word', docx_metni), ('pptx', pptx_metni), ('pdf', pdf_metni)):
         metin = cikar(indir(app, kullanicilar['broker'], f'{yol}/{fmt}').data)
         for yasak in ('Hasan', 'Yılmazoğlu', '05551112233', '555 111', 'hasan@sahip.com'):
             assert yasak not in metin, (fmt, yasak)
@@ -301,3 +306,84 @@ def test_rapor_butonlari(app, kullanicilar):
     sayfa = istemci(app, k['broker']).get(f'/ilanlar/{i.id}').get_data(as_text=True)
     for fmt in ('pdf', 'word', 'pptx'):
         assert f'/ilanlar/{i.id}/rapor/{fmt}' in sayfa
+
+
+def test_pdf_metni_okunur(app, kullanicilar):
+    """PDF metin çıkarma gerçekten çalışıyor (mal sahibi kontrolü boşuna geçmesin)."""
+    yol, _ = kur_kat_karsiligi(kullanicilar['broker'])
+    metin = pdf_metni(indir(app, kullanicilar['broker'], f'{yol}/pdf').data)
+    assert 'Kat Karşılığı Teklif Raporu' in metin and '2.400' in metin
+
+
+def test_tanitim_raporu_ic_notlari_icermez(app, kullanicilar):
+    br = kullanicilar['broker']
+    g = arsa(br, notlar='Sahibi Hasan Yılmazoğlu, tel 05551112233; acele satmak istiyor')
+    for fmt, cikar in (('word', docx_metni), ('pptx', pptx_metni), ('pdf', pdf_metni)):
+        metin = cikar(indir(app, br, f'/analysis/{g.id}/report/{fmt}').data)
+        assert 'Arsa Tanıtım Raporu' in metin
+        for yasak in ('Hasan', 'Yılmazoğlu', '05551112233', 'acele', 'Danışman notu'):
+            assert yasak not in metin, (fmt, yasak)
+
+
+@pytest.mark.parametrize('fiyat, etiket, tavsiye', [
+    (1_070_000, 'Bölgenin üstünde', 'Fiyat bölge ortalamasının üzerinde; pazarlık payı değerlendirilmeli.'),
+    (1_030_000, 'Piyasa seviyesinde', 'Fiyat piyasa seviyesinde, bölge ortalamasına yakın'),
+    (970_000, 'Piyasa seviyesinde', 'Fiyat piyasa seviyesinde, bölge ortalamasına yakın'),
+    (930_000, 'Bölgeye göre uygun', 'Fiyat bölge ortalamasının altında; bölgeye göre uygun'),
+    (1_150_000, 'Bölgenin üstünde', 'Fiyat bölge ortalamasının belirgin şekilde üzerinde'),
+    (850_000, 'Bölgeye göre uygun', 'Fiyat bölge ortalamasının belirgin şekilde altında'),
+])
+def test_fiyat_tavsiyesi_konumlandirmayla_tutarli(app, kullanicilar, fiyat, etiket, tavsiye):
+    from modules.rapor import build_report_model
+    br = kullanicilar['broker']
+    d = gayrimenkul(br, tur='konut', alt_tur='daire', metrekare=100, brut_m2=100)
+    i = ilan([d], fiyat=fiyat, emsaller=[{'konum': 'E', 'm2': 100, 'fiyat': 1_000_000}])
+    m = build_report_model(i, d, db.session.get(User, br))
+    assert m.konum_etiketi == etiket
+    fiyat_tavsiyeleri = [t for t in m.tavsiyeler if t.startswith('Fiyat')]
+    assert len(fiyat_tavsiyeleri) == 1 and fiyat_tavsiyeleri[0].startswith(tavsiye), fiyat_tavsiyeleri
+
+
+def test_kat_karsiligi_kaks_eksik_uyarisi(app, kullanicilar):
+    br = kullanicilar['broker']
+    gler = [arsa(br, parsel='2', metrekare=800), arsa(br, parsel='3', metrekare=750, kaks=None),
+            arsa(br, parsel='4', metrekare=900)]
+    i = ilan(gler, teklif_tipi='kat_karsiligi', sahip_payi_yuzde=50)
+    metin = docx_metni(indir(app, br, f'/ilanlar/{i.id}/rapor/word').data)
+    assert '2.550 m² (KAKS bilgisi eksik 1 parsel hesaba katılmadı)' in metin  # (800+900)*1,5
+    assert '1.275 m² (KAKS bilgisi eksik 1 parsel hesaba katılmadı)' in metin
+    pptx = pptx_metni(indir(app, br, f'/ilanlar/{i.id}/rapor/pptx').data)
+    assert 'KAKS bilgisi eksik 1 parsel hesaba katılmadı' in pptx
+
+
+def test_kat_karsiligi_kaks_hic_yok(app, kullanicilar):
+    br = kullanicilar['broker']
+    gler = [arsa(br, parsel='2', kaks=None), arsa(br, parsel='3', kaks=None)]
+    i = ilan(gler, teklif_tipi='kat_karsiligi', sahip_payi_yuzde=None)
+    from modules.rapor import build_report_model
+    m = build_report_model(i, gler[0], db.session.get(User, br))
+    satir = dict(m.fiyat_satirlari)
+    assert satir['İnşaat hakkı (tahmini)'] == 'Hesaplanamadı (KAKS bilgisi yok)'
+    assert satir['Arsa sahibine düşen (tahmini)'] == 'Hesaplanamadı (KAKS bilgisi yok)'
+    assert 'hesaplanamadı' in m.fiyat_ozet and '%-' not in m.fiyat_ozet and '2 parsel' in m.fiyat_ozet
+    metin = docx_metni(indir(app, br, f'/ilanlar/{i.id}/rapor/word').data)
+    assert 'Hesaplanamadı (KAKS bilgisi yok)' in metin and '%-' not in metin
+
+
+def test_aktif_ilani_gormeyen_tanitim_raporu_alir(app, kullanicilar):
+    """d1 kendi gayrimenkulünü görür; broker'ın açtığı (sorumlusu broker) aktif ilanı göremez."""
+    k = kullanicilar
+    g = arsa(k['d1'])
+    i = Ilan(kod='ILN-2026-0099', baslik='Broker ilanı', user_id=k['broker'], sorumlu_user_id=k['broker'],
+             teklif_tipi='satilik', durum='pazarlamada', fiyat=5_000_000)
+    i.baglar.append(IlanGayrimenkul(gayrimenkul=g, ana_kayit=True, sira=1))
+    db.session.add(i)
+    db.session.commit()
+    c = istemci(app, k['d1'])
+    assert c.get(f'/ilanlar/{i.id}').status_code == 404
+    r = c.get(f'/analysis/{g.id}/report/word')
+    assert r.status_code == 200
+    metin = docx_metni(r.data)
+    assert 'Arsa Tanıtım Raporu' in metin and '5.000.000' not in metin
+    r = istemci(app, k['d1']).post(f'/analysis/report/generate_pptx/{g.id}')
+    assert r.status_code == 200 and 'tanitim_' in r.headers['Content-Disposition']

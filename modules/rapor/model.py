@@ -360,11 +360,28 @@ def _fiyat_satirlari(ilan, oz):
         if oz['toplam_m2']:
             satirlar.append(('Toplam arsa alanı', f"{sayi(oz['toplam_m2'])} m²"))
         elle = ilan.insaat_alani_elle is not None
+        eksik = kaks_eksik_notu(oz)
+        ek = f" ({eksik})" if eksik else ''
         if oz['insaat_hakki'] is not None:
-            satirlar.append((f"İnşaat hakkı ({'elle' if elle else 'tahmini'})", f"{sayi(oz['insaat_hakki'])} m²"))
+            satirlar.append((f"İnşaat hakkı ({'elle' if elle else 'tahmini'})", f"{sayi(oz['insaat_hakki'])} m²{ek}"))
+        else:
+            satirlar.append(('İnşaat hakkı (tahmini)', HESAPLANAMADI))
         if oz['sahibe_dusen_m2'] is not None:
-            satirlar.append(('Arsa sahibine düşen (tahmini)', f"{sayi(oz['sahibe_dusen_m2'])} m²"))
+            satirlar.append(('Arsa sahibine düşen (tahmini)', f"{sayi(oz['sahibe_dusen_m2'])} m²{ek}"))
+        elif oz['insaat_hakki'] is None:
+            satirlar.append(('Arsa sahibine düşen (tahmini)', HESAPLANAMADI))
     return satirlar
+
+
+HESAPLANAMADI = 'Hesaplanamadı (KAKS bilgisi yok)'
+
+
+def kaks_eksik_notu(oz):
+    """KAKS'ı olmayan parseller hesaba katılmadıysa uyarı metni; yoksa ''."""
+    n = len(oz.get('kakssiz_parseller') or [])
+    if not n or oz.get('insaat_hakki') is None:
+        return ''
+    return f"KAKS bilgisi eksik {n} parsel hesaba katılmadı"
 
 
 def _kaynak_metni(oz):
@@ -375,20 +392,30 @@ def _fiyat_ozeti(ilan, oz, konum, tanim):
     tip = ilan.teklif_tipi
     fark = oz['fark']
     if tip == 'kat_karsiligi':
-        n = len(ilan.gayrimenkuller)
-        metin = (f"{n} parsel, toplam {sayi(oz['toplam_m2'])} m² arsa için arsa sahibi "
-                 f"%{sayi(ilan.sahip_payi_yuzde)} pay talep ediyor")
-        if oz['sahibe_dusen_m2'] is not None:
-            metin += f"; tahmini {sayi(oz['sahibe_dusen_m2'])} m² inşaat alanına karşılık gelir."
+        gler = ilan.gayrimenkuller
+        birim = 'parsel' if all((x.tur or 'arsa') in ARSA_TURLERI for x in gler) else 'gayrimenkul'
+        metin = f"{len(gler)} {birim}, toplam {sayi(oz['toplam_m2'])} m² arsa için arsa sahibi "
+        if ilan.sahip_payi_yuzde is not None:
+            metin += f"%{sayi(ilan.sahip_payi_yuzde)} pay talep ediyor"
         else:
+            metin += "pay talep ediyor (oran belirtilmemiş)"
+        if oz['sahibe_dusen_m2'] is not None:
+            metin += f"; tahmini {sayi(oz['sahibe_dusen_m2'])} m² inşaat alanına karşılık gelir"
+            eksik = kaks_eksik_notu(oz)
+            metin += f" ({eksik})." if eksik else '.'
+        elif oz['insaat_hakki'] is None:
             metin += "; KAKS bilgisi eksik olduğundan inşaat alanı hesaplanamadı."
+        else:
+            metin += '.'
         if oz['bolge'] is not None:
             metin += f" Bölge emsallerinde ortalama pay %{sayi(oz['bolge'])} ({_kaynak_metni(oz)})"
-            if fark is not None and abs(fark) >= 0.05:
+            if fark is None:
+                metin += '.'
+            elif abs(fark) >= 0.05:
                 yon = 'altında' if fark < 0 else 'üzerinde'
                 metin += f"; talep bu ortalamanın %{tr_number(abs(fark), 1)} {yon} — {oz['konum']}."
             else:
-                metin += f"; talep bu ortalamayla aynı seviyede — {oz['konum'] or 'Piyasa seviyesinde'}."
+                metin += f"; talep bu ortalamayla aynı seviyede — {oz['konum']}."
         return metin
 
     kira = tip == 'kiralik'
@@ -425,15 +452,19 @@ def _tavsiyeler(ilan, oz, arsa_mi, altyapi_list):
             tavsiyeler.append('Parsellerin tevhidi (birleştirilmesi) için belediye ve tapu süreci planlanmalı.')
     elif fark is not None:
         ne = 'Kira' if ilan.teklif_tipi == 'kiralik' else 'Fiyat'
-        if fark <= -10:
+        # Bantlar ilan_hesap.konumlandirma ile aynı: < -5 altında, -5..5 piyasa seviyesinde, > 5 üzerinde
+        if fark < -10:
             tavsiyeler.append(f'{ne} bölge ortalamasının belirgin şekilde altında; hızlı karar avantaj sağlayabilir.')
-        elif fark < 0:
-            tavsiyeler.append(f'{ne} bölge ortalamasının altında; pazarlık payı sınırlı olabilir.')
-        elif fark > 10:
+        elif fark < -5:
+            tavsiyeler.append(f'{ne} bölge ortalamasının altında; bölgeye göre uygun, pazarlık payı sınırlı olabilir.')
+        elif fark <= 5:
+            tavsiyeler.append(f'{ne} piyasa seviyesinde, bölge ortalamasına yakın; emsal işlemlerle teyit edilmesi '
+                              'önerilir.')
+        elif fark <= 10:
+            tavsiyeler.append(f'{ne} bölge ortalamasının üzerinde; pazarlık payı değerlendirilmeli.')
+        else:
             tavsiyeler.append(f'{ne} bölge ortalamasının belirgin şekilde üzerinde; pazarlık veya emsal araştırması '
                               'önerilir.')
-        else:
-            tavsiyeler.append(f'{ne} bölge ortalamasına yakın; emsal işlemlerle teyit edilmesi önerilir.')
     if arsa_mi:
         eksik = [etiket for kod, etiket in ALTYAPI_ETIKETLERI if kod not in altyapi_list]
         if eksik:
@@ -488,7 +519,7 @@ def build_report_model(ilan_or_none, gayrimenkul, user, detail_url='', upload_fo
         from modules.ilan_servis import ilan_ozeti
         oz = ilan_ozeti(ilan)
     else:
-        oz = {'toplam_m2': sum(float(x.metrekare or 0) for x in gler), 'insaat_hakki': None,
+        oz = {'toplam_m2': sum(float(x.metrekare or 0) for x in gler), 'insaat_hakki': None, 'kakssiz_parseller': [],
               'sahibe_dusen_m2': None, 'istenen': None, 'bolge': None, 'bolge_kaynak': 'yok',
               'emsal_sayisi': 0, 'fark': None, 'konum': None}
     metrekare = float(oz['toplam_m2'] or 0)
@@ -543,8 +574,9 @@ def build_report_model(ilan_or_none, gayrimenkul, user, detail_url='', upload_fo
         unvan=_clean(user.unvan), firma=_clean(user.firma), email=_clean(user.email),
         telefon=_clean(user.telefon), adres=_clean(user.adres), photo_path=photo,
     )
-    # İlanda yalnız ilan açıklaması (alıcıya yönelik metin); tanıtımda gayrimenkul notu
-    notlar = ((ilan.aciklama if ilan is not None else g.notlar) or '').strip()
+    # Yalnız ilan açıklaması (alıcıya yönelik metin). Gayrimenkulün iç notları (mal sahibi bilgisi
+    # içerebilir) hiçbir rapora girmez; tanıtım raporunda not yok.
+    notlar = ((ilan.aciklama if ilan is not None else None) or '').strip()
 
     return ReportModel(
         analiz_id=g.id, baslik=baslik, kod=ilan.kod if ilan is not None else '',
@@ -573,5 +605,7 @@ def build_report_model(ilan_or_none, gayrimenkul, user, detail_url='', upload_fo
         extras={'taks_varsayilan': g.taks is None or g.kaks is None,
                 'hepsi_arsa': all((x.tur or 'arsa') in ARSA_TURLERI for x in gler),
                 'insaat_elle': ilan is not None and ilan.insaat_alani_elle is not None,
-                'not_basligi': 'Açıklama' if ilan is not None else 'Danışman notu'},
+                'not_basligi': 'Açıklama',
+                'kaks_eksik': kaks_eksik_notu(oz),
+                'kaks_hic_yok': ilan is not None and oz['insaat_hakki'] is None},
     )

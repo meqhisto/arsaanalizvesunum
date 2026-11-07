@@ -26,12 +26,20 @@ def kpis(m):
     """Kapaktaki 4 temel gösterge: (başlık, değer, alt not)."""
     satir = dict(m.fiyat_satirlari)
     if m.teklif_tipi == 'kat_karsiligi':
-        insaat = next((v for k, v in m.fiyat_satirlari if k.startswith('İnşaat hakkı')), '-')
+        eksik = m.extras.get('kaks_eksik')
+        if m.insaat_hakki is None:
+            insaat = ('İnşaat hakkı', 'Hesaplanamadı', 'KAKS bilgisi yok')
+            sahibe = ('Sahibe düşen', 'Hesaplanamadı', 'KAKS bilgisi yok')
+        else:
+            not_ = eksik or ('Elle girildi' if m.extras.get('insaat_elle') else 'KAKS × alan')
+            insaat = ('İnşaat hakkı', f"{sayi(m.insaat_hakki)} m²", not_)
+            sahibe = ('Sahibe düşen', f"{sayi(m.sahibe_dusen_m2)} m²" if m.sahibe_dusen_m2 is not None else '-',
+                      eksik or 'Tahmini inşaat alanı')
         return [
             ('Arsa sahibi payı', satir.get('Arsa sahibi payı', '-'), 'Talep edilen pay'),
-            ('Toplam arsa alanı', satir.get('Toplam arsa alanı', '-'), f"{len(m.parseller)} parsel"),
-            ('İnşaat hakkı', insaat, 'KAKS × alan' if not m.extras.get('insaat_elle') else 'Elle girildi'),
-            ('Sahibe düşen', satir.get('Arsa sahibine düşen (tahmini)', '-'), 'Tahmini inşaat alanı'),
+            ('Toplam arsa alanı', satir.get('Toplam arsa alanı', '-'), f"{len(m.parseller)} {m.parsel_birimi}"),
+            insaat,
+            sahibe,
         ]
     if m.teklif_tipi in ('satilik', 'kiralik'):
         kira = m.teklif_tipi == 'kiralik'
@@ -98,6 +106,10 @@ def parcel_summary(m):
     text = f"Toplam {sayi(m.toplam_m2)} m²"
     if m.insaat_hakki is not None:
         text += f" · İnşaat hakkı ({'elle' if m.extras.get('insaat_elle') else 'tahmini'}) {sayi(m.insaat_hakki)} m²"
+        if m.extras.get('kaks_eksik'):
+            text += f" ({m.extras['kaks_eksik']})"
+    elif m.extras.get('kaks_hic_yok'):
+        text += " · İnşaat hakkı hesaplanamadı (KAKS bilgisi yok)"
     return text
 
 
