@@ -144,7 +144,9 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     upload_folder = os.environ.get("UPLOAD_FOLDER", os.path.join(BASE_DIR, "static", "uploads"))
     app.config["UPLOAD_FOLDER"] = upload_folder
-    max_content_length = int(os.environ.get("MAX_CONTENT_LENGTH", "16777216"))  # 16MB default
+    # Telefonla çekilen birden çok fotoğraf/video tek istekte gelebilir; tarayıcı fotoğrafları
+    # ayrıca küçültüyor (static/js/foto_kucult.js). Varsayılan 100 MB.
+    max_content_length = int(os.environ.get("MAX_CONTENT_LENGTH", str(100 * 1024 * 1024)))
     app.config["MAX_CONTENT_LENGTH"] = max_content_length
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     
@@ -259,6 +261,20 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
         app.logger.info(f'{request.method} {request.url} - {request.remote_addr}')
 
     # --- ERROR HANDLER ---
+    @app.errorhandler(413)
+    def handle_too_large(e):
+        """Yükleme sınırı aşıldı: çıplak hata sayfası yerine geldiği sayfaya uyarıyla dön."""
+        from flask import flash, redirect, jsonify
+        mb = app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)
+        mesaj = f"Seçilen dosyaların toplamı çok büyük (en fazla {mb} MB). Daha az dosya seçip tekrar deneyin."
+        if request.path.startswith('/api/'):
+            return jsonify({'error': mesaj}), 413
+        flash(mesaj, 'danger')
+        geri = request.referrer
+        if geri and geri.startswith(request.host_url):
+            return redirect(geri)
+        return mesaj, 413
+
     @app.errorhandler(500)
     def handle_internal_server_error(e):
         # Hatanın tam traceback'ini logla

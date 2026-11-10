@@ -30,8 +30,31 @@ analysis_bp = Blueprint('analysis', __name__, template_folder='../templates/anal
 def allowed_file(filename):
     # ALLOWED_EXTENSIONS'ı current_app.config'den almak daha iyi olur
     # veya burada sabit olarak tanımlanabilir.
-    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "mp4", "mov", "avi"}
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in (RESIM_UZANTILARI | DONUSEN_UZANTILAR | VIDEO_UZANTILARI)
+
+
+RESIM_UZANTILARI = {"png", "jpg", "jpeg", "gif"}
+DONUSEN_UZANTILAR = {"heic", "heif", "webp"}  # iPhone/Android biçimleri: JPEG'e çevrilir (tarayıcı ve raporlar açabilsin)
+VIDEO_UZANTILARI = {"mp4", "mov", "avi", "m4v"}
+
+
+def _jpege_cevir(dosya, hedef_yol):
+    """HEIC/HEIF/webp dosyasını JPEG olarak kaydeder; başarısızsa False döner."""
+    try:
+        from PIL import Image, ImageOps
+        try:
+            from pillow_heif import register_heif_opener
+            register_heif_opener()
+        except ImportError:
+            pass
+        with Image.open(dosya.stream) as img:
+            img = ImageOps.exif_transpose(img).convert('RGB')
+            img.thumbnail((2400, 2400))
+            img.save(hedef_yol, 'JPEG', quality=85)
+        return True
+    except Exception as e:
+        current_app.logger.warning(f"Fotoğraf JPEG'e çevrilemedi ({dosya.filename}): {e}")
+        return False
 
 # --- ROTALAR ---
 
@@ -64,11 +87,17 @@ def _medyalari_kaydet(gayrimenkul, dosyalar):
         ad = f"{uuid.uuid4().hex[:8]}_{ad}"  # aynı adlı yüklemeler birbirini ezmesin
         klasor = os.path.join(current_app.config['UPLOAD_FOLDER'], str(gayrimenkul.id))
         os.makedirs(klasor, exist_ok=True)
-        dosya.save(os.path.join(klasor, ad))
+        if uzanti in DONUSEN_UZANTILAR:
+            ad = ad.rsplit('.', 1)[0] + '.jpg'
+            if not _jpege_cevir(dosya, os.path.join(klasor, ad)):
+                continue
+            uzanti = 'jpg'
+        else:
+            dosya.save(os.path.join(klasor, ad))
         medya = AnalizMedya()
         medya.analiz_id = gayrimenkul.id
         medya.filename = f"{gayrimenkul.id}/{ad}"
-        medya.type = 'image' if uzanti in {'jpg', 'jpeg', 'png', 'gif'} else 'video'
+        medya.type = 'image' if uzanti in RESIM_UZANTILARI else 'video'
         db.session.add(medya)
         sayi += 1
     return sayi
