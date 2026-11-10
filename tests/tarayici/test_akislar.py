@@ -124,3 +124,19 @@ def test_crm_iceri_aktar(sayfa, tmp_path):
     sayfa.locator('#upload-btn').click()
     sayfa.wait_for_selector('#step-content-2', state='visible')
     assert '100' in sayfa.locator('#preview-info').inner_text()
+
+
+def test_sonradan_eklenen_form_token_alir(sayfa):
+    sayfa.goto(BASE + '/profile')
+    sayfa.evaluate("""() => { const f = document.createElement('form'); f.method = 'post'; f.action = '/profile';
+        f.innerHTML = '<input name="ad" value="Dinamik"><input name="soyad" value="T"><input name="timezone" value="UTC"><button>g</button>';
+        document.body.appendChild(f); f.querySelector('button').click(); }""")
+    sayfa.wait_for_selector('text=Profil başarıyla güncellendi!')
+
+
+def test_bayat_token_uyari_verir(sayfa):
+    sayfa.goto(BASE + '/profile')
+    sayfa.evaluate("document.querySelector('meta[name=csrf-token]').content = 'gecersiz'")
+    sayfa.locator('form[enctype="multipart/form-data"] button[type=submit]').first.click()
+    sayfa.wait_for_selector('text=Sayfayı yenileyip tekrar deneyin')
+    assert '/profile' in sayfa.url

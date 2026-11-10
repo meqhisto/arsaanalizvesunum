@@ -1,0 +1,3 @@
+{# CSRF: token meta etiketinde durur; csrf.js onu tüm POST formlarına ve tarayıcı isteklerine ekler. #}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script src="{{ url_for('static', filename='js/csrf.js') }}"></script>

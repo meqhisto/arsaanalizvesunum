@@ -18,7 +18,7 @@
 <div class="card">
   <div class="card-body">
     <form method="POST" action="{{ request.url }}">
-      {{ csrf_token() if csrf_token else '' }}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <!-- Temel Bilgiler -->
       <div class="row mb-4">

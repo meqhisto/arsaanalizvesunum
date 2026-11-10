@@ -22,7 +22,7 @@ docker run -d --name "$UYG" --network "$AG" \
   -e UPLOAD_FOLDER=/tmp/uploads_e2e -e IS_BELGE_KLASORU=/tmp/belge_e2e \
   "${BAGLAR[@]}" -v "$KOK/tests/tarayici:/tohum:ro" -w /app --entrypoint sh "$IMAJ" -c \
   "mkdir -p /tmp/uploads_e2e && rm -rf /app/static/uploads && ln -s /tmp/uploads_e2e /app/static/uploads \
-   && python /tohum/tohum.py && exec gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 'app:create_app()'" >/dev/null || exit 2
+   && python /tohum/tohum.py && exec gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 --access-logfile - --access-logformat '%(t)s %(m)s %(U)s %(s)s %(B)sB %(M)sms' 'app:create_app()'" >/dev/null || exit 2
 
 docker build -q -t "$TEST_IMAJI" "$KOK/tests/tarayici" >/dev/null || exit 2
 
@@ -30,5 +30,5 @@ docker run --rm --network "$AG" -e TARAYICI_URL="http://$UYG:5000" \
   -v "$KOK/tests/tarayici:/tests/tarayici:ro" "$TEST_IMAJI" \
   python -m pytest /tests/tarayici -p no:cacheprovider "$@"
 KOD=$?
-if [ $KOD -ne 0 ]; then echo "--- uygulama logu (son 30 satır) ---"; docker logs --tail 30 "$UYG" 2>&1; fi
+if [ $KOD -ne 0 ]; then echo "--- uygulama logu (son 30 satır) ---"; docker logs --tail 60 "$UYG" 2>&1; fi
 exit $KOD

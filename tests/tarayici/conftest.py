@@ -59,7 +59,20 @@ def sayfa(motor, _playwright, _tarayicilar):
     js_hatalari = []
     pg.on('pageerror', lambda e: js_hatalari.append(str(e)[:200]))
     pg.post_istekleri = []
-    pg.on('request', lambda r: pg.post_istekleri.append(r.url.replace(BASE, '').split('?')[0]) if r.method == 'POST' else None)
+    tokensiz = []
+
+    def _istek(r):
+        if r.method != 'POST' or not r.url.startswith(BASE):
+            return
+        yol = r.url.replace(BASE, '').split('?')[0]
+        pg.post_istekleri.append(yol)
+        govde = r.post_data_buffer
+        # Chromium dosya içeren gövdeyi vermez (None); o durumda denetimi sunucu yapar (tokensiz istek reddedilir)
+        if govde is not None and not r.headers.get('x-csrftoken') and b'csrf_token' not in govde \
+                and not yol.startswith('/api/'):
+            tokensiz.append(yol)
+
+    pg.on('request', _istek)
     pg.goto(BASE + '/auth/login')
     pg.fill('input[name=email]', EPOSTA)
     pg.fill('input[name=password]', SIFRE)
@@ -69,6 +82,7 @@ def sayfa(motor, _playwright, _tarayicilar):
     yield pg
     baglam.close()
     assert not js_hatalari, f'Sayfada JavaScript hatası: {js_hatalari}'
+    assert not tokensiz, f'CSRF token taşımayan POST isteği: {tokensiz}'
 
 
 def zorunlulari_doldur(sayfa, form_secici):
