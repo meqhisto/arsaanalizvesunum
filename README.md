@@ -145,3 +145,18 @@ DATABASE_URL=postgresql://<rol>.<proje-ref>:<şifre>@aws-1-eu-central-1.pooler.s
 - Bağlantı havuzu `DB_POOL_SIZE` (varsayılan 3), `DB_MAX_OVERFLOW` (2) ve `DB_POOL_RECYCLE` (280 sn) ortam değişkenleriyle ayarlanır. `pool_pre_ping` açıktır.
 - Ücretsiz planda Supabase yedekleri indirilemez. Yedek, PostgreSQL 17 istemcisiyle `pg_dump` alınarak sunucuda tutulur.
 - Ücretsiz plan projeleri 7 gün düşük aktivitede duraklatılabilir. Duraklatılırsa Supabase panelinden "Resume project" ile açılır.
+
+## Tarayıcı testleri
+
+Ana kullanıcı akışları (giriş, gayrimenkul ve fotoğraf, ilan, müşteri, iş takip belgesi, profil, ofis logosu,
+rapor, müşteri içe aktarma) gerçek tarayıcıda, Chromium ve iPhone 13 profilli WebKit ile denenir:
+
+```bash
+scripts/tarayici_testi.sh                 # tümü
+scripts/tarayici_testi.sh -k fotograf     # ada göre seçerek
+```
+
+Betik, `arsaanalizvesunum-web` imajından uygulamanın izole bir kopyasını (SQLite, geçici klasörler) açar ve
+depodaki güncel `templates`, `static/js`, `blueprints`, `utils`, `modules`, `models` ve `app.py` dosyalarını
+üstüne bağlar. Canlı veritabanına ve canlı kapsayıcıya dokunmaz. Yeni bir Python bağımlılığı eklendiyse
+önce imaj yeniden derlenmelidir. Her değişiklik birleştirilmeden önce bu testlerden geçmelidir.
