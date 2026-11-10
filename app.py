@@ -267,7 +267,7 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
         from flask import flash, redirect, jsonify
         mb = app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)
         mesaj = f"Seçilen dosyaların toplamı çok büyük (en fazla {mb} MB). Daha az dosya seçip tekrar deneyin."
-        if request.path.startswith('/api/'):
+        if '/api/' in request.path:
             return jsonify({'error': mesaj}), 413
         flash(mesaj, 'danger')
         geri = request.referrer

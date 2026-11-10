@@ -56,43 +56,76 @@
   }
 
   function bilgi(input, metin) {
-    var el = input.parentNode.querySelector('.foto-kucult-bilgi');
+    var el = input._fotoBilgi;
     if (!el) {
       el = document.createElement('div');
       el.className = 'foto-kucult-bilgi form-text';
       el.setAttribute('aria-live', 'polite');
       (input.closest('.input-group') || input).insertAdjacentElement('afterend', el);
+      input._fotoBilgi = el;
     }
     el.textContent = metin;
+  }
+
+  // Tek dosya en fazla bu kadar bekletilir; aşılırsa (ör. tarayıcı biçimi çözemiyor) orijinali gönderilir
+  var DOSYA_BASI_BEKLEME_MS = 15000;
+
+  function sureli(dosya) {
+    return new Promise(function (coz) {
+      var bitti = false;
+      var t = setTimeout(function () { if (!bitti) { bitti = true; coz(dosya); } }, DOSYA_BASI_BEKLEME_MS);
+      kucult(dosya).then(function (f) { if (!bitti) { bitti = true; clearTimeout(t); coz(f); } });
+    });
+  }
+
+  // Sırayla işlenir: telefonda birkaç büyük fotoğrafı aynı anda açmak belleği tüketir
+  function hepsiniKucult(dosyalar, ilerleme) {
+    var sonuc = [];
+    return dosyalar.reduce(function (zincir, d, i) {
+      return zincir.then(function () {
+        ilerleme(i + 1, dosyalar.length);
+        return sureli(d).then(function (f) { sonuc.push(f); });
+      });
+    }, Promise.resolve()).then(function () { return sonuc; });
   }
 
   function bagla(input) {
     var form = input.form;
     var bekleyen = null;
+    var sira = 0;
 
     input.addEventListener('change', function () {
       var dosyalar = Array.prototype.slice.call(input.files || []);
-      if (!dosyalar.some(resimMi) || typeof DataTransfer === 'undefined') return;
+      var benim = ++sira;
+      if (!dosyalar.some(resimMi) || typeof DataTransfer === 'undefined') { bekleyen = null; return; }
       bilgi(input, 'Fotoğraflar hazırlanıyor…');
-      bekleyen = Promise.all(dosyalar.map(kucult)).then(function (yeni) {
+      var is = hepsiniKucult(dosyalar, function (n, toplam) {
+        if (benim === sira) bilgi(input, 'Fotoğraflar hazırlanıyor… (' + n + '/' + toplam + ')');
+      }).then(function (yeni) {
+        if (benim !== sira) return; // bu arada başka dosyalar seçildi
         try {
           var dt = new DataTransfer();
           yeni.forEach(function (f) { dt.items.add(f); });
           input.files = dt.files;
         } catch (e) { /* eski tarayıcı: orijinaller gönderilir */ }
         var toplam = Array.prototype.reduce.call(input.files, function (t, f) { return t + f.size; }, 0);
-        bilgi(input, input.files.length + ' dosya hazır (' + (toplam / 1048576).toFixed(1) + ' MB).');
-        bekleyen = null;
-      });
+        bilgi(input, input.files.length + ' dosya hazır (' + (toplam / 1048576).toFixed(1) + ' MB). Kaydetmek için gönder düğmesine basın.');
+      }).catch(function () {
+        if (benim === sira) bilgi(input, '');
+      }).then(function () { if (bekleyen === is) bekleyen = null; });
+      bekleyen = is;
     });
 
     if (!form) return;
     form.addEventListener('submit', function (e) {
+      if (e.defaultPrevented) return;
       if (bekleyen) {
         e.preventDefault();
         var gonderen = e.submitter;
+        bilgi(input, 'Fotoğraflar hazırlanıyor, ardından gönderilecek…');
         bekleyen.then(function () {
-          if (form.requestSubmit) form.requestSubmit(gonderen || undefined); else form.submit();
+          if (form.requestSubmit) form.requestSubmit(gonderen && !gonderen.disabled ? gonderen : undefined);
+          else form.submit();
         });
         return;
       }

@@ -31,7 +31,7 @@
                             {% if office and office.logo_path %}
                                 <small class="form-text text-muted">Mevcut Logo: 
                                     <img src="{{ url_for('static', filename='uploads/' + office.logo_path) }}" alt="{{ office.name }} Logosu" style="max-height: 50px; margin-top: 5px;">
-                                    (Yeni logo seçerseniz bu değiştirilecektir. Logoyu kaldırmak için boş dosya gönderin veya bu alanı boş bırakın.)
+                                    (Yeni logo seçerseniz bu değiştirilir; alanı boş bırakırsanız mevcut logo kalır.)
                                 </small>
                             {% elif form_data and form_data.current_logo_path %} {# Düzenlemede GET isteği için #}
                                  <small class="form-text text-muted">Mevcut Logo: 

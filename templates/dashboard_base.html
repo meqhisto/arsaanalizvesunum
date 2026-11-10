@@ -1090,31 +1090,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Loading state for buttons
-    const submitButtons = document.querySelectorAll('button[type="submit"], .btn-primary');
-    submitButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (this.form && !this.form.checkValidity()) {
-                return; // Don't show loading if form is invalid
-            }
-
-            const originalText = this.innerHTML;
-            const originalDisabled = this.disabled;
-
-            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Yükleniyor...';
-            this.disabled = true;
-
-            // Restore button after 3 seconds or when page changes
-            const restoreButton = () => {
-                this.innerHTML = originalText;
-                this.disabled = originalDisabled;
-            };
-
-            setTimeout(restoreButton, 3000);
-
-            // Also restore on page unload
-            window.addEventListener('beforeunload', restoreButton, { once: true });
-        });
+    // Gönder düğmelerinde "yükleniyor" durumu.
+    // Düğme, form gönderimi BAŞLADIKTAN sonra kilitlenir: tıklama anında kilitlenirse tarayıcı
+    // (Chrome, Safari) formu hiç göndermez.
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        const dugme = e.submitter || form.querySelector('button[type="submit"]');
+        if (!dugme || dugme.tagName !== 'BUTTON') return;
+        setTimeout(function() {
+            if (e.defaultPrevented) return; // doğrulama veya başka bir betik gönderimi durdurdu
+            const eskiIcerik = dugme.innerHTML;
+            dugme.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Yükleniyor...';
+            dugme.disabled = true;
+            const geriAl = function() { dugme.innerHTML = eskiIcerik; dugme.disabled = false; };
+            // Geri tuşuyla dönülürse (sayfa önbellekten gelir) düğme kilitli kalmasın
+            window.addEventListener('pageshow', function(ev) { if (ev.persisted) geriAl(); }, { once: true });
+            // Dosya yüklemeleri uzun sürebilir; sayfa değişmezse bir süre sonra düğmeyi geri aç
+            setTimeout(geriAl, form.enctype === 'multipart/form-data' ? 120000 : 8000);
+        }, 0);
     });
 
     // Toast Notification System

@@ -388,28 +388,23 @@ def profile():
             else:
                 user.timezone = "UTC" 
 
-            if 'profil_foto' in request.files:
-                file = request.files['profil_foto']
-                # app.config['UPLOAD_FOLDER'] ve allowed_file'a erişim lazım.
-                # Bunları current_app üzerinden alabiliriz.
-                from flask import current_app # Fonksiyon içinde import
-                
-                def allowed_file(filename): # Bu fonksiyonu da buraya taşıyabilir veya global bir yardımcı modüle alabiliriz
-                    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"} # Ana app'den alınabilir
-                    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+            foto = request.files.get('profil_foto')
+            foto_reddedildi = False
+            if foto and foto.filename:
+                from flask import current_app
+                from utils.yukleme import resim_kaydet
+                # HEIC/webp JPEG'e çevrilir, büyük fotoğraflar 800 px'e küçültülür
+                kaydedilen = resim_kaydet(foto, os.path.join(current_app.config["UPLOAD_FOLDER"], "profiles", str(user.id)),
+                                          en_buyuk_kenar=800)
+                if kaydedilen:
+                    user.profil_foto = f"profiles/{user.id}/{kaydedilen}"
+                else:
+                    foto_reddedildi = True
 
-                if file and file.filename and allowed_file(file.filename):
-                    from werkzeug.utils import secure_filename # Fonksiyon içinde import
-                    filename = secure_filename(file.filename)
-                    user_upload_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "profiles", str(user.id))
-                    os.makedirs(user_upload_dir, exist_ok=True)
-                    filepath = os.path.join(user_upload_dir, filename)
-                    file.save(filepath)
-                    relative_path = os.path.join("profiles", str(user.id), filename).replace(os.sep, '/') # OS bağımsız yol
-                    user.profil_foto = relative_path
-            
             db.session.commit()
             flash('Profil başarıyla güncellendi!', 'success')
+            if foto_reddedildi:
+                flash('Profil fotoğrafı yüklenemedi: desteklenen türler jpg, png, gif, webp ve HEIC.', 'warning')
             return redirect(url_for('main.profile'))
 
         except Exception as e:

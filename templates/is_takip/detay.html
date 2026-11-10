@@ -142,14 +142,14 @@
         <form method="POST" action="{{ url_for('is_takip.belge_yukle', is_id=is_kaydi.id) }}" enctype="multipart/form-data" class="row g-2 align-items-end">
             <div class="col-md-4"><label class="form-label small" for="dosya">Dosya(lar)</label>
                 <input class="form-control form-control-sm" type="file" id="dosya" name="dosya" multiple required
-                       accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx,.xls,.xlsx,.txt,.zip"></div>
+                       accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.dwg,.dxf,.mp4,.mov,.m4v"></div>
             <div class="col-md-2"><label class="form-label small" for="belge_turu">Tür</label>
                 <select class="form-select form-select-sm" id="belge_turu" name="belge_turu">{% for t in belge_turleri %}<option>{{ t }}</option>{% endfor %}</select></div>
             <div class="col-md-3"><label class="form-label small" for="belge_adim">İlgili adım</label>
                 <select class="form-select form-select-sm" id="belge_adim" name="task_id"><option value="">-</option>
                     {% for a in adimlar %}<option value="{{ a.id }}">{{ loop.index }}. {{ a.title|truncate(40) }}</option>{% endfor %}</select></div>
             <div class="col-md-3"><button class="btn btn-sm btn-primary w-100"><i class="fas fa-upload me-1"></i>Yükle</button></div>
-            <div class="col-12"><small class="text-muted">PDF, resim, Word, Excel, TXT veya ZIP · dosya başına en fazla 16 MB</small></div>
+            <div class="col-12"><small class="text-muted">PDF, resim (iPhone HEIC dahil), video, Word, Excel, PowerPoint, DWG, TXT veya ZIP · tek seferde toplam en fazla 100 MB</small></div>
         </form>
     </div></div>
     <div class="card border-0 shadow-sm">

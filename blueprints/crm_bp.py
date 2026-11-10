@@ -1,5 +1,7 @@
 # blueprints/crm_bp.py
 import json # JSON işlemleri için eklendi
+import os
+from werkzeug.exceptions import HTTPException
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, make_response
 )
@@ -1644,6 +1646,54 @@ def api_download_import_template():
         return jsonify({'error': str(e)}), 500
 
 
+def _import_klasoru():
+    import tempfile
+    klasor = os.path.join(tempfile.gettempdir(), 'arsa_crm_import')
+    os.makedirs(klasor, exist_ok=True)
+    return klasor
+
+
+def _import_yolu(token):
+    import re
+    if not token or not re.fullmatch(r'[0-9a-f]{32}', token):
+        return None
+    return os.path.join(_import_klasoru(), f'{current_user.id}_{token}.json')
+
+
+def _import_verisi_yaz(veri):
+    import time, uuid
+    klasor = _import_klasoru()
+    for ad in os.listdir(klasor):  # bir günden eski yarım kalmış aktarımları temizle
+        yol = os.path.join(klasor, ad)
+        try:
+            if time.time() - os.path.getmtime(yol) > 86400:
+                os.remove(yol)
+        except OSError:
+            pass
+    token = uuid.uuid4().hex
+    with open(_import_yolu(token), 'w', encoding='utf-8') as f:
+        json.dump(veri, f, ensure_ascii=False, default=str)
+    return token
+
+
+def _import_verisi_oku():
+    yol = _import_yolu(session.get('import_token'))
+    if not yol or not os.path.isfile(yol):
+        return None
+    with open(yol, encoding='utf-8') as f:
+        return json.load(f)
+
+
+def _import_verisi_sil():
+    yol = _import_yolu(session.pop('import_token', None))
+    session.pop('import_data', None)  # eski sürümden kalan çerez verisi
+    if yol and os.path.isfile(yol):
+        try:
+            os.remove(yol)
+        except OSError:
+            pass
+
+
 @crm_bp.route('/api/import/upload', methods=['POST'])
 @login_required
 def api_upload_import_file():
@@ -1665,17 +1715,23 @@ def api_upload_import_file():
         if file_ext not in allowed_extensions:
             return jsonify({'error': 'Desteklenen formatlar: CSV, Excel (.xlsx, .xls)'}), 400
 
-        # Read file
+        # Read file (CSV'de kodlama ve ayırıcı kendiliğinden bulunur)
         import pandas as pd
-
-        if file_ext == '.csv':
-            df = pd.read_csv(file, encoding='utf-8')
-        else:
-            df = pd.read_excel(file)
+        from utils.yukleme import tablo_oku
+        try:
+            df = tablo_oku(file, file_ext.lstrip('.'))
+        except Exception as e:
+            current_app.logger.warning(f"İçe aktarma dosyası okunamadı ({file.filename}): {e}")
+            return jsonify({'error': 'Dosya okunamadı. Dosyanın bozuk olmadığını ve ilk satırda sütun başlıkları olduğunu kontrol edin.'}), 400
 
         # Basic validation
+        df = df.dropna(how='all')
         if df.empty:
             return jsonify({'error': 'Dosya boş'}), 400
+        # Boş hücreler None, diğer her şey metin: JSON'a NaN/tarih nesnesi sızmasın
+        df.columns = [str(c).strip() for c in df.columns]
+        df = df.astype(object).where(pd.notna(df), None)
+        df = df.apply(lambda sutun: sutun.map(lambda v: None if v is None else str(v).strip()))
 
         if len(df) > 1000:
             return jsonify({'error': 'Maksimum 1000 kayıt yüklenebilir'}), 400
@@ -1707,13 +1763,14 @@ def api_upload_import_file():
         # Preview data (first 10 rows)
         preview_data = df.head(10).to_dict('records')
 
-        # Store file data in session for later processing
-        session['import_data'] = {
+        # Veri sunucuda geçici dosyada tutulur; oturum çerezine (4 KB sınırı) yalnızca anahtarı yazılır
+        _import_verisi_sil()
+        session['import_token'] = _import_verisi_yaz({
             'data': df.to_dict('records'),
             'columns': list(df.columns),
             'mapped_columns': mapped_columns,
             'total_rows': len(df)
-        }
+        })
 
         return jsonify({
             'success': True,
@@ -1724,8 +1781,11 @@ def api_upload_import_file():
             'message': f'{len(df)} kayıt başarıyla yüklendi'
         })
 
+    except HTTPException:
+        raise  # ör. 413 (dosya çok büyük): genel hata karşılayıcı anlaşılır mesaj döndürür
     except Exception as e:
-        return jsonify({'error': f'Dosya işlenirken hata: {str(e)}'}), 500
+        current_app.logger.error(f"İçe aktarma dosyası işlenemedi: {e}", exc_info=True)
+        return jsonify({'error': 'Dosya işlenirken bir hata oluştu. Lütfen dosyayı kontrol edip tekrar deneyin.'}), 500
 
 
 @crm_bp.route('/api/import/validate', methods=['POST'])
@@ -1738,10 +1798,9 @@ def api_validate_import_data():
         data = request.get_json()
         column_mapping = data.get('column_mapping', {})
 
-        if 'import_data' not in session:
-            return jsonify({'error': 'Import verisi bulunamadı'}), 400
-
-        import_data = session['import_data']
+        import_data = _import_verisi_oku()
+        if not import_data:
+            return jsonify({'error': 'Yüklenen dosya bulunamadı veya süresi doldu. Lütfen dosyayı yeniden yükleyin.'}), 400
         df_data = import_data['data']
 
         validation_results = {
@@ -1888,8 +1947,7 @@ def api_process_import():
         db.session.commit()
 
         # Clear session data
-        if 'import_data' in session:
-            del session['import_data']
+        _import_verisi_sil()
 
         return jsonify({
             'success': True,
