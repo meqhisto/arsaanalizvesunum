@@ -90,3 +90,12 @@ def test_api_silme_ilanlari_temizler(app, kullanicilar):
     cift = db.session.get(Ilan, i_cift_id)
     assert cift is not None and [b.gayrimenkul_id for b in cift.baglar] == [a2_id]
     assert ArsaAnaliz.query.filter(ArsaAnaliz.id.in_([tek_id, a1_id])).count() == 0
+
+
+def test_api_v1_modullerinin_hepsi_ice_aktarilir():
+    import importlib
+    import pkgutil
+
+    import blueprints.api.v1 as v1
+    for m in pkgutil.iter_modules(v1.__path__):
+        importlib.import_module(f'blueprints.api.v1.{m.name}')
