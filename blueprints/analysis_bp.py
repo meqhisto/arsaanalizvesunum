@@ -33,28 +33,8 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in (RESIM_UZANTILARI | DONUSEN_UZANTILAR | VIDEO_UZANTILARI)
 
 
-RESIM_UZANTILARI = {"png", "jpg", "jpeg", "gif"}
-DONUSEN_UZANTILAR = {"heic", "heif", "webp"}  # iPhone/Android biçimleri: JPEG'e çevrilir (tarayıcı ve raporlar açabilsin)
-VIDEO_UZANTILARI = {"mp4", "mov", "avi", "m4v"}
-
-
-def _jpege_cevir(dosya, hedef_yol):
-    """HEIC/HEIF/webp dosyasını JPEG olarak kaydeder; başarısızsa False döner."""
-    try:
-        from PIL import Image, ImageOps
-        try:
-            from pillow_heif import register_heif_opener
-            register_heif_opener()
-        except ImportError:
-            pass
-        with Image.open(dosya.stream) as img:
-            img = ImageOps.exif_transpose(img).convert('RGB')
-            img.thumbnail((2400, 2400))
-            img.save(hedef_yol, 'JPEG', quality=85)
-        return True
-    except Exception as e:
-        current_app.logger.warning(f"Fotoğraf JPEG'e çevrilemedi ({dosya.filename}): {e}")
-        return False
+from utils.yukleme import (RESIM_UZANTILARI, DONUSEN_UZANTILAR, VIDEO_UZANTILARI,
+                           jpege_cevir as _jpege_cevir)
 
 # --- ROTALAR ---
 

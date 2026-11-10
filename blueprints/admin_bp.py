@@ -7,6 +7,7 @@ from models import db
 from models.user_models import User
 from models.office_models import Office
 from .auth_decorators import superadmin_required
+from utils.yukleme import resim_kaydet
 import os
 from flask_login import login_required, current_user # <-- current_user'ı buradan import edin
 
@@ -56,20 +57,15 @@ def create_office(): # Fonksiyon adı aynı kalabilir
             is_valid = False
         
         logo_filename = None
-        if logo_file and logo_file.filename and logo_file.filename != '':
-            if allowed_file(logo_file.filename): # allowed_file fonksiyonunu tanımlamanız/import etmeniz gerek
-                from werkzeug.utils import secure_filename
-                filename = secure_filename(logo_file.filename)
-                # Ofise özel bir alt klasör veya benzersiz adlandırma
-                logo_upload_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'office_logos')
-                os.makedirs(logo_upload_folder, exist_ok=True)
-                logo_path = os.path.join(logo_upload_folder, filename)
-                logo_file.save(logo_path)
-                logo_filename = os.path.join('office_logos', filename).replace(os.sep, '/') # Veritabanına göreceli yol
+        if logo_file and logo_file.filename:
+            # Benzersiz adla kaydedilir: aynı adlı logolar başka ofisinkinin üzerine yazmasın
+            kaydedilen = resim_kaydet(logo_file, os.path.join(current_app.config['UPLOAD_FOLDER'], 'office_logos'))
+            if kaydedilen:
+                logo_filename = f'office_logos/{kaydedilen}'
             else:
-                flash('Geçersiz logo dosyası türü.', 'warning')
+                flash('Logo yüklenemedi: desteklenen türler png, jpg, gif, webp ve HEIC.', 'warning')
                 is_valid = False
-        
+
         if not is_valid:
             return render_template('office_form.html', form_title="Yeni Ofis Oluştur", form_data=request.form, office=None)
 
@@ -114,26 +110,14 @@ def edit_office(office_id):
             is_valid = False
 
         logo_filename = office.logo_path # Mevcut logoyu koru
-        if logo_file and logo_file.filename and logo_file.filename != '':
-            if allowed_file(logo_file.filename):
-                from werkzeug.utils import secure_filename
-                filename = secure_filename(logo_file.filename)
-                logo_upload_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'office_logos')
-                os.makedirs(logo_upload_folder, exist_ok=True)
-                
-                # Eski logoyu sil (opsiyonel)
-                if office.logo_path:
-                    old_logo_full_path = os.path.join(current_app.config['UPLOAD_FOLDER'], office.logo_path)
-                    if os.path.exists(old_logo_full_path):
-                        try: os.remove(old_logo_full_path)
-                        except: pass
-                
-                logo_path = os.path.join(logo_upload_folder, filename)
-                logo_file.save(logo_path)
-                logo_filename = os.path.join('office_logos', filename).replace(os.sep, '/')
+        eski_logo = None
+        if logo_file and logo_file.filename:
+            kaydedilen = resim_kaydet(logo_file, os.path.join(current_app.config['UPLOAD_FOLDER'], 'office_logos'))
+            if kaydedilen:
+                eski_logo = office.logo_path
+                logo_filename = f'office_logos/{kaydedilen}'
             else:
-                flash('Geçersiz logo dosyası türü. Logo güncellenmedi.', 'warning')
-                # is_valid = False # Sadece logoyu güncellemiyorsak formu göndermeye devam edebiliriz
+                flash('Logo yüklenemedi: desteklenen türler png, jpg, gif, webp ve HEIC. Logo güncellenmedi.', 'warning')
 
         if not is_valid: # Sadece isim kontrolünden geçemediyse
              return render_template('office_form.html', form_title="Ofis Düzenle", form_data=request.form, office=office)
@@ -142,15 +126,16 @@ def edit_office(office_id):
             office.name = name
             office.address = address
             office.phone = phone
-            if logo_filename is not None or (logo_file and logo_file.filename == ''): # Eğer yeni logo seçilmediyse ve boş dosya da gönderilmediyse mevcutu koru, aksi halde güncelle (boş bile olsa)
-                 if not (logo_file and logo_file.filename == '' and office.logo_path): # Eğer boş dosya gönderildiyse ve mevcut logo varsa, logoyu sil (None yap)
-                     office.logo_path = logo_filename
-                 elif (logo_file and logo_file.filename == ''):
-                      office.logo_path = None
-
+            office.logo_path = logo_filename
 
             office.is_active = is_active
             db.session.commit()
+            # Eski logo ancak kayıt başarılıysa ve başka ofis kullanmıyorsa silinir
+            if eski_logo and eski_logo != logo_filename and not Office.query.filter_by(logo_path=eski_logo).first():
+                try:
+                    os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], eski_logo))
+                except OSError:
+                    pass
             flash(f"'{office.name}' adlı ofis başarıyla güncellendi.", "success")
             return redirect(url_for('admin.list_offices'))
         except Exception as e:

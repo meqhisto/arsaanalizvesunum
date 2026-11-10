@@ -27,7 +27,8 @@ from modules import is_takip_servis as servis
 
 is_takip_bp = Blueprint('is_takip', __name__, template_folder='../templates')
 
-IZINLI_UZANTILAR = {'pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'zip'}
+IZINLI_UZANTILAR = {'pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'doc', 'docx', 'xls', 'xlsx',
+                    'ppt', 'pptx', 'txt', 'zip', 'dwg', 'dxf', 'mp4', 'mov', 'm4v'}
 PANO_DURUMLARI = ['Açık', 'Devam ediyor', 'Beklemede', 'Tamamlandı']
 
 
@@ -505,13 +506,27 @@ def belge_yukle(is_id):
         if uzanti not in IZINLI_UZANTILAR:
             reddedilen.append(ozgun_ad)
             continue
-        dosya_adi = f"{uuid.uuid4().hex}.{uzanti}"
-        tam_yol = os.path.join(klasor, dosya_adi)
-        d.save(tam_yol)
+        mime = d.mimetype or mimetypes.guess_type(ozgun_ad)[0]
+        if uzanti in ('heic', 'heif'):
+            # iPhone fotoğrafı: tarayıcıda açılabilsin diye JPEG'e çevrilir; çevrilemezse olduğu gibi saklanır
+            from utils.yukleme import jpege_cevir
+            dosya_adi = f"{uuid.uuid4().hex}.jpg"
+            tam_yol = os.path.join(klasor, dosya_adi)
+            if jpege_cevir(d, tam_yol, 3000):
+                ozgun_ad, mime = ozgun_ad.rsplit('.', 1)[0] + '.jpg', 'image/jpeg'
+            else:
+                d.stream.seek(0)
+                dosya_adi = f"{uuid.uuid4().hex}.{uzanti}"
+                tam_yol = os.path.join(klasor, dosya_adi)
+                d.save(tam_yol)
+        else:
+            dosya_adi = f"{uuid.uuid4().hex}.{uzanti}"
+            tam_yol = os.path.join(klasor, dosya_adi)
+            d.save(tam_yol)
         db.session.add(IsBelgesi(
             is_id=is_kaydi.id, task_id=task_id, belge_turu=belge_turu, dosya_adi=ozgun_ad,
             dosya_yolu=f"{is_kaydi.id}/{dosya_adi}", boyut=os.path.getsize(tam_yol),
-            mime_type=d.mimetype or mimetypes.guess_type(ozgun_ad)[0],
+            mime_type=mime,
             aciklama=(request.form.get('aciklama') or '').strip()[:500] or None,
             yukleyen_user_id=current_user.id))
         servis.aktivite(is_kaydi, current_user, 'belge_eklendi', f"Belge eklendi ({belge_turu}): {ozgun_ad}")
