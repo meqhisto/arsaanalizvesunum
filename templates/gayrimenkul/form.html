@@ -196,8 +196,8 @@
             <div class="form-text" id="notlarYardim">Ofis içi not, raporlara girmez.</div>
         </div>
         <label class="form-label" for="medya">Fotoğraf / video ekle</label>
-        <input class="form-control" type="file" id="medya" name="medya[]" multiple accept="image/*,video/*">
-        <div class="form-text">png, jpg, jpeg, gif, mp4, mov, avi. {% if duzenleme %}Mevcut dosyalar detay sayfasından yönetilir.{% endif %}</div>
+        <input class="form-control" type="file" id="medya" name="medya[]" multiple accept="image/*,video/*" data-foto-kucult>
+        <div class="form-text">Fotoğraf (iPhone HEIC dahil) ve video. Fotoğraflar yüklenmeden önce otomatik küçültülür. {% if duzenleme %}Mevcut dosyalar detay sayfasından yönetilir.{% endif %}</div>
         <div id="secilenDosyalar" class="small text-muted mt-2"></div>
     </div></div>
 </div>
