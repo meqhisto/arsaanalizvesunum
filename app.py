@@ -311,6 +311,10 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
         # Security event logging
         log_security_event('server_error', {'error': str(e)})
 
+        # Yöneticilere zil bildirimi (aynı hata günde bir kez)
+        from modules.hata_bildirimi import bildir
+        bildir(request.method, request.path, getattr(e, 'original_exception', None) or e)
+
         # Kullanıcıya genel bir hata mesajı göster
         # Üretimde daha kullanıcı dostu bir hata sayfası göstermek daha iyi olur.
         # return render_template("error.html", error_message=str(e)), 500

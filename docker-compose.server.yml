@@ -4,7 +4,15 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
-    command: ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--timeout", "120", "--preload", "app:create_app()"]
+    # İstek kaydı stdout'a yazılır (docker logs): zaman, yöntem, yol, durum, boyut, süre. IP ve sorgu dizgisi yazılmaz.
+    command: ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--timeout", "120", "--preload",
+              "--access-logfile", "-", "--access-logformat", "%(t)s %(m)s %(U)s %(s)s %(B)sB %(M)sms",
+              "app:create_app()"]
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
     ports:
       - "5000:5000"
     volumes:
