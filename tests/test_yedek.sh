@@ -54,6 +54,18 @@ docker run --rm -v ${PROJE}_uploads:/v alpine sh -c 'echo yeni > /v/1/yeni.jpg'
 YEDEK_DIZINI="$DIZIN" PROJE="$PROJE" "$KOK/scripts/yedek_dogrula.sh" >"$DIZIN/dogrula2.log" 2>&1; KOD=$?
 kontrol "birimde yedekte olmayan dosya varken doğrulama başarısız" "[ $KOD -ne 0 ]"
 
+echo "e) doğrulama bozuk yedeği ve yanlış proje adını yakalar"
+calistir "$URL"   # birimdeki yeni dosyayı da içeren güncel yedek
+SON=$(ls -t "$DIZIN"/supabase_arsa_*.sql.gz | head -1); cp "$SON" "$DIZIN/saglam.bak"
+head -c $(( $(stat -c %s "$SON") - 20 )) "$DIZIN/saglam.bak" > "$SON"   # sonu eksik: içerik neredeyse tam açılır
+YEDEK_DIZINI="$DIZIN" PROJE="$PROJE" "$KOK/scripts/yedek_dogrula.sh" >"$DIZIN/dogrula3.log" 2>&1; KOD=$?
+kontrol "yarıda kesilmiş veritabanı yedeği reddedilir" "[ $KOD -ne 0 ]"
+cp "$DIZIN/saglam.bak" "$SON"; rm -f "$DIZIN/saglam.bak"
+YEDEK_DIZINI="$DIZIN" PROJE=yedektest_yok "$KOK/scripts/yedek_dogrula.sh" >"$DIZIN/dogrula4.log" 2>&1; KOD=$?
+kontrol "olmayan proje adında doğrulama başarısız" "[ $KOD -ne 0 ]"
+kontrol "olmayan proje için birim oluşturulmadı" "! docker volume inspect yedektest_yok_uploads >/dev/null 2>&1"
+docker volume rm -f yedektest_yok_uploads yedektest_yok_presentations yedektest_yok_is_belgeleri >/dev/null 2>&1
+
 echo "b) veritabanı dökümü başarısız"
 ESKI="$DIZIN/supabase_arsa_20000101_0000.sql.gz"; echo eski | gzip > "$ESKI"; touch -d '20 days ago' "$ESKI"
 ONCE=$(ls "$DIZIN" | grep -c -E '\.(sql|tar)\.gz$')

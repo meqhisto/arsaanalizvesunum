@@ -65,6 +65,13 @@ def test_tokensiz_json_400_doner(csrf_istemci):
     assert r.status_code == 400 and UYARI in r.get_json()['error']
 
 
+def test_json_hata_yaniti_sayfalarin_okudugu_tum_anahtarlari_tasir(csrf_istemci):
+    """Sayfalardaki betikler hata metnini farklı anahtarlardan okur (hata, message, error); hepsi dolu olmalı."""
+    veri = csrf_istemci.post('/crm/api/import/validate', json={'column_mapping': {}}).get_json()
+    assert UYARI in veri['hata'] and UYARI in veri['message'] and UYARI in veri['error']
+    assert veri['success'] is False and veri['ok'] is False
+
+
 def test_baslikla_json_kabul_edilir(csrf_istemci):
     token = meta_token(csrf_istemci.get('/profile'))
     r = csrf_istemci.post('/crm/api/import/validate', json={'column_mapping': {}}, headers={'X-CSRFToken': token})

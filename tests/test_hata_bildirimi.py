@@ -79,3 +79,19 @@ def test_500_karsilayici_bildirim_uretir(app, db_session, superadmin, monkeypatc
     r = app.test_client().get('/auth/login')
     assert r.status_code == 500
     assert Bildirim.query.filter_by(tur='hata').one().mesaj == 'Sunucu hatası: GET /auth/login (RuntimeError)'
+
+
+def test_bildirimde_yol_kalibi_kullanilir(app, db_session, superadmin, monkeypatch):
+    """Yoldaki kimlik/jeton bildirime yazılmaz ve aynı rotanın farklı kayıtları tek bildirim üretir."""
+    def patla(*a, **kw):
+        raise RuntimeError('patladı')
+
+    kural = next(r for r in app.url_map.iter_rules() if r.rule == '/isler/bildirimler/<int:bildirim_id>/ac')
+    monkeypatch.setitem(app.view_functions, kural.endpoint, patla)
+    monkeypatch.setitem(app.config, 'PROPAGATE_EXCEPTIONS', False)
+    monkeypatch.setitem(app.config, 'LOGIN_DISABLED', True)
+    istemci = app.test_client()
+    for kimlik in (1, 2, 3):
+        assert istemci.get(f'/isler/bildirimler/{kimlik}/ac').status_code == 500
+    assert [b.mesaj for b in Bildirim.query.filter_by(tur='hata').all()] == \
+        ['Sunucu hatası: GET /isler/bildirimler/<int:bildirim_id>/ac (RuntimeError)']

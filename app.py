@@ -150,7 +150,8 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
         json_bekliyor = ('/api/' in request.path or request.is_json
                          or request.headers.get('X-Requested-With') == 'XMLHttpRequest')
         if json_bekliyor:
-            return jsonify({'error': mesaj}), 400
+            # Sayfalardaki betikler hata metnini farklı anahtarlardan okuyor (error, hata, message)
+            return jsonify({'error': mesaj, 'hata': mesaj, 'message': mesaj, 'success': False, 'ok': False}), 400
         flash(mesaj, 'warning')
         geri = request.referrer
         return redirect(geri if geri and geri.startswith(request.host_url) else '/')
@@ -313,7 +314,9 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
 
         # Yöneticilere zil bildirimi (aynı hata günde bir kez)
         from modules.hata_bildirimi import bildir
-        bildir(request.method, request.path, getattr(e, 'original_exception', None) or e)
+        # Yol kalıbı (ör. /x/<int:id>): yoldaki kimlik ve jetonlar bildirime yazılmaz, kayıt başına ayrı bildirim oluşmaz
+        yol = request.url_rule.rule if request.url_rule is not None else request.path
+        bildir(request.method, yol, getattr(e, 'original_exception', None) or e)
 
         # Kullanıcıya genel bir hata mesajı göster
         # Üretimde daha kullanıcı dostu bir hata sayfası göstermek daha iyi olur.
