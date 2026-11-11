@@ -6,7 +6,7 @@
 <form method="POST" action="{{ url_for('is_takip.bildirim_tumunu_oku') }}"><button class="btn btn-outline-secondary"><i class="fas fa-check-double me-1"></i>Tümünü okundu yap</button></form>
 {% endblock %}
 {% block dashboard_content %}
-{% set ikon = {'geciken': 'fa-exclamation-circle text-danger', 'yaklasan': 'fa-clock text-warning', 'atandi': 'fa-user-plus text-primary', 'tamamlandi': 'fa-check-circle text-success'} %}
+{% set ikon = {'hata': 'fa-bug text-danger', 'geciken': 'fa-exclamation-circle text-danger', 'yaklasan': 'fa-clock text-warning', 'atandi': 'fa-user-plus text-primary', 'tamamlandi': 'fa-check-circle text-success'} %}
 <div class="card border-0 shadow-sm"><div class="list-group list-group-flush">
     {% for b in bildirimler %}
     <a href="{{ url_for('is_takip.bildirim_ac', bildirim_id=b.id) }}" class="list-group-item list-group-item-action d-flex gap-3 py-3 {% if not b.okundu %}fw-semibold{% endif %}">

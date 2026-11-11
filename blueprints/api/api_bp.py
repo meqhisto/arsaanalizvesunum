@@ -26,7 +26,6 @@ from .v1.crm_minimal import crm_v1
 from .v1.analysis import analysis_v1
 from .v1.portfolio_minimal import portfolio_v1
 from .v1.dashboard import dashboard_v1
-# from .v1.media import media_v1
 
 # V1 endpoint'lerini kaydet
 api_bp.register_blueprint(auth_v1, url_prefix='/v1/auth')
@@ -35,7 +34,6 @@ api_bp.register_blueprint(crm_v1, url_prefix='/v1/crm')
 api_bp.register_blueprint(analysis_v1, url_prefix='/v1/analysis')
 api_bp.register_blueprint(portfolio_v1, url_prefix='/v1/portfolio')
 api_bp.register_blueprint(dashboard_v1, url_prefix='/v1/dashboard')
-# api_bp.register_blueprint(media_v1, url_prefix='/v1/media')
 
 
 @api_bp.route('/')

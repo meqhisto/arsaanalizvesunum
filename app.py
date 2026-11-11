@@ -28,6 +28,9 @@ from blueprints.broker_bp import broker_bp # Broker blueprint'ini import et
 
 # API Blueprint'ini import et
 from blueprints.api.api_bp import api_bp, init_swagger
+from flask_wtf.csrf import CSRFProtect, CSRFError
+
+csrf = CSRFProtect()
 
 # Security modules
 from security.headers import add_security_headers, configure_session_security, log_security_event
@@ -128,6 +131,30 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
 
     # Initialize cache
     cache.init_app(app)
+
+    # CSRF: tarayıcıdan gelen tüm yazma istekleri token ister (formlarda csrf_token alanı, fetch/XHR'de
+    # X-CSRFToken başlığı; ikisini de static/js/csrf.js ekler). /api/ altı JWT ile korunur ve muaftır.
+    app.config["WTF_CSRF_TIME_LIMIT"] = None  # token oturum boyunca geçerli: açık kalan sekme bozulmasın
+    app.config["WTF_CSRF_CHECK_DEFAULT"] = False  # denetim aşağıdaki before_request'te, yola göre yapılır
+    csrf.init_app(app)
+
+    @app.before_request
+    def csrf_denetimi():
+        if app.config.get("WTF_CSRF_ENABLED", True) and not request.path.startswith('/api/'):
+            csrf.protect()
+
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
+        from flask import flash, redirect, jsonify
+        mesaj = "Oturum doğrulanamadı. Sayfayı yenileyip tekrar deneyin."
+        json_bekliyor = ('/api/' in request.path or request.is_json
+                         or request.headers.get('X-Requested-With') == 'XMLHttpRequest')
+        if json_bekliyor:
+            # Sayfalardaki betikler hata metnini farklı anahtarlardan okuyor (error, hata, message)
+            return jsonify({'error': mesaj, 'hata': mesaj, 'message': mesaj, 'success': False, 'ok': False}), 400
+        flash(mesaj, 'warning')
+        geri = request.referrer
+        return redirect(geri if geri and geri.startswith(request.host_url) else '/')
 
     # JWT Configuration
     jwt_secret_key = os.environ.get("JWT_SECRET_KEY")
@@ -284,6 +311,12 @@ def create_app(config_name=None): # config_name opsiyonel, farklı config'ler i�
 
         # Security event logging
         log_security_event('server_error', {'error': str(e)})
+
+        # Yöneticilere zil bildirimi (aynı hata günde bir kez)
+        from modules.hata_bildirimi import bildir
+        # Yol kalıbı (ör. /x/<int:id>): yoldaki kimlik ve jetonlar bildirime yazılmaz, kayıt başına ayrı bildirim oluşmaz
+        yol = request.url_rule.rule if request.url_rule is not None else request.path
+        bildir(request.method, yol, getattr(e, 'original_exception', None) or e)
 
         # Kullanıcıya genel bir hata mesajı göster
         # Üretimde daha kullanıcı dostu bir hata sayfası göstermek daha iyi olur.

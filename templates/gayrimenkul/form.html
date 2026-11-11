@@ -58,7 +58,7 @@
 
 <form id="gayrimenkulForm" method="post" enctype="multipart/form-data" novalidate
       action="{{ url_for('analysis.edit_analysis', analysis_id=gayrimenkul.id) if duzenleme else url_for('analysis.create_analysis') }}">
-    {{ csrf_token() if csrf_token else '' }}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 <div class="row g-4">
 <div class="col-xl-8">
 
