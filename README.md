@@ -160,3 +160,37 @@ Betik, `arsaanalizvesunum-web` imajından uygulamanın izole bir kopyasını (SQ
 depodaki güncel `templates`, `static/js`, `blueprints`, `utils`, `modules`, `models` ve `app.py` dosyalarını
 üstüne bağlar. Canlı veritabanına ve canlı kapsayıcıya dokunmaz. Yeni bir Python bağımlılığı eklendiyse
 önce imaj yeniden derlenmelidir. Her değişiklik birleştirilmeden önce bu testlerden geçmelidir.
+
+## Yedek ve geri yükleme
+
+`scripts/yedekle.sh` her çalıştığında iki dosya üretir (varsayılan klasör `/opt/arsa-backups`, 14 gün saklanır):
+
+- `supabase_arsa_YYYYMMDD_HHMM.sql.gz`: veritabanı dökümü
+- `dosyalar_YYYYMMDD_HHMM.tar.gz`: yüklenen fotoğraflar (`uploads/`), sunumlar (`presentations/`) ve iş belgeleri (`is_belgeleri/`)
+
+Cron satırı:
+
+```
+0 0 * * * /opt/arsaanalizvesunum/scripts/yedekle.sh >> /var/log/arsa-yedek.log 2>&1
+```
+
+Yedeğin geri yüklenebildiğini doğrulamak için (canlı veriye yazmaz; dökümü geçici bir Postgres kapsayıcısına yükler):
+
+```bash
+scripts/yedek_dogrula.sh
+```
+
+Geri yükleme:
+
+```bash
+# Veritabanı (hedef veritabanı boş olmalı)
+gzip -dc /opt/arsa-backups/supabase_arsa_<damga>.sql.gz | psql "$DATABASE_URL"
+# Dosyalar: önce geçici bir klasöre açın, sonra ilgili birime kopyalayın
+mkdir /tmp/geri && tar xzf /opt/arsa-backups/dosyalar_<damga>.tar.gz -C /tmp/geri
+docker cp /tmp/geri/uploads/. arsaanalizvesunum-web-1:/app/static/uploads/
+docker cp /tmp/geri/presentations/. arsaanalizvesunum-web-1:/app/static/presentations/
+docker cp /tmp/geri/is_belgeleri/. arsaanalizvesunum-web-1:/app/private_uploads/
+```
+
+Yedekler şu an yalnızca aynı sunucuda durur; sunucu dışına kopya ayrıca kurulmalıdır.
+Betiklerin testi: `tests/test_yedek.sh` (geçici kapsayıcı ve birimlerle çalışır).
